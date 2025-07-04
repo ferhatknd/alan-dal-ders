@@ -1,23 +1,19 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from 'react';
+import data from './data/dersler.json';
+import TreeView from './TreeView';
+import SelectedInfo from './SelectedInfo';
 
 function App() {
+  const [selectedDers, setSelectedDers] = useState(null);
+
+  const handleSelectDers = (ders) => {
+    setSelectedDers(ders);
+  };
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <TreeView data={data} onSelect={handleSelectDers} />
+      {selectedDers && <SelectedInfo ders={selectedDers} />}
     </div>
   );
 }

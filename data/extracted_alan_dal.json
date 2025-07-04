@@ -1,0 +1,2827 @@
+[
+  {
+    "alan": "İnfaz ve Koruma",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Zabıt Kâtipliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Sosyal Destek Hizmetleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Tüketici Hizmetleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Ağ İşletmenliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Yazılım Geliştirme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Fizyolojik Sinyal İzleme Teşhis ve Kayıt Cihazları",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Tıbbi Görüntüleme Sistemleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Tıbbi Laboratuvar ve Hasta Dışı Uygulama Cihazları",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Yaşam Destek ve Tedavi Cihazları",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Büro Yönetimi ve Yönetici Asistanlığı 1 Büro Yönetimi ve Yönetici Asistanlığı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Çocuk Gelişimi ve Eğitimi 1 Erken Çocukluk ve Özel Eğitim",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Güverte İşletme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Gemi Makineleri İşletme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Gemi Elektroniği ve Haberleşme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Dekoratif El Sanatları",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Dekoratif Ev Tekstili",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Asansör Sistemleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Elektrikli Cihazlar Teknik Servisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Elektrik Tesisatları ve Dağıtımı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Endüstriyel Bakım Onarım",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Elektronik ve Haberleşme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Savunma Elektronik Sistemleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Endüstriyel Otomasyon Teknolojileri 1 Endüstriyel Otomasyon Teknolojileri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Gazetecilik 1 Gazetecilik",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Geleneksel Türk Sanatları 1 Geleneksel Türk Sanatları",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Gemi İnşa",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Yat İnşa",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Gemi Donatım",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Gıda Teknolojisi 1 Gıda Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Fotoğraf",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Grafik",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Güzellik Hizmetleri 1 Güzellik Hizmetleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Halkla İlişkiler 1 Halkla İlişkiler",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Harita Kadastro",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Tapu",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Hasta ve Yaşlı Hizmetleri 1 Hasta ve Yaşlı Bakımı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Tasarım ve İmalat",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "İtki Sistemleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Elektronik Sistemler",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Hayvan Yetiştiriciliği ve Sağlığı 1 Hayvan Yetiştiriciliği ve Sağlığı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "İnşaat Üstyapı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "İnşaat Altyapı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Mimari Yapı Teknik Ressamlığı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Statik Yapı Teknik Ressamlığı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Mimari Restorasyon",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Yapı Yüzey Kaplama ve Yalıtım",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "İtfaiyecilik ve Yangın Güvenliği 1 İtfaiyecilik ve Yangın Güvenliği 48",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Adalet",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Bilişim Teknolojileri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Biyomedikal Cihaz Teknolojileri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Denizcilik",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "El Sanatları Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Elektrik-Elektronik Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Gemi Yapımı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Grafik ve Fotoğraf",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Harita-Tapu-Kadastro",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "İnşaat TeknolojisiHavacılık ve Uzay Teknolojisi 20",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Kimya Laboratuvarı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Petrol Endüstrisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Proses",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Animatörlük",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Konaklama Hizmetleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Seyahat Acenteciliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Kuyumculuk Teknolojisi 1 Takı İmalatı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Laboratuvar Hizmetleri 1 Gıda, Tarım ve Hayvan Sağlığı Laboratuvarı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Maden Teknolojisi 1 Madencilik",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Bilgisayar Destekli Endüstriyel Modelleme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Bilgisayar Destekli Makine Ressamlığı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Bilgisayarlı Makine İmalatı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Değirmencilik",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Endüstriyel Kalıp",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Makine Bakım Onarım",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Savunma Mekanik Sistemleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Tıbbi Cihaz Üretimi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Endüstriyel Ürünler Tasarımı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Baskı Öncesi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Ofset Baskı Sistemleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Metal Doğrama",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Kaynakçılık",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Döküm",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "İzabe ve Haddecilik",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Mikromekanik 1 Mikromekanik ve Saatçilik",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Mobilya Üretim Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Mobilya İç Mekân Ressamlığı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Terzilik",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Giysi Kalıp Tasarımı ve Üretimi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "İş Makineleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Otomotiv Boya",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Otomotiv Elektromekanik",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Otomotiv Gövde",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Elektrikli Araçlar",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Muhasebe",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Dış Ticaret",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Satış Danışmanlığı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Sigortacılık",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Plastik Teknolojisi 1 Plastik Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Plastik Sanatlar 1 Plastik Sanatlar",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Radyo-Televizyon 1 Radyo-Televizyon",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Raylı Sistemler Elektrik-Elektronik",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Raylı Sistemler Yol",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Raylı Sistem Araçları 92",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Kimya Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Konaklama ve Seyahat Hizmetleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Makine ve Tasarım Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Motorlu Araçlar Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Pazarlama ve Perakende",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Raylı Sistemler Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Ebe Yardımcılığı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Hemşire Yardımcılığı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Sağlık Bakım Teknisyenliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Siber Güvenlik 1 Siber Güvenlik",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Tarım 1 Tarım",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Dokuma Üretim Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Örme Üretim Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "İplik Üretim Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Tekstil Baskı ve Desenciliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Tekstil Boya Apre ve Laborantlığı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Soğutma ve İklimlendirme Sistemleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Tesisat ve Enerji Sistemleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Uçak Elektroniği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Uçak Gövde-Motor",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Sivil Havacılık",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Lojistik",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Yenilenebilir Enerji Teknolojileri 1 Yenilenebilir Enerji Teknolojileri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Yiyecek İçecek Hizmetleri 1 Yiyecek İçecek Hizmetleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Ayakkabı Tasarımı ve Üretimi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Saraciye Tasarımı ve Üretimi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Seramik",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Cam 114",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Sağlık Hizmetleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Tekstil Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Ayakkabı Modelistliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Ayakkabı Üretimi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Saraciye Modelistliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Saraciye Üretimi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Bilgisayar Teknik Servisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Yazılım Geliştirme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Büro Yönetimi 1 Yönetici Sekreterliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Denizcilik 1 Balıkçılık ve Su Ürünleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Dekoratif El Sanatları",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Dekoratif Ev Tekstili",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "El Dokuma",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "El ve Makine Nakışı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Halı Desinatörlüğü",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Sanayi Nakışı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Asansör Sistemleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Bobinaj",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Büro Makineleri Teknik Servisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Elektrik Tesisatları ve Pano Montörlüğü",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Elektrikli Ev Aletleri Teknik Servisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Endüstriyel Bakım Onarım",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Görüntü ve Ses Sistemleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Güvenlik Sistemleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Haberleşme Sistemleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Yüksek Gerilim Sistemleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Endüstriyel Otomasyon Teknolojileri 1 Endüstriyel Kontrol",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Gemi Donatımı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Gemi İnşa",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Kompozit Tekne İmalatı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Yat İnşa",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Bitkisel Yağ Üretim",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Çay İşleme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Endüstriyel Et İşleme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Hububat İşleme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Sebze ve Meyve İşleme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Su Ürünleri İşleme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Süt İşleme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Şekerleme ve Çikolata Üretim",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Zeytin İşleme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Fotoğraf",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Animasyon",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Grafik",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Cilt Bakımı ve Makyaj",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Erkek Kuaförlüğü",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Kadın Kuaförlüğü 44",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Ayakkabı ve Saraciye Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Bilişim Teknolojileri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "El Sanatları Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Elektrik- Elektronik Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Gemi Yapımı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Gıda Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Grafik ve Fotoğraf",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Harita-Tapu-Kadastro 1 Harita Kadastro",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Arıcılık",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Büyükbaş Hayvan Yetiştiriciliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Ev ve Süs Hayvanları",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Evcil Hayvan Kuaförlüğü",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Kanatlı Hayvan Yetiştiriciliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Küçükbaş Hayvan Yetiştiriciliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Ahşap Yapı Sistemleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Betonarme Kalıp ve Donatı Sistemleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Yapı Duvar ve Sıva Sistemleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Beton-Çimento ve Zemin Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Cephe Sistemleri ve PVC Doğrama",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Çatı Sistemleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Çelik Yapı Teknik Ressamlığı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "İç Mekân Teknik Ressamlığı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Mimari Restorasyon",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Mimari Yapı Teknik Ressamlığı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Statik Yapı Teknik Ressamlığı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Yapı Dekorasyonu",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Yapı Yalıtımı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Yapı Yüzey Kaplama",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Boya Üretimi ve Kontrolü",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Çimento ve Yapı Kimyasalları Üretimi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Deri İşleme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Kağıt Üretimi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Temizlik, Kozmetik ve Parfümeri Ürünleri Üretimi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Halı Temizleme ve Bakım",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Kuru Temizleme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Kat Hizmetleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Operasyon",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Ön Büro",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Rezervasyon",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Değerli ve Yarı Değerli Taş İşlemeciliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Takı İmalatı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Vitrin Kuyumculuğu",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Anahtarcılık ve Çilingirlik",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Bilgisayar Destekli Endüstriyel Modelleme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Bilgisayar Destekli Makine Ressamlığı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Bilgisayarlı Makine İmalatı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Değirmencilik",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Endüstriyel Kalıp",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Makine Bakım Onarım",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Mermer İşleme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Saat Tamirciliği 88",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Hayvan Yetiştiriciliği ve Sağlığı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "İnşaat Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Kimya Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Konaklama ve Seyahat Hizmetleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Kuyumculuk Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Makine Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Baskı Öncesi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Baskı Sonrası",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Dijital Baskı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Flekso Baskı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Ofset Baskı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Serigrafi Baskı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Tampon Baskı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Tifdruk Baskı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Avizecilik",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Çelik Konstrüksiyon",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Endüstriyel Reklam Tabelacılığı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Isıl İşlem",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Karosercilik",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Kaynakçılık",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Metal Doğrama",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Metal Levha İşlemeciliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Metal Yüzey Boyama",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Sac İşleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Döküm",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "İzabe ve Haddecilik",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Ahşap Doğrama Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "İç Mekân ve Mobilya Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Mobilya İskeleti ve Döşemesi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Mobilya Süsleme Sanatları",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Oto Döşemeciliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Deri Giyim",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Erkek Terziliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Hazır Giyim Model Makineciliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "İç Giyim Modelistliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Kadın Terziliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Kesim",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Modelistlik",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Dizel Motorları Yakıt Pompası ve Enjektör Ayarcılığı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "İş Makineleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Motorlu Araçlar LPG Sistemleri Bakım ve Onarımcılığı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Motosiklet Tamirciliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Otomotiv Boya",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Otomotiv Elektrikçiliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Otomotiv Elektromekanik",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Otomotiv Gövde",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Otomotiv Mekanikerliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Otomotiv Motor Yenileştirmeciliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Ön Düzen Ayarcılığı ve Lastikçilik 131",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Matbaa Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Metal Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Metalürji Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Mobilya ve İç Mekân Tasarımı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Moda Tasarım Teknolojileri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Motorlu Araçlar Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Muhasebe ve Finansman 1 Muhasebe",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Mızraplı Batı Müziği Enstrümanları Yapımı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Mızraplı Halk Müziği Enstrümanları Yapımı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Mızraplı Sanat Müziği Enstrümanları Yapımı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Yaylı Enstrüman Yapımı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Emlak Komisyonculuğu",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Satış Elemanlığı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Sigortacılık",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Plastik İşleme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Plastik Kalıp",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Alçı Model Kalıp",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Çinicilik",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Dekoratif Cam",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Endüstriyel Cam",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Serbest Seramik Şekillendirme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Sır Üstü Dekorlama",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Tornada Form Şekillendirme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Bağcılık",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Mantar Yetiştiriciliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Meyve Yetiştiriciliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Sebze Yetiştiriciliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Bahçıvanlık",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Endüstri Bitkileri Yetiştiriciliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Tarla Bitkileri Yetiştiriciliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Tıbbi Aromatik Bitkiler Yetiştiriciliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Çiçekçilik ve Süs Bitkileri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Seracılık",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Çay Yetiştiriciliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Orman Yetiştiriciliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Dokuma Operatörlüğü",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Dokusuz Yüzeyler",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Endüstriyel Çorap Örme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Endüstriyel Düz Örme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Endüstriyel Yuvarlak Örme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "İplik Üretim Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Tekstil Baskı ve Desenciliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Tekstil Bitim İşlemleri (Apre)",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Tesktil Boyacılığı 169",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Müzik Aletleri Yapımı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Pazarlama ve Perakende",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Plastik Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Seramik ve Cam Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Tarım",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Tekstil Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Gaz Tesisat Sistemleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Gaz Yakıcı Cihazlar ve Servis",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Isıtma ve Sıhhi Tesisat Sistemleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Kazan Yakma ve Bakımı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Su Arıtma Sistemleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Güneş Enerjisi ve Tesisat Sistemleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "İklimlendirme Sistemleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Soğutma Sistemleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Lojistik",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Kargo ve Kurye Hizmetleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Otopark ve Vale Hizmetleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Aşçılık",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Fırıncılık",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Kantin İşletmeciliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Kasaplık",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Pasta ve Tatlı Yapımı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Servis",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Web İçerik Editörü",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Sosyal Medya",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Medya Yazılımı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Radyo-Televizyon (Protokol Kapsamında) 1 Video, Ses Üretim ve Kurgu",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Siber Güvenlik 1 Siber Güvenlik 192",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Tesisat Teknolojisi ve İklimlendirme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Ayakkabı Modelistliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Ayakkabı Üretimi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Saraciye Modelistliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Saraciye Üretimi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Bilgisayar Teknik Servisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Yazılım Geliştirme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Büro Yönetimi 1 Yönetici Sekreterliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Dekoratif El Sanatları",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Dekoratif Ev Tekstili",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "El Dokuma",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "El ve Makine Nakışı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Halı Desinatörlüğü",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Sanayi Nakışı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Asansör Sistemleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Bobinaj",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Büro Makineleri Teknik Servisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Elektrik Tesisatları ve Pano Montörlüğü",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Elektrikli Ev Aletleri Teknik Servisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Endüstriyel Bakım Onarım",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Görüntü ve Ses Sistemleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Güvenlik Sistemleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Haberleşme Sistemleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Yüksek Gerilim Sistemleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Endüstriyel Otomasyon Teknolojileri 1 Endüstriyel Kontrol",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Gemi Donatımı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Gemi İnşa",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Kompozit Tekne İmalatı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Yat İnşa",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Bitkisel Yağ Üretim",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Çay İşleme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Endüstriyel Et İşleme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Hububat İşleme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Sebze ve Meyve İşleme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Su Ürünleri İşleme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Süt İşleme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Şekerleme ve Çikolata Üretim",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Zeytin İşleme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Animasyon",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Fotoğraf",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Grafik 40",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Ayakkabı ve Saraciye Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Bilişim Teknolojileri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "El Sanatları Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Elektrik- Elektronik Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Gemi Yapımı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Gıda Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Cilt Bakımı ve Makyaj",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Erkek Kuaförlüğü",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Kadın Kuaförlüğü",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Harita-Tapu-Kadastro 1 Harita Kadastro",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Arıcılık",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Büyükbaş Hayvan Yetiştiriciliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Ev ve Süs Hayvanları",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Evcil Hayvan Kuaförlüğü",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Kanatlı Hayvan Yetiştiriciliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Küçükbaş Hayvan Yetiştiriciliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Ahşap Yapı Sistemleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Betonarme Kalıp ve Donatı Sistemleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Yapı Duvar ve Sıva Sistemleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Beton-Çimento ve Zemin Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Cephe Sistemleri ve PVC Doğrama",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Çatı Sistemleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Çelik Yapı Teknik Ressamlığı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "İç Mekân Teknik Ressamlığı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Mimari Restorasyon",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Mimari Yapı Teknik Ressamlığı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Statik Yapı Teknik Ressamlığı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Yapı Dekorasyonu",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Yapı Yalıtımı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Yapı Yüzey Kaplama",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Boya Üretimi ve Kontrolü",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Çimento ve Yapı Kimyasalları Üretimi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Deri İşleme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Kağıt Üretimi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Temizlik, Kozmetik ve Parfümeri Ürünleri Üretimi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Halı Temizleme ve Bakım",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Kuru Temizleme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Kat Hizmetleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Operasyon",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Ön Büro",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Rezervasyon",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Değerli ve Yarı Değerli Taş İşlemeciliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Takı İmalatı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Vitrin Kuyumculuğu",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Anahtarcılık ve Çilingirlik",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Bilgisayar Destekli Endüstriyel Modelleme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Bilgisayar Destekli Makine Ressamlığı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Bilgisayarlı Makine İmalatı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Değirmencilik",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Endüstriyel Kalıp",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Makine Bakım Onarım",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Mermer İşleme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Saat Tamirciliği 87",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Güzellik ve Saç Bakım Hizmetleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Hayvan Yetiştiriciliği ve Sağlığı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "İnşaat Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Kimya Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Konaklama ve Seyahat Hizmetleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Kuyumculuk Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Makine Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Baskı Öncesi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Baskı Sonrası",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Dijital Baskı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Flekso Baskı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Ofset Baskı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Serigrafi Baskı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Tampon Baskı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Tifdruk Baskı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Avizecilik",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Çelik Konstrüksiyon",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Endüstriyel Reklam Tabelacılığı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Isıl İşlem",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Karosercilik",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Kaynakçılık",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Metal Doğrama",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Metal Levha İşlemeciliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Metal Yüzey Boyama",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Sac İşleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Döküm",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "İzabe ve Haddecilik",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Ahşap Doğrama Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "İç Mekân ve Mobilya Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Mobilya İskeleti ve Döşemesi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Mobilya Süsleme Sanatları",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Oto Döşemeciliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Deri Giyim",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Erkek Terziliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Hazır Giyim Model Makineciliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "İç Giyim Modelistliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Kadın Terziliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Kesim",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Modelistlik",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Dizel Motorları Yakıt Pompası ve Enjektör Ayarcılığı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "İş Makineleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Motorlu Araçlar LPG Sistemleri Bakım ve Onarımcılığı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Motosiklet Tamirciliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Otomotiv Boya",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Otomotiv Elektrikçiliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Otomotiv Elektromekanik",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Otomotiv Gövde",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Otomotiv Mekanikerliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Otomotiv Motor Yenileştirmeciliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Ön Düzen Ayarcılığı ve Lastikçilik 130",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Matbaa Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Metal Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Metalürji Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Mobilya ve İç Mekân Tasarımı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Moda Tasarım Teknolojileri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Motorlu Araçlar Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Muhasebe ve Finansman 1 Muhasebe",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Mızraplı Batı Müziği Enstrümanları Yapımı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Mızraplı Halk Müziği Enstrümanları Yapımı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Mızraplı Sanat Müziği Enstrümanları Yapımı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Yaylı Enstrüman Yapımı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Emlak Komisyonculuğu",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Satış Elemanlığı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Sigortacılık",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Plastik İşleme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Plastik Kalıp",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Alçı Model Kalıp",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Çinicilik",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Dekoratif Cam",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Endüstriyel Cam",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Serbest Seramik Şekillendirme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Sır Üstü Dekorlama",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Tornada Form Şekillendirme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Siber Güvenlik 1 Siber Güvenlik",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Bağcılık",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Mantar Yetiştiriciliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Meyve Yetiştiriciliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Sebze Yetiştiriciliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Bahçıvanlık",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Çay Yetiştiriciliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Endüstri Bitkileri Yetiştiriciliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Orman Yetiştiriciliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Seracılık",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Çiçekçilik ve Süs Bitkileri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Tarla Bitkileri Yetiştiriciliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Tıbbi Aromatik Bitkiler Yetiştiriciliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Dokuma Operatörlüğü",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Dokusuz Yüzeyler",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Endüstriyel Çorap Örme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Endüstriyel Düz Örme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Endüstriyel Yuvarlak Örme",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "İplik Üretim Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Tekstil Baskı ve Desenciliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Tekstil Bitim İşlemleri (Apre)",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Tesktil Boyacılığı 16926 Pazarlama ve Perakende",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Plastik Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Seramik ve Cam Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Tarım",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Tekstil Teknolojisi",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Müzik Aletleri Yapımı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Gaz Tesisat Sistemleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Gaz Yakıcı Cihazlar ve Servis",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Isıtma ve Sıhhi Tesisat Sistemleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Kazan Yakma ve Bakımı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Su Arıtma Sistemleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Güneş Enerjisi ve Tesisat Sistemleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "İklimlendirme Sistemleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Soğutma Sistemleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Lojistik",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Kargo ve Kurye Hizmetleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Otopark ve Vale Hizmetleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Aşçılık",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Fırıncılık",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Kantin İşletmeciliği",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Kasaplık",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Pasta ve Tatlı Yapımı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Servis",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Web İçerik Editörü",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Sosyal Medya",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Medya Yazılımı",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Radyo-Televizyon (Protokol Kapsamında) 1 Video, Ses Üretim ve Kurgu 19133 Ulaştırma Hizmetleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Gazetecilik (Protokol Kapsamında)35 Yiyecek İçecek Hizmetleri",
+    "kod": "",
+    "dallar": []
+  },
+  {
+    "alan": "Tesisat Teknolojisi ve İklimlendirme",
+    "kod": "",
+    "dallar": []
+  }
+]

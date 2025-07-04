@@ -1,0 +1,28 @@
+[
+  {
+    "alan": "Muhasebe ve Finansman",
+    "kod": "6040",
+    "dallar": [
+      {
+        "dal": "Bilgisayarlı Muhasebe",
+        "kod": "1",
+        "dersler": [
+          {"ad": "Bilgisayarlı Muhasebe İşlemleri", "saat11": 7, "saat12": 7},
+          {"ad": "Şirketler Muhasebesi", "saat11": 7, "saat12": 7},
+          {"ad": "Maliyet Muhasebesi", "saat11": 7, "saat12": 7},
+          {"ad": "Mesleki Yabancı Dil", "saat11": 3, "saat12": 3}
+        ]
+      },
+      {
+        "dal": "Dış Ticaret Ofis Hizmetleri",
+        "kod": "2",
+        "dersler": [
+          {"ad": "Dış Ticaret İşlemleri", "saat11": 7, "saat12": 7},
+          {"ad": "E-Ticaret Uygulamaları", "saat11": 7, "saat12": 7},
+          {"ad": "Dış Ticaret Muhasebesi", "saat11": 7, "saat12": 7},
+          {"ad": "Mesleki Yabancı Dil", "saat11": 3, "saat12": 3}
+        ]
+      }
+    ]
+  }
+]
