@@ -6,17 +6,12 @@ BASE_OPTIONS_URL = "https://meslek.meb.gov.tr/cercevelistele.aspx"
 BASE_DERS_ALT_URL = "https://meslek.meb.gov.tr/dmgoster.aspx"
 
 def get_alanlar(sinif_kodu="9", kurum_id="1"):
-    """Tüm alanları (alan_id ve isim) çeker."""
     params = {"sinif_kodu": sinif_kodu, "kurum_id": kurum_id}
     resp = requests.get(BASE_OPTIONS_URL, params=params)
     resp.encoding = resp.apparent_encoding
     soup = BeautifulSoup(resp.text, "html.parser")
-    sel = soup.find('select', id="ContentPlaceHolder1_drpalansec")
+    sel = soup.find('select', id="ContentPlaceHolder1_drpalansec") or []
     alanlar = []
-    if not sel:
-        print("Alanlar dropdown'u bulunamadı!", file=sys.stderr)
-        return alanlar
-
     for opt in sel.find_all('option'):
         val = opt.get('value', '').strip()
         name = opt.text.strip()
@@ -24,8 +19,7 @@ def get_alanlar(sinif_kodu="9", kurum_id="1"):
             alanlar.append({"id": val, "isim": name})
     return alanlar
 
-def get_dersler_for_alan(alan_id, sinif_kodu="9", kurum_id="1"):
-    """dmgoster.aspx sayfasından dersleri çeker."""
+def get_dersler_for_alan(alan_id, alan_adi, sinif_kodu="9", kurum_id="1"):
     params = {"sinif_kodu": sinif_kodu, "kurum_id": kurum_id, "alan_id": alan_id}
     resp = requests.get(BASE_DERS_ALT_URL, params=params)
     resp.encoding = resp.apparent_encoding
@@ -34,41 +28,42 @@ def get_dersler_for_alan(alan_id, sinif_kodu="9", kurum_id="1"):
     dersler = []
     for div in soup.find_all('div', class_='p-0 bg-light'):
         ul = div.find('ul', class_='list-group')
-        if not ul:
-            continue
-        li0 = ul.find('li')
-        if not li0:
-            continue
-        ders_adi = li0.get_text(" ", strip=True)
-        if ders_adi and ders_adi not in dersler:
-            dersler.append(ders_adi)
-
+        if not ul: continue
+        items = ul.find_all('li')
+        if not items: continue
+        ders = items[0].get_text(" ", strip=True)
+        sinif = next((li.get_text(" ",strip=True) for li in items if "Sınıf" in li.get_text()), "")
+        if ders:
+            dersler.append((ders, sinif))
     if not dersler:
-        print(f"Alan ID {alan_id} için dersler bulunamadı!", file=sys.stderr)
+        print(f"⚠️ Ders bulunamadı: {alan_adi} ({alan_id})", file=sys.stderr)
     return dersler
 
 def main():
-    alanlar = get_alanlar()
-    alan_to_ders = {}
-    ders_to_alan = {}
+    siniflar = ["9", "10", "11", "12"]
+    tum_veri = {}  # {ders_adi: {"siniflar": set(), "alanlar": set()}}
 
-    for alan in alanlar:
-        dersler = get_dersler_for_alan(alan["id"])
-        alan_to_ders[alan["isim"]] = dersler
-        for d in dersler:
-            ders_to_alan.setdefault(d, set()).add(alan["isim"])
+    alan_map = {}  # alan_id -> alan_adi (for reverse lookup)
 
-    print("== Alan → Dersler ==")
-    for a, dersler in alan_to_ders.items():
-        print(f"\n📘 {a} ({len(dersler)} ders):")
-        for d in dersler:
-            print(f"  - {d}")
+    for sinif in siniflar:
+        alanlar = get_alanlar(sinif_kodu=sinif)
+        for alan in alanlar:
+            alan_map[alan["id"]] = alan["isim"]
+            dersler = get_dersler_for_alan(alan["id"], alan["isim"], sinif_kodu=sinif)
+            for ders, sinif_bilgi in dersler:
+                record = tum_veri.setdefault(ders, {"siniflar": set(), "alanlar": set()})
+                record["siniflar"].add(sinif_bilgi)
+                record["alanlar"].add(alan["id"])
 
-    print("\n== Ders → Alan(lar) ==")
-    for d, alan_set in ders_to_alan.items():
-        print(f"\n📗 {d} ({len(alan_set)} alan):")
-        for a in alan_set:
-            print(f"  - {a}")
+    print("\n===== Dersler Listesi =====")
+    for ders in sorted(tum_veri.keys()):
+        siniflar = sorted(tum_veri[ders]["siniflar"])
+        alanlar = sorted(tum_veri[ders]["alanlar"])
+        sinif_str = ",".join(siniflar)
+        ortak_str = ""
+        if len(alanlar) > 1:
+            ortak_str = f" ortak:{','.join(alanlar)}"
+        print(f"- {ders} ({sinif_str}){ortak_str}")
 
-if __name__ == "__main__":
-    main()
+    print("\n==== Özet ====")
+    print(f"Toplam Benzersiz Ders: {len(tum_veri)}")
