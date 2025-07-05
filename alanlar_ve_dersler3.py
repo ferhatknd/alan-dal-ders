@@ -85,7 +85,7 @@ def main():
 
     # 🖨️ Terminal çıktısı
     for alan_id, alan_data in sorted(tum_veri.items(), key=lambda item: item[1]['isim']):
-        print(f"\n{alan_data['isim']} Alanı")
+        print(f"\n{alan_data['isim']} ({alan_id})")
         # Dersleri isme göre sırala
         sorted_dersler = sorted(alan_data["dersler"].items(), key=lambda item: item[1]["isim"])
         for ders_link, d in sorted_dersler:
@@ -97,14 +97,16 @@ def main():
             ortak_alanlar = sorted(list(link_index.get(ders_link, set())))
             ortak_str = ""
             if len(ortak_alanlar) > 1:
-                ortak_str = f" ({len(ortak_alanlar)} ortak alan - {'-'.join(ortak_alanlar)})"
+                ortak_str = f" ({len(ortak_alanlar)} ortak alan)"
             print(f"-> {d['isim']} {sinif_display_str}{ortak_str}")
 
     print("\n==== Özet ====")
     toplam_alan = len(tum_veri)
-    toplam_ders = len({l for l in link_index})
+    alan_bazinda_toplam_ders = sum(len(alan_data["dersler"]) for alan_data in tum_veri.values())
+    benzersiz_toplam_ders = len({l for l in link_index})
     print(f"Toplam Alan: {toplam_alan}")
-    print(f"Toplam Benzersiz Ders Link Sayısı: {toplam_ders}")
+    print(f"Alan Bazında Toplam Ders: {alan_bazinda_toplam_ders}")
+    print(f"Benzersiz Toplam Ders: {benzersiz_toplam_ders}")
 
 if __name__ == "__main__":
     main()
