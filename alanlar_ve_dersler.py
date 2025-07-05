@@ -1,3 +1,5 @@
+print("✅ Bu script çalışıyor")
+
 import requests
 from bs4 import BeautifulSoup
 import sys
@@ -11,11 +13,14 @@ def get_alanlar(sinif_kodu="9", kurum_id="1"):
     resp.encoding = resp.apparent_encoding
     soup = BeautifulSoup(resp.text, "html.parser")
     sel = soup.find('select', id="ContentPlaceHolder1_drpalansec") or []
+    if not sel:
+        print(f"⚠️ Alan listesi bulunamadı (sınıf: {sinif_kodu})")
+        return []
     alanlar = []
     for opt in sel.find_all('option'):
         val = opt.get('value', '').strip()
         name = opt.text.strip()
-        if val:
+        if val and val != "00":
             alanlar.append({"id": val, "isim": name})
     return alanlar
 
@@ -40,30 +45,45 @@ def get_dersler_for_alan(alan_id, alan_adi, sinif_kodu="9", kurum_id="1"):
     return dersler
 
 def main():
+    print("Script başladı...")
     siniflar = ["9", "10", "11", "12"]
-    tum_veri = {}  # {ders_adi: {"siniflar": set(), "alanlar": set()}}
-
-    alan_map = {}  # alan_id -> alan_adi (for reverse lookup)
+    tum_veri = {}  # {alan_id: {"isim": str, "dersler": {ders_adi: {"siniflar": set(), "alanlar": set()}}}}
 
     for sinif in siniflar:
+        print(f"{sinif}. sınıf alanları çekiliyor...")
         alanlar = get_alanlar(sinif_kodu=sinif)
         for alan in alanlar:
-            alan_map[alan["id"]] = alan["isim"]
-            dersler = get_dersler_for_alan(alan["id"], alan["isim"], sinif_kodu=sinif)
+            alan_id = alan["id"]
+            if alan_id == "00":
+                continue
+            alan_adi = alan["isim"]
+            dersler = get_dersler_for_alan(alan_id, alan_adi, sinif_kodu=sinif)
+            alan_entry = tum_veri.setdefault(alan_id, {"isim": alan_adi, "dersler": {}})
             for ders, sinif_bilgi in dersler:
-                record = tum_veri.setdefault(ders, {"siniflar": set(), "alanlar": set()})
-                record["siniflar"].add(sinif_bilgi)
-                record["alanlar"].add(alan["id"])
+                ders_entry = alan_entry["dersler"].setdefault(ders, {"siniflar": set(), "alanlar": set()})
+                ders_entry["siniflar"].add(sinif_bilgi)
+                ders_entry["alanlar"].add(alan_id)
 
-    print("\n===== Dersler Listesi =====")
-    for ders in sorted(tum_veri.keys()):
-        siniflar = sorted(tum_veri[ders]["siniflar"])
-        alanlar = sorted(tum_veri[ders]["alanlar"])
-        sinif_str = ",".join(siniflar)
-        ortak_str = ""
-        if len(alanlar) > 1:
-            ortak_str = f" ortak:{','.join(alanlar)}"
-        print(f"- {ders} ({sinif_str}){ortak_str}")
+    print("\n===== Alanlara Göre Dersler Listesi =====")
+    for alan_id, data in sorted(tum_veri.items(), key=lambda x: x[1]["isim"]):
+        print(f"\n{data['isim']} Alanı")
+        for ders, info in sorted(data["dersler"].items()):
+            siniflar = sorted(info["siniflar"])
+            sinif_str = "-".join(sinif.replace(".Sınıf", "") for sinif in siniflar)
+            sinif_str += ". Sınıf" if len(siniflar) == 1 else ". Sınıf"
+            ortak_alanlar = sorted(info["alanlar"])
+            ortak_str = ""
+            if len(ortak_alanlar) > 1:
+                ortak_str = f" ({len(ortak_alanlar)} Alan Ortak {'-'.join(ortak_alanlar)})"
+            print(f"-> {ders} ({sinif_str}){ortak_str}")
+
+    toplam_ders = set()
+    for data in tum_veri.values():
+        toplam_ders.update(data["dersler"].keys())
 
     print("\n==== Özet ====")
-    print(f"Toplam Benzersiz Ders: {len(tum_veri)}")
+    print(f"Toplam Alan: {len(tum_veri)}")
+    print(f"Toplam Benzersiz Ders: {len(toplam_ders)}")
+
+if __name__ == "__main__":
+    main()
