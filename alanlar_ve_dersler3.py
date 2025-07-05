@@ -38,7 +38,13 @@ def get_dersler_for_alan(alan_id, alan_adi, sinif_kodu="9"):
         # Ders adı → ilk <li>, sınıf bilgisini içeriyor
         items = ul.find_all('li')
         ders_adi = items[0].get_text(" ", strip=True)
-        sinif_text = next((li.get_text(" ",strip=True) for li in items if "Sınıf" in li.get_text()), "")
+        # Sınıf bilgisini daha kesin bir şekilde çıkar
+        sinif_text = ""
+        for li in items:
+            text = li.get_text(" ", strip=True)
+            if "Sınıf" in text and any(char.isdigit() for char in text):
+                sinif_text = text
+                break
         link = requests.compat.urljoin(resp.url, a['href'].strip())
 
         dersler.append({"isim": ders_adi,
@@ -50,8 +56,10 @@ def get_dersler_for_alan(alan_id, alan_adi, sinif_kodu="9"):
 
 def main():
     siniflar = ["9","10","11","12"]
-    tum_veri = {}  # alan_id → {"isim":..., "dersler":[...]}
-    link_index = {}  # ders linki → liste[(alan_id, sinif)]
+    # Yapıyı değiştiriyoruz: alan_id -> {"isim": ..., "dersler": {link: {"isim":..., "siniflar": set()}}}
+    tum_veri = {}
+    # Ortak alanları bulmak için link_index'i kullanıyoruz
+    link_index = {}  # ders linki → set of alan_id's
 
     print("Script başladı...")
 
@@ -60,21 +68,37 @@ def main():
         for alan in get_alanlar(sinif):
             alan_id = alan["id"]
             ders_listesi = get_dersler_for_alan(alan_id, alan["isim"], sinif)
-            entry = tum_veri.setdefault(alan_id, {"isim": alan["isim"], "dersler": []})
+            # Alan için ana girişi oluştur/getir
+            alan_entry = tum_veri.setdefault(alan_id, {"isim": alan["isim"], "dersler": {}})
             for d in ders_listesi:
-                entry["dersler"].append(d)
-                link_index.setdefault(d["link"], []).append((alan_id, sinif))
+                ders_link = d["link"]
+                # Sınıf numarasını "11.Sınıf" metninden çıkar
+                sinif_num = d["sinif"].replace(".Sınıf", "").strip()
+                # Ders linkini anahtar olarak kullanarak dersleri grupla
+                ders_entry = alan_entry["dersler"].setdefault(ders_link, {
+                    "isim": d["isim"],
+                    "siniflar": set()
+                })
+                ders_entry["siniflar"].add(sinif_num)
+                # Bu dersin (linkin) hangi alanlarda olduğunu takip et
+                link_index.setdefault(ders_link, set()).add(alan_id)
 
     # 🖨️ Terminal çıktısı
-    for alan in tum_veri.values():
-        print(f"\n{alan['isim']} Alanı")
-        for d in alan["dersler"]:
-            linkgroups = link_index.get(d["link"], [])
-            ortak_alanlar = sorted({alan_id for alan_id,_ in linkgroups})
+    for alan_id, alan_data in sorted(tum_veri.items(), key=lambda item: item[1]['isim']):
+        print(f"\n{alan_data['isim']} Alanı")
+        # Dersleri isme göre sırala
+        sorted_dersler = sorted(alan_data["dersler"].items(), key=lambda item: item[1]["isim"])
+        for ders_link, d in sorted_dersler:
+            # Sınıfları birleştir: {"11", "12"} -> "11-12"
+            siniflar_sorted = sorted(list(d['siniflar']), key=int)
+            sinif_str = "-".join(siniflar_sorted)
+            sinif_display_str = f"({sinif_str}. Sınıf)"
+            # Ortak alan bilgisini oluştur
+            ortak_alanlar = sorted(list(link_index.get(ders_link, set())))
             ortak_str = ""
             if len(ortak_alanlar) > 1:
                 ortak_str = f" ({len(ortak_alanlar)} ortak alan - {'-'.join(ortak_alanlar)})"
-            print(f"-> {d['isim']} ({d['sinif']}){ortak_str}")
+            print(f"-> {d['isim']} {sinif_display_str}{ortak_str}")
 
     print("\n==== Özet ====")
     toplam_alan = len(tum_veri)
