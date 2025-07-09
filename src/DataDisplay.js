@@ -1,10 +1,24 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 
 import './DataDisplay.css';
 
 function DataDisplay({ scrapedData }) {
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedTerm, setDebouncedTerm] = useState(searchTerm);
 
+  // Debouncing efekti: Kullanıcı yazmayı bıraktıktan 300ms sonra
+  // arama terimini günceller.
+  useEffect(() => {
+    const timerId = setTimeout(() => {
+      setDebouncedTerm(searchTerm);
+    }, 300);
+
+    // Kullanıcı yeni bir tuşa basarsa, önceki zamanlayıcıyı temizle.
+    return () => {
+      clearTimeout(timerId);
+    };
+  }, [searchTerm]);
+  
   if (!scrapedData || !scrapedData.alanlar) {
     return <p>Görüntülenecek veri yok.</p>;
   }
@@ -19,13 +33,14 @@ function DataDisplay({ scrapedData }) {
 
   // Arama terimine göre alanları filtrele.
   const filteredAlanlar = useMemo(() => {
-    if (!searchTerm.trim()) {
+    const term = debouncedTerm.trim();
+    if (!term) {
       return sortedAlanlar;
     }
     return sortedAlanlar.filter(([, alanData]) =>
-      alanData.isim.toLowerCase().includes(searchTerm.toLowerCase())
+      alanData.isim.toLowerCase().includes(term.toLowerCase())
     );
-  }, [searchTerm, sortedAlanlar]);
+  }, [debouncedTerm, sortedAlanlar]);
 
   return (
     <div className="data-container">
@@ -42,7 +57,19 @@ function DataDisplay({ scrapedData }) {
 
         return (
           <div key={alanId} className="alan-block">
-            <h3>{alanData.isim} ({alanId})</h3>
+            <h3>
+              {debouncedTerm.trim()
+                ? alanData.isim.split(new RegExp(`(${debouncedTerm})`, 'gi')).map((part, index) =>
+                    part.toLowerCase() === debouncedTerm.toLowerCase().trim() ? (
+                      <mark key={index}>{part}</mark>
+                    ) : (
+                      part
+                    )
+                  )
+                : alanData.isim
+              }
+              {' '}({alanId})
+            </h3>
             <ul>
               {sortedDersler.map(([dersLink, dersData]) => {
                 const siniflarSorted = [...dersData.siniflar].sort((a, b) => a - b);

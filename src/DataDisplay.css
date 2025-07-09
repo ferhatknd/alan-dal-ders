@@ -82,3 +82,11 @@
   border-color: #61dafb;
   box-shadow: 0 0 8px rgba(97, 218, 251, 0.5);
 }
+
+mark {
+  background-color: #61dafb; /* Temayla uyumlu vurgu rengi */
+  color: #282c34; /* Vurgu üzerindeki metin rengi */
+  padding: 1px 3px;
+  border-radius: 3px;
+  font-style: normal; /* Bazı tarayıcılarda varsayılan italik stili sıfırlar */
+}
