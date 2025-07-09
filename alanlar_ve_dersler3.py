@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import sys
 
+import time
 BASE_OPTIONS_URL = "https://meslek.meb.gov.tr/cercevelistele.aspx"
 BASE_DERS_ALT_URL = "https://meslek.meb.gov.tr/dmgoster.aspx"
 
@@ -76,21 +77,47 @@ def scrape_data():
     tum_veri = {}
     link_index = {}
 
-    yield {"type": "progress", "message": "Veri çekme işlemi başlatıldı..."}
+    yield {"type": "progress", "message": "Veri çekme işlemi başlatılıyor..."}
+
+    # Adım 1: Toplam iş yükünü hesapla (tüm alanların sayısını bul)
+    yield {"type": "progress", "message": "Toplam iş yükü hesaplanıyor..."}
+    all_alanlar_by_sinif = {sinif: get_alanlar(sinif) for sinif in siniflar}
+    total_alan_count = sum(len(alan_list) for alan_list in all_alanlar_by_sinif.values())
+
+    if total_alan_count == 0:
+        yield {"type": "warning", "message": "İşlenecek hiç alan bulunamadı. İşlem sonlandırılıyor."}
+        yield {"type": "done", "data": {"alanlar": {}, "ortak_alan_indeksi": {}}}
+        return
+
+    yield {"type": "progress", "message": f"Toplam {total_alan_count} alan işlenecek."}
+
+    processed_alan_count = 0
+    start_time = time.time()
 
     for sinif in siniflar:
-        yield {"type": "progress", "message": f"{sinif}. sınıf alanları çekiliyor..."}
-        alanlar = get_alanlar(sinif)
+        alanlar = all_alanlar_by_sinif[sinif]
         if not alanlar:
             yield {"type": "warning", "message": f"Uyarı: {sinif}. sınıf için alan bulunamadı."}
             continue
 
         for i, alan in enumerate(alanlar):
+            # İlerleme ve zaman tahmini
+            processed_alan_count += 1
+            elapsed_time = time.time() - start_time
+            avg_time_per_alan = elapsed_time / processed_alan_count
+            remaining_alanlar = total_alan_count - processed_alan_count
+            estimated_remaining_time_seconds = remaining_alanlar * avg_time_per_alan
+            
+            # Zamanı dakika ve saniye olarak formatla
+            mins, secs = divmod(estimated_remaining_time_seconds, 60)
+            estimation_str = f"Tahmini kalan süre: {int(mins)} dakika {int(secs)} saniye"
+
             alan_id = alan["id"]
             alan_adi = alan["isim"]
             yield {
                 "type": "progress",
-                "message": f"[{sinif}. Sınıf] Alan işleniyor: {alan_adi} ({i + 1}/{len(alanlar)})"
+                "message": f"[{sinif}. Sınıf] Alan işleniyor: {alan_adi} ({processed_alan_count}/{total_alan_count})",
+                "estimation": estimation_str
             }
             ders_listesi = get_dersler_for_alan(alan_id, alan["isim"], sinif)
             alan_entry = tum_veri.setdefault(alan_id, {"isim": alan_adi, "dersler": {}})

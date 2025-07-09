@@ -75,3 +75,14 @@
 .progress-list li:last-child {
   border-bottom: none;
 }
+
+.estimation {
+  font-size: 1.1em;
+  font-weight: bold;
+  color: #28a745; /* Yeşil bir renk */
+  margin-bottom: 1em;
+  padding: 10px;
+  border: 1px solid #28a745;
+  border-radius: 5px;
+  background-color: #e9f7ef;
+}

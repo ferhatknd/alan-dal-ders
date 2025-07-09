@@ -8,6 +8,7 @@ function App() {
   const [initialLoading, setInitialLoading] = useState(true); // Sayfa ilk yüklenirken
   const [error, setError] = useState(null);
   const [progress, setProgress] = useState([]);
+  const [estimation, setEstimation] = useState(null); // Tahmin süresi için yeni state
 
   // Uygulama ilk yüklendiğinde önbellekteki veriyi çekmeyi dene
   useEffect(() => {
@@ -36,6 +37,7 @@ function App() {
     setData(null);
     setError(null);
     setProgress([]);
+    setEstimation(null); // Yeni işlemde tahmini sıfırla
 
     // SSE için EventSource kullanıyoruz
     const eventSource = new EventSource('/api/scrape-stream');
@@ -46,10 +48,15 @@ function App() {
 
       if (parsedData.type === 'progress' || parsedData.type === 'warning') {
         // İlerleme mesajlarını listeye ekle
-        setProgress(prev => [...prev, parsedData.message]);
+        setProgress(prev => [parsedData.message, ...prev]); // Yeni mesajı başa ekle
+        // Tahmin verisi varsa state'i güncelle
+        if (parsedData.estimation) {
+          setEstimation(parsedData.estimation);
+        }
       } else if (parsedData.type === 'done') {
         // İşlem bittiğinde, nihai veriyi state'e ata
         setData(parsedData.data);
+        setEstimation(null); // İşlem bitince tahmini temizle
         setLoading(false);
         eventSource.close(); // Bağlantıyı kapat
       }
@@ -81,9 +88,10 @@ function App() {
         {initialLoading && <p>Önbellek kontrol ediliyor...</p>}
         {loading && (
           <div className="progress-container">
+            {estimation && <p className="estimation">{estimation}</p>}
             <h3>İlerleme Durumu:</h3>
             <ul className="progress-list">
-              {progress.map((msg, index) => (
+              {progress.slice(0, 10).map((msg, index) => ( // Sadece son 10 mesajı göster
                 <li key={index}>{msg}</li>
               ))}
             </ul>
