@@ -6,24 +6,39 @@ function App() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [progress, setProgress] = useState([]);
 
-  const handleScrape = async () => {
+  const handleScrape = () => {
     setLoading(true);
     setData(null);
     setError(null);
-    try {
-      const response = await fetch('/api/scrape');
-      if (!response.ok) {
-        throw new Error(`HTTP hatası! Durum: ${response.status}`);
+    setProgress([]);
+
+    // SSE için EventSource kullanıyoruz
+    const eventSource = new EventSource('/api/scrape-stream');
+
+    // Sunucudan her yeni mesaj geldiğinde bu fonksiyon çalışır
+    eventSource.onmessage = (event) => {
+      const parsedData = JSON.parse(event.data);
+
+      if (parsedData.type === 'progress' || parsedData.type === 'warning') {
+        // İlerleme mesajlarını listeye ekle
+        setProgress(prev => [...prev, parsedData.message]);
+      } else if (parsedData.type === 'done') {
+        // İşlem bittiğinde, nihai veriyi state'e ata
+        setData(parsedData.data);
+        setLoading(false);
+        eventSource.close(); // Bağlantıyı kapat
       }
-      const result = await response.json();
-      setData(result);
-    } catch (e) {
-      console.error("Veri çekme hatası:", e);
-      setError(e.message || "Bilinmeyen bir hata oluştu. Lütfen backend sunucusunu kontrol edin.");
-    } finally {
+    };
+
+    // Bağlantı hatası durumunda bu fonksiyon çalışır
+    eventSource.onerror = (err) => {
+      console.error("EventSource failed:", err);
+      setError("Veri akışı sırasında bir hata oluştu. Sunucu bağlantısını kontrol edin.");
       setLoading(false);
-    }
+      eventSource.close();
+    };
   };
 
   return (
@@ -35,7 +50,16 @@ function App() {
         </button>
       </header>
       <main>
-        {loading && <div className="spinner"></div>}
+        {loading && (
+          <div className="progress-container">
+            <h3>İlerleme Durumu:</h3>
+            <ul className="progress-list">
+              {progress.map((msg, index) => (
+                <li key={index}>{msg}</li>
+              ))}
+            </ul>
+          </div>
+        )}
         {error && <p className="error">{error}</p>}
         {data && <DataDisplay scrapedData={data} />}
       </main>

@@ -14,19 +14,15 @@ HEADERS = {
 def get_alanlar(sinif_kodu="9"):
     params = {"sinif_kodu": sinif_kodu, "kurum_id": "1"}
     try:
-        # Timeout ve daha iyi hata ayıklama için URL'yi yazdırma
-        print(f"Alanlar isteniyor: {BASE_OPTIONS_URL} with params {params}", file=sys.stderr)
         resp = requests.get(BASE_OPTIONS_URL, params=params, headers=HEADERS, timeout=10)
         resp.raise_for_status()  # 4xx veya 5xx HTTP durum kodlarında hata fırlatır.
     except requests.exceptions.RequestException as e:
-        print(f"⚠️ Alanları çekerken ağ hatası (URL: {e.request.url}): {e}", file=sys.stderr)
         return []
 
     resp.encoding = resp.apparent_encoding
     soup = BeautifulSoup(resp.text, "html.parser")
     sel = soup.find('select', id="ContentPlaceHolder1_drpalansec")
     if not sel:
-        print(f"⚠️ Alan listesi bulunamadı (sınıf {sinif_kodu})", file=sys.stderr)
         return []
     alanlar = []
     for opt in sel.find_all('option'):
@@ -39,12 +35,9 @@ def get_alanlar(sinif_kodu="9"):
 def get_dersler_for_alan(alan_id, alan_adi, sinif_kodu="9"):
     params = {"sinif_kodu": sinif_kodu, "kurum_id": "1", "alan_id": alan_id}
     try:
-        # Timeout ve daha iyi hata ayıklama için URL'yi yazdırma
-        print(f"Dersler isteniyor: {BASE_DERS_ALT_URL} with params {params}", file=sys.stderr)
         resp = requests.get(BASE_DERS_ALT_URL, params=params, headers=HEADERS, timeout=10)
         resp.raise_for_status() # 4xx veya 5xx HTTP durum kodlarında hata fırlatır.
     except requests.exceptions.RequestException as e:
-        print(f"⚠️ Dersleri çekerken ağ hatası ({alan_adi}, URL: {e.request.url}): {e}", file=sys.stderr)
         return []
 
     resp.encoding = resp.apparent_encoding
@@ -73,22 +66,34 @@ def get_dersler_for_alan(alan_id, alan_adi, sinif_kodu="9"):
                         "sinif": sinif_text,
                         "link": link})
     if not dersler:
-        print(f"⚠️ Ders bulunamadı: {alan_adi} ({alan_id})", file=sys.stderr)
+        # Bu durumu çağıran fonksiyona bildirmek için boş liste yeterli.
+        pass
     return dersler
 
 def scrape_data():
+    """Verileri çeker ve ilerlemeyi yield ile anlık olarak bildirir."""
     siniflar = ["9","10","11","12"]
     tum_veri = {}
     link_index = {}
 
-    print("Script başladı...")
+    yield {"type": "progress", "message": "Veri çekme işlemi başlatıldı..."}
 
     for sinif in siniflar:
-        print(f"{sinif}. sınıf alanları çekiliyor...")
-        for alan in get_alanlar(sinif):
+        yield {"type": "progress", "message": f"{sinif}. sınıf alanları çekiliyor..."}
+        alanlar = get_alanlar(sinif)
+        if not alanlar:
+            yield {"type": "warning", "message": f"Uyarı: {sinif}. sınıf için alan bulunamadı."}
+            continue
+
+        for i, alan in enumerate(alanlar):
             alan_id = alan["id"]
+            alan_adi = alan["isim"]
+            yield {
+                "type": "progress",
+                "message": f"[{sinif}. Sınıf] Alan işleniyor: {alan_adi} ({i + 1}/{len(alanlar)})"
+            }
             ders_listesi = get_dersler_for_alan(alan_id, alan["isim"], sinif)
-            alan_entry = tum_veri.setdefault(alan_id, {"isim": alan["isim"], "dersler": {}})
+            alan_entry = tum_veri.setdefault(alan_id, {"isim": alan_adi, "dersler": {}})
             for d in ders_listesi:
                 ders_link = d["link"]
                 # Sınıf numarasını "11.Sınıf" metninden çıkar
@@ -109,10 +114,14 @@ def scrape_data():
     for link in link_index:
         link_index[link] = sorted(list(link_index[link]))
 
-    return {"alanlar": tum_veri, "ortak_alan_indeksi": link_index}
+    yield {"type": "progress", "message": "İşlem tamamlandı. Veriler birleştiriliyor..."}
+    final_data = {"alanlar": tum_veri, "ortak_alan_indeksi": link_index}
+    # Son olarak, tüm veriyi 'done' tipiyle gönder
+    yield {"type": "done", "data": final_data}
 
 def main():
-    scraped_data = scrape_data()
+    # Generator'dan gelen tüm veriyi topla
+    scraped_data = [item for item in scrape_data() if item['type'] == 'done'][0]['data']
     tum_veri = scraped_data["alanlar"]
     link_index = scraped_data["ortak_alan_indeksi"]
     # 🖨️ Terminal çıktısı

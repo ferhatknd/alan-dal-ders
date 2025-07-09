@@ -34,3 +34,44 @@
   border-radius: 5px;
   background-color: #fbeae5;
 }
+/* ... mevcut stillerin altına ... */
+
+.progress-container {
+  width: 80%;
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+  border: 1px solid #444;
+  border-radius: 8px;
+  background-color: #1e1e1e; /* Koyu tema için */
+  text-align: left;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.progress-container h3 {
+  margin-top: 0;
+  color: #61dafb;
+  border-bottom: 1px solid #444;
+  padding-bottom: 10px;
+}
+
+.progress-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  max-height: 300px;
+  overflow-y: auto;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.9em;
+  color: #ccc;
+}
+
+.progress-list li {
+  padding: 5px 0;
+  border-bottom: 1px solid #3a3f47;
+  transition: background-color 0.2s;
+}
+
+.progress-list li:last-child {
+  border-bottom: none;
+}

@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
+
 import './DataDisplay.css';
 
 function DataDisplay({ scrapedData }) {
+  const [searchTerm, setSearchTerm] = useState('');
+
   if (!scrapedData || !scrapedData.alanlar) {
     return <p>Görüntülenecek veri yok.</p>;
   }
@@ -9,14 +12,29 @@ function DataDisplay({ scrapedData }) {
   const { alanlar, ortak_alan_indeksi } = scrapedData;
 
   // Alanları isme göre sıralamak için bir diziye dönüştür
-  const sortedAlanlar = Object.entries(alanlar).sort(([, a], [, b]) =>
-    a.isim.localeCompare(b.isim, 'tr')
-  );
+  const sortedAlanlar = useMemo(() =>
+    Object.entries(alanlar).sort(([, a], [, b]) =>
+      a.isim.localeCompare(b.isim, 'tr')
+    ), [alanlar]);
+
+  // Arama terimine göre alanları filtrele.
+  const filteredAlanlar = useMemo(() => {
+    if (!searchTerm.trim()) {
+      return sortedAlanlar;
+    }
+    return sortedAlanlar.filter(([, alanData]) =>
+      alanData.isim.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [searchTerm, sortedAlanlar]);
 
   return (
     <div className="data-container">
-      <h2>Çekilen Veriler</h2>
-      {sortedAlanlar.map(([alanId, alanData]) => {
+      <h2>Çekilen Veriler ({filteredAlanlar.length} alan bulundu)</h2>
+      <div className="search-bar">
+        <input type="text" placeholder="Alan adı ile ara..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+      </div>
+      {filteredAlanlar.length > 0 ? (
+        filteredAlanlar.map(([alanId, alanData]) => {
         // Dersleri isme göre sırala
         const sortedDersler = Object.entries(alanData.dersler).sort(([, a], [, b]) =>
           a.isim.localeCompare(b.isim, 'tr')
@@ -48,7 +66,10 @@ function DataDisplay({ scrapedData }) {
             </ul>
           </div>
         );
-      })}
+      })
+      ) : (
+        <p>Arama kriterlerinize uygun alan bulunamadı.</p>
+      )}
     </div>
   );
 }
