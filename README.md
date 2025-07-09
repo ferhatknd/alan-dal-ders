@@ -34,8 +34,8 @@ python -m venv venv
 source venv/bin/activate  # macOS/Linux için
 # venv\Scripts\activate    # Windows için
 
-# 2. Gerekli Python kütüphanelerini yükleyin
-pip install Flask requests beautifulsoup4
+# 2. Gerekli Python kütüphanelerini `requirements.txt` dosyasından yükleyin
+pip install -r requirements.txt
 
 # 3. Flask sunucusunu başlatın
 # Sunucu varsayılan olarak http://localhost:5001 adresinde çalışacaktır.
@@ -63,11 +63,9 @@ Tarayıcınızda `http://localhost:3000` adresini açtığınızda, "Verileri Ç
 
 Bu araç, web arayüzü aracılığıyla linklerini elde ettiğiniz PDF dosyalarını indirip bir klasöre koyduktan sonra kullanılır. PDF'lerin içindeki detaylı müfredat bilgilerini ayıklayıp bir `.sql` dosyası oluşturur.
 
-```bash
-# 1. PDF ayrıştırıcı için gerekli kütüphaneyi yükleyin
-pip install pdfplumber
+*Not: Gerekli kütüphaneler bir önceki adımda `requirements.txt` ile yüklendiği için ek bir kurulum gerekmez.*
 
-# 2. Aracı çalıştırma
+```bash
 # PDF'lerinizin bulunduğu dizini ve çıktı dosyasının adını belirtin.
 python dbf_parser_final.py ./indirilen_pdfler -o cikti.sql
 ```
@@ -84,4 +82,3 @@ Bu komut, `indirilen_pdfler` klasöründeki tüm PDF'leri işleyecek ve veritaba
 6.  Arayüz, gelen verileri işleyerek kullanıcıya sunar.
 7.  (Manuel Adım) Kullanıcı, arayüzdeki linkleri kullanarak istediği derslerin PDF'lerini indirir.
 8.  (Manuel Adım) `dbf_parser_final.py` aracı ile bu PDF'ler işlenerek veritabanı için SQL dosyası oluşturulur.
-
