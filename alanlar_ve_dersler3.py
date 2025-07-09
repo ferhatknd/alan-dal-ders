@@ -1,8 +1,19 @@
 import requests
 from bs4 import BeautifulSoup
 import sys
-
 import time
+import unicodedata
+
+def slugify(text):
+    """
+    Normalizes string, converts to lowercase, removes non-alpha characters,
+    and converts spaces to hyphens.
+    """
+    # Türkçe karakterleri Latin karakterlere çevir
+    text = ''.join(c for c in unicodedata.normalize('NFD', text) if unicodedata.category(c) != 'Mn')
+    # Küçük harfe çevir ve boşlukları kaldır
+    return "".join(filter(str.isalnum, text.lower()))
+
 BASE_OPTIONS_URL = "https://meslek.meb.gov.tr/cercevelistele.aspx"
 BASE_DERS_ALT_URL = "https://meslek.meb.gov.tr/dmgoster.aspx"
 
@@ -119,8 +130,16 @@ def scrape_data():
                 "message": f"[{sinif}. Sınıf] Alan işleniyor: {alan_adi} ({processed_alan_count}/{total_alan_count})",
                 "estimation": estimation_str
             }
+            
+            # Alan verisini ve DBF linklerini hazırla
+            alan_entry = tum_veri.setdefault(alan_id, {"isim": alan_adi, "dersler": {}, "dbf_links": {}})
+            
+            # DBF linkini oluştur ve ekle
+            alan_slug = slugify(alan_adi)
+            dbf_link = f"https://meslek.meb.gov.tr/upload/dbf{sinif}/{alan_slug}.rar"
+            alan_entry["dbf_links"][sinif] = dbf_link
+
             ders_listesi = get_dersler_for_alan(alan_id, alan["isim"], sinif)
-            alan_entry = tum_veri.setdefault(alan_id, {"isim": alan_adi, "dersler": {}})
             for d in ders_listesi:
                 ders_link = d["link"]
                 # Sınıf numarasını "11.Sınıf" metninden çıkar
@@ -154,8 +173,17 @@ def main():
     # 🖨️ Terminal çıktısı
     for alan_id, alan_data in sorted(tum_veri.items(), key=lambda item: item[1]['isim']):
         print(f"\n{alan_data['isim']} ({alan_id})")
+        
+        # DBF Linklerini yazdır
+        if alan_data.get("dbf_links"):
+            print("  Ders Bilgi Formları:")
+            for sinif, link in sorted(alan_data["dbf_links"].items()):
+                print(f"  -> {sinif}. Sınıf: {link}")
+
         # Dersleri isme göre sırala
         sorted_dersler = sorted(alan_data["dersler"].items(), key=lambda item: item[1]["isim"])
+        if sorted_dersler:
+            print("  Çerçeve Öğretim Programları:")
         for ders_link, d in sorted_dersler:
             # Sınıfları birleştir: {"11", "12"} -> "11-12"
             sinif_str = "-".join(d['siniflar'])
@@ -165,7 +193,7 @@ def main():
             ortak_str = ""
             if len(ortak_alanlar) > 1:
                 ortak_str = f" ({len(ortak_alanlar)} ortak alan)"
-            print(f"-> {d['isim']} {sinif_display_str}{ortak_str}")
+            print(f"  -> {d['isim']} {sinif_display_str}{ortak_str}")
 
     print("\n==== Özet ====")
     toplam_alan = len(tum_veri)

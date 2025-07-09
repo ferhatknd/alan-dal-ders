@@ -59,6 +59,31 @@
   text-decoration: underline;
 }
 
+.dbf-section {
+  margin-top: 15px;
+  margin-bottom: 15px;
+  background-color: #f0f8ff;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #cce7ff;
+}
+
+.dbf-section h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #0056b3;
+}
+
+.dbf-section ul {
+  padding-left: 20px;
+  margin-bottom: 0;
+}
+
+.dbf-section li {
+  border: none;
+  padding: 4px 0;
+}
+
 /* ... mevcut stillerin altına ... */
 
 .search-bar {

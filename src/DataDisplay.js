@@ -18,18 +18,16 @@ function DataDisplay({ scrapedData }) {
       clearTimeout(timerId);
     };
   }, [searchTerm]);
-  
-  if (!scrapedData || !scrapedData.alanlar) {
-    return <p>Görüntülenecek veri yok.</p>;
-  }
 
-  const { alanlar, ortak_alan_indeksi } = scrapedData;
+  const { alanlar, ortak_alan_indeksi } = scrapedData || {};
 
   // Alanları isme göre sıralamak için bir diziye dönüştür
-  const sortedAlanlar = useMemo(() =>
-    Object.entries(alanlar).sort(([, a], [, b]) =>
+  const sortedAlanlar = useMemo(() => {
+    if (!alanlar) return [];
+    return Object.entries(alanlar).sort(([, a], [, b]) =>
       a.isim.localeCompare(b.isim, 'tr')
-    ), [alanlar]);
+    );
+  }, [alanlar]);
 
   // Arama terimine göre alanları filtrele.
   const filteredAlanlar = useMemo(() => {
@@ -41,6 +39,10 @@ function DataDisplay({ scrapedData }) {
       alanData.isim.toLowerCase().includes(term.toLowerCase())
     );
   }, [debouncedTerm, sortedAlanlar]);
+  
+  if (!alanlar) {
+    return <p>Görüntülenecek veri yok.</p>;
+  }
 
   return (
     <div className="data-container">
@@ -70,6 +72,23 @@ function DataDisplay({ scrapedData }) {
               }
               {' '}({alanId})
             </h3>
+
+            {alanData.dbf_links && Object.keys(alanData.dbf_links).length > 0 && (
+              <div className="dbf-section">
+                <h4>Ders Bilgi Formları (DBF)</h4>
+                <ul>
+                  {Object.entries(alanData.dbf_links)
+                    .sort(([sinifA], [sinifB]) => parseInt(sinifA) - parseInt(sinifB))
+                    .map(([sinif, link]) => (
+                      <li key={sinif}>
+                        {sinif}. Sınıf: <a href={link} target="_blank" rel="noopener noreferrer">{link.split('/').pop()}</a>
+                      </li>
+                    ))}
+                </ul>
+              </div>
+            )}
+            
+            {sortedDersler.length > 0 && <h4>Çerçeve Öğretim Programları</h4>}
             <ul>
               {sortedDersler.map(([dersLink, dersData]) => {
                 const siniflarSorted = [...dersData.siniflar].sort((a, b) => a - b);
