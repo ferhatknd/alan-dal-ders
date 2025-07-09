@@ -20,7 +20,7 @@ function App() {
       setData(result);
     } catch (e) {
       console.error("Veri çekme hatası:", e);
-      setError("Veriler çekilirken bir hata oluştu. Lütfen backend sunucusunun çalıştığından emin olun.");
+      setError(e.message || "Bilinmeyen bir hata oluştu. Lütfen backend sunucusunu kontrol edin.");
     } finally {
       setLoading(false);
     }

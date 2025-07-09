@@ -5,10 +5,19 @@ import sys
 BASE_OPTIONS_URL = "https://meslek.meb.gov.tr/cercevelistele.aspx"
 BASE_DERS_ALT_URL = "https://meslek.meb.gov.tr/dmgoster.aspx"
 
-print("✅ Bu kod çalışıyor")  # Kontrol satırı
+# Sunucu tarafından engellenmemek için bir tarayıcı gibi davranan User-Agent başlığı ekleyelim.
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+}
 
 def get_alanlar(sinif_kodu="9"):
-    resp = requests.get(BASE_OPTIONS_URL, params={"sinif_kodu": sinif_kodu, "kurum_id":"1"})
+    try:
+        resp = requests.get(BASE_OPTIONS_URL, params={"sinif_kodu": sinif_kodu, "kurum_id":"1"}, headers=HEADERS)
+        resp.raise_for_status()  # 4xx veya 5xx HTTP durum kodlarında hata fırlatır.
+    except requests.exceptions.RequestException as e:
+        print(f"⚠️ Alanları çekerken ağ hatası (sınıf {sinif_kodu}): {e}", file=sys.stderr)
+        return []
+
     resp.encoding = resp.apparent_encoding
     soup = BeautifulSoup(resp.text, "html.parser")
     sel = soup.find('select', id="ContentPlaceHolder1_drpalansec")
@@ -24,7 +33,13 @@ def get_alanlar(sinif_kodu="9"):
     return alanlar
 
 def get_dersler_for_alan(alan_id, alan_adi, sinif_kodu="9"):
-    resp = requests.get(BASE_DERS_ALT_URL, params={"sinif_kodu": sinif_kodu, "kurum_id":"1", "alan_id":alan_id})
+    try:
+        resp = requests.get(BASE_DERS_ALT_URL, params={"sinif_kodu": sinif_kodu, "kurum_id":"1", "alan_id":alan_id}, headers=HEADERS)
+        resp.raise_for_status() # 4xx veya 5xx HTTP durum kodlarında hata fırlatır.
+    except requests.exceptions.RequestException as e:
+        print(f"⚠️ Dersleri çekerken ağ hatası ({alan_adi}): {e}", file=sys.stderr)
+        return []
+
     resp.encoding = resp.apparent_encoding
     soup = BeautifulSoup(resp.text, "html.parser")
 
@@ -118,4 +133,5 @@ def main():
     print(f"Benzersiz Toplam Ders: {benzersiz_toplam_ders}")
 
 if __name__ == "__main__":
+    # print("✅ Bu kod çalışıyor")  # Kontrol satırı - server.py tarafından import edildiği için yoruma alındı.
     main()

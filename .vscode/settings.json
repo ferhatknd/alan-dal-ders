@@ -1,0 +1,34 @@
+{
+    "sqltools.useNodeRuntime": true,
+    "sqltools.connections": [
+        {
+            "mysqlOptions": {
+                "authProtocol": "default",
+                "enableSsl": "Disabled"
+            },
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 3306,
+            "driver": "MySQL",
+            "name": "dd",
+            "group": "dd",
+            "database": "drcengiz_db",
+            "username": "drcengiz_usr"
+        },
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "database": "'/Volumes/Dropbox2TB/Estherian Dropbox/Ferhat Kondakcı/github/node-yillik-plan/data/database.sqlite'",
+            "name": "node-uyp"
+        }
+    ],
+    "python.testing.unittestArgs": [
+        "-v",
+        "-s",
+        ".",
+        "-p",
+        "*test.py"
+    ],
+    "python.testing.pytestEnabled": false,
+    "python.testing.unittestEnabled": true
+}
