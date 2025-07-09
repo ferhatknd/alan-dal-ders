@@ -1,70 +1,87 @@
-# Getting Started with Create React App
+# MEB Mesleki Eğitim Ders Veri Çekme ve Ayrıştırma Projesi
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Proje Hakkında
 
-## Available Scripts
+Bu proje, Türkiye Cumhuriyeti Millî Eğitim Bakanlığı'na (MEB) bağlı Mesleki ve Teknik Eğitim Genel Müdürlüğü'nün web sitesinden (`meslek.meb.gov.tr`) alan ve ders bilgilerini çekmek, bu verileri bir web arayüzünde göstermek ve derslere ait PDF dosyalarının içeriğini yapısal veriye dönüştürmek için geliştirilmiştir.
 
-In the project directory, you can run:
+Proje üç ana bileşenden oluşmaktadır:
 
-### `npm start`
+1.  **Veri Çekici ve API (`server.py` & `alanlar_ve_dersler3.py`):** MEB'in web sitesinden tüm alanları, sınıfları ve bu alanlara ait dersleri (isim, PDF linki vb.) kazıyan Python tabanlı bir web scraper ve bu verileri sunan bir Flask API'sidir.
+2.  **Web Arayüzü (React):** Flask API'sinden gelen verileri listeleyen, aranabilir ve filtrelenebilir bir şekilde kullanıcıya sunan modern bir web arayüzüdür.
+3.  **PDF Ayrıştırıcı (`dbf_parser_final.py`):** İndirilen ders bilgi formu (DBF) PDF'lerini işleyerek içerisindeki ders adı, kazanımlar, üniteler, konular gibi detaylı bilgileri çıkaran ve bir SQLite veritabanına aktarılmak üzere SQL komutları üreten bir komut satırı aracıdır.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Teknoloji Yığını
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+-   **Backend:** Python, Flask, Requests, BeautifulSoup4
+-   **Frontend:** React, JavaScript, CSS
+-   **PDF Parser:** Python, pdfplumber
 
-### `npm test`
+## Kurulum ve Çalıştırma
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Gereksinimler
 
-### `npm run build`
+-   Python 3.x
+-   Node.js ve npm
+-   `pip` (Python paket yöneticisi)
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### 1. Backend (Flask API) Kurulumu
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Backend, veri çekme işlemini yönetir ve frontend'e veri sağlar.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```bash
+# 1. Python için bir sanal ortam oluşturun (önerilir)
+python -m venv venv
+source venv/bin/activate  # macOS/Linux için
+# venv\Scripts\activate    # Windows için
 
-### `npm run eject`
+# 2. Gerekli Python kütüphanelerini yükleyin
+pip install Flask requests beautifulsoup4
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+# 3. Flask sunucusunu başlatın
+# Sunucu varsayılan olarak http://localhost:5001 adresinde çalışacaktır.
+python server.py
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Sunucu çalıştığında, frontend uygulaması veri çekme ve önbelleğe alınmış verileri okuma işlemlerini bu sunucu üzerinden yapacaktır.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### 2. Frontend (React Arayüzü) Kurulumu
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+Frontend, kullanıcıların verileri görmesini ve arama yapmasını sağlar.
 
-## Learn More
+```bash
+# 1. Gerekli Node.js paketlerini yükleyin
+npm install
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+# 2. React geliştirme sunucusunu başlatın
+# Uygulama varsayılan olarak http://localhost:3000 adresinde açılacaktır.
+npm start
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Tarayıcınızda `http://localhost:3000` adresini açtığınızda, "Verileri Çek" butonuna tıklayarak veri kazıma işlemini başlatabilirsiniz. İşlem tamamlandığında veriler ekranda listelenecektir.
 
-### Code Splitting
+### 3. PDF Ayrıştırıcı Kullanımı
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+Bu araç, web arayüzü aracılığıyla linklerini elde ettiğiniz PDF dosyalarını indirip bir klasöre koyduktan sonra kullanılır. PDF'lerin içindeki detaylı müfredat bilgilerini ayıklayıp bir `.sql` dosyası oluşturur.
 
-### Analyzing the Bundle Size
+```bash
+# 1. PDF ayrıştırıcı için gerekli kütüphaneyi yükleyin
+pip install pdfplumber
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+# 2. Aracı çalıştırma
+# PDF'lerinizin bulunduğu dizini ve çıktı dosyasının adını belirtin.
+python dbf_parser_final.py ./indirilen_pdfler -o cikti.sql
+```
 
-### Making a Progressive Web App
+Bu komut, `indirilen_pdfler` klasöründeki tüm PDF'leri işleyecek ve veritabanı şeması ile birlikte `INSERT` komutlarını içeren `cikti.sql` dosyasını oluşturacaktır.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+## Veri Akışı
 
-### Advanced Configuration
+1.  Kullanıcı, React arayüzündeki butona tıklar.
+2.  Frontend, Flask backend'indeki `/api/scrape-stream` endpoint'ine istek gönderir.
+3.  Backend, `alanlar_ve_dersler3.py` scriptini kullanarak MEB sitesinden verileri çekmeye başlar.
+4.  İlerleme durumu anlık olarak (Server-Sent Events ile) arayüze gönderilir.
+5.  Veri çekme işlemi tamamlandığında, sonuçlar `data/scraped_data.json` dosyasına önbelleklenir.
+6.  Arayüz, gelen verileri işleyerek kullanıcıya sunar.
+7.  (Manuel Adım) Kullanıcı, arayüzdeki linkleri kullanarak istediği derslerin PDF'lerini indirir.
+8.  (Manuel Adım) `dbf_parser_final.py` aracı ile bu PDF'ler işlenerek veritabanı için SQL dosyası oluşturulur.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
