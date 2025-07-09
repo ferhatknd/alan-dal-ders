@@ -2,6 +2,13 @@
   "name": "alan-dal-ders",
   "version": "0.1.0",
   "private": true,
+  "proxy": "http://localhost:5000",
+  "description": "A React application for learning purposes.",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ferhatknd/alan-dal-ders.git"
+  },
   "dependencies": {
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
