@@ -1,4 +1,4 @@
-from flask import Flask, Response
+from flask import Flask, Response, jsonify
 import json
 import os
 
@@ -10,29 +10,38 @@ app = Flask(__name__)
 # Önbellek dosyasının yolu
 CACHE_FILE = "data/scraped_data.json"
 
+@app.route('/api/get-cached-data')
+def get_cached_data():
+    """
+    Önbellekteki JSON dosyasını okur ve içeriğini döndürür.
+    Dosya yoksa boş bir nesne döndürür.
+    """
+    if os.path.exists(CACHE_FILE):
+        try:
+            with open(CACHE_FILE, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            return jsonify(data)
+        except (IOError, json.JSONDecodeError) as e:
+            print(f"HATA: Önbellek dosyası okunamadı: {e}")
+            return jsonify({"error": "Cache file is corrupted or unreadable"}), 500
+    else:
+        # Dosya yoksa, istemcinin hata almaması için boş bir nesne döndür
+        return jsonify({})
+
 @app.route('/api/scrape-stream')
 def scrape_stream():
     """
-    Veri çekme işlemini başlatır ve ilerlemeyi Server-Sent Events (SSE)
-    olarak tarayıcıya stream eder. Eğer veri önbellekte varsa, oradan okur.
+    Veri çekme işlemini başlatır, ilerlemeyi SSE olarak stream eder
+    ve sonuçları önbellek dosyasına kaydeder/günceller.
     """
     def generate():
-        # Önbellek dosyasını kontrol et
-        if os.path.exists(CACHE_FILE):
-            yield f"data: {json.dumps({'type': 'progress', 'message': 'Veriler önbellekten okunuyor...'})}\n\n"
-            with open(CACHE_FILE, 'r', encoding='utf-8') as f:
-                cached_data = json.load(f)
-            # Önbellekteki veriyi 'done' olayı olarak gönder
-            yield f"data: {json.dumps({'type': 'done', 'data': cached_data})}\n\n"
-            return # Fonksiyonu sonlandır
-
-        # Önbellek yoksa, veriyi web'den çek
+        # Bu endpoint her zaman web'den veri çeker.
         final_data = None
         for event in scrape_data():
             # Eğer 'done' tipinde bir olay gelirse, içindeki veriyi daha sonra kaydetmek üzere sakla
             if event.get("type") == "done":
                 final_data = event.get("data")
-            
+
             # Her olayı anında istemciye stream et
             yield f"data: {json.dumps(event)}\n\n"
 
@@ -43,10 +52,10 @@ def scrape_stream():
                 os.makedirs(os.path.dirname(CACHE_FILE), exist_ok=True)
                 with open(CACHE_FILE, 'w', encoding='utf-8') as f:
                     json.dump(final_data, f, ensure_ascii=False, indent=2)
-                print(f"Veri başarıyla {CACHE_FILE} dosyasına önbelleklendi.")
+                print(f"Veri başarıyla {CACHE_FILE} dosyasına kaydedildi/güncellendi.")
             except IOError as e:
                 print(f"HATA: Önbellek dosyası yazılamadı: {e}")
-    
+
     # Tarayıcının bunun bir event stream olduğunu anlaması için mimetype önemlidir.
     return Response(generate(), mimetype='text/event-stream')
 
