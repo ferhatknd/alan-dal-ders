@@ -1,19 +1,43 @@
 import React, { useState } from 'react';
-import data from './data/dersler.json';
-import TreeView from './TreeView';
-import SelectedInfo from './SelectedInfo';
+import './App.css';
+import DataDisplay from './DataDisplay';
 
 function App() {
-  const [selectedDers, setSelectedDers] = useState(null);
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleSelectDers = (ders) => {
-    setSelectedDers(ders);
+  const handleScrape = async () => {
+    setLoading(true);
+    setData(null);
+    setError(null);
+    try {
+      const response = await fetch('/api/scrape');
+      if (!response.ok) {
+        throw new Error(`HTTP hatası! Durum: ${response.status}`);
+      }
+      const result = await response.json();
+      setData(result);
+    } catch (e) {
+      console.error("Veri çekme hatası:", e);
+      setError("Veriler çekilirken bir hata oluştu. Lütfen backend sunucusunun çalıştığından emin olun.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="App">
-      <TreeView data={data} onSelect={handleSelectDers} />
-      {selectedDers && <SelectedInfo ders={selectedDers} />}
+      <header className="App-header">
+        <h1>MEB Alan/Ders Veri Çekme Aracı</h1>
+        <button onClick={handleScrape} disabled={loading}>
+          {loading ? 'Veriler Çekiliyor...' : 'Verileri Çek'}
+        </button>
+      </header>
+      <main>
+        {error && <p className="error">{error}</p>}
+        {data && <DataDisplay scrapedData={data} />}
+      </main>
     </div>
   );
 }

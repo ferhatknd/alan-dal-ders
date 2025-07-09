@@ -54,12 +54,10 @@ def get_dersler_for_alan(alan_id, alan_adi, sinif_kodu="9"):
         print(f"⚠️ Ders bulunamadı: {alan_adi} ({alan_id})", file=sys.stderr)
     return dersler
 
-def main():
+def scrape_data():
     siniflar = ["9","10","11","12"]
-    # Yapıyı değiştiriyoruz: alan_id -> {"isim": ..., "dersler": {link: {"isim":..., "siniflar": set()}}}
     tum_veri = {}
-    # Ortak alanları bulmak için link_index'i kullanıyoruz
-    link_index = {}  # ders linki → set of alan_id's
+    link_index = {}
 
     print("Script başladı...")
 
@@ -68,7 +66,6 @@ def main():
         for alan in get_alanlar(sinif):
             alan_id = alan["id"]
             ders_listesi = get_dersler_for_alan(alan_id, alan["isim"], sinif)
-            # Alan için ana girişi oluştur/getir
             alan_entry = tum_veri.setdefault(alan_id, {"isim": alan["isim"], "dersler": {}})
             for d in ders_listesi:
                 ders_link = d["link"]
@@ -83,6 +80,19 @@ def main():
                 # Bu dersin (linkin) hangi alanlarda olduğunu takip et
                 link_index.setdefault(ders_link, set()).add(alan_id)
 
+    # JSON uyumluluğu için set'leri listeye çevir
+    for alan_id in tum_veri:
+        for ders_link in tum_veri[alan_id]["dersler"]:
+            tum_veri[alan_id]["dersler"][ders_link]["siniflar"] = sorted(list(tum_veri[alan_id]["dersler"][ders_link]["siniflar"]), key=int)
+    for link in link_index:
+        link_index[link] = sorted(list(link_index[link]))
+
+    return {"alanlar": tum_veri, "ortak_alan_indeksi": link_index}
+
+def main():
+    scraped_data = scrape_data()
+    tum_veri = scraped_data["alanlar"]
+    link_index = scraped_data["ortak_alan_indeksi"]
     # 🖨️ Terminal çıktısı
     for alan_id, alan_data in sorted(tum_veri.items(), key=lambda item: item[1]['isim']):
         print(f"\n{alan_data['isim']} ({alan_id})")
@@ -90,11 +100,10 @@ def main():
         sorted_dersler = sorted(alan_data["dersler"].items(), key=lambda item: item[1]["isim"])
         for ders_link, d in sorted_dersler:
             # Sınıfları birleştir: {"11", "12"} -> "11-12"
-            siniflar_sorted = sorted(list(d['siniflar']), key=int)
-            sinif_str = "-".join(siniflar_sorted)
+            sinif_str = "-".join(d['siniflar'])
             sinif_display_str = f"({sinif_str}. Sınıf)"
             # Ortak alan bilgisini oluştur
-            ortak_alanlar = sorted(list(link_index.get(ders_link, set())))
+            ortak_alanlar = link_index.get(ders_link, [])
             ortak_str = ""
             if len(ortak_alanlar) > 1:
                 ortak_str = f" ({len(ortak_alanlar)} ortak alan)"
