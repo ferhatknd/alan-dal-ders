@@ -8,6 +8,8 @@ app = Flask(__name__)
 # Geliştirme sırasında proxy (setupProxy.js) kullanıldığı için CORS'a gerek yoktur.
 # Proxy, tarayıcının farklı bir origin'e (localhost:5000) istekte bulunduğunu görmesini engeller.
 
+import json
+
 @app.route('/api/scrape')
 def get_scraped_data():
     """Veri çekme işlemini başlatan ve sonucu JSON olarak döndüren API endpoint'i."""
@@ -15,6 +17,14 @@ def get_scraped_data():
         print("Backend: Scraping işlemi başlatıldı...", file=sys.stderr)
         data = scrape_data()
         print("Backend: Scraping işlemi tamamlandı.", file=sys.stderr)
+        
+        # Büyük veri yazdırma işlemi sunucuyu çökerttiği için kaldırıldı.
+        # Sadece işlemin başarılı olduğunu belirten bir log bırakalım.
+        if data and "alanlar" in data:
+            print(f"Backend: {len(data['alanlar'])} adet alan başarıyla çekildi.", file=sys.stderr)
+        else:
+            print("Backend: Veri çekildi ancak format beklenildiği gibi değil veya boş.", file=sys.stderr)
+
         return jsonify(data)
     except Exception as e:
         print(f"Backend Hata: {e}", file=sys.stderr)

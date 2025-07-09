@@ -5,17 +5,21 @@ import sys
 BASE_OPTIONS_URL = "https://meslek.meb.gov.tr/cercevelistele.aspx"
 BASE_DERS_ALT_URL = "https://meslek.meb.gov.tr/dmgoster.aspx"
 
-# Sunucu tarafından engellenmemek için bir tarayıcı gibi davranan User-Agent başlığı ekleyelim.
+# Sunucu tarafından engellenmemek için bir tarayıcı gibi davranan başlıklar ekleyelim.
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+    "Referer": "https://meslek.meb.gov.tr/"
 }
 
 def get_alanlar(sinif_kodu="9"):
+    params = {"sinif_kodu": sinif_kodu, "kurum_id": "1"}
     try:
-        resp = requests.get(BASE_OPTIONS_URL, params={"sinif_kodu": sinif_kodu, "kurum_id":"1"}, headers=HEADERS)
+        # Timeout ve daha iyi hata ayıklama için URL'yi yazdırma
+        print(f"Alanlar isteniyor: {BASE_OPTIONS_URL} with params {params}", file=sys.stderr)
+        resp = requests.get(BASE_OPTIONS_URL, params=params, headers=HEADERS, timeout=10)
         resp.raise_for_status()  # 4xx veya 5xx HTTP durum kodlarında hata fırlatır.
     except requests.exceptions.RequestException as e:
-        print(f"⚠️ Alanları çekerken ağ hatası (sınıf {sinif_kodu}): {e}", file=sys.stderr)
+        print(f"⚠️ Alanları çekerken ağ hatası (URL: {e.request.url}): {e}", file=sys.stderr)
         return []
 
     resp.encoding = resp.apparent_encoding
@@ -33,11 +37,14 @@ def get_alanlar(sinif_kodu="9"):
     return alanlar
 
 def get_dersler_for_alan(alan_id, alan_adi, sinif_kodu="9"):
+    params = {"sinif_kodu": sinif_kodu, "kurum_id": "1", "alan_id": alan_id}
     try:
-        resp = requests.get(BASE_DERS_ALT_URL, params={"sinif_kodu": sinif_kodu, "kurum_id":"1", "alan_id":alan_id}, headers=HEADERS)
+        # Timeout ve daha iyi hata ayıklama için URL'yi yazdırma
+        print(f"Dersler isteniyor: {BASE_DERS_ALT_URL} with params {params}", file=sys.stderr)
+        resp = requests.get(BASE_DERS_ALT_URL, params=params, headers=HEADERS, timeout=10)
         resp.raise_for_status() # 4xx veya 5xx HTTP durum kodlarında hata fırlatır.
     except requests.exceptions.RequestException as e:
-        print(f"⚠️ Dersleri çekerken ağ hatası ({alan_adi}): {e}", file=sys.stderr)
+        print(f"⚠️ Dersleri çekerken ağ hatası ({alan_adi}, URL: {e.request.url}): {e}", file=sys.stderr)
         return []
 
     resp.encoding = resp.apparent_encoding

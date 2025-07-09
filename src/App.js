@@ -35,6 +35,7 @@ function App() {
         </button>
       </header>
       <main>
+        {loading && <div className="spinner"></div>}
         {error && <p className="error">{error}</p>}
         {data && <DataDisplay scrapedData={data} />}
       </main>
