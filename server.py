@@ -1,13 +1,12 @@
 from flask import Flask, jsonify
-from flask_cors import CORS
 import sys
 
 # alanlar_ve_dersler3.py dosyasındaki scrape_data fonksiyonunu import et
 from alanlar_ve_dersler3 import scrape_data
 
 app = Flask(__name__)
-# React uygulamasından (localhost:3000) gelen isteklere izin ver
-CORS(app)
+# Geliştirme sırasında proxy (setupProxy.js) kullanıldığı için CORS'a gerek yoktur.
+# Proxy, tarayıcının farklı bir origin'e (localhost:5000) istekte bulunduğunu görmesini engeller.
 
 @app.route('/api/scrape')
 def get_scraped_data():
