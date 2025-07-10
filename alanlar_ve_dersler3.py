@@ -3,6 +3,8 @@ from bs4 import BeautifulSoup
 import sys
 import time
 import unicodedata
+import os
+import json
 
 def slugify(text):
     """
@@ -84,11 +86,26 @@ def get_dersler_for_alan(alan_id, alan_adi, sinif_kodu="9"):
 
 def scrape_data():
     """Verileri çeker ve ilerlemeyi yield ile anlık olarak bildirir."""
-    siniflar = ["9","10","11","12"]
+    siniflar = ["9", "10", "11", "12"]
     tum_veri = {}
     link_index = {}
+    
+    CACHE_FILE = "data/scraped_data.json"
 
-    yield {"type": "progress", "message": "Veri çekme işlemi başlatılıyor..."}
+    # Adım 1: Mevcut önbelleği yükle
+    if os.path.exists(CACHE_FILE):
+        try:
+            with open(CACHE_FILE, 'r', encoding='utf-8') as f:
+                cached_data = json.load(f)
+                tum_veri = cached_data.get("alanlar", {})
+                link_index = cached_data.get("ortak_alan_indeksi", {})
+                yield {"type": "progress", "message": "Mevcut önbellek yüklendi. Eksik veriler tamamlanacak..."}
+        except (IOError, json.JSONDecodeError):
+            yield {"type": "warning", "message": "Önbellek dosyası bozuk, sıfırdan başlanıyor."}
+            tum_veri = {}
+            link_index = {}
+    else:
+        yield {"type": "progress", "message": "Önbellek bulunamadı, veri çekme işlemi başlatılıyor..."}
 
     # Adım 1: Toplam iş yükünü hesapla (tüm alanların sayısını bul)
     yield {"type": "progress", "message": "Toplam iş yükü hesaplanıyor..."}
@@ -125,6 +142,20 @@ def scrape_data():
 
             alan_id = alan["id"]
             alan_adi = alan["isim"]
+            
+            # Alanın zaten işlenip işlenmediğini kontrol et (dersler ve dbf linki)
+            alan_entry = tum_veri.get(alan_id, {})
+            dersler_dolu = alan_entry.get("dersler") and any(d.get("siniflar") and sinif in d["siniflar"] for d in alan_entry["dersler"].values())
+            dbf_link_var = sinif in alan_entry.get("dbf_links", {})
+
+            if dersler_dolu and dbf_link_var:
+                yield {
+                    "type": "progress",
+                    "message": f"[{sinif}. Sınıf] Alan zaten güncel: {alan_adi} ({processed_alan_count}/{total_alan_count})",
+                    "estimation": estimation_str
+                }
+                continue # Bu alanı atla
+
             yield {
                 "type": "progress",
                 "message": f"[{sinif}. Sınıf] Alan işleniyor: {alan_adi} ({processed_alan_count}/{total_alan_count})",
@@ -134,24 +165,27 @@ def scrape_data():
             # Alan verisini ve DBF linklerini hazırla
             alan_entry = tum_veri.setdefault(alan_id, {"isim": alan_adi, "dersler": {}, "dbf_links": {}})
             
-            # DBF linkini oluştur ve ekle
-            alan_slug = slugify(alan_adi)
-            dbf_link = f"https://meslek.meb.gov.tr/upload/dbf{sinif}/{alan_slug}.rar"
-            alan_entry["dbf_links"][sinif] = dbf_link
+            # DBF linkini oluştur ve ekle (eğer yoksa)
+            if not dbf_link_var:
+                alan_slug = slugify(alan_adi)
+                dbf_link = f"https://meslek.meb.gov.tr/upload/dbf{sinif}/{alan_slug}.rar"
+                alan_entry["dbf_links"][sinif] = dbf_link
 
-            ders_listesi = get_dersler_for_alan(alan_id, alan["isim"], sinif)
-            for d in ders_listesi:
-                ders_link = d["link"]
-                # Sınıf numarasını "11.Sınıf" metninden çıkar
-                sinif_num = d["sinif"].replace(".Sınıf", "").strip()
-                # Ders linkini anahtar olarak kullanarak dersleri grupla
-                ders_entry = alan_entry["dersler"].setdefault(ders_link, {
-                    "isim": d["isim"],
-                    "siniflar": set()
-                })
-                ders_entry["siniflar"].add(sinif_num)
-                # Bu dersin (linkin) hangi alanlarda olduğunu takip et
-                link_index.setdefault(ders_link, set()).add(alan_id)
+            # Dersleri sadece gerekliyse çek
+            if not dersler_dolu:
+                ders_listesi = get_dersler_for_alan(alan_id, alan["isim"], sinif)
+                for d in ders_listesi:
+                    ders_link = d["link"]
+                    # Sınıf numarasını "11.Sınıf" metninden çıkar
+                    sinif_num = d["sinif"].replace(".Sınıf", "").strip()
+                    # Ders linkini anahtar olarak kullanarak dersleri grupla
+                    ders_entry = alan_entry["dersler"].setdefault(ders_link, {
+                        "isim": d["isim"],
+                        "siniflar": set()
+                    })
+                    ders_entry["siniflar"].add(sinif_num)
+                    # Bu dersin (linkin) hangi alanlarda olduğunu takip et
+                    link_index.setdefault(ders_link, set()).add(alan_id)
 
     # JSON uyumluluğu için set'leri listeye çevir
     for alan_id in tum_veri:
@@ -162,6 +196,16 @@ def scrape_data():
 
     yield {"type": "progress", "message": "İşlem tamamlandı. Veriler birleştiriliyor..."}
     final_data = {"alanlar": tum_veri, "ortak_alan_indeksi": link_index}
+    
+    # Veriyi dosyaya kaydet
+    try:
+        os.makedirs(os.path.dirname(CACHE_FILE), exist_ok=True)
+        with open(CACHE_FILE, 'w', encoding='utf-8') as f:
+            json.dump(final_data, f, ensure_ascii=False, indent=2)
+        yield {"type": "progress", "message": f"Veri başarıyla {CACHE_FILE} dosyasına kaydedildi/güncellendi."}
+    except IOError as e:
+        yield {"type": "error", "message": f"HATA: Önbellek dosyası yazılamadı: {e}"}
+
     # Son olarak, tüm veriyi 'done' tipiyle gönder
     yield {"type": "done", "data": final_data}
 

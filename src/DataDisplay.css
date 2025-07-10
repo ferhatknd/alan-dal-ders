@@ -1,87 +1,76 @@
 .data-container {
   text-align: left;
-  max-width: 900px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
 }
 
-.alan-block {
-  margin-bottom: 2em;
-  border: 1px solid #ddd;
+.alan-baslik {
+  background-color: #2f333a;
   padding: 15px;
-  border-radius: 8px;
-  background-color: #f9f9f9;
+  border-radius: 5px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  font-size: 1.1em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
-.alan-block h3 {
-  margin-top: 0;
-  color: #333;
-  border-bottom: 2px solid #61dafb;
-  padding-bottom: 10px;
-  margin-bottom: 15px;
+.alan-baslik .separator {
+  color: #61dafb;
 }
 
-.alan-block ul {
-  list-style-type: none;
-  padding-left: 0;
+.ders-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
 }
 
-.alan-block li {
-  padding: 8px 0;
-  border-bottom: 1px solid #eee;
-  line-height: 1.5;
+.ders-table th, .ders-table td {
+  border: 1px solid #444;
+  padding: 12px;
+  text-align: left;
 }
 
-.alan-block li:last-child {
-  border-bottom: none;
+.ders-table th {
+  background-color: #3a3f47;
+  color: #61dafb;
 }
 
-.sinif {
-  color: #555;
-  font-style: italic;
-  margin-left: 8px;
-}
 
 .ortak-alan {
   color: #e74c3c;
   font-weight: bold;
   margin-left: 8px;
-}
-
-.ders-link {
-  margin-left: 10px;
   font-size: 0.9em;
+}
+
+.ders-link, .dbf-link {
+  margin-right: 5px;
   text-decoration: none;
-  color: #3498db;
+  color: #61dafb;
+  font-weight: bold;
+  padding: 3px 8px;
+  border: 1px solid #61dafb;
+  border-radius: 4px;
+  transition: background-color 0.2s, color 0.2s;
 }
 
-.ders-link:hover {
-  text-decoration: underline;
+.ders-link:hover, .dbf-link:hover {
+  background-color: #61dafb;
+  color: #20232a;
 }
 
-.dbf-section {
-  margin-top: 15px;
-  margin-bottom: 15px;
-  background-color: #f0f8ff;
-  padding: 10px;
-  border-radius: 5px;
-  border: 1px solid #cce7ff;
-}
-
-.dbf-section h4 {
-  margin-top: 0;
-  margin-bottom: 10px;
-  color: #0056b3;
-}
-
-.dbf-section ul {
-  padding-left: 20px;
-  margin-bottom: 0;
-}
-
-.dbf-section li {
+.expand-btn {
+  background: none;
   border: none;
-  padding: 4px 0;
+  color: #61dafb;
+  cursor: pointer;
+  font-weight: bold;
+  padding: 0 5px;
+  margin-left: 5px;
 }
 
 /* ... mevcut stillerin altına ... */

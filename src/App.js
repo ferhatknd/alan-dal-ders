@@ -40,7 +40,8 @@ function App() {
     setEstimation(null); // Yeni işlemde tahmini sıfırla
 
     // SSE için EventSource kullanıyoruz
-    const eventSource = new EventSource('/api/scrape-stream');
+    // Proxy bazen EventSource ile sorun çıkarabildiği için tam URL'i kullanmak daha güvenilirdir.
+    const eventSource = new EventSource('http://localhost:5001/api/scrape-stream');
 
     // Sunucudan her yeni mesaj geldiğinde bu fonksiyon çalışır
     eventSource.onmessage = (event) => {

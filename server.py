@@ -35,26 +35,19 @@ def scrape_stream():
     ve sonuçları önbellek dosyasına kaydeder/günceller.
     """
     def generate():
-        # Bu endpoint her zaman web'den veri çeker.
-        final_data = None
-        for event in scrape_data():
-            # Eğer 'done' tipinde bir olay gelirse, içindeki veriyi daha sonra kaydetmek üzere sakla
-            if event.get("type") == "done":
-                final_data = event.get("data")
-
-            # Her olayı anında istemciye stream et
-            yield f"data: {json.dumps(event)}\n\n"
-
-        # İşlem bittikten ve son veri alındıktan sonra dosyaya kaydet
-        if final_data:
-            try:
-                # 'data' dizininin var olduğundan emin ol
-                os.makedirs(os.path.dirname(CACHE_FILE), exist_ok=True)
-                with open(CACHE_FILE, 'w', encoding='utf-8') as f:
-                    json.dump(final_data, f, ensure_ascii=False, indent=2)
-                print(f"Veri başarıyla {CACHE_FILE} dosyasına kaydedildi/güncellendi.")
-            except IOError as e:
-                print(f"HATA: Önbellek dosyası yazılamadı: {e}")
+        try:
+            # scrape_data fonksiyonu artık veriyi kendisi yönetiyor ve kaydediyor.
+            # Bu fonksiyon sadece olayları stream etmekle sorumlu.
+            for event in scrape_data():
+                yield f"data: {json.dumps(event)}\n\n"
+        except Exception as e:
+            # Hata durumunda istemciye bir hata olayı gönder
+            error_event = {
+                "type": "error",
+                "message": f"Sunucu tarafında bir hata oluştu: {str(e)}"
+            }
+            yield f"data: {json.dumps(error_event)}\n\n"
+            print(f"HATA: /api/scrape-stream - {e}")
 
     # Tarayıcının bunun bir event stream olduğunu anlaması için mimetype önemlidir.
     return Response(generate(), mimetype='text/event-stream')
