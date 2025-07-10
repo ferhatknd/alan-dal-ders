@@ -5,6 +5,9 @@ import time
 import unicodedata
 import os
 import json
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import pdfplumber
+import io
 
 def slugify(text):
     """
@@ -18,6 +21,7 @@ def slugify(text):
 
 BASE_OPTIONS_URL = "https://meslek.meb.gov.tr/cercevelistele.aspx"
 BASE_DERS_ALT_URL = "https://meslek.meb.gov.tr/dmgoster.aspx"
+BASE_DBF_URL = "https://meslek.meb.gov.tr/dbflistele.aspx"
 
 # Sunucu tarafından engellenmemek için bir tarayıcı gibi davranan başlıklar ekleyelim.
 HEADERS = {
@@ -84,6 +88,158 @@ def get_dersler_for_alan(alan_id, alan_adi, sinif_kodu="9"):
         pass
     return dersler
 
+def get_dbf_data_for_class(sinif_kodu):
+    """Belirtilen sınıf koduna ait DBF verilerini çeker."""
+    params = {"sinif_kodu": sinif_kodu, "kurum_id": "1"}
+    class_dbf_data = {}
+    try:
+        response = requests.get(BASE_DBF_URL, params=params, headers=HEADERS, timeout=15)
+        response.raise_for_status()
+        response.encoding = response.apparent_encoding
+        soup = BeautifulSoup(response.text, "html.parser")
+
+        alan_columns = soup.find_all('div', class_='col-lg-3')
+        for column in alan_columns:
+            ul_tag = column.find('ul', class_='list-group')
+            if not ul_tag: continue
+
+            link_tag = ul_tag.find_parent('a', href=True)
+            if not link_tag or not (link_tag['href'].endswith('.rar') or link_tag['href'].endswith('.zip')):
+                continue
+
+            dbf_link = requests.compat.urljoin(response.url, link_tag['href'])
+            
+            alan_adi = ""
+            tarih = ""
+
+            b_tag = ul_tag.find('b')
+            if b_tag:
+                alan_adi = b_tag.get_text(strip=True)
+
+            for item in ul_tag.find_all('li'):
+                if item.find('i', class_='fa-calendar'):
+                    tarih = item.get_text(strip=True)
+                    break
+
+            if alan_adi and dbf_link:
+                class_dbf_data[alan_adi] = {
+                    "link": dbf_link,
+                    "guncelleme_tarihi": tarih
+                }
+    except requests.RequestException as e:
+        print(f"DBF Hata: {sinif_kodu}. sınıf sayfası çekilemedi: {e}")
+    return sinif_kodu, class_dbf_data
+
+def get_all_dbf_data(siniflar):
+    """Tüm sınıflar için DBF verilerini eşzamanlı olarak çeker."""
+    all_dbf_data = {}
+    with ThreadPoolExecutor(max_workers=len(siniflar)) as executor:
+        future_to_sinif = {executor.submit(get_dbf_data_for_class, sinif): sinif for sinif in siniflar}
+        for future in as_completed(future_to_sinif):
+            try:
+                sinif, data = future.result()
+                all_dbf_data[sinif] = data
+            except Exception as exc:
+                print(f"DBF verisi işlenirken hata: {exc}")
+    return all_dbf_data
+
+def get_cop_data_for_class(sinif_kodu):
+    """Belirtilen sınıf koduna ait Çerçeve Öğretim Programı (ÇÖP) verilerini çeker."""
+    params = {"sinif_kodu": sinif_kodu, "kurum_id": "1"}
+    class_cop_data = {}
+    try:
+        # ÇÖP sayfası, alan listesiyle aynı URL'i kullanıyor
+        response = requests.get(BASE_OPTIONS_URL, params=params, headers=HEADERS, timeout=15)
+        response.raise_for_status()
+        response.encoding = response.apparent_encoding
+        soup = BeautifulSoup(response.text, "html.parser")
+
+        alan_columns = soup.find_all('div', class_='col-lg-3')
+        for column in alan_columns:
+            link_tag = column.find('a', href=True)
+            # Linkin bir ÇÖP PDF'i olduğundan emin olalım
+            if not link_tag or not link_tag['href'].endswith('.pdf') or 'upload/cop' not in link_tag['href']:
+                continue
+
+            cop_link = requests.compat.urljoin(response.url, link_tag['href'])
+            
+            ul_tag = link_tag.find('ul', class_='list-group')
+            if not ul_tag: continue
+
+            alan_adi = ""
+            guncelleme_yili = ""
+
+            b_tag = ul_tag.find('b')
+            if b_tag:
+                alan_adi = b_tag.get_text(strip=True)
+
+            for item in ul_tag.find_all('li'):
+                if item.find('i', class_='fa-calendar'):
+                    tarih_str = item.get_text(strip=True)
+                    guncelleme_yili = tarih_str.split('-')[0].strip() if '-' in tarih_str else tarih_str.strip()
+                    break
+
+            if alan_adi and cop_link:
+                class_cop_data[alan_adi] = {
+                    "link": cop_link,
+                    "guncelleme_yili": guncelleme_yili
+                }
+    except requests.RequestException as e:
+        print(f"ÇÖP Hata: {sinif_kodu}. sınıf sayfası çekilemedi: {e}", file=sys.stderr)
+    return sinif_kodu, class_cop_data
+
+def get_all_cop_data(siniflar):
+    """Tüm sınıflar için ÇÖP verilerini eşzamanlı olarak çeker."""
+    all_cop_data = {}
+    with ThreadPoolExecutor(max_workers=len(siniflar)) as executor:
+        future_to_sinif = {executor.submit(get_cop_data_for_class, sinif): sinif for sinif in siniflar}
+        for future in as_completed(future_to_sinif):
+            try:
+                sinif, data = future.result()
+                all_cop_data[sinif] = data
+            except Exception as exc:
+                print(f"ÇÖP verisi işlenirken hata: {exc}", file=sys.stderr)
+    return all_cop_data
+
+def download_and_parse_pdf(pdf_url):
+    """
+    Bir URL'den PDF'i indirir, içeriğini ayrıştırır ve yapısal bir sözlük döndürür.
+    Bu fonksiyon, README'de bahsedilen detaylı ayrıştırma mantığı için bir başlangıç noktasıdır.
+    """
+    try:
+        response = requests.get(pdf_url, headers=HEADERS, timeout=45, stream=True)
+        response.raise_for_status()
+
+        # Gelen içeriğin PDF olup olmadığını kontrol et
+        content_type = response.headers.get('Content-Type', '').lower()
+        if 'application/pdf' not in content_type:
+            if pdf_url.endswith(('.rar', '.zip')):
+                return {"icerik": f"Bu bir arşiv dosyasıdır ({os.path.basename(pdf_url)}), otomatik ayrıştırma desteklenmiyor."}
+            return {"hata": f"İndirilen dosya bir PDF değil. Tür: {content_type}"}
+
+        # Dosyayı hafızada tutarak işle
+        pdf_file = io.BytesIO(response.content)
+
+        # --- DETAYLI AYRIŞTIRMA MANTIĞI (KAZANIM, ÜNİTE VB.) BURAYA GELECEK ---
+        # Örnek olarak, ilk sayfanın metnini ve toplam sayfa sayısını çekiyoruz.
+        # Bu bölümü kendi karmaşık ayrıştırma mantığınızla genişletebilirsiniz.
+        text_content = ""
+        page_count = 0
+        with pdfplumber.open(pdf_file) as pdf:
+            page_count = len(pdf.pages)
+            if page_count > 0:
+                page = pdf.pages[0]
+                text_content = page.extract_text(x_tolerance=2, y_tolerance=2) or ""
+
+        return {
+            "ozet": text_content[:500].strip() + "..." if text_content else "İçerik okunamadı.",
+            "sayfa_sayisi": page_count
+        }
+    except requests.RequestException as e:
+        return {"hata": f"PDF indirilemedi: {e}"}
+    except Exception as e:
+        return {"hata": f"PDF ayrıştırılırken hata oluştu: {e}"}
+
 def scrape_data():
     """Verileri çeker ve ilerlemeyi yield ile anlık olarak bildirir."""
     siniflar = ["9", "10", "11", "12"]
@@ -107,8 +263,16 @@ def scrape_data():
     else:
         yield {"type": "progress", "message": "Önbellek bulunamadı, veri çekme işlemi başlatılıyor..."}
 
-    # Adım 1: Toplam iş yükünü hesapla (tüm alanların sayısını bul)
-    yield {"type": "progress", "message": "Toplam iş yükü hesaplanıyor..."}
+    # Adım 2: Tüm DBF verilerini en başta çek
+    yield {"type": "progress", "message": "DBF verileri çekiliyor..."}
+    dbf_data = get_all_dbf_data(siniflar)
+    yield {"type": "progress", "message": "DBF verileri çekildi."}
+
+    yield {"type": "progress", "message": "Çerçeve Öğretim Programı (ÇÖP) verileri çekiliyor..."}
+    cop_data = get_all_cop_data(siniflar)
+    yield {"type": "progress", "message": "ÇÖP verileri çekildi. Alanlar işleniyor..."}
+    
+    # Adım 3: Toplam iş yükünü hesapla (tüm alanların sayısını bul)
     all_alanlar_by_sinif = {sinif: get_alanlar(sinif) for sinif in siniflar}
     total_alan_count = sum(len(alan_list) for alan_list in all_alanlar_by_sinif.values())
 
@@ -146,7 +310,7 @@ def scrape_data():
             # Alanın zaten işlenip işlenmediğini kontrol et (dersler ve dbf linki)
             alan_entry = tum_veri.get(alan_id, {})
             dersler_dolu = alan_entry.get("dersler") and any(d.get("siniflar") and sinif in d["siniflar"] for d in alan_entry["dersler"].values())
-            dbf_link_var = sinif in alan_entry.get("dbf_links", {})
+            dbf_link_var = sinif in alan_entry.get("dbf_bilgileri", {})
 
             if dersler_dolu and dbf_link_var:
                 yield {
@@ -162,16 +326,38 @@ def scrape_data():
                 "estimation": estimation_str
             }
             
-            # Alan verisini ve DBF linklerini hazırla
-            alan_entry = tum_veri.setdefault(alan_id, {"isim": alan_adi, "dersler": {}, "dbf_links": {}})
+            # Alan verisini ve DBF linklerini hazırla, eksik anahtarları güvenli bir şekilde ekle
+            alan_entry = tum_veri.setdefault(alan_id, {"isim": alan_adi})
+            alan_entry.setdefault("dersler", {})
+            alan_entry.setdefault("dbf_bilgileri", {})
+            alan_entry.setdefault("cop_bilgileri", {})
             
-            # DBF linkini oluştur ve ekle (eğer yoksa)
-            if not dbf_link_var:
-                alan_slug = slugify(alan_adi)
-                dbf_link = f"https://meslek.meb.gov.tr/upload/dbf{sinif}/{alan_slug}.rar"
-                alan_entry["dbf_links"][sinif] = dbf_link
+            # Kazınan DBF verisini ekle
+            sinif_dbf_data = dbf_data.get(sinif, {})
+            if alan_adi in sinif_dbf_data:
+                dbf_info = sinif_dbf_data[alan_adi]
+                alan_entry["dbf_bilgileri"][sinif] = dbf_info
 
+                # YENİ ADIM: PDF'i indir ve ayrıştır
+                yield {
+                    "type": "progress",
+                    "message": f"  -> DBF indiriliyor/ayrıştırılıyor: {alan_adi} ({sinif}. Sınıf)"
+                }
+                parsed_content = download_and_parse_pdf(dbf_info['link'])
+                # Ayrıştırılan içeriği mevcut bilgiye ekle
+                alan_entry["dbf_bilgileri"][sinif]['ayristirilan_veri'] = parsed_content
+                if "hata" in parsed_content:
+                    yield {"type": "warning", "message": f"  -> UYARI: {alan_adi} DBF ayrıştırılamadı: {parsed_content['hata']}"}
+                else:
+                    yield {"type": "progress", "message": f"  -> DBF başarıyla ayrıştırıldı."}
+            
             # Dersleri sadece gerekliyse çek
+            # YENİ ADIM: Kazınan ÇÖP verisini ekle
+            sinif_cop_data = cop_data.get(sinif, {})
+            if alan_adi in sinif_cop_data:
+                cop_info = sinif_cop_data[alan_adi]
+                alan_entry["cop_bilgileri"][sinif] = cop_info
+            
             if not dersler_dolu:
                 ders_listesi = get_dersler_for_alan(alan_id, alan["isim"], sinif)
                 for d in ders_listesi:
@@ -219,10 +405,11 @@ def main():
         print(f"\n{alan_data['isim']} ({alan_id})")
         
         # DBF Linklerini yazdır
-        if alan_data.get("dbf_links"):
+        if alan_data.get("dbf_bilgileri"):
             print("  Ders Bilgi Formları:")
-            for sinif, link in sorted(alan_data["dbf_links"].items()):
-                print(f"  -> {sinif}. Sınıf: {link}")
+            for sinif, dbf_info in sorted(alan_data["dbf_bilgileri"].items()):
+                tarih_str = f" (Güncelleme: {dbf_info['guncelleme_tarihi']})" if dbf_info.get('guncelleme_tarihi') else ""
+                print(f"  -> {sinif}. Sınıf: {dbf_info['link']}{tarih_str}")
 
         # Dersleri isme göre sırala
         sorted_dersler = sorted(alan_data["dersler"].items(), key=lambda item: item[1]["isim"])

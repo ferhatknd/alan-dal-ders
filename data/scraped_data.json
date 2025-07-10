@@ -166,6 +166,42 @@
             "12"
           ]
         }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/adalet.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/adalet.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/adalet.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/adalet.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/adalet.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (adalet.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/adalet.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (adalet.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/adalet_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (adalet_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/adalet_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (adalet_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        }
       }
     },
     "02": {
@@ -401,11 +437,84 @@
             "12"
           ]
         }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/ailevetuketicihizmetleri.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/ailevetuketicihizmetleri.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/ailevetuketicihizmetleri.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/ailevetuketicihizmetleri.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/aile.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (aile.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/aile.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (aile.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/aile_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (aile_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/aile_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (aile_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        }
       }
     },
     "03": {
       "isim": "Ayakkabı ve Saraciye Teknolojisi",
-      "dersler": {}
+      "dersler": {},
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/ayakkabıvesaraciyeteknolojisi.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/ayakkabıvesaraciyeteknolojisi.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/ayakkabıvesaraciyeteknolojisi.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/ayakkabıvesaraciyeteknolojisi.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/ayakkabipro_9.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (ayakkabipro_9.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/ayakkabipro_10.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (ayakkabipro_10.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/protokol_ayakkabi_2021_10.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (protokol_ayakkabi_2021_10.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/protokol_ayakkabi_2021_10.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (protokol_ayakkabi_2021_10.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        }
+      },
+      "cop_bilgileri": {}
     },
     "04": {
       "isim": "Bilişim Teknolojileri",
@@ -601,6 +710,42 @@
             "12"
           ]
         }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/bilisimteknolojileri.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/bilisimteknolojileri.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/bilisimteknolojileri.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/bilisimteknolojileri.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/bilisim.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (bilisim.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/bilisim.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (bilisim.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/bilisim_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (bilisim_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/bilisim_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (bilisim_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        }
       }
     },
     "05": {
@@ -720,6 +865,42 @@
           "siniflar": [
             "11"
           ]
+        }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/biyomedikalcihazteknolojileri.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/biyomedikalcihazteknolojileri.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/biyomedikalcihazteknolojileri.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/biyomedikalcihazteknolojileri.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/biyomedikal.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (biyomedikal.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/biyomedikal.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (biyomedikal.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/biyomedikal_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (biyomedikal_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/biyomedikal_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (biyomedikal_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
         }
       }
     },
@@ -895,6 +1076,42 @@
             "12"
           ]
         }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/buroyonetimiveyoneticiasistanlıgı.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/buroyonetimiveyoneticiasistanlıgı.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/buroyonetimiveyoneticiasistanlıgı.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/buroyonetimiveyoneticiasistanlıgı.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/buro.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (buro.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/buro.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (buro.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/buro_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (buro_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/buro_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (buro_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        }
       }
     },
     "07": {
@@ -1024,6 +1241,42 @@
             "11"
           ]
         }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/cocukgelisimiveegitimi.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/cocukgelisimiveegitimi.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/cocukgelisimiveegitimi.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/cocukgelisimiveegitimi.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/cocukgelisimi.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (cocukgelisimi.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/cocukgelisimi.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (cocukgelisimi.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/cocuk_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (cocuk_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/cocuk_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (cocuk_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        }
       }
     },
     "08": {
@@ -1152,6 +1405,42 @@
           "siniflar": [
             "11"
           ]
+        }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/denizcilik.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/denizcilik.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/denizcilik.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/denizcilik.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/denizcilik.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (denizcilik.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/denizcilik.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (denizcilik.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/denizcilik_protokol_2021_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (denizcilik_protokol_2021_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/denizcilik_protokol_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (denizcilik_protokol_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
         }
       }
     },
@@ -1293,6 +1582,42 @@
             "11",
             "12"
           ]
+        }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/elsanatlarıteknolojisi.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/elsanatlarıteknolojisi.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/elsanatlarıteknolojisi.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/elsanatlarıteknolojisi.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/elsanat.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (elsanat.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/elsanat.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (elsanat.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/elsanat_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (elsanat_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/el_sanat_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (el_sanat_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
         }
       }
     },
@@ -1541,6 +1866,42 @@
             "11"
           ]
         }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/elektrikelektronikteknolojisi.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/elektrikelektronikteknolojisi.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/elektrikelektronikteknolojisi.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/elektrikelektronikteknolojisi.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/elektrik.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (elektrik.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/elektrik.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (elektrik.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/elektrik_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (elektrik_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/elektrik_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (elektrik_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        }
       }
     },
     "11": {
@@ -1657,6 +2018,42 @@
             "11"
           ]
         }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/endustriyelotomasyonteknolojileri.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/endustriyelotomasyonteknolojileri.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/endustriyelotomasyonteknolojileri.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/endustriyelotomasyonteknolojileri.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/endustriyel.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (endustriyel.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/endustriyel.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (endustriyel.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/endustriyel_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (endustriyel_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/endustriyel_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (endustriyel_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        }
       }
     },
     "12": {
@@ -1751,6 +2148,42 @@
           "siniflar": [
             "11"
           ]
+        }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/gazetecilik.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/gazetecilik.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/gazetecilik.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/gazetecilik.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/gazetecilik.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (gazetecilik.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/gazetecilik.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (gazetecilik.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/gazetecilik_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (gazetecilik_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/gazetecilik_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (gazetecilik_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
         }
       }
     },
@@ -1857,6 +2290,42 @@
           "siniflar": [
             "11"
           ]
+        }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/gelenekselturksanatları.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/gelenekselturksanatları.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/gelenekselturksanatları.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/gelenekselturksanatları.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/geleneksel.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (geleneksel.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/geleneksel.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (geleneksel.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/geleneksel_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (geleneksel_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/geleneksel_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (geleneksel_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
         }
       }
     },
@@ -2038,6 +2507,42 @@
             "12"
           ]
         }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/gemiyapımı.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/gemiyapımı.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/gemiyapımı.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/gemiyapımı.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/gemi.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (gemi.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/gemi.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (gemi.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/gemi_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (gemi_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/gemi_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (gemi_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        }
       }
     },
     "15": {
@@ -2208,11 +2713,84 @@
             "12"
           ]
         }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/gıdateknolojisi.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/gıdateknolojisi.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/gıdateknolojisi.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/gıdateknolojisi.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/gida.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (gida.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/gida.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (gida.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/gida_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (gida_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/gida_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (gida_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        }
       }
     },
     "16": {
       "isim": "Grafik ve Fotoğraf",
-      "dersler": {}
+      "dersler": {},
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/grafikvefotograf.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/grafikvefotograf.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/grafikvefotograf.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/grafikvefotograf.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/grafik.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (grafik.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/grafik.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (grafik.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/grafik_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (grafik_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/grafik_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (grafik_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        }
+      },
+      "cop_bilgileri": {}
     },
     "17": {
       "isim": "Güzellik Hizmetleri",
@@ -2313,6 +2891,42 @@
           "siniflar": [
             "11"
           ]
+        }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/guzellikhizmetleri.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/guzellikhizmetleri.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/guzellikhizmetleri.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/guzellikhizmetleri.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/guzellik.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (guzellik.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/guzellik.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (guzellik.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/guzellik_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (guzellik_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/guzellik_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (guzellik_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
         }
       }
     },
@@ -2443,6 +3057,42 @@
             "11"
           ]
         }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/halklailiskiler.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/halklailiskiler.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/halklailiskiler.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/halklailiskiler.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/halklailiskiler.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (halklailiskiler.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/halklailiskiler.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (halklailiskiler.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/halklailiskiler_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (halklailiskiler_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/halklailiskiler_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (halklailiskiler_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        }
       }
     },
     "19": {
@@ -2567,6 +3217,42 @@
           "siniflar": [
             "11"
           ]
+        }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/haritatapukadastro.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/haritatapukadastro.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/haritatapukadastro.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/haritatapukadastro.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/harita.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (harita.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/harita.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (harita.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/harita_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (harita_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/harita_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (harita_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
         }
       }
     },
@@ -2732,11 +3418,63 @@
             "12"
           ]
         }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/hastaveyaslıhizmetleri.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/hastaveyaslıhizmetleri.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/hastaveyaslıhizmetleri.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/hastaveyaslıhizmetleri.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/hasta.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (hasta.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/hasta.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (hasta.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/hasta_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (hasta_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/hasta_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (hasta_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        }
       }
     },
     "21": {
       "isim": "Havacılık ve Uzay Teknolojisi",
-      "dersler": {}
+      "dersler": {},
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/havacılıkveuzayteknolojisi.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/havacılıkveuzayteknolojisi.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/havacılıkveuzayteknolojisi.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/havacılıkveuzayteknolojisi.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/havacilikveuzay9.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (havacilikveuzay9.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        }
+      },
+      "cop_bilgileri": {}
     },
     "22": {
       "isim": "Hayvan Yetiştiriciliği ve Sağlığı",
@@ -2871,6 +3609,42 @@
           "siniflar": [
             "11"
           ]
+        }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/hayvanyetistiriciligivesaglıgı.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/hayvanyetistiriciligivesaglıgı.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/hayvanyetistiriciligivesaglıgı.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/hayvanyetistiriciligivesaglıgı.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/hayvanyetistiriciligi.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (hayvanyetistiriciligi.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/hayvanyetistiriciligi.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (hayvanyetistiriciligi.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/hayvanyetistiriciligi_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (hayvanyetistiriciligi_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/hayvanyet_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (hayvanyet_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
         }
       }
     },
@@ -3116,6 +3890,42 @@
             "12"
           ]
         }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/insaatteknolojisi.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/insaatteknolojisi.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/insaatteknolojisi.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/insaatteknolojisi.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/insaat.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (insaat.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/insaat.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (insaat.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/insaat_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (insaat_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/insaat_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (insaat_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        }
       }
     },
     "24": {
@@ -3197,6 +4007,42 @@
           "siniflar": [
             "11"
           ]
+        }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/itfaiyecilikveyangınguvenligi.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/itfaiyecilikveyangınguvenligi.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/itfaiyecilikveyangınguvenligi.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/itfaiyecilikveyangınguvenligi.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/itfaiyecilik.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (itfaiyecilik.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/itfaiyecilik.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (itfaiyecilik.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/itfaiyecilik_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (itfaiyecilik_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/itfaiyecilik_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (itfaiyecilik_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
         }
       }
     },
@@ -3395,6 +4241,42 @@
           "siniflar": [
             "12"
           ]
+        }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/kimyateknolojisi.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/kimyateknolojisi.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/kimyateknolojisi.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/kimyateknolojisi.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/kimya.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (kimya.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/kimya.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (kimya.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/kimya_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (kimya_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/kimya_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (kimya_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
         }
       }
     },
@@ -3678,6 +4560,42 @@
             "12"
           ]
         }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/konaklamaveseyahathizmetleri.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/konaklamaveseyahathizmetleri.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/konaklamaveseyahathizmetleri.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/konaklamaveseyahathizmetleri.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/konaklama.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (konaklama.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/konaklamapro.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (konaklamapro.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/konaklamapro_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (konaklamapro_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/konaklama_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (konaklama_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        }
       }
     },
     "27": {
@@ -3717,7 +4635,37 @@
             "12"
           ]
         }
-      }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/kuyumculukteknolojisi.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/kuyumculukteknolojisi.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/kuyumculukteknolojisi.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/kuyumculukteknolojisi.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/kuyumculuk9.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (kuyumculuk9.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/kuyumculuk10.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (kuyumculuk10.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/kuyumculuk_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (kuyumculuk_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        }
+      },
+      "cop_bilgileri": {}
     },
     "28": {
       "isim": "Laboratuvar Hizmetleri",
@@ -3841,6 +4789,42 @@
             "11"
           ]
         }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/laboratuvarhizmetleri.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/laboratuvarhizmetleri.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/laboratuvarhizmetleri.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/laboratuvarhizmetleri.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/laboratuvar.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (laboratuvar.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/laboratuvar.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (laboratuvar.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/laboratuvar_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (laboratuvar_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/laboratuvar_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (laboratuvar_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        }
       }
     },
     "29": {
@@ -3915,6 +4899,42 @@
           "siniflar": [
             "11"
           ]
+        }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/madenteknolojisi.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/madenteknolojisi.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/madenteknolojisi.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/madenteknolojisi.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/maden.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (maden.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/maden.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (maden.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/maden_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (maden_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/maden_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (maden_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
         }
       }
     },
@@ -4191,6 +5211,42 @@
             "11"
           ]
         }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/makinevetasarımteknolojisi.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/makinevetasarımteknolojisi.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/makinevetasarımteknolojisi.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/makinevetasarımteknolojisi.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/makine.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (makine.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/makine.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (makine.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/makine_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (makine_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/makine_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (makine_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        }
       }
     },
     "31": {
@@ -4339,6 +5395,42 @@
             "12"
           ]
         }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/matbaateknolojisi.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/matbaateknolojisi.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/matbaateknolojisi.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/matbaateknolojisi.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/matbaa.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (matbaa.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/matbaa.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (matbaa.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/matbaa_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (matbaa_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/matbaa_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (matbaa_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        }
       }
     },
     "32": {
@@ -4439,6 +5531,42 @@
           "siniflar": [
             "11"
           ]
+        }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/metalteknolojisi.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/metalteknolojisi.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/metalteknolojisi.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/metalteknolojisi.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/metal.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (metal.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/metal.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (metal.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/metal_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (metal_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/metal_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (metal_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
         }
       }
     },
@@ -4568,11 +5696,70 @@
             "11"
           ]
         }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/metalurjiteknolojisi.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/metalurjiteknolojisi.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/metalurjiteknolojisi.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/metalurjiteknolojisi.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/metalurji.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (metalurji.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/metalurji.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (metalurji.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/metalurji_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (metalurji_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/metalurji_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (metalurji_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        }
       }
     },
     "34": {
       "isim": "Mikromekanik",
-      "dersler": {}
+      "dersler": {},
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/mikromekanik.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/mikromekanik.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/mikromekanik.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/mikromekanik.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/mikromekanik.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/mikromekanik.rar"
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/mikromekanik.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (mikromekanik.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        }
+      },
+      "cop_bilgileri": {}
     },
     "35": {
       "isim": "Mobilya ve İç Mekân Tasarımı",
@@ -4711,6 +5898,42 @@
           "siniflar": [
             "11"
           ]
+        }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/mobilyaveicmekantasarımı.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/mobilyaveicmekantasarımı.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/mobilyaveicmekantasarımı.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/mobilyaveicmekantasarımı.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/mobilya.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (mobilya.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/mobilya.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (mobilya.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/mobilya_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (mobilya_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/mobilya_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (mobilya_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
         }
       }
     },
@@ -4862,6 +6085,42 @@
             "12"
           ]
         }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/modatasarımteknolojileri.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/modatasarımteknolojileri.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/modatasarımteknolojileri.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/modatasarımteknolojileri.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/moda.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (moda.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/moda.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (moda.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/moda_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (moda_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/moda_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (moda_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        }
       }
     },
     "37": {
@@ -4944,6 +6203,42 @@
           "siniflar": [
             "11"
           ]
+        }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/motorluaraclarteknolojisi.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/motorluaraclarteknolojisi.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/motorluaraclarteknolojisi.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/motorluaraclarteknolojisi.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/motorluarac.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (motorluarac.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/motorluarac.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (motorluarac.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/motorluaraclar_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (motorluaraclar_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/motorluarac_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (motorluarac_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
         }
       }
     },
@@ -5139,6 +6434,42 @@
           "siniflar": [
             "11"
           ]
+        }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/muhasebevefinansman.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/muhasebevefinansman.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/muhasebevefinansman.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/muhasebevefinansman.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/muhasebepro.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (muhasebepro.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/muhasebepro.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (muhasebepro.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/muhasebe_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (muhasebe_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/muhasebe_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (muhasebe_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
         }
       }
     },
@@ -5337,6 +6668,42 @@
             "12"
           ]
         }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/pazarlamaveperakende.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/pazarlamaveperakende.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/pazarlamaveperakende.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/pazarlamaveperakende.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/pazarlama.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (pazarlama.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/pazarlama.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (pazarlama.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/pazarlama_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (pazarlama_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/pazarlama_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (pazarlama_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        }
       }
     },
     "40": {
@@ -5419,7 +6786,44 @@
             "12"
           ]
         }
-      }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/plastiksanatlar.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/plastiksanatlar.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/plastiksanatlar.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/plastiksanatlar.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/plastiksanatlar.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (plastiksanatlar.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/plastiksanatlar.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (plastiksanatlar.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/plastiksanatlar_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (plastiksanatlar_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/plastiksanatlar_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (plastiksanatlar_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        }
+      },
+      "cop_bilgileri": {}
     },
     "41": {
       "isim": "Plastik Teknolojisi",
@@ -5477,11 +6881,84 @@
             "12"
           ]
         }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/plastikteknolojisi.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/plastikteknolojisi.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/plastikteknolojisi.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/plastikteknolojisi.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/plastiktek.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (plastiktek.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/plastiktek.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (plastiktek.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/plastik_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (plastik_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/plastiktek_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (plastiktek_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        }
       }
     },
     "42": {
       "isim": "Radyo-Televizyon",
-      "dersler": {}
+      "dersler": {},
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/radyotelevizyon.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/radyotelevizyon.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/radyotelevizyon.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/radyotelevizyon.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/radyotv.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (radyotv.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/radyotv.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (radyotv.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/rtv_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (rtv_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/radyotv_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (radyotv_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        }
+      },
+      "cop_bilgileri": {}
     },
     "43": {
       "isim": "Raylı Sistemler Teknolojisi",
@@ -5614,6 +7091,42 @@
           "siniflar": [
             "11"
           ]
+        }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/raylısistemlerteknolojisi.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/raylısistemlerteknolojisi.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/raylısistemlerteknolojisi.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/raylısistemlerteknolojisi.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/rayli.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (rayli.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/rayli.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (rayli.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/rayli_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (rayli_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/rayli_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (rayli_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
         }
       }
     },
@@ -5821,6 +7334,42 @@
             "12"
           ]
         }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/saglıkhizmetleri.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/saglıkhizmetleri.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/saglıkhizmetleri.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/saglıkhizmetleri.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/saglik.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (saglik.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/saglik.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (saglik.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/saglik_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (saglik_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/saglik_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (saglik_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        }
       }
     },
     "45": {
@@ -5860,7 +7409,44 @@
             "12"
           ]
         }
-      }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/seramikvecamteknolojisi.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/seramikvecamteknolojisi.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/seramikvecamteknolojisi.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/seramikvecamteknolojisi.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/seramikpro9.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/seramikpro9.rar"
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/seramikpro_10.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (seramikpro_10.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/protokol_seramik_2021_10.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/protokol_seramik_2021_10.rar"
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/protokol_seramik_2021_10.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf12/protokol_seramik_2021_10.rar"
+          }
+        }
+      },
+      "cop_bilgileri": {}
     },
     "46": {
       "isim": "Siber Güvenlik",
@@ -5917,7 +7503,37 @@
             "11"
           ]
         }
-      }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/siberguvenlik.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/siberguvenlik.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/siberguvenlik.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/siberguvenlik.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/siber.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (siber.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/siber10.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (siber10.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/siber11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (siber11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        }
+      },
+      "cop_bilgileri": {}
     },
     "47": {
       "isim": "Tarım",
@@ -6115,6 +7731,42 @@
             "12"
           ]
         }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/tarım.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/tarım.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/tarım.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/tarım.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/tarim.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (tarim.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/tarim.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (tarim.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/tarim_2020_11.zip",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (tarim_2020_11.zip), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/tarim_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (tarim_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        }
       }
     },
     "48": {
@@ -6310,6 +7962,42 @@
           "siniflar": [
             "11"
           ]
+        }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/tekstilteknolojisi.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/tekstilteknolojisi.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/tekstilteknolojisi.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/tekstilteknolojisi.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/tekstil.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (tekstil.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/tekstil.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (tekstil.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/tekstil_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (tekstil_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/tekstil_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (tekstil_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
         }
       }
     },
@@ -6514,6 +8202,42 @@
             "12"
           ]
         }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/tesisatteknolojisiveiklimlendirme.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/tesisatteknolojisiveiklimlendirme.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/tesisatteknolojisiveiklimlendirme.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/tesisatteknolojisiveiklimlendirme.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/tesisat.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (tesisat.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/tesisat.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (tesisat.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/tesisat_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (tesisat_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/tesisat_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (tesisat_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        }
       }
     },
     "50": {
@@ -6602,6 +8326,42 @@
             "11",
             "12"
           ]
+        }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/ucakbakım.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/ucakbakım.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/ucakbakım.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/ucakbakım.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/ucak.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (ucak.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/ucak.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (ucak.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/ucakbakim_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (ucakbakim_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/ucak_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (ucak_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
         }
       }
     },
@@ -6820,6 +8580,42 @@
             "12"
           ]
         }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/ulastırmahizmetleri.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/ulastırmahizmetleri.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/ulastırmahizmetleri.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/ulastırmahizmetleri.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/ulastirma.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (ulastirma.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/ulastirma.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (ulastirma.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/ulastirma_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (ulastirma_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/ulastirma_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (ulastirma_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        }
       }
     },
     "52": {
@@ -6888,6 +8684,42 @@
           "siniflar": [
             "11"
           ]
+        }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/yenilenebilirenerjiteknolojileri.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/yenilenebilirenerjiteknolojileri.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/yenilenebilirenerjiteknolojileri.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/yenilenebilirenerjiteknolojileri.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/yenilenebilir.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (yenilenebilir.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/yenilenebilir.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (yenilenebilir.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/yenilenebilir_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (yenilenebilir_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/yenilenebilir_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (yenilenebilir_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
         }
       }
     },
@@ -7040,11 +8872,55 @@
             "12"
           ]
         }
+      },
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/yiyecekicecekhizmetleri.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/yiyecekicecekhizmetleri.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/yiyecekicecekhizmetleri.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/yiyecekicecekhizmetleri.rar"
+      },
+      "dbf_bilgileri": {
+        "9": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/yiyecek.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (yiyecek.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/yiyecek.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (yiyecek.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/yiyecek_2020_11.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (yiyecek_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/yiyecek_dbf_12.rar",
+          "guncelleme_tarihi": "28.12.2023",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (yiyecek_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+          }
+        }
       }
     },
     "54": {
       "isim": "--Mesleki Gelişim Atölyesi--",
-      "dersler": {}
+      "dersler": {},
+      "dbf_links": {
+        "9": "https://meslek.meb.gov.tr/upload/dbf9/meslekigelisimatolyesi.rar",
+        "10": "https://meslek.meb.gov.tr/upload/dbf10/meslekigelisimatolyesi.rar",
+        "11": "https://meslek.meb.gov.tr/upload/dbf11/meslekigelisimatolyesi.rar",
+        "12": "https://meslek.meb.gov.tr/upload/dbf12/meslekigelisimatolyesi.rar"
+      },
+      "dbf_bilgileri": {},
+      "cop_bilgileri": {}
     }
   },
   "ortak_alan_indeksi": {

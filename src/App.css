@@ -86,3 +86,83 @@
   border-radius: 5px;
   background-color: #e9f7ef;
 }
+
+/* Arama kutusu için stiller */
+.search-bar {
+  margin: 20px 0;
+  text-align: center;
+}
+
+.search-bar input {
+  width: 50%;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+/* Arama sonuçlarında vurgulanan metin için stil */
+mark {
+  background-color: #f1c40f;
+  padding: 0.1em 0;
+  border-radius: 3px;
+}
+
+/* Ders listesi için stiller */
+.ders-listesi {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px dashed #ccc;
+}
+
+.ders-listesi ul {
+  list-style-type: disc;
+  padding-left: 20px;
+  margin: 10px 0 0 0;
+}
+
+.ders-listesi li {
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.ders-listesi li small {
+  color: #777;
+  margin-left: 5px;
+}
+
+.ders-link {
+  text-decoration: none;
+  color: #007bff;
+  font-weight: 500;
+  padding: 3px 8px;
+  border: 1px solid #007bff;
+  border-radius: 4px;
+  transition: background-color 0.2s, color 0.2s;
+  white-space: nowrap; /* "PDF" yazısının bölünmesini engeller */
+}
+
+.ders-link:hover {
+  background-color: #007bff;
+  color: #fff;
+}
+
+/* ÇÖP listesi için stiller */
+.cop-listesi {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px dashed #ccc;
+}
+
+.cop-listesi ul {
+  list-style-type: disc;
+  padding-left: 20px;
+  margin: 10px 0 0 0;
+}
+
+.cop-listesi li {
+  margin-bottom: 5px;
+}
