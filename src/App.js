@@ -228,7 +228,7 @@ function App() {
   
   return (
     <div className="App">
-      <h1>MEB Ders ve DBF Veri Çekici</h1>
+      <h1>meslek.meb (alan-dal-ders) dosyalar</h1>
       <button onClick={handleScrape} disabled={loading || initialLoading}>
         {loading
           ? 'Veriler Çekiliyor...'
