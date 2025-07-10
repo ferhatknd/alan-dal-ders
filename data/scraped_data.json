@@ -7002,7 +7002,7 @@
           "link": "https://meslek.meb.gov.tr/upload/dbf11/plastiktek.rar",
           "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (plastiktek.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: HTTPSConnectionPool(host='meslek.meb.gov.tr', port=443): Max retries exceeded with url: /upload/dbf11/plastiktek.rar (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1028)')))"
           }
         },
         "12": {
@@ -8725,7 +8725,7 @@
           "link": "https://meslek.meb.gov.tr/upload/dbf11/ulastirma.rar",
           "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "hata": "PDF indirilemedi: HTTPSConnectionPool(host='meslek.meb.gov.tr', port=443): Max retries exceeded with url: /upload/dbf11/ulastirma.rar (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1028)')))"
+            "icerik": "Bu bir arşiv dosyasıdır (ulastirma.rar), otomatik ayrıştırma desteklenmiyor."
           }
         },
         "12": {

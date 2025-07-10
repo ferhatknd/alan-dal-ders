@@ -1,7 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
 import sys
-<<<<<<< Updated upstream
 import time
 import unicodedata
 import os
@@ -31,16 +30,6 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
     "Referer": "https://meslek.meb.gov.tr/"
 }
-=======
-import re
-import urllib.parse # Ensure this is imported and used directly
-
-BASE_OPTIONS_URL = "https://meslek.meb.gov.tr/cercevelistele.aspx"
-BASE_DERS_ALT_URL = "https://meslek.meb.gov.tr/dmgoster.aspx"
-ROOT_URL = "https://meslek.meb.gov.tr"
-
-print("✅ Bu kod çalışıyor")
->>>>>>> Stashed changes
 
 def get_alanlar(sinif_kodu="9"):
     params = {"sinif_kodu": sinif_kodu, "kurum_id": "1"}
@@ -74,7 +63,6 @@ def get_dersler_for_alan(alan_id, alan_adi, sinif_kodu="9"):
     resp.encoding = resp.apparent_encoding
     soup = BeautifulSoup(resp.text, "html.parser")
 
-    sinif_pattern = re.compile(r'^\d+\.\s*Sınıf$')
     dersler = []
     for div in soup.find_all('div', class_='p-0 bg-light'):
         a = div.find('a', href=True)
@@ -82,16 +70,17 @@ def get_dersler_for_alan(alan_id, alan_adi, sinif_kodu="9"):
         ul = a.find('ul', class_='list-group')
         if not ul: continue
 
+        # Ders adı → ilk <li>, sınıf bilgisini içeriyor
         items = ul.find_all('li')
         ders_adi = items[0].get_text(" ", strip=True)
+        # Sınıf bilgisini daha kesin bir şekilde çıkar
         sinif_text = ""
         for li in items:
             text = li.get_text(" ", strip=True)
-            if sinif_pattern.match(text):
+            if "Sınıf" in text and any(char.isdigit() for char in text):
                 sinif_text = text
                 break
-        
-        link = urllib.parse.urljoin(resp.url, a['href'].strip()) # Changed to urllib.parse.urljoin
+        link = requests.compat.urljoin(resp.url, a['href'].strip())
 
         dersler.append({"isim": ders_adi,
                         "sinif": sinif_text,
@@ -101,7 +90,6 @@ def get_dersler_for_alan(alan_id, alan_adi, sinif_kodu="9"):
         pass
     return dersler
 
-<<<<<<< Updated upstream
 def get_dbf_data_for_class(sinif_kodu):
     """Belirtilen sınıf koduna ait DBF verilerini çeker."""
     params = {"sinif_kodu": sinif_kodu, "kurum_id": "1"}
@@ -111,48 +99,6 @@ def get_dbf_data_for_class(sinif_kodu):
         response.raise_for_status()
         response.encoding = response.apparent_encoding
         soup = BeautifulSoup(response.text, "html.parser")
-=======
-def get_cerceve_program_pdf_urls(alan_id, sinif_kodu, kurum_id="1"):
-    cerceve_url = "https://meslek.meb.gov.tr/cercevegoster.aspx"
-    resp = requests.get(cerceve_url, params={"kurum_id": kurum_id, "sinif_kodu": sinif_kodu, "alan_id": alan_id})
-    resp.encoding = resp.apparent_encoding
-    soup = BeautifulSoup(resp.text, "html.parser")
-
-    pdf_urls = []
-    for a in soup.find_all('a', href=True):
-        href = a['href'].strip()
-        if href.endswith('.pdf'):
-            # Parse the href to get its path component
-            parsed_href = urllib.parse.urlparse(href)
-            path = parsed_href.path
-
-            cleaned_path = path
-
-            # Regex to find the *correct* /upload/copXX/filename.pdf segment
-            # This makes it robust to multiple 'upload/copX/' segments in the href
-            match = re.search(r'(?:^|/)(upload/cop\d{1,2}/[^/]+\.pdf)$', path, re.IGNORECASE)
-            if match:
-                cleaned_path = '/' + match.group(1) # Ensure it starts with / and captures the relevant part
-            elif path.startswith('upload/', re.IGNORECASE) and not path.startswith('/'):
-                # Fallback for 'upload/filename.pdf' directly
-                cleaned_path = '/' + path
-            
-            # If the path already looks like an absolute path from root, or contains '..',
-            # urllib.parse.urljoin with ROOT_URL handles it properly.
-            # No 'else' needed here, as cleaned_path defaults to path.
-
-            # Join the cleaned path with the ROOT_URL using urllib.parse.urljoin directly
-            full_url = urllib.parse.urljoin(ROOT_URL, cleaned_path)
-            
-            pdf_urls.append(full_url)
-
-    return pdf_urls
-
-def main():
-    siniflar = ["9","10","11","12"]
-    tum_veri = {}
-    link_index = {}
->>>>>>> Stashed changes
 
         alan_columns = soup.find_all('div', class_='col-lg-3')
         for column in alan_columns:
@@ -416,7 +362,7 @@ def scrape_data():
         yield {"type": "progress", "message": "Önbellek bulunamadı, veri çekme işlemi başlatılıyor..."}
 
     # Adım 2: Tüm DBF verilerini en başta çek
-    yield {"type": "progress", "message": "DBF verileri çekiliyor..."}
+    yield {"type": "progress", "message": "Ders Bilgi Formları (DBF) çekiliyor..."}
     dbf_data = get_all_dbf_data(siniflar)
     yield {"type": "progress", "message": "DBF verileri çekildi."}
 
@@ -464,7 +410,6 @@ def scrape_data():
             estimation_str = f"Tahmini kalan süre: {int(mins)} dakika {int(secs)} saniye"
 
             alan_id = alan["id"]
-<<<<<<< Updated upstream
             alan_adi = alan["isim"]
             
             # Alanın zaten işlenip işlenmediğini kontrol et (dersler ve dbf linki)
@@ -579,31 +524,10 @@ def print_full_summary():
 
     tum_veri = final_data["alanlar"]
     link_index = final_data["ortak_alan_indeksi"]
-=======
-            ders_listesi = get_dersler_for_alan(alan_id, alan["isim"], sinif)
-            alan_entry = tum_veri.setdefault(alan_id, {"isim": alan["isim"], "dersler": {}})
-            for d in ders_listesi:
-                ders_link = d["link"]
 
-                if not d["sinif"]:
-                    continue
-
-                match = re.search(r'\d+', d["sinif"])
-                if not match:
-                    continue
-                sinif_num = match.group(0)
-
-                ders_entry = alan_entry["dersler"].setdefault(ders_link, {
-                    "isim": d["isim"],
-                    "siniflar": set()
-                })
-                ders_entry["siniflar"].add(sinif_num)
-                link_index.setdefault(ders_link, set()).add(alan_id)
->>>>>>> Stashed changes
-
+    # 🖨️ Terminal çıktısı
     for alan_id, alan_data in sorted(tum_veri.items(), key=lambda item: item[1]['isim']):
         print(f"\n{alan_data['isim']} ({alan_id})")
-<<<<<<< Updated upstream
         
         # DBF Linklerini yazdır
         if alan_data.get("dbf_bilgileri") and any(alan_data["dbf_bilgileri"].values()):
@@ -642,34 +566,6 @@ def print_full_summary():
                 if len(ortak_alanlar) > 1:
                     ortak_str = f" ({len(ortak_alanlar)} ortak alan)"
                 print(f"  -> {d['isim']} {sinif_display_str}{ortak_str}")
-=======
-        print("Sınıflara göre ayrım: https://meslek.meb.gov.tr/siniflar.aspx?kurum_id=1")
-        print("Çerçeve Öğretim Programları:")
-
-        unique_alan_pdf_urls = set()
-
-        for sinif in siniflar:
-            pdf_urls_for_this_sinif = get_cerceve_program_pdf_urls(alan_id, sinif, "1")
-            for pdf_url in pdf_urls_for_this_sinif:
-                unique_alan_pdf_urls.add(pdf_url)
-
-        if unique_alan_pdf_urls:
-            for pdf_url in sorted(list(unique_alan_pdf_urls)):
-                print(f"    - PDF: {pdf_url}")
-        else:
-            print(f"    - PDF bulunamadı.")
-
-        sorted_dersler = sorted(alan_data["dersler"].items(), key=lambda item: item[1]["isim"])
-        for ders_link, d in sorted_dersler:
-            siniflar_sorted = sorted(list(d['siniflar']), key=int)
-            sinif_str = "-".join(siniflar_sorted)
-            sinif_display_str = f"({sinif_str}. Sınıf)"
-            ortak_alanlar = sorted(list(link_index.get(ders_link, set())))
-            ortak_str = ""
-            if len(ortak_alanlar) > 1:
-                ortak_str = f" ({len(ortak_alanlar)} ortak alan)"
-            print(f"-> {d['isim']} {sinif_display_str}{ortak_str}")
->>>>>>> Stashed changes
 
     print("\n==== Özet ====")
     toplam_alan = len(tum_veri)
