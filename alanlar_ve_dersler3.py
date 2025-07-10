@@ -215,7 +215,7 @@ def get_aspnet_form_data(soup):
 
 def get_bom_for_alan(alan_id, alan_adi, session):
     """
-    Belirtilen bir alan için Beceri Öğretim Materyalleri (BÖM) verilerini çeker.
+    Belirtilen bir alan için Bireysel Öğrenme Materyalleri (BÖM) verilerini çeker.
     Bu fonksiyon, ASP.NET postback'lerini yönetmek için bir session nesnesi kullanır.
     """
     bom_data = {"dersler": []}
@@ -382,7 +382,7 @@ def scrape_data():
         return
 
     # Adım 3.5: BÖM verilerini çek
-    yield {"type": "progress", "message": "Beceri Öğretim Materyalleri (BÖM) verileri çekiliyor..."}
+    yield {"type": "progress", "message": "Bireysel Öğrenme Materyalleri (BÖM) verileri çekiliyor..."}
     bom_data = get_all_bom_data(unique_alanlar)
     yield {"type": "progress", "message": "BÖM verileri çekildi. Alanlar işleniyor..."}
 
@@ -545,7 +545,7 @@ def print_full_summary():
 
         # BÖM Materyallerini yazdır
         if alan_data.get("bom_materyalleri") and alan_data.get("bom_materyalleri", {}).get("dersler"):
-            print("  Beceri Öğretim Materyalleri (BÖM):")
+            print("  Bireysel Öğrenme Materyalleri (BÖM):")
             for ders in alan_data["bom_materyalleri"]["dersler"]:
                 print(f"    - Ders: {ders['ders_adi']}")
                 if ders.get("moduller"):

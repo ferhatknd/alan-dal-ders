@@ -10,6 +10,19 @@ Proje üç ana bileşenden oluşmaktadır:
 2.  **Web Arayüzü (React):** Flask API'sinden gelen verileri listeleyen, aranabilir ve filtrelenebilir bir şekilde kullanıcıya sunan modern bir web arayüzüdür.
 3.  **PDF Ayrıştırıcı (`dbf_parser_final.py`):** İndirilen ders bilgi formu (DBF) PDF'lerini işleyerek içerisindeki ders adı, kazanımlar, üniteler, konular gibi detaylı bilgileri çıkaran ve bir SQLite veritabanına aktarılmak üzere SQL komutları üreten bir komut satırı aracıdır.
 
+### Çekilen Veri Türleri
+
+`alanlar_ve_dersler3.py` betiği `meslek.meb.gov.tr` sitesinden aşağıdaki veri türlerini çeker:
+
+-   **Alanlar ve Ders Materyalleri:** Alan listeleri ve bu alanlara ait ders materyallerinin (PDF) linkleri.
+    -   *Kaynak:* `cercevelistele.aspx`, `dmgoster.aspx`
+-   **Ders Bilgi Formları (DBF):** Her alan ve sınıf düzeyine ait ders bilgi formlarının (RAR/ZIP) linkleri.
+    -   *Kaynak:* `dbflistele.aspx`
+-   **Çerçeve Öğretim Programları (ÇÖP):** Alanlara ait öğretim programlarının (PDF) linkleri.
+    -   *Kaynak:* `cercevelistele.aspx`
+-   **Bireysel Öğrenme Materyalleri (BÖM):** Alan ve ders bazında modül PDF'lerinin listesi.
+    -   *Kaynak:* `moduller`
+
 !Proje Arayüzü
 
 ## Teknoloji Yığını
