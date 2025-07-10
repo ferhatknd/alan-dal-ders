@@ -7,6 +7,7 @@ import os
 import json
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import pdfplumber
+import argparse
 import io
 
 def slugify(text):
@@ -22,6 +23,7 @@ def slugify(text):
 BASE_OPTIONS_URL = "https://meslek.meb.gov.tr/cercevelistele.aspx"
 BASE_DERS_ALT_URL = "https://meslek.meb.gov.tr/dmgoster.aspx"
 BASE_DBF_URL = "https://meslek.meb.gov.tr/dbflistele.aspx"
+BASE_BOM_URL = "https://meslek.meb.gov.tr/moduller"
 
 # Sunucu tarafından engellenmemek için bir tarayıcı gibi davranan başlıklar ekleyelim.
 HEADERS = {
@@ -201,6 +203,102 @@ def get_all_cop_data(siniflar):
                 print(f"ÇÖP verisi işlenirken hata: {exc}", file=sys.stderr)
     return all_cop_data
 
+def get_aspnet_form_data(soup):
+    """Bir BeautifulSoup nesnesinden ASP.NET form verilerini (VIEWSTATE vb.) çıkarır."""
+    form_data = {}
+    for input_tag in soup.find_all('input', {'type': ['hidden', 'submit', 'text', 'image']}):
+        name = input_tag.get('name')
+        value = input_tag.get('value', '')
+        if name:
+            form_data[name] = value
+    return form_data
+
+def get_bom_for_alan(alan_id, alan_adi, session):
+    """
+    Belirtilen bir alan için Beceri Öğretim Materyalleri (BÖM) verilerini çeker.
+    Bu fonksiyon, ASP.NET postback'lerini yönetmek için bir session nesnesi kullanır.
+    """
+    bom_data = {"dersler": []}
+    try:
+        # 1. Adım: Alan ve ders listelerini almak için ilk GET isteği
+        initial_resp = session.get(BASE_BOM_URL, headers=HEADERS, timeout=20)
+        initial_resp.raise_for_status()
+        initial_soup = BeautifulSoup(initial_resp.text, 'html.parser')
+
+        # 2. Adım: Alanı seçmek ve ders listesini doldurmak için ilk POST isteği
+        form_data = get_aspnet_form_data(initial_soup)
+        form_data['ctl00$ContentPlaceHolder1$DropDownList1'] = alan_id
+        form_data['__EVENTTARGET'] = 'ctl00$ContentPlaceHolder1$DropDownList1'
+
+        ders_list_resp = session.post(BASE_BOM_URL, data=form_data, headers=HEADERS, timeout=20)
+        ders_list_resp.raise_for_status()
+        ders_list_soup = BeautifulSoup(ders_list_resp.text, 'html.parser')
+
+        # 3. Adım: Doldurulan ders listesini ayrıştır
+        ders_select = ders_list_soup.find('select', {'name': 'ctl00$ContentPlaceHolder1$DropDownList2'})
+        if not ders_select:
+            return bom_data
+
+        ders_options = ders_select.find_all('option')
+        if len(ders_options) <= 1:  # Sadece "Seçiniz" varsa
+            return bom_data
+
+        # 4. Adım: Her bir ders için modülleri çek
+        for ders_option in ders_options:
+            ders_value = ders_option.get('value')
+            ders_adi = ders_option.text.strip()
+            if not ders_value or ders_value == '0':
+                continue
+
+            ders_form_data = get_aspnet_form_data(ders_list_soup)
+            ders_form_data['ctl00$ContentPlaceHolder1$DropDownList1'] = alan_id
+            ders_form_data['ctl00$ContentPlaceHolder1$DropDownList2'] = ders_value
+            ders_form_data['ctl00$ContentPlaceHolder1$Button1'] = 'Listele'
+
+            modul_resp = session.post(BASE_BOM_URL, data=ders_form_data, headers=HEADERS, timeout=20)
+            modul_resp.raise_for_status()
+            modul_soup = BeautifulSoup(modul_resp.text, 'html.parser')
+
+            # 5. Adım: Modül tablosunu ayrıştır
+            ders_modulleri = []
+            modul_table = modul_soup.find('table', id='ctl00_ContentPlaceHolder1_GridView1')
+            if modul_table:
+                for row in modul_table.find_all('tr')[1:]:  # Başlık satırını atla
+                    cols = row.find_all('td')
+                    if len(cols) >= 2:
+                        modul_adi = cols[0].get_text(strip=True)
+                        link_tag = cols[1].find('a', href=True)
+                        if link_tag:
+                            full_link = requests.compat.urljoin("https://megep.meb.gov.tr/", link_tag['href'])
+                            ders_modulleri.append({"isim": modul_adi, "link": full_link})
+            
+            if ders_modulleri:
+                bom_data["dersler"].append({
+                    "ders_adi": ders_adi,
+                    "moduller": ders_modulleri
+                })
+
+    except requests.RequestException as e:
+        print(f"BÖM Hata: '{alan_adi}' alanı için veri çekilemedi: {e}", file=sys.stderr)
+        return None
+    
+    return bom_data
+
+def get_all_bom_data(alanlar_listesi):
+    """Tüm alanlar için BÖM verilerini eş zamanlı olarak çeker."""
+    all_bom_data = {}
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        future_to_alan = {executor.submit(get_bom_for_alan, alan['id'], alan['isim'], requests.Session()): alan for alan in alanlar_listesi if alan['id'] not in ["0", "00"]}
+        for future in as_completed(future_to_alan):
+            alan = future_to_alan[future]
+            try:
+                data = future.result()
+                if data and data.get("dersler"):
+                    all_bom_data[alan['id']] = data
+            except Exception as exc:
+                print(f"BÖM verisi işlenirken hata ({alan['isim']}): {exc}", file=sys.stderr)
+    return all_bom_data
+
 def download_and_parse_pdf(pdf_url):
     """
     Bir URL'den PDF'i indirir, içeriğini ayrıştırır ve yapısal bir sözlük döndürür.
@@ -270,10 +368,12 @@ def scrape_data():
 
     yield {"type": "progress", "message": "Çerçeve Öğretim Programı (ÇÖP) verileri çekiliyor..."}
     cop_data = get_all_cop_data(siniflar)
-    yield {"type": "progress", "message": "ÇÖP verileri çekildi. Alanlar işleniyor..."}
+    yield {"type": "progress", "message": "ÇÖP verileri çekildi."}
     
     # Adım 3: Toplam iş yükünü hesapla (tüm alanların sayısını bul)
     all_alanlar_by_sinif = {sinif: get_alanlar(sinif) for sinif in siniflar}
+    # BÖM için kullanılacak benzersiz alan listesi
+    unique_alanlar = list({v['id']:v for k,v_list in all_alanlar_by_sinif.items() for v in v_list}.values())
     total_alan_count = sum(len(alan_list) for alan_list in all_alanlar_by_sinif.values())
 
     if total_alan_count == 0:
@@ -281,7 +381,12 @@ def scrape_data():
         yield {"type": "done", "data": {"alanlar": {}, "ortak_alan_indeksi": {}}}
         return
 
-    yield {"type": "progress", "message": f"Toplam {total_alan_count} alan işlenecek."}
+    # Adım 3.5: BÖM verilerini çek
+    yield {"type": "progress", "message": "Beceri Öğretim Materyalleri (BÖM) verileri çekiliyor..."}
+    bom_data = get_all_bom_data(unique_alanlar)
+    yield {"type": "progress", "message": "BÖM verileri çekildi. Alanlar işleniyor..."}
+
+    yield {"type": "progress", "message": f"Toplam {total_alan_count} alan/sınıf kombinasyonu işlenecek."}
 
     processed_alan_count = 0
     start_time = time.time()
@@ -311,8 +416,9 @@ def scrape_data():
             alan_entry = tum_veri.get(alan_id, {})
             dersler_dolu = alan_entry.get("dersler") and any(d.get("siniflar") and sinif in d["siniflar"] for d in alan_entry["dersler"].values())
             dbf_link_var = sinif in alan_entry.get("dbf_bilgileri", {})
+            cop_link_var = sinif in alan_entry.get("cop_bilgileri", {})
 
-            if dersler_dolu and dbf_link_var:
+            if dersler_dolu and dbf_link_var and cop_link_var:
                 yield {
                     "type": "progress",
                     "message": f"[{sinif}. Sınıf] Alan zaten güncel: {alan_adi} ({processed_alan_count}/{total_alan_count})",
@@ -331,6 +437,7 @@ def scrape_data():
             alan_entry.setdefault("dersler", {})
             alan_entry.setdefault("dbf_bilgileri", {})
             alan_entry.setdefault("cop_bilgileri", {})
+            alan_entry.setdefault("bom_materyalleri", bom_data.get(alan_id, {}))
             
             # Kazınan DBF verisini ekle
             sinif_dbf_data = dbf_data.get(sinif, {})
@@ -395,36 +502,70 @@ def scrape_data():
     # Son olarak, tüm veriyi 'done' tipiyle gönder
     yield {"type": "done", "data": final_data}
 
-def main():
+def print_full_summary():
+    """
+    Runs the full scrape and prints a summary of all data to the terminal.
+    This was the original main() function's behavior.
+    """
     # Generator'dan gelen tüm veriyi topla
-    scraped_data = [item for item in scrape_data() if item['type'] == 'done'][0]['data']
-    tum_veri = scraped_data["alanlar"]
-    link_index = scraped_data["ortak_alan_indeksi"]
+    print("Tüm veriler çekiliyor ve özet oluşturuluyor... (Bu işlem uzun sürebilir)")
+    final_data = None
+    for item in scrape_data():
+        # Sadece ilerleme ve uyarıları göster, çok fazla çıktı olmasın
+        if item['type'] in ['progress', 'warning', 'error']:
+            print(f"  -> {item['message']}", file=sys.stderr)
+        if item['type'] == 'done':
+            final_data = item['data']
+            break
+    
+    if not final_data:
+        print("Veri çekme işlemi başarısız oldu veya veri bulunamadı.", file=sys.stderr)
+        return
+
+    tum_veri = final_data["alanlar"]
+    link_index = final_data["ortak_alan_indeksi"]
+
     # 🖨️ Terminal çıktısı
     for alan_id, alan_data in sorted(tum_veri.items(), key=lambda item: item[1]['isim']):
         print(f"\n{alan_data['isim']} ({alan_id})")
         
         # DBF Linklerini yazdır
-        if alan_data.get("dbf_bilgileri"):
+        if alan_data.get("dbf_bilgileri") and any(alan_data["dbf_bilgileri"].values()):
             print("  Ders Bilgi Formları:")
             for sinif, dbf_info in sorted(alan_data["dbf_bilgileri"].items()):
                 tarih_str = f" (Güncelleme: {dbf_info['guncelleme_tarihi']})" if dbf_info.get('guncelleme_tarihi') else ""
                 print(f"  -> {sinif}. Sınıf: {dbf_info['link']}{tarih_str}")
 
+        # ÇÖP Linklerini yazdır
+        if alan_data.get("cop_bilgileri") and any(alan_data["cop_bilgileri"].values()):
+            print("  Çerçeve Öğretim Programları (ÇÖP):")
+            for sinif, cop_info in sorted(alan_data["cop_bilgileri"].items()):
+                yil_str = f" (Yıl: {cop_info['guncelleme_yili']})" if cop_info.get('guncelleme_yili') else ""
+                print(f"  -> {sinif}. Sınıf: {cop_info['link']}{yil_str}")
+
+        # BÖM Materyallerini yazdır
+        if alan_data.get("bom_materyalleri") and alan_data.get("bom_materyalleri", {}).get("dersler"):
+            print("  Beceri Öğretim Materyalleri (BÖM):")
+            for ders in alan_data["bom_materyalleri"]["dersler"]:
+                print(f"    - Ders: {ders['ders_adi']}")
+                if ders.get("moduller"):
+                    for modul in ders["moduller"]:
+                        print(f"      -> {modul['isim']}: {modul['link']}")
+        
         # Dersleri isme göre sırala
         sorted_dersler = sorted(alan_data["dersler"].items(), key=lambda item: item[1]["isim"])
         if sorted_dersler:
-            print("  Çerçeve Öğretim Programları:")
-        for ders_link, d in sorted_dersler:
-            # Sınıfları birleştir: {"11", "12"} -> "11-12"
-            sinif_str = "-".join(d['siniflar'])
-            sinif_display_str = f"({sinif_str}. Sınıf)"
-            # Ortak alan bilgisini oluştur
-            ortak_alanlar = link_index.get(ders_link, [])
-            ortak_str = ""
-            if len(ortak_alanlar) > 1:
-                ortak_str = f" ({len(ortak_alanlar)} ortak alan)"
-            print(f"  -> {d['isim']} {sinif_display_str}{ortak_str}")
+            print("  Ders Materyalleri (PDF):")
+            for ders_link, d in sorted_dersler:
+                # Sınıfları birleştir: ["11", "12"] -> "11-12"
+                sinif_str = "-".join(d['siniflar'])
+                sinif_display_str = f"({sinif_str}. Sınıf)"
+                # Ortak alan bilgisini oluştur
+                ortak_alanlar = link_index.get(ders_link, [])
+                ortak_str = ""
+                if len(ortak_alanlar) > 1:
+                    ortak_str = f" ({len(ortak_alanlar)} ortak alan)"
+                print(f"  -> {d['isim']} {sinif_display_str}{ortak_str}")
 
     print("\n==== Özet ====")
     toplam_alan = len(tum_veri)
@@ -434,6 +575,68 @@ def main():
     print(f"Alan Bazında Toplam Ders: {alan_bazinda_toplam_ders}")
     print(f"Benzersiz Toplam Ders: {benzersiz_toplam_ders}")
 
+def main():
+    parser = argparse.ArgumentParser(description="MEB veri çekme ve test aracı.")
+    parser.add_argument(
+        '--test', 
+        choices=['bom', 'dbf', 'cop', 'dersler', 'alanlar'], 
+        help="Belirli bir modülü test et: 'bom', 'dbf', 'cop', 'dersler', 'alanlar'."
+    )
+    parser.add_argument(
+        '--alan-id', 
+        type=str, 
+        help="Test için belirli bir alan ID'si (örn: '04' Bilişim Teknolojileri için)."
+    )
+    parser.add_argument(
+        '--sinif', 
+        type=str, 
+        help="Test için belirli bir sınıf (örn: '9', '10', '11', '12')."
+    )
+    args = parser.parse_args()
+
+    if not args.test:
+        # Test argümanı yoksa, tam özet fonksiyonunu çalıştır
+        print_full_summary()
+        return
+
+    print(f"🚀 Test modu başlatıldı: {args.test}")
+    
+    if args.test == 'alanlar':
+        sinif = args.sinif if args.sinif else "9"
+        print(f"Alanlar {sinif}. sınıf için çekiliyor...")
+        data = get_alanlar(sinif)
+        print(json.dumps(data, indent=2, ensure_ascii=False))
+
+    elif args.test == 'dersler':
+        if not args.alan_id:
+            print("Hata: 'dersler' testi için --alan-id gereklidir.", file=sys.stderr)
+            return
+        sinif = args.sinif if args.sinif else "9"
+        print(f"Dersler, Alan ID: {args.alan_id}, Sınıf: {sinif} için çekiliyor...")
+        data = get_dersler_for_alan(args.alan_id, "Test Alanı", sinif)
+        print(json.dumps(data, indent=2, ensure_ascii=False))
+
+    elif args.test == 'dbf':
+        sinif = args.sinif if args.sinif else "9"
+        print(f"DBF verileri {sinif}. sınıf için çekiliyor...")
+        _, data = get_dbf_data_for_class(sinif)
+        print(json.dumps(data, indent=2, ensure_ascii=False))
+
+    elif args.test == 'cop':
+        sinif = args.sinif if args.sinif else "9"
+        print(f"ÇÖP verileri {sinif}. sınıf için çekiliyor...")
+        _, data = get_cop_data_for_class(sinif)
+        print(json.dumps(data, indent=2, ensure_ascii=False))
+
+    elif args.test == 'bom':
+        if not args.alan_id:
+            print("Hata: 'bom' testi için --alan-id gereklidir.", file=sys.stderr)
+            return
+        print(f"BÖM verileri Alan ID: {args.alan_id} için çekiliyor...")
+        # get_bom_for_alan bir session nesnesi bekliyor, test için yeni bir tane oluşturalım.
+        data = get_bom_for_alan(args.alan_id, "Test Alanı", requests.Session())
+        print(json.dumps(data, indent=2, ensure_ascii=False))
+
+
 if __name__ == "__main__":
-    # print("✅ Bu kod çalışıyor")  # Kontrol satırı - server.py tarafından import edildiği için yoruma alındı.
     main()

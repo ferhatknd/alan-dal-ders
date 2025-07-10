@@ -1,7 +1,126 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 
-function App() {
-  // State'leri birleştirelim ve genişletelim
+const OrtakAlanlarCell = ({ dersLink, currentAlanId, ortakAlanIndeksi, allAlans }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const ortakAlanIds = (ortakAlanIndeksi[dersLink] || []).filter(id => id !== currentAlanId);
+
+  if (ortakAlanIds.length === 0) {
+    return <td>-</td>;
+  }
+
+  const ortakAlanNames = ortakAlanIds.map(id => allAlans[id]?.isim || `ID: ${id}`);
+  const displayLimit = 2;
+  const needsTruncation = ortakAlanNames.length > displayLimit;
+  const displayedNames = isExpanded ? ortakAlanNames : ortakAlanNames.slice(0, displayLimit);
+
+  return (
+    <td className="ortak-alanlar-cell">
+      {displayedNames.join(', ')}
+      {needsTruncation && !isExpanded && (
+        <>
+          ... <button onClick={() => setIsExpanded(true)} className="expand-button">&gt;&gt;</button>
+        </>
+      )}
+    </td>
+  );
+};
+
+const AlanItem = ({ alan, ortakAlanIndeksi, allAlans, searchTerm }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const sortedDersler = useMemo(() => {
+    if (!alan.dersler) return [];
+    return Object.entries(alan.dersler).sort(([, a], [, b]) => a.isim.localeCompare(b.isim, 'tr'));
+  }, [alan.dersler]);
+
+  const renderHighlightedText = (text, highlight) => {
+    if (!highlight.trim()) {
+      return text;
+    }
+    const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
+    return (
+      <>
+        {parts.map((part, i) =>
+          part.toLowerCase() === highlight.toLowerCase() ? (
+            <mark key={i}>{part}</mark>
+          ) : (
+            part
+          )
+        )}
+      </>
+    );
+  };
+
+  return (
+    <div className="alan-item">
+      <div className="alan-header" onClick={() => setIsExpanded(!isExpanded)}>
+        <h3>
+          {renderHighlightedText(alan.isim, searchTerm)}
+          <span className="ders-sayisi">
+            ({Object.keys(alan.dersler || {}).length} ders)
+          </span>
+        </h3>
+        <span>{isExpanded ? '−' : '+'}</span>
+      </div>
+      {isExpanded && (
+        <div className="alan-details">
+          {sortedDersler.length > 0 ? (
+            <table className="ders-tablosu">
+              <thead>
+                <tr>
+                  <th>Alan</th>
+                  <th>Ders Adı</th>
+                  <th>Sınıfı</th>
+                  <th>Ders Materyali</th>
+                  <th>Okutulduğu Diğer Alanlar</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedDersler.map(([link, ders]) => (
+                  <tr key={link}>
+                    <td>{alan.isim}</td>
+                    <td>{ders.isim}</td>
+                    <td>{ders.siniflar.join('-')}</td>
+                    <td><a href={link} target="_blank" rel="noopener noreferrer" className="ders-link">PDF</a></td>
+                    <OrtakAlanlarCell
+                      dersLink={link}
+                      currentAlanId={alan.id}
+                      ortakAlanIndeksi={ortakAlanIndeksi}
+                      allAlans={allAlans}
+                    />
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p>Bu alan için ders (Çerçeve Öğretim Programı) bulunamadı.</p>
+          )}
+
+          <div className="info-section">
+            {alan.dbf_bilgileri && Object.keys(alan.dbf_bilgileri).length > 0 && (
+              <ul>
+                <strong>Ders Bilgi Formları (DBF):</strong>
+                {Object.entries(alan.dbf_bilgileri).sort(([a], [b]) => parseInt(a) - parseInt(b)).map(([sinif, info]) => (
+                  <li key={`dbf-${sinif}`}>{sinif}. Sınıf: <a href={info.link} target="_blank" rel="noopener noreferrer">{info.link.split('/').pop()}</a> {info.guncelleme_tarihi && <small>({info.guncelleme_tarihi})</small>}</li>
+                ))}
+              </ul>
+            )}
+            {alan.cop_bilgileri && Object.keys(alan.cop_bilgileri).length > 0 && (
+              <ul>
+                <strong>Çerçeve Öğretim Programları (ÇÖP):</strong>
+                {Object.entries(alan.cop_bilgileri).sort(([a], [b]) => parseInt(a) - parseInt(b)).map(([sinif, info]) => (
+                  <li key={`cop-${sinif}`}>{sinif}. Sınıf: <a href={info.link} target="_blank" rel="noopener noreferrer">{info.link.split('/').pop()}</a> {info.guncelleme_yili && <small>(Yıl: {info.guncelleme_yili})</small>}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+function App() {  
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false); // isScraping yerine
   const [initialLoading, setInitialLoading] = useState(true); // Sayfa ilk yüklenirken
@@ -19,7 +138,7 @@ function App() {
     return () => {
       clearTimeout(timerId);
     };
-  }, [searchTerm]);
+  }, [searchTerm]); 
 
   // Sayfa ilk yüklendiğinde önbellekteki veriyi çek
   useEffect(() => {
@@ -45,10 +164,15 @@ function App() {
     };
 
     fetchCachedData();
-  }, []); // Boş bağımlılık dizisi, sadece component mount edildiğinde çalışır
+  }, []);
 
   // Veri çekme fonksiyonu (eski startScraping)
   const handleScrape = useCallback(() => {
+    // Eğer veri zaten varsa, kullanıcıya yeniden çekmek isteyip istemediğini sor
+    if (data && !window.confirm('Veriler zaten mevcut. En güncel verileri çekmek için yeniden başlatmak istediğinize emin misiniz? Bu işlem biraz zaman alabilir.')) {
+      return; // Kullanıcı iptal ederse işlemi durdur
+    }
+
     // Tüm state'leri sıfırla
     setData(null);
     setProgress([]);
@@ -85,20 +209,21 @@ function App() {
   // Alanları isme göre sıralamak için bir yardımcı fonksiyon
   const getSortedAlans = useCallback((alanlar) => {
     if (!alanlar) return [];
-    return Object.values(alanlar).sort((a, b) => a.isim.localeCompare(b.isim, 'tr'));
-  }, []);
+    // Alanları ID'ye göre değil, isme göre sırala
+    return Object.entries(alanlar).sort(([, a], [, b]) => a.isim.localeCompare(b.isim, 'tr'));
+  }, []); 
 
   // Arama terimine göre alanları filtrele
   const filteredAlanlar = useMemo(() => {
     if (!data || !data.alanlar) {
       return [];
     }
-    const term = debouncedTerm.trim().toLowerCase();
+    const term = debouncedTerm.trim().toLocaleLowerCase('tr');
     const sorted = getSortedAlans(data.alanlar);
     if (!term) {
       return sorted;
     }
-    return sorted.filter(alanData => alanData.isim.toLowerCase().includes(term));
+    return sorted.filter(([, alanData]) => alanData.isim.toLocaleLowerCase('tr').includes(term));
   }, [debouncedTerm, data, getSortedAlans]);
   
   return (
@@ -140,79 +265,17 @@ function App() {
 
       {/* Veri Görüntüleme Alanı */}
       {!initialLoading && data && (
-        <div className="data-display" style={{ marginTop: '10px', textAlign: 'left' }}>
+        <div className="data-display">
           <h2>Alınan Veriler ({filteredAlanlar.length} alan bulundu)</h2>
           {filteredAlanlar.length > 0 ? (
-            filteredAlanlar.map((alan, index) => (
-              <div key={index} style={{ border: '1px solid #eee', padding: '10px', marginBottom: '10px', borderRadius: '5px' }}>
-                <h3 style={{ marginTop: 0 }}>
-                  {debouncedTerm.trim()
-                    ? alan.isim.split(new RegExp(`(${debouncedTerm})`, 'gi')).map((part, i) =>
-                        part.toLowerCase() === debouncedTerm.toLowerCase().trim() ? (
-                          <mark key={i}>{part}</mark>
-                        ) : (
-                          part
-                        )
-                      )
-                    : alan.isim}
-                </h3>
-                {alan.dbf_bilgileri && Object.keys(alan.dbf_bilgileri).length > 0 ? (
-                  <div>
-                    <strong>Ders Bilgi Formları (DBF):</strong>
-                    <ul>
-                      {Object.entries(alan.dbf_bilgileri)
-                        .sort(([sinifA], [sinifB]) => parseInt(sinifA) - parseInt(sinifB)) // Sınıfa göre sırala
-                        .map(([sinif, info]) => (
-                          <li key={sinif}>
-                            {sinif}. Sınıf: <a href={info.link} target="_blank" rel="noopener noreferrer">{info.link.split('/').pop()}</a>
-                            {info.guncelleme_tarihi && <small> ({info.guncelleme_tarihi})</small>}
-                          </li>
-                        ))}
-                    </ul>
-                  </div>
-                ) : (
-                  <p><small>Bu alan için DBF linki bulunamadı.</small></p>
-                )}
-
-              {/* Çerçeve Öğretim Programları (ÇÖP) */}
-              {alan.cop_bilgileri && Object.keys(alan.cop_bilgileri).length > 0 ? (
-                <div className="cop-listesi">
-                  <strong>Çerçeve Öğretim Programları (ÇÖP):</strong>
-                  <ul>
-                    {Object.entries(alan.cop_bilgileri)
-                      .sort(([sinifA], [sinifB]) => parseInt(sinifA) - parseInt(sinifB)) // Sınıfa göre sırala
-                      .map(([sinif, info]) => (
-                        <li key={sinif}>
-                          {sinif}. Sınıf: <a href={info.link} target="_blank" rel="noopener noreferrer">{info.link.split('/').pop()}</a>
-                          {info.guncelleme_yili && <small> (Yıl: {info.guncelleme_yili})</small>}
-                        </li>
-                      ))}
-                  </ul>
-                </div>
-              ) : null}
-
-              {/* Dersler (Çerçeve Öğretim Programları) */}
-              {alan.dersler && Object.keys(alan.dersler).length > 0 ? (
-                <div className="ders-listesi">
-                  <strong>Çerçeve Öğretim Programları (Dersler):</strong>
-                  <ul>
-                    {Object.entries(alan.dersler)
-                      .sort(([, dersA], [, dersB]) => dersA.isim.localeCompare(dersB.isim, 'tr'))
-                      .map(([link, ders]) => (
-                        <li key={link}>
-                          <span>
-                            {ders.isim}
-                            <small> ({ders.siniflar.join('-')}. Sınıf)</small>
-                          </span>
-                          <a href={link} target="_blank" rel="noopener noreferrer" className="ders-link">
-                            PDF
-                          </a>
-                        </li>
-                      ))}
-                  </ul>
-                </div>
-              ) : null}
-              </div>
+            filteredAlanlar.map(([alanId, alanData]) => (
+              <AlanItem
+                key={alanId}
+                alan={{ ...alanData, id: alanId }}
+                ortakAlanIndeksi={data.ortak_alan_indeksi || {}}
+                allAlans={data.alanlar}
+                searchTerm={debouncedTerm}
+              />
             ))
           ) : (
             <p>Arama kriterlerinize uygun alan bulunamadı.</p>

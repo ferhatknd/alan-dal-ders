@@ -1,40 +1,11 @@
 .App {
   text-align: center;
-  font-family: sans-serif;
-}
-
-.App-header {
-  background-color: #282c34;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
   padding: 20px;
-  color: white;
-  margin-bottom: 20px;
+  color: #333;
 }
-
-.App-header button {
-  margin-top: 20px;
-  padding: 10px 20px;
-  font-size: 16px;
-  cursor: pointer;
-  border: none;
-  border-radius: 5px;
-  background-color: #61dafb;
-}
-
-.App-header button:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
-}
-
-.error {
-  color: #e74c3c;
-  font-weight: bold;
-  margin: 20px;
-  padding: 10px;
-  border: 1px solid #e74c3c;
-  border-radius: 5px;
-  background-color: #fbeae5;
-}
-/* ... mevcut stillerin altına ... */
 
 .progress-container {
   width: 80%;
@@ -87,6 +58,11 @@
   background-color: #e9f7ef;
 }
 
+.data-display {
+  margin-top: 20px;
+  text-align: left;
+}
+
 /* Arama kutusu için stiller */
 .search-bar {
   margin: 20px 0;
@@ -106,6 +82,99 @@ mark {
   background-color: #f1c40f;
   padding: 0.1em 0;
   border-radius: 3px;
+}
+
+/* Alan Item (Accordion) Stilleri */
+.alan-item {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  overflow: hidden;
+  transition: box-shadow 0.2s ease-in-out;
+}
+
+.alan-item:hover {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+
+.alan-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background-color: #f8f9fa;
+  cursor: pointer;
+  user-select: none;
+}
+
+.alan-header h3 {
+  margin: 0;
+  font-size: 1.1em;
+  color: #0056b3;
+}
+
+.alan-header span {
+  font-size: 1.5em;
+  font-weight: bold;
+  color: #007bff;
+}
+
+.alan-details {
+  padding: 20px;
+  border-top: 1px solid #ddd;
+  background-color: #fff;
+}
+
+/* Ders Tablosu Stilleri */
+.ders-tablosu {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.ders-tablosu th, .ders-tablosu td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.ders-tablosu th {
+  background-color: #e9ecef;
+  font-weight: 600;
+}
+
+.ders-tablosu tbody tr:nth-child(even) {
+  background-color: #f8f9fa;
+}
+
+.expand-button {
+  background: none;
+  border: 1px solid #007bff;
+  color: #007bff;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: bold;
+  margin-left: 5px;
+}
+
+.expand-button:hover {
+  background-color: #007bff;
+  color: white;
+}
+
+/* DBF ve ÇÖP Link Listeleri */
+.info-section {
+  border-top: 1px dashed #ccc;
+  padding-top: 15px;
+  margin-top: 15px;
+}
+
+.info-section ul {
+  padding-left: 20px;
+  list-style-type: disc;
+  margin-bottom: 15px;
 }
 
 /* Ders listesi için stiller */

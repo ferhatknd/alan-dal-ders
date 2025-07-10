@@ -176,33 +176,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/adalet.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (adalet.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/adalet.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/adalet.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (adalet.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/adalet.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/adalet_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/adalet.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (adalet_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/adalet.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/adalet_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (adalet_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "02": {
       "isim": "Aile ve Tüketici Hizmetleri",
@@ -447,33 +449,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/aile.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (aile.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/aile.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/aile.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (aile.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/aile.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/aile_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/aile.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (aile_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/aile.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/aile_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (aile_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "03": {
       "isim": "Ayakkabı ve Saraciye Teknolojisi",
@@ -486,35 +490,36 @@
       },
       "dbf_bilgileri": {
         "9": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf9/ayakkabipro_9.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/ayakkabipro.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (ayakkabipro_9.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/ayakkabipro.rar"
           }
         },
         "10": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf10/ayakkabipro_10.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/ayakkabipro.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (ayakkabipro_10.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/ayakkabipro.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/protokol_ayakkabi_2021_10.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/ayakkabipro.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (protokol_ayakkabi_2021_10.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/ayakkabipro.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/protokol_ayakkabi_2021_10.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (protokol_ayakkabi_2021_10.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
       },
-      "cop_bilgileri": {}
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "04": {
       "isim": "Bilişim Teknolojileri",
@@ -720,33 +725,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/bilisim.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (bilisim.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/bilisim.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/bilisim.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (bilisim.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/bilisim.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/bilisim_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/bilisim.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (bilisim_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/bilisim.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/bilisim_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (bilisim_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "05": {
       "isim": "Biyomedikal Cihaz Teknolojileri",
@@ -876,33 +883,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/biyomedikal.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (biyomedikal.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/biyomedikal.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/biyomedikal.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (biyomedikal.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/biyomedikal.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/biyomedikal_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/biyomedikal.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (biyomedikal_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/biyomedikal.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/biyomedikal_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (biyomedikal_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "06": {
       "isim": "Büro Yönetimi ve Yönetici Asistanlığı",
@@ -1086,33 +1095,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/buro.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (buro.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/buro.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/buro.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (buro.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/buro.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/buro_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/buro.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (buro_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/buro.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/buro_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (buro_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "07": {
       "isim": "Çocuk Gelişimi ve Eğitimi",
@@ -1251,33 +1262,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/cocukgelisimi.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (cocukgelisimi.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/cocukgelisimi.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/cocukgelisimi.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (cocukgelisimi.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/cocukgelisimi.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/cocuk_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/cocukgelisimi.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (cocuk_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/cocukgelisimi.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/cocuk_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (cocuk_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "08": {
       "isim": "Denizcilik",
@@ -1416,33 +1429,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/denizcilik.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (denizcilik.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/denizcilik.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/denizcilik.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (denizcilik.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/denizcilik.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/denizcilik_protokol_2021_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/denizcilikpro.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (denizcilik_protokol_2021_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/denizcilikpro.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/denizcilik_protokol_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (denizcilik_protokol_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "09": {
       "isim": "El Sanatları Teknolojisi",
@@ -1593,33 +1608,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/elsanat.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (elsanat.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/elsanat.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/elsanat.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (elsanat.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/elsanat.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/elsanat_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/elsanat.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (elsanat_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/elsanat.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/el_sanat_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (el_sanat_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf12/el_sanat_dbf_12.rar"
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "10": {
       "isim": "Elektrik-Elektronik Teknolojisi",
@@ -1876,33 +1893,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/elektrik.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (elektrik.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/elektrik.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/elektrik.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (elektrik.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/elektrik.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/elektrik_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/elektrik.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (elektrik_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/elektrik.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/elektrik_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (elektrik_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "11": {
       "isim": "Endüstriyel Otomasyon Teknolojileri",
@@ -2028,33 +2047,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/endustriyel.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (endustriyel.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/endustriyel.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/endustriyel.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (endustriyel.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/endustriyel.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/endustriyel_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/endustriyel.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (endustriyel_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/endustriyel.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/endustriyel_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (endustriyel_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "12": {
       "isim": "Gazetecilik",
@@ -2159,33 +2180,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/gazetecilik.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (gazetecilik.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/gazetecilik.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/gazetecilik.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (gazetecilik.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/gazetecilik.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/gazetecilik_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/gazetecilik.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (gazetecilik_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/gazetecilik.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/gazetecilik_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (gazetecilik_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "13": {
       "isim": "Geleneksel Türk Sanatları",
@@ -2301,33 +2324,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/geleneksel.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (geleneksel.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/geleneksel.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/geleneksel.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (geleneksel.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/geleneksel.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/geleneksel_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/geleneksel.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (geleneksel_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/geleneksel.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/geleneksel_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (geleneksel_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "14": {
       "isim": "Gemi Yapımı",
@@ -2517,33 +2542,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/gemi.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (gemi.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/gemi.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/gemi.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (gemi.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/gemi.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/gemi_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/gemi.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (gemi_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/gemi.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/gemi_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (gemi_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "15": {
       "isim": "Gıda Teknolojisi",
@@ -2723,33 +2750,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/gida.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (gida.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/gida.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/gida.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (gida.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/gida.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/gida_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/gida.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (gida_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/gida.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/gida_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (gida_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "16": {
       "isim": "Grafik ve Fotoğraf",
@@ -2763,34 +2792,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/grafik.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (grafik.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/grafik.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/grafik.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (grafik.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/grafik.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/grafik_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/grafik.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (grafik_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/grafik.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/grafik_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (grafik_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
       },
-      "cop_bilgileri": {}
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "17": {
       "isim": "Güzellik Hizmetleri",
@@ -2902,33 +2932,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/guzellik.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (guzellik.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/guzellik.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/guzellik.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (guzellik.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/guzellik.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/guzellik_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/guzellik.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (guzellik_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/guzellik.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/guzellik_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (guzellik_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "18": {
       "isim": "Halkla İlişkiler",
@@ -3067,33 +3099,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/halklailiskiler.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (halklailiskiler.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/halklailiskiler.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/halklailiskiler.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (halklailiskiler.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/halklailiskiler.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/halklailiskiler_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/halklailiskiler.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (halklailiskiler_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/halklailiskiler.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/halklailiskiler_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (halklailiskiler_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "19": {
       "isim": "Harita-Tapu-Kadastro",
@@ -3228,33 +3262,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/harita.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (harita.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/harita.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/harita.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (harita.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/harita.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/harita_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/harita.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (harita_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/harita.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/harita_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (harita_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "20": {
       "isim": "Hasta ve Yaşlı Hizmetleri",
@@ -3428,33 +3464,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/hasta.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (hasta.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/hasta.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/hasta.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (hasta.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/hasta.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/hasta_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/hasta.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (hasta_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/hasta.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/hasta_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (hasta_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "21": {
       "isim": "Havacılık ve Uzay Teknolojisi",
@@ -3467,14 +3505,22 @@
       },
       "dbf_bilgileri": {
         "9": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf9/havacilikveuzay9.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/havacilikveuzay.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (havacilikveuzay9.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/havacilikveuzay.rar"
+          }
+        },
+        "10": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/havacilikveuzay.rar",
+          "guncelleme_tarihi": "10.07.2025",
+          "ayristirilan_veri": {
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/havacilikveuzay.rar"
           }
         }
       },
-      "cop_bilgileri": {}
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "22": {
       "isim": "Hayvan Yetiştiriciliği ve Sağlığı",
@@ -3620,33 +3666,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/hayvanyetistiriciligi.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (hayvanyetistiriciligi.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/hayvanyetistiriciligi.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/hayvanyetistiriciligi.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (hayvanyetistiriciligi.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/hayvanyetistiriciligi.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/hayvanyetistiriciligi_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/hayvanyetistiriciligi.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (hayvanyetistiriciligi_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/hayvanyetistiriciligi.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/hayvanyet_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (hayvanyet_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "23": {
       "isim": "İnşaat Teknolojisi",
@@ -3900,33 +3948,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/insaat.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (insaat.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/insaat.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/insaat.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (insaat.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/insaat.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/insaat_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/insaat.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (insaat_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/insaat.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/insaat_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (insaat_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "24": {
       "isim": "İtfaiyecilik ve Yangın Güvenliği",
@@ -4018,33 +4068,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/itfaiyecilik.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (itfaiyecilik.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/itfaiyecilik.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/itfaiyecilik.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (itfaiyecilik.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/itfaiyecilik.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/itfaiyecilik_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/itfaiyecilik.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (itfaiyecilik_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/itfaiyecilik.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/itfaiyecilik_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (itfaiyecilik_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "25": {
       "isim": "Kimya Teknolojisi",
@@ -4252,33 +4304,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/kimya.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (kimya.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/kimya.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/kimya.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (kimya.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/kimya.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/kimya_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/kimya.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (kimya_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/kimya.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/kimya_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (kimya_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "26": {
       "isim": "Konaklama ve Seyahat Hizmetleri",
@@ -4570,33 +4624,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/konaklama.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (konaklama.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/konaklama.rar"
           }
         },
         "10": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf10/konaklamapro.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/konaklama.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (konaklamapro.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/konaklama.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/konaklamapro_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/konaklamapro.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (konaklamapro_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/konaklamapro.rar"
           }
         },
         "12": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf12/konaklama_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/konaklamapro_dbf_12.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (konaklama_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+            "icerik": "Bu bir arşiv dosyasıdır (konaklamapro_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "27": {
       "isim": "Kuyumculuk Teknolojisi",
@@ -4644,28 +4700,36 @@
       },
       "dbf_bilgileri": {
         "9": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf9/kuyumculuk9.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/kuyumculuk.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (kuyumculuk9.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/kuyumculuk.rar"
           }
         },
         "10": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf10/kuyumculuk10.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/kuyumculuk.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (kuyumculuk10.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/kuyumculuk.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/kuyumculuk_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/kuyumculuk.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (kuyumculuk_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/kuyumculuk.rar"
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/kuyumculuk_dbf_12.rar",
+          "guncelleme_tarihi": "10.07.2025",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (kuyumculuk_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
       },
-      "cop_bilgileri": {}
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "28": {
       "isim": "Laboratuvar Hizmetleri",
@@ -4799,33 +4863,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/laboratuvar.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (laboratuvar.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/laboratuvar.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/laboratuvar.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (laboratuvar.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/laboratuvar.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/laboratuvar_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/laboratuvar.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (laboratuvar_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/laboratuvar.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/laboratuvar_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (laboratuvar_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "29": {
       "isim": "Maden Teknolojisi",
@@ -4910,33 +4976,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/maden.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (maden.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/maden.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/maden.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (maden.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/maden.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/maden_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/maden.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (maden_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/maden.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/maden_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (maden_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "30": {
       "isim": "Makine ve Tasarım Teknolojisi",
@@ -5221,33 +5289,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/makine.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (makine.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/makine.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/makine.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (makine.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/makine.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/makine_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/makine.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (makine_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/makine.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/makine_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (makine_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "31": {
       "isim": "Matbaa Teknolojisi",
@@ -5405,33 +5475,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/matbaa.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (matbaa.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/matbaa.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/matbaa.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (matbaa.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/matbaa.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/matbaa_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/matbaa.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (matbaa_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/matbaa.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/matbaa_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (matbaa_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "32": {
       "isim": "Metal Teknolojisi",
@@ -5542,33 +5614,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/metal.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (metal.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/metal.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/metal.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (metal.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/metal.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/metal_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/metal.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (metal_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/metal.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/metal_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (metal_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "33": {
       "isim": "Metalürji Teknolojisi",
@@ -5706,33 +5780,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/metalurji.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (metalurji.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/metalurji.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/metalurji.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (metalurji.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/metalurji.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/metalurji_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/metalurji.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (metalurji_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/metalurji.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/metalurji_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (metalurji_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: HTTPSConnectionPool(host='meslek.meb.gov.tr', port=443): Max retries exceeded with url: /upload/dbf12/metalurji_dbf_12.rar (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1028)')))"
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "34": {
       "isim": "Mikromekanik",
@@ -5746,20 +5822,28 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/mikromekanik.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/mikromekanik.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/mikromekanik.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (mikromekanik.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/mikromekanik.rar"
+          }
+        },
+        "11": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/mikromekanik.rar",
+          "guncelleme_tarihi": "10.07.2025",
+          "ayristirilan_veri": {
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/mikromekanik.rar"
           }
         }
       },
-      "cop_bilgileri": {}
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "35": {
       "isim": "Mobilya ve İç Mekân Tasarımı",
@@ -5909,33 +5993,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/mobilya.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (mobilya.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/mobilya.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/mobilya.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (mobilya.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/mobilya.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/mobilya_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/mobilya.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (mobilya_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/mobilya.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/mobilya_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (mobilya_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "36": {
       "isim": "Moda Tasarım Teknolojileri",
@@ -6095,33 +6181,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/moda.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (moda.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/moda.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/moda.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (moda.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/moda.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/moda_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/moda.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (moda_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/moda.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/moda_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (moda_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "37": {
       "isim": "Motorlu Araçlar Teknolojisi",
@@ -6214,33 +6302,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/motorluarac.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (motorluarac.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/motorluarac.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/motorluarac.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (motorluarac.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/motorluarac.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/motorluaraclar_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/motorluarac.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (motorluaraclar_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/motorluarac.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/motorluarac_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (motorluarac_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "38": {
       "isim": "Muhasebe ve Finansman",
@@ -6445,33 +6535,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/muhasebepro.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (muhasebepro.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/muhasebepro.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/muhasebepro.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (muhasebepro.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/muhasebepro.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/muhasebe_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/muhasebe.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (muhasebe_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/muhasebe.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/muhasebe_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (muhasebe_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "39": {
       "isim": "Pazarlama ve Perakende",
@@ -6678,33 +6770,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/pazarlama.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (pazarlama.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/pazarlama.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/pazarlama.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (pazarlama.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/pazarlama.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/pazarlama_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/pazarlama.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (pazarlama_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/pazarlama.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/pazarlama_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (pazarlama_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "40": {
       "isim": "Plastik Sanatlar",
@@ -6796,34 +6890,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/plastiksanatlar.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (plastiksanatlar.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/plastiksanatlar.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/plastiksanatlar.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (plastiksanatlar.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/plastiksanatlar.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/plastiksanatlar_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/plastiksanatlar.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (plastiksanatlar_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/plastiksanatlar.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/plastiksanatlar_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (plastiksanatlar_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
       },
-      "cop_bilgileri": {}
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "41": {
       "isim": "Plastik Teknolojisi",
@@ -6891,33 +6986,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/plastiktek.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (plastiktek.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/plastiktek.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/plastiktek.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (plastiktek.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/plastiktek.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/plastik_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/plastiktek.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (plastik_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/plastiktek.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/plastiktek_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (plastiktek_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "42": {
       "isim": "Radyo-Televizyon",
@@ -6931,34 +7028,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/radyotv.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (radyotv.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/radyotv.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/radyotv.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (radyotv.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/radyotv.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/rtv_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/radyotv.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (rtv_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/radyotv.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/radyotv_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (radyotv_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
       },
-      "cop_bilgileri": {}
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "43": {
       "isim": "Raylı Sistemler Teknolojisi",
@@ -7102,33 +7200,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/rayli.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (rayli.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/rayli.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/rayli.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (rayli.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/rayli.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/rayli_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/rayli.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (rayli_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/rayli.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/rayli_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (rayli_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "44": {
       "isim": "Sağlık Hizmetleri",
@@ -7344,33 +7444,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/saglik.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (saglik.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/saglik.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/saglik.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (saglik.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/saglik.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/saglik_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/saglik.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (saglik_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/saglik.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/saglik_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (saglik_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "45": {
       "isim": "Seramik ve Cam Teknolojisi",
@@ -7418,35 +7520,36 @@
       },
       "dbf_bilgileri": {
         "9": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf9/seramikpro9.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf9/seramikpro.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/seramikpro9.rar"
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/seramikpro.rar"
           }
         },
         "10": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf10/seramikpro_10.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/seramikpro.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (seramikpro_10.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/seramikpro.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/protokol_seramik_2021_10.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/seramikpro.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/protokol_seramik_2021_10.rar"
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/seramikpro.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/protokol_seramik_2021_10.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf12/protokol_seramik_2021_10.rar"
           }
         }
       },
-      "cop_bilgileri": {}
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "46": {
       "isim": "Siber Güvenlik",
@@ -7513,27 +7616,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/siber.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (siber.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/siber.rar"
           }
         },
         "10": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf10/siber10.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf10/siber.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (siber10.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/siber.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/siber11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/siber.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (siber11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/siber.rar"
+          }
+        },
+        "12": {
+          "link": "https://meslek.meb.gov.tr/upload/dbf12/siber_dbf_12.rar",
+          "guncelleme_tarihi": "10.07.2025",
+          "ayristirilan_veri": {
+            "icerik": "Bu bir arşiv dosyasıdır (siber_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
       },
-      "cop_bilgileri": {}
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "47": {
       "isim": "Tarım",
@@ -7741,33 +7852,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/tarim.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (tarim.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/tarim.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/tarim.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (tarim.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/tarim.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/tarim_2020_11.zip",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/tarim.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (tarim_2020_11.zip), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/tarim.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/tarim_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (tarim_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf12/tarim_dbf_12.rar"
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "48": {
       "isim": "Tekstil Teknolojisi",
@@ -7973,33 +8086,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/tekstil.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (tekstil.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/tekstil.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/tekstil.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (tekstil.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/tekstil.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/tekstil_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/tekstil.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (tekstil_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/tekstil.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/tekstil_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (tekstil_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "49": {
       "isim": "Tesisat Teknolojisi ve İklimlendirme",
@@ -8212,33 +8327,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/tesisat.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (tesisat.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/tesisat.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/tesisat.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (tesisat.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/tesisat.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/tesisat_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/tesisat.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (tesisat_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/tesisat.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/tesisat_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (tesisat_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "50": {
       "isim": "Uçak Bakım",
@@ -8337,33 +8454,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/ucak.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (ucak.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/ucak.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/ucak.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (ucak.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/ucak.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/ucakbakim_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/ucak.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (ucakbakim_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/ucak.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/ucak_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (ucak_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf12/ucak_dbf_12.rar"
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "51": {
       "isim": "Ulaştırma Hizmetleri",
@@ -8590,33 +8709,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/ulastirma.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (ulastirma.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/ulastirma.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/ulastirma.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (ulastirma.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/ulastirma.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/ulastirma_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/ulastirma.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (ulastirma_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/ulastirma.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/ulastirma_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (ulastirma_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "52": {
       "isim": "Yenilenebilir Enerji Teknolojileri",
@@ -8695,33 +8816,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/yenilenebilir.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (yenilenebilir.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/yenilenebilir.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/yenilenebilir.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (yenilenebilir.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/yenilenebilir.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/yenilenebilir_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/yenilenebilir.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (yenilenebilir_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/yenilenebilir.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/yenilenebilir_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (yenilenebilir_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "53": {
       "isim": "Yiyecek İçecek Hizmetleri",
@@ -8882,33 +9005,35 @@
       "dbf_bilgileri": {
         "9": {
           "link": "https://meslek.meb.gov.tr/upload/dbf9/yiyecek.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (yiyecek.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf9/yiyecek.rar"
           }
         },
         "10": {
           "link": "https://meslek.meb.gov.tr/upload/dbf10/yiyecek.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (yiyecek.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf10/yiyecek.rar"
           }
         },
         "11": {
-          "link": "https://meslek.meb.gov.tr/upload/dbf11/yiyecek_2020_11.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "link": "https://meslek.meb.gov.tr/upload/dbf11/yiyecekpro.rar",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (yiyecek_2020_11.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: 404 Client Error: Not Found for url: https://meslek.meb.gov.tr/upload/dbf11/yiyecekpro.rar"
           }
         },
         "12": {
           "link": "https://meslek.meb.gov.tr/upload/dbf12/yiyecek_dbf_12.rar",
-          "guncelleme_tarihi": "28.12.2023",
+          "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
             "icerik": "Bu bir arşiv dosyasıdır (yiyecek_dbf_12.rar), otomatik ayrıştırma desteklenmiyor."
           }
         }
-      }
+      },
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     },
     "54": {
       "isim": "--Mesleki Gelişim Atölyesi--",
@@ -8920,7 +9045,8 @@
         "12": "https://meslek.meb.gov.tr/upload/dbf12/meslekigelisimatolyesi.rar"
       },
       "dbf_bilgileri": {},
-      "cop_bilgileri": {}
+      "cop_bilgileri": {},
+      "bom_materyalleri": {}
     }
   },
   "ortak_alan_indeksi": {
