@@ -277,32 +277,50 @@ def extract_ortam_donanimi(pdf_path):
         
         ortam_donanimi = []
         
-        # Önce lattice ile dene
+        # Önce lattice ile dene - debug'a göre Row 6, Col 2'de data var
         for table in tables_lattice:
             df = table.df
+            print(f"Table shape: {df.shape}")
+            
+            # Satır 6, sütun 2'yi kontrol et (0-indexed olarak satır 5, sütun 1) 
+            if len(df) > 5 and len(df.columns) > 1:
+                cell_content = str(df.iloc[5, 1]).strip()
+                print(f"Row 6, Col 2 content: {cell_content}")
+                
+                if 'Ortam:' in cell_content and 'Teknik' in cell_content:
+                    print("Found equipment data in Row 6, Col 2")
+                    
+                    # Metni tek satır haline getir
+                    cleaned_content = re.sub(r'\s+', ' ', cell_content.strip())
+                    print(f"Cleaned content: {cleaned_content}")
+                    
+                    # Eksik bağlantıyı düzelt - "tahta/projeksiyon" "Donanım: Akıllı" arasında kopmuş
+                    if 'tahta/projeksiyon, çizim masası, çizim seti ile iş ortamı Donanım: Akıllı' in cleaned_content:
+                        fixed_content = cleaned_content.replace(
+                            'tahta/projeksiyon, çizim masası, çizim seti ile iş ortamı Donanım: Akıllı',
+                            'Donanım: Akıllı tahta/projeksiyon, çizim masası, çizim seti ile iş ortamı'
+                        )
+                        print(f"Fixed content: {fixed_content}")
+                        return parse_ortam_donanimi_content(fixed_content)
+                    else:
+                        return parse_ortam_donanimi_content(cleaned_content)
+            
+            # Eğer Row 6'da bulamazsa tüm tabloyu tara
             for i, row in df.iterrows():
                 for j, cell in enumerate(row):
-                    if isinstance(cell, str) and 'EĞİTİM-ÖĞRETİM ORTAM' in cell.upper():
-                        print(f"Found EĞİTİM-ÖĞRETİM ORTAM at row {i}, col {j}")
+                    if isinstance(cell, str) and ('Ortam:' in cell and ('Teknik' in cell or 'Atölye' in cell)):
+                        print(f"Found Ortam at row {i}, col {j}")
+                        content = cell
                         
-                        # İçerik aynı hücrede ise
-                        if ':' in cell:
-                            content = cell.split(':', 1)[1].strip()
-                        else:
-                            # Yan hücredeki içeriği al
-                            if j + 1 < len(row):
-                                content = str(row.iloc[j + 1]).strip()
-                                print(f"Content from next cell: {content[:100]}...")
-                            else:
-                                # Alt satırdaki içeriği al
-                                if i + 1 < len(df):
-                                    next_row = df.iloc[i + 1]
-                                    content = str(next_row.iloc[j]).strip()
-                                    print(f"Content from next row: {content[:100]}...")
-                                else:
-                                    continue
+                        # Metin düzeltmesi
+                        if 'Donanım: Akıllı' in content and 'tahta/projeksiyon' not in content:
+                            content = content.replace(
+                                'tahta/projeksiyon, çizim masası, çizim seti ile iş ortamı Donanım: Akıllı',
+                                'Donanım: Akıllı tahta/projeksiyon, çizim masası, çizim seti ile iş ortamı'
+                            )
                         
-                        if content and content != 'nan' and len(content) > 10:
+                        print(f"Full content found: {content}")
+                        if len(content) > 10:
                             return parse_ortam_donanimi_content(content)
         
         # Lattice işe yaramazsa stream dene
@@ -311,7 +329,7 @@ def extract_ortam_donanimi(pdf_path):
             text = df.to_string()
             
             # Regex ile EĞİTİM-ÖĞRETİM ORTAM bölümünü bul
-            pattern = r'EĞİTİM[^\n]*ORTAM[^\n]*DONANIMI?[:\s]*([^\n]+(?:\n[^\n]*)*?)(?=\n\s*[A-ZÜÇĞÖŞ]{3,}|$)'
+            pattern = r'(?:EĞİTİM[^\n]*ORTAM[^\n]*DONANIMI?|ORTAM\s+VE\s+DONANIMI)[:\s]*([^\n]+(?:\n[^\n]*)*?)(?=\n\s*[A-ZÜÇĞÖŞ]{3,}|$)'
             match = re.search(pattern, text, re.IGNORECASE | re.MULTILINE)
             
             if match:
