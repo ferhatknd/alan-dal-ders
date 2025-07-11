@@ -1,0 +1,615 @@
+{
+  "metadata": {
+    "processed_at": "2025-07-11T20:45:04.418000",
+    "source_directory": "/Users/ferhat/Library/Mobile Documents/com~apple~CloudDocs/Projeler/ProjectDogru/repos/alan-dal-ders",
+    "total_files": 10,
+    "successful_files": 10,
+    "partial_files": 0,
+    "failed_files": 0
+  },
+  "results": {
+    "9.SINIF_ETKİLİ KONUŞMA VE YAZMA DBF 28.06.2020.pdf": {
+      "metadata": {
+        "processed_at": "2025-07-11T20:43:46.593998",
+        "source_file": "9.SINIF_ETKİLİ KONUŞMA VE YAZMA DBF 28.06.2020.pdf",
+        "file_path": "./9.SINIF_ETKİLİ KONUŞMA VE YAZMA DBF 28.06.2020.pdf",
+        "status": "success"
+      },
+      "ders_bilgileri": {
+        "ders_adi": "ETKİLİ KONUŞMA VE YAZMA",
+        "ders_sinifi": 9,
+        "haftalik_ders_saati": 2,
+        "dersin_amaci": "Bu derste öğrenciye; iş sağlığı ve güvenliği tedbirleri doğrultusunda etkili iletişim kurma ve etkili konuşma/yazma ile ilgili temel bilgi ve becerilerin kazandırılması amaçlanmaktadır.",
+        "dersin_genel_kazanimlari": [],
+        "egitim_ortam_donanimi": [],
+        "olcme_degerlendirme": []
+      },
+      "ogrenme_birimleri_ozeti": [
+        {
+          "birim_adi": "İletişim",
+          "kazanim_sayisi": "5",
+          "ders_saati_orani": "18"
+        },
+        {
+          "birim_adi": "Hitabet",
+          "kazanim_sayisi": "6",
+          "ders_saati_orani": "20"
+        },
+        {
+          "birim_adi": "Bilgisayarda Yazı Yazma",
+          "kazanim_sayisi": "4",
+          "ders_saati_orani": "10"
+        },
+        {
+          "birim_adi": "Planlı Yazı Yazma",
+          "kazanim_sayisi": "4",
+          "ders_saati_orani": "24"
+        }
+      ],
+      "ogrenme_birimleri_detayi": [
+        {
+          "birim_adi": "1. İletişim kavramı, süreci ve öğelerini açıklar. • İletişim sürecini gösteren şemanın üzerinde durulur. • Etkili iletişime örnek videolar izletilir. • Etkili iletişimi sağlamaya yönelik canlandırmalar yapılması sağlanır. 2. İletişim türleri ve şekillerini açıklar. • Sözlü ve sözsüz iletişimin önemi üzerinde durulur. • Sözsüz iletişime (beden dili, kılık kıyafet, jest, mimik, davranış vs.) ilişkin örnek fotoğraf ve videolar gösterilir. 3. İletişim engellerini açıklar. • İletişim engellerini gösteren örnek diyalogların incelenmesi sağlanır. • İletişim engellerine ilişkin canlandırma yapılması sağlanır. 4. Kitle iletişim sürecini açıklar. • Kitle iletişimin yönlendirici etkisi üzerinde durulur. 5. Kitle iletişim araçlarını sıralar. • Kitle iletişim araçlarının işlevleri üzerinde durulur. • Kitle iletişim araçlarının kitle üzerindeki olumlu ve olumsuz yönlerinin ayırt edilmesi sağlanır.",
+          "konular": [
+            "Kitle İletişim Süreci",
+            "İletişim Türleri ve",
+            "Kitle İletişim Araçları",
+            "Şekilleri",
+            "Öğeleri",
+            "İletişim Engelleri",
+            "İletişim Süreci ve"
+          ],
+          "kazanimlar": []
+        }
+      ],
+      "uygulama_faaliyetleri": []
+    },
+    "2_GEMİ_TEMEL_İŞLEMLERİ_DBF_9.pdf": {
+      "metadata": {
+        "processed_at": "2025-07-11T20:43:53.620406",
+        "source_file": "2_GEMİ_TEMEL_İŞLEMLERİ_DBF_9.pdf",
+        "file_path": "./2_GEMİ_TEMEL_İŞLEMLERİ_DBF_9.pdf",
+        "status": "success"
+      },
+      "ders_bilgileri": {
+        "ders_adi": "GEMİ TEMEL İŞLEMLERİ",
+        "ders_sinifi": 9,
+        "haftalik_ders_saati": 6,
+        "dersin_amaci": "Bu derste öğrenciye; iş sağlığı ve güvenliği tedbirleri doğrultusunda gemi temel işlemleri ile ilgili bilgi ve becerilerin kazandırılması amaçlanmaktadır.",
+        "dersin_genel_kazanimlari": [],
+        "egitim_ortam_donanimi": [],
+        "olcme_degerlendirme": []
+      },
+      "ogrenme_birimleri_ozeti": [],
+      "ogrenme_birimleri_detayi": [
+        {
+          "birim_adi": "1. İş sağlığı ve güvenliği tedbirlerini alır ve kişisel koruyucu donanımlarını kullanır. • İş sağlığı ve güvenliği tedbirleri aldırılır. • Kişisel koruyucu donanımları kullandırılır. 2. İş sağlığı ve güvenliği tedbirleri doğrultusunda tezgâh, alet ve avadanlıkları kullanır. • Tezgâh kısımları ve çeşitleri açıklanır.",
+          "konular": [
+            "İş sağlığı ve güvenliği",
+            "koruyucu donanımları",
+            "atölyesindeki tezgâh,",
+            "alet ve avadanlıklar",
+            "Gemi temel işlemleri",
+            "tedbirleri ve kişisel"
+          ],
+          "kazanimlar": []
+        },
+        {
+          "birim_adi": "1. İş sağlığı ve güvenliği tedbirlerini alarak iş resmine göre ölçme, kontrol ve markalama işlemleriyle ilgili uygulamalar yapar. • Ölçme, kontrol ve markalama aletleri amacına uygun olarak kullandırılır. • Ölçme, kontrol ve markalama aletleriyle iş resmi üzerindeki şekiller istenilen ölçüde iş parçasına aktarılır. 2. İş sağlığı ve güvenliği tedbirlerini alarak iş resmine göre kesme işlemleriyle ilgili uygulamalar yapar. • Markalanan iş parçası genişliğine, enine ve boyuna yönde kestirilir.",
+          "konular": [
+            "markalama işlemleri",
+            "Kesme uygulamaları",
+            "Ölçme, kontrol ve"
+          ],
+          "kazanimlar": []
+        },
+        {
+          "birim_adi": "1. İş sağlığı ve güvenliği tedbirlerini alarak iş resmine göre yatayda yüzey düzeltme işlemleriyle ilgili uygulamalar yapar. • İş parçasının yatayda yüzey düzeltme işlemleri yapılması için uygun şekilde mengeneye bağlattırılır. • Mengeneye bağlanan iş parçasının yatayda yüzeyi istenilen açıda düzelttirilir. 2. İş sağlığı ve güvenliği tedbirlerini alarak iş resmine göre alında yüzey düzeltme işlemleriyle ilgili uygulamalar yapar. • İş parçasının alın yüzey düzeltme işlemleri yapılması için uygun şekilde mengeneye bağlattırılır. • Mengeneye bağlanan iş parçasının alında yüzeyi istenilen açıda düzelttirilir.",
+          "konular": [
+            "Alında yüzey düzeltme",
+            "düzeltme işlemleri",
+            "işlemleri",
+            "Yatayda yüzey"
+          ],
+          "kazanimlar": []
+        },
+        {
+          "birim_adi": "1. İş sağlığı ve güvenliği tedbirlerini alarak iş resmine göre delme işlemleriyle ilgili uygulamalar yapar. • İş parçasının yüzeyi dikey delik makinesinde istenilen çapta deldirilir. • İş parçasının kenar yüzeyleri yatay delik makinesinde istenilen çapta deldirilir. 2. İş sağlığı ve güvenliği tedbirlerini alarak iş resmine göre havşa açma işlemleriyle ilgili uygulamalar yapar.",
+          "konular": [
+            "Delme işlemleri yapma",
+            "Havşa açma işlemleri"
+          ],
+          "kazanimlar": []
+        }
+      ],
+      "uygulama_faaliyetleri": [
+        "Uygulama faaliyeti/temrinler; ders kazanımına uygun olarak okulun fiziki kapasitesi ve donatımı, öğrenci sayısı göz önünde bulundurularak en fazla uygulama faaliyeti/temrini yaptıracak şekilde meslek alan zümre öğretmenler kurulu tarafından seçilir. Meslek alan zümre öğretmenleri tarafından aşağıda yer alan temrinlerden farklı temrinlerin uygulanmasına karar verilebilir.",
+        "Gemi Temel İşlemleri Atölyesinin Donanımları",
+        "İş sağlığı ve güvenliği tedbirlerini alarak kişisel koruyucu 1. donanımlarını kullanma İş sağlığı ve güvenliği tedbirlerini doğrultusunda tezgâh, alet ve 2. avadanlıkları kullanma",
+        "Ölçme, Markalama ve Kesme İşlemleri",
+        "İş sağlığı ve güvenliği tedbirlerini alarak iş resmine göre ölçme, 1. kontrol ve markalama işlemleriyle ilgili uygulamalar yapma İş sağlığı ve güvenliği tedbirlerini alarak iş resmine göre kesme 2. işlemleriyle ilgili uygulamalar yapma",
+        "Yüzey Düzeltme İşlemleri",
+        "İş sağlığı ve güvenliği tedbirlerini alarak iş resmine göre yatayda 1. yüzey düzeltme işlemleriyle ilgili uygulamalar yapma İş sağlığı ve güvenliği tedbirlerini alarak iş resmine göre alında 2."
+      ]
+    },
+    "muzik.pdf": {
+      "metadata": {
+        "processed_at": "2025-07-11T20:44:02.749973",
+        "source_file": "muzik.pdf",
+        "file_path": "./muzik.pdf",
+        "status": "success"
+      },
+      "ders_bilgileri": {
+        "ders_adi": "MÜZİK VE DRAMATİK ETKİNLİKLER ATÖLYESİ",
+        "ders_sinifi": 9,
+        "haftalik_ders_saati": 4,
+        "dersin_amaci": "Bu derste öğrenciye; iş sağlığı ve güvenliği tedbirlerine uygun olarak ve dramatik etkinlik çocukların gelişim alanlarını destekleyen müzik çalışmaları ile müzik ve dramatik etkinlikte kullanılabilecek araç gereç ve uygulama ile ilgili bilgi ve becerilerin hazırlama kazandırılması amaçlanmaktadır.",
+        "dersin_genel_kazanimlari": [],
+        "egitim_ortam_donanimi": [],
+        "olcme_degerlendirme": []
+      },
+      "ogrenme_birimleri_ozeti": [],
+      "ogrenme_birimleri_detayi": [
+        {
+          "birim_adi": "1. Erken çocukluk döneminde müziğin çocuğun gelişimine katkılarını açıklar. Müziğin tanımı ve çocuğun gelişimi için önemi  açıklanır. 0-72 ay çocuğunun gelişim alanlarını ( motor /  sosyal duygusal / dil / bilişsel / öz bakım becerileri)destekleyen müzik etkinlikleri seçmesi sağlanır. 0-72 ay çocuğunun gelişim alanlarını destekleyen  müzik etkinlik uygulamaları yapılır. 2. Müzik etkinlik çeşitlerini uygular  Müzik etkinlik çeşitleri açıklanır.  Müzik etkinlik örnekleri uygulanır.  Müzik dinleme, sesleri tanıma ve ayırt etme, müzikli dramatizasyon, yaratıcı hareket ve dans, müzikli öykü oluşturma, ritim çalışmaları, nefes açma, ninni / şarkı söyleme ve ront çalışmalarını uygulanır. 3. 0-72 ay çocuğuna uygun müzik etkinliklerinde ritim araçlarını kullanır. Ritim araçları ve müzik etkinlikleri açıklanır.  Ritim araçlarından tef, zil, marakas, davul,  kastaniyet, ritim çubuklarını yapması sağlanır. Yapılan ritim araçlarının ritim çalışmalarında  kullanılması sağlanır. Araçlı ve araçsız ritim çalışmalarını müzik  etkinliklerinde kullanması sağlanır. Ritim araçları kullanılarak özgün ritim çalışmaları  yapılması istenir. 4. Erken çocukluk döneminde orff metodunu uygular.  Orff metodu açıklanır.  Ritim araçları kullanılarak örnek orff çalışması yapılır.  Oluşturulan ritim araçları orff metodunda kullanılır.  Vücut sesi ve jestlerini orff çalışmasında kullanılır.  Orff çalgılarıyla ritim çalışmaları yaptırılır  Orff yöntemi farklı ( drama şiir, hikâye, oyun vb ) etkinliklerle zenginleştirilir.",
+          "konular": [
+            "çeşitleri",
+            "Müzik",
+            "Metodu",
+            "Müzik etkinlik",
+            "döneminde orff",
+            "Erken çocukluk",
+            "Etkinliklerinde",
+            "Ritim Araçları",
+            "döneminde müzik"
+          ],
+          "kazanimlar": []
+        }
+      ],
+      "uygulama_faaliyetleri": [
+        "MÜZİK ETKİNLİKLERİ",
+        "Müziğin çocuğun gelişimine etkisini açıklayan afiş hazırlama",
+        "Müzik dinleme, sesleri tanıma ve ayırt etme çalışması yapma.",
+        "Nefes açma, ninni / şarkı söyleme çalışmaları yapma.",
+        "Müzikli dramatizasyon çalışması uygulama.",
+        "Yaratıcı hareket ve dans çalışması uygulama.",
+        "Ront çalışması uygulama",
+        "Müzikli öykü oluşturma.",
+        "Şarkı söyleme çalışmalarında ritim araçlarını kullanma",
+        "Değişik nesneleri kullanarak ritim çalışmaları yapma."
+      ]
+    },
+    "9. SINIF MÜZİK VE DRAMATİK ETK ATÖLYESİ.pdf": {
+      "metadata": {
+        "processed_at": "2025-07-11T20:44:11.843855",
+        "source_file": "9. SINIF MÜZİK VE DRAMATİK ETK ATÖLYESİ.pdf",
+        "file_path": "./9. SINIF MÜZİK VE DRAMATİK ETK ATÖLYESİ.pdf",
+        "status": "success"
+      },
+      "ders_bilgileri": {
+        "ders_adi": "MÜZİK VE DRAMATİK ETKİNLİKLER ATÖLYESİ",
+        "ders_sinifi": 9,
+        "haftalik_ders_saati": 4,
+        "dersin_amaci": "Bu derste öğrenciye; iş sağlığı ve güvenliği tedbirlerine uygun olarak ve dramatik etkinlik çocukların gelişim alanlarını destekleyen müzik çalışmaları ile müzik ve dramatik etkinlikte kullanılabilecek araç gereç ve uygulama ile ilgili bilgi ve becerilerin hazırlama kazandırılması amaçlanmaktadır.",
+        "dersin_genel_kazanimlari": [],
+        "egitim_ortam_donanimi": [],
+        "olcme_degerlendirme": []
+      },
+      "ogrenme_birimleri_ozeti": [],
+      "ogrenme_birimleri_detayi": [
+        {
+          "birim_adi": "1. Erken çocukluk döneminde müziğin çocuğun gelişimine katkılarını açıklar. Müziğin tanımı ve çocuğun gelişimi için önemi  açıklanır. 0-72 ay çocuğunun gelişim alanlarını ( motor /  sosyal duygusal / dil / bilişsel / öz bakım becerileri)destekleyen müzik etkinlikleri seçmesi sağlanır. 0-72 ay çocuğunun gelişim alanlarını destekleyen  müzik etkinlik uygulamaları yapılır. 2. Müzik etkinlik çeşitlerini uygular  Müzik etkinlik çeşitleri açıklanır.  Müzik etkinlik örnekleri uygulanır.  Müzik dinleme, sesleri tanıma ve ayırt etme, müzikli dramatizasyon, yaratıcı hareket ve dans, müzikli öykü oluşturma, ritim çalışmaları, nefes açma, ninni / şarkı söyleme ve ront çalışmalarını uygulanır. 3. 0-72 ay çocuğuna uygun müzik etkinliklerinde ritim araçlarını kullanır. Ritim araçları ve müzik etkinlikleri açıklanır.  Ritim araçlarından tef, zil, marakas, davul,  kastaniyet, ritim çubuklarını yapması sağlanır. Yapılan ritim araçlarının ritim çalışmalarında  kullanılması sağlanır. Araçlı ve araçsız ritim çalışmalarını müzik  etkinliklerinde kullanması sağlanır. Ritim araçları kullanılarak özgün ritim çalışmaları  yapılması istenir. 4. Erken çocukluk döneminde orff metodunu uygular.  Orff metodu açıklanır.  Ritim araçları kullanılarak örnek orff çalışması yapılır.  Oluşturulan ritim araçları orff metodunda kullanılır.  Vücut sesi ve jestlerini orff çalışmasında kullanılır.  Orff çalgılarıyla ritim çalışmaları yaptırılır  Orff yöntemi farklı ( drama şiir, hikâye, oyun vb ) etkinliklerle zenginleştirilir.",
+          "konular": [
+            "çeşitleri",
+            "Müzik",
+            "Metodu",
+            "Müzik etkinlik",
+            "döneminde orff",
+            "Erken çocukluk",
+            "Etkinliklerinde",
+            "Ritim Araçları",
+            "döneminde müzik"
+          ],
+          "kazanimlar": []
+        }
+      ],
+      "uygulama_faaliyetleri": [
+        "MÜZİK ETKİNLİKLERİ",
+        "Müziğin çocuğun gelişimine etkisini açıklayan afiş hazırlama",
+        "Müzik dinleme, sesleri tanıma ve ayırt etme çalışması yapma.",
+        "Nefes açma, ninni / şarkı söyleme çalışmaları yapma.",
+        "Müzikli dramatizasyon çalışması uygulama.",
+        "Yaratıcı hareket ve dans çalışması uygulama.",
+        "Ront çalışması uygulama",
+        "Müzikli öykü oluşturma.",
+        "Şarkı söyleme çalışmalarında ritim araçlarını kullanma",
+        "Değişik nesneleri kullanarak ritim çalışmaları yapma."
+      ]
+    },
+    "9.sınıf_DBF_temel fotoğraf.pdf": {
+      "metadata": {
+        "processed_at": "2025-07-11T20:44:18.798995",
+        "source_file": "9.sınıf_DBF_temel fotoğraf.pdf",
+        "file_path": "./9.sınıf_DBF_temel fotoğraf.pdf",
+        "status": "success"
+      },
+      "ders_bilgileri": {
+        "ders_adi": "TEMEL FOTOĞRAF",
+        "ders_sinifi": 9,
+        "haftalik_ders_saati": 3,
+        "dersin_amaci": "Bu derste öğrenciye; iş sağlığı ve güvenliği tedbirleri doğrultusunda temel fotoğraf ile ilgili bilgi ve becerilerin kazandırılması amaçlanmaktadır.",
+        "dersin_genel_kazanimlari": [],
+        "egitim_ortam_donanimi": [],
+        "olcme_degerlendirme": []
+      },
+      "ogrenme_birimleri_ozeti": [
+        {
+          "birim_adi": "Çekim Ekipmanlarının Hazırlanması",
+          "kazanim_sayisi": "3",
+          "ders_saati_orani": "21"
+        },
+        {
+          "birim_adi": "Fotoğraf Makinesinde Temel Ayarlar",
+          "kazanim_sayisi": "5",
+          "ders_saati_orani": "33"
+        },
+        {
+          "birim_adi": "Temel Işık ve Kompozisyon",
+          "kazanim_sayisi": "2",
+          "ders_saati_orani": "18"
+        },
+        {
+          "birim_adi": "Temel Fotoğraf Çekimi",
+          "kazanim_sayisi": "5",
+          "ders_saati_orani": "36"
+        }
+      ],
+      "ogrenme_birimleri_detayi": [
+        {
+          "birim_adi": "1. İş sağlığı ve güvenliği tedbirleri doğrultusunda çekim ortamını hazırlayarak amaca uygun deneme çekimleri yapar. Fotoğrafın bulunuşu, gelişimi ve fotoğraf makinesinin • çalışma mantığı açıklanır. Fotoğraf makinesi çeşitleri açıklanır. • Makina gövdesinin bölümleri açıklanır. • Çekim yapılacak konuya uygun makineyi belirleyerek • çekim ortamını hazırlaması gerektiği vurgulanır, uygun deneme çekimleri yapılması sağlanır. 2. Çekimde uygun olarak kullanılacak objektif değişimini yapar. • Odak uzaklıklarına göre objektif çeşitleri ve özellikleri açıklanır. 3. Çekimde kullanılacak yardımcı ekipmanları hazır hâle getirir. Makinenin yardımcı ekipmanları ve kullanım alanları • açıklanır.",
+          "konular": [
+            "Objektifi hazırlama",
+            "Fotoğraf makinesini",
+            "hazırlama",
+            "Yardımcı ekipmanları"
+          ],
+          "kazanimlar": []
+        },
+        {
+          "birim_adi": "1. Işık koşuluna ve alan derinliğine uygun diyafram değerini ayarlar. • Diyafram değerleri arasındaki farklar örneklerle açıklanır. • Net alan derinliği tanımlanır ve örnekler gösterilir. • Diyafram ile ışık miktarını ve net alan derinliğini ayarlatır, fotoğraf çektirir. 2. Harekete uygun enstantane değerini seçer. • Enstantane tanımlanır, enstantane (örtücü) değerleri arasındaki farklar sıralanır. • Hareket etkileri örneklerle açıklanır. • Örtücü ile poz süresini ayarlayarak hareketi donduran ve hareket izlenimi veren fotoğraflar çektirilip, doğruluğu kontrol ettirilir. 3. Işık koşuluna uygun ASA / ISO değerini ayarlar. • Fotoğrafta ışığa karşı duyarlılığın önemine vurgu yapılır. • ASA/ISO değerleri arasındaki farklar sıralanarak görsel etkileri örneklerle açıklanır. • ASA/ISO ile ışık duyarlılığı ayarı yapılarak fotoğrafların çekilmesi ve doğruluğunun kontrol edilmesi sağlanır. 4.Fotoğraf makinesinin fonksiyon (menü) ayarlarını yapar. • Görüntü kalitesi seçiminin önemine ve çözünürlüğün",
+          "konular": [
+            "Diyafram",
+            "balance)",
+            "ayarları",
+            "Beyaz dengesi (white",
+            "Enstantane",
+            "Fotoğraf makinesi",
+            "ASA/ISO"
+          ],
+          "kazanimlar": []
+        }
+      ],
+      "uygulama_faaliyetleri": [
+        "Uygulama faaliyeti/temrinler; ders kazanımına uygun olarak okulun fiziki kapasitesi ve donatımı, öğrenci sayısı göz önünde bulundurularak en fazla uygulama faaliyeti/temrini yaptıracak şekilde meslek alan zümre öğretmenler kurulu tarafından seçilir. Meslek alan zümre öğretmenleri tarafından aşağıda yer alan temrinlerden farklı temrinlerin uygulanmasına karar verilebilir.",
+        "Çekim Ekipmanlarının Hazırlanması",
+        "Fotoğraf makinesinin çalışma mantığına göre bölümlerini açıklar.",
+        "Odak uzaklıklarına göre objektif çeşitlerini ve özelliklerini açıklar.",
+        "Çekimde kullanılacak uygun objektif değişimini yapar.",
+        "Çekimde kullanılması gereken yardımcı ekipmanları hazır hâle getirir.",
+        "Fotoğraf Makinesinde Temel Ayarlar",
+        "Diyafram ile ışık miktarını ve net alan derinliğini ayarlayarak fotoğraf çeker ve doğruluğunu kontrol eder.",
+        "Örtücü ile poz süresini ayarlayarak hareketi donduran ve hareket izlenimi veren fotoğraflar çeker ve doğruluğunu kontrol eder.",
+        "ASA/ISO ile ışık duyarlılığı ayarı yaparak fotoğraflar çeker ve doğruluğunu kontrol eder. Görüntü kalitesine uygun çözünürlük değerini seçer."
+      ]
+    },
+    "Bilişim Teknolojileri_Programlama Temelleri 9.pdf": {
+      "metadata": {
+        "processed_at": "2025-07-11T20:44:32.018789",
+        "source_file": "Bilişim Teknolojileri_Programlama Temelleri 9.pdf",
+        "file_path": "./Bilişim Teknolojileri_Programlama Temelleri 9.pdf",
+        "status": "success"
+      },
+      "ders_bilgileri": {
+        "ders_adi": "PROGRAMLAMA TEMELLERİ",
+        "ders_sinifi": 9,
+        "haftalik_ders_saati": 4,
+        "dersin_amaci": "Bu derste öğrenciye; temel algoritma, programlama işlemlerini yapma ile ilgili bilgi ve becerilerin kazandırılması amaçlanmaktadır.",
+        "dersin_genel_kazanimlari": [],
+        "egitim_ortam_donanimi": [],
+        "olcme_degerlendirme": []
+      },
+      "ogrenme_birimleri_ozeti": [
+        {
+          "birim_adi": "Problem Çözme ve Algoritmalar",
+          "kazanim_sayisi": "6",
+          "ders_saati_orani": "16"
+        },
+        {
+          "birim_adi": "Programlama Dili Temelleri",
+          "kazanim_sayisi": "3",
+          "ders_saati_orani": "8"
+        }
+      ],
+      "ogrenme_birimleri_detayi": [
+        {
+          "birim_adi": "1. Problem çözme sürecindeki temel kavramları açıklar. • Problem kavramı açıklanır. • Problem çözme süreci açıklanır. 2. Problem türlerini açıklar. • Günlük hayatta karşılaşılabilecek problemler açıklanır. • Bilgisayarlar aracılığıyla çözülebilecek problemler açıklanır. 3. Verilen problem için uygun teknikleri kullanarak çözüm bulur. • Problem çözmek için kullanılabilecek bazı yöntemler açıklanır. • Problem çözme adımlarını kullanarak bir problemin nasıl çözülebileceği açıklanır. 4. Verilen problemi çözmek üzere farklı algoritmalar tasarlar. • Operatörler açıklanır. • İşlem önceliği açıklanır. • Algoritma kavramı açıklanır. • Farklı algoritma örnekleri verilerek çözümün nasıl yapılacağı açıklanır. 5. Algoritmanın hatalarını giderir. • Problem çözmede algoritma hataları ve hata giderme anlatılır. 6. Verilen problemin çözümüne uygun akış şemaları oluşturur. • Flowchart(akış diyagramı) programının masaüstü kurulumu gösterilir. • Flowchart programının çevrimiçi kullanımı anlatılır. • Flowchart programı kullanarak akış şemaları hazırlatılır. • Doğrusal akış şemalarının nasıl hazırlanacağı örneklerle gösterilir. • Karar ifadeleri içeren akış şemalarının nasıl hazırlanacağı örneklerle gösterilir. • Döngü içeren akış şemalarının nasıl hazırlanacağı örneklerle gösterilir.",
+          "konular": [
+            "• Problem çözme ve temel",
+            "• Algoritma Hataları",
+            "• Problem Çözmede Temel",
+            "• Problem Türleri",
+            "• Akış Diyagramları",
+            "Işlemler",
+            "• Algoritmalar",
+            "kavramlar"
+          ],
+          "kazanimlar": []
+        }
+      ],
+      "uygulama_faaliyetleri": [
+        "Uygulama faaliyeti/temrinler; ders kazanımına uygun olarak okulun fiziki kapasitesi ve donatımı, öğrenci sayısı göz önünde bulundurularak en fazla uygulama faaliyeti/temrini yaptıracak şekilde meslek alan zümre öğretmenler kurulu tarafından seçilir. Meslek alan zümre öğretmenleri tarafından aşağıda yer alan temrinlerden farklı temrinlerin uygulanmasına karar verilebilir."
+      ]
+    },
+    "1_TEKNİK_RESİM_DBF_9.pdf": {
+      "metadata": {
+        "processed_at": "2025-07-11T20:44:38.437977",
+        "source_file": "1_TEKNİK_RESİM_DBF_9.pdf",
+        "file_path": "./1_TEKNİK_RESİM_DBF_9.pdf",
+        "status": "success"
+      },
+      "ders_bilgileri": {
+        "ders_adi": "TEKNİK RESİM",
+        "ders_sinifi": 9,
+        "haftalik_ders_saati": 3,
+        "dersin_amaci": "Bu ders ile öğrenciye geometrik çizimler yapma, görünüş çıkarma ve ölçülendirme / yüzey sembollerini kullanma, yapım ve perspektif resim çizme ile ilgili bilgi ve becerilerin kazandırılması amaçlanmaktadır.",
+        "dersin_genel_kazanimlari": [],
+        "egitim_ortam_donanimi": [],
+        "olcme_degerlendirme": []
+      },
+      "ogrenme_birimleri_ozeti": [
+        {
+          "birim_adi": "Geometrik Çizimler",
+          "kazanim_sayisi": "3",
+          "ders_saati_orani": "27"
+        },
+        {
+          "birim_adi": "Görünüş Çıkarma",
+          "kazanim_sayisi": "2",
+          "ders_saati_orani": "27"
+        },
+        {
+          "birim_adi": "Ölçülendirme ve Yüzey İşlemleri",
+          "kazanim_sayisi": "3",
+          "ders_saati_orani": "27"
+        }
+      ],
+      "ogrenme_birimleri_detayi": [
+        {
+          "birim_adi": "1. Teknik resim kurallarına (TS EN ISO standartlarına) uygun olarak eğik ve dik standart yazı yazar. • Teknik resmin endüstrideki önemi üzerinde durulur. • Teknik resim araç gereçleri ve çizim kâğıtları üzerinde durulur. • Standart yazı ve norm yazı örnekleri verilir. • Norm yazı temrinleri verilir. 2. Serbest elle ve çizim takımlarıyla çizgi çalışmaları yapar. • Çizgi çeşitleri ve çizgi kalınlıkları üzerinde durulur. • Çizgi çeşitlerinin kullanım alanları ile ilgili örnekler verilir. • Çizgi çalışması temrinleri verilir. 3. Teknik resim kurallarına uygun olarak geometrik şekiller çizer. • Teknik resimde açı, paralellik ve diklik kavramları üzerinde durulur. • Çember ve teğet doğrular üzerinde durulur. • Teğet çizim örnekleri verilir. • Çokgen çizim yöntemleri üzerinde durulur. • Açılı çizimler, çember ve teğet çizimleri, çokgen çizim temrinleri verilir. • Çokgen çizim örnekleri verilir. • Elips, oval, parabol, evolvent, spiral çizimlerine girilmez.",
+          "konular": [
+            "Çizgi Çalışmaları",
+            "Standart Yazı",
+            "Geometrik Şekiller",
+            "Eğik ve Dik"
+          ],
+          "kazanimlar": []
+        },
+        {
+          "birim_adi": "1. Serbest elle ve çizim takımlarıyla çeşitli iş parçalarına ait görünüşleri çizer. • İzdüşüm ve görünüş çeşitleri üzerinde durulur. • Görünüş sayısı, yardımcı, detay ve özel görünüş belirleme üzerinde durulur. • Dik izdüşüm örnekleri ve temrinleri verilir. • Tek görünüşün yeterli olduğu temrinler verilir. • İki veya daha fazla görünüş isteyen temrinler verilir. • Yardımcı, detay ve özel görünüş temrinleri verilir. 2. Serbest elle ve çizim takımlarıyla çeşitli iş parçalarına ait kesit görünüşleri çizer. • Kesit alma ve kesit görünüş almanın gerekliliği üzerinde durulur. • Kesit görünüş çeşitleri ve kesit görünüş almada uyulacak çizim kuralları üzerinde durulur. • Parçanın özelliğine uygun türde kesit alma örnekleri ve temrinleri verilir. • Kesit elemanlarını çizim kurallarına göre görünüşler üzerinde gösterme örnekleri verilir.",
+          "konular": [
+            "Görünüşler",
+            "Kesit Görünüşler",
+            "Teknik Resim"
+          ],
+          "kazanimlar": []
+        }
+      ],
+      "uygulama_faaliyetleri": [
+        "Uygulama faaliyeti/temrinler; ders kazanımına uygun olarak okulun fiziki kapasitesi ve donatımı, öğrenci sayısı göz önünde bulundurularak en fazla uygulama faaliyeti/temrini yaptıracak şekilde meslek alan zümre öğretmenler kurulu tarafından seçilir. Meslek alan zümre öğretmenleri tarafından aşağıda yer alan temrinlerden farklı temrinlerin uygulanmasına karar verilebilir.",
+        "Geometrik Çizimler",
+        "Teknik resim kurallarına ve TS EN ISO 1. standartlarına uygun olarak eğik ve dik standart yazı yazma Teknik resim kurallarına uygun olarak 2. serbest elle ve çizim takımlarıyla çizgi çalışmaları yapma Teknik resim kurallarına uygun olarak 3. geometrik şekiller çizme",
+        "Görünüş Çıkarma",
+        "Teknik resim kurallarına uygun olarak 1. serbest elle ve çizim takımlarıyla çeşitli iş parçalarına ait görünüşleri çizme Teknik resim kurallarına uygun olarak 2. serbest elle ve çizim takımlarıyla çeşitli iş parçalarına ait kesit görünüşleri çizme",
+        "Ölçülendirme ve Yüzey İşlemleri",
+        "Teknik resim kurallarına uygun olarak 1. resmini çizdiği iş parçalarının ölçülendirme işlemini yapma Teknik resim kurallarına uygun olarak 2. resmini çizdiği iş parçalarına ait yüzey pürüzlülük değerlerini verme Teknik resim kurallarına uygun olarak 3. resmini çizdiği iş parçalarına ait tolerans değerlerini verme",
+        "Kroki, Perspektif ve Yapım Resmi",
+        "Teknik resim kurallarına uygun olarak 1. standart resim kâğıtlarına çeşitli iş parçalarının kroki resimlerini çizme Teknik resim kurallarına uygun olarak 2. standart resim kâğıtlarına çeşitli iş parçalarının perspektif resimlerini çizme Teknik resim kurallarına uygun olarak 3. standart resim kâğıtlarına çeşitli iş parçalarının imalat resimlerini çizme",
+        "DERSİN UYGULANMASINA İLİŞKİN AÇIKLAMALAR"
+      ]
+    },
+    "Temel teknikler atölyesi 9 dbf.pdf": {
+      "metadata": {
+        "processed_at": "2025-07-11T20:44:51.805803",
+        "source_file": "Temel teknikler atölyesi 9 dbf.pdf",
+        "file_path": "./Temel teknikler atölyesi 9 dbf.pdf",
+        "status": "success"
+      },
+      "ders_bilgileri": {
+        "ders_adi": "TEMEL TEKNİKLER ATÖLYESİ",
+        "ders_sinifi": 9,
+        "haftalik_ders_saati": 9,
+        "dersin_amaci": "Bu derste öğrenciye; iş sağlığı ve güvenliği tedbirlerini alarak çeşitli yöntem ve teknikler ile Dekoratif El Sanatları ve Ev Tekstili temel uygulamalarını yapma ile ilgili bilgi ve becerilerin kazandırılması amaçlanmaktadır.",
+        "dersin_genel_kazanimlari": [],
+        "egitim_ortam_donanimi": [],
+        "olcme_degerlendirme": []
+      },
+      "ogrenme_birimleri_ozeti": [
+        {
+          "birim_adi": "Model Tasarlama ve Desen Çizme",
+          "kazanim_sayisi": "3",
+          "ders_saati_orani": "32"
+        }
+      ],
+      "ogrenme_birimleri_detayi": [
+        {
+          "birim_adi": "1. Yapacağı ürüne uygun model tasarlar Tasarıma dair kavramlar açıklatılır • Tasarım faktörleri, tasarım ölçütleri ve aşamaları üzerinde • durulmalıdır. Tasarım eğitimine dair basamaklar uygulatılır • 2-Tasarlanan modele uygun desen çizer. Desen için faydalanılan kaynaklar anlatım biçimleri • üzerinde durulmalıdır. Kompozisyon kalıp hazırlama ve modernizasyon aşamaları • uygulatılır. 3.Çizilen deseni renklendirir. Renk bilgisi üzerinde durulmalıdır. • Boyama teknikleri uygulatılır. •",
+          "konular": [
+            "uygun desen çizme",
+            "tasarlama",
+            "Ürüne uygun model",
+            "renklendirme",
+            "Tasarlanan modele",
+            "Çizilen deseni"
+          ],
+          "kazanimlar": []
+        },
+        {
+          "birim_adi": "1.Kullanacağı makineleri uygulamaya hazırlar. 2. Makinelerin basit arızalarını giderir. 3. Makinelerin bakımı ve korumasını yapar Öğrenci makineyi kullanırken özenli davranmalıdır. • Günlük haftalık bakımlarını düzenli yapmaya özen • göstermelidir.",
+          "konular": [
+            "koruması",
+            "hazırlama",
+            "arızaları",
+            "Makinelerin bakımı ve",
+            "Makinelerin basit",
+            "Makineyi uygulamaya"
+          ],
+          "kazanimlar": []
+        },
+        {
+          "birim_adi": "1. Elde dikiş teknik çalışmaları yapar. 2. Düz sanayi dikiş makinesini dikime hazırlar. ipliğini takarak iplik gerginlik ayarını • Makinenin alt ve üst kontrol etmelidir. 3. Düz sanayi dikiş makinesinin dikiş ayarını yapar. dikiş tekniğine uygun dikiş adım boyu • Uygulayacağı ayarlatılır. 4. Düz sanayi makinesinde dikim egzersizleri yapar. • Öğrenci düz dikişi yapmayı en düzgün şekilde yapıncaya kadar dikme işlemi tekrar ettirilir. 5. Düz sanayi dikiş makinesinin temizlik ve bakımını yapar. • Ders sonunda makinenin günlük temizliği yaptırılmalıdır.",
+          "konular": [
+            "Düz sanayi dikiş makinesini",
+            "egzersizi",
+            "El dikiş teknik",
+            "Düz sanayi dikiş",
+            "makinesinin temizlik ve",
+            "bakımı",
+            "makinesinde dikim",
+            "dikime hazırlama",
+            "çalışmaları",
+            "makinesinde dikiş ayarı"
+          ],
+          "kazanimlar": []
+        },
+        {
+          "birim_adi": "1. Overlok makinesini dikime hazırlar. ipliğini takarak iplik gerginlik ayarını • Makinenin alt ve üst kontrol ettirilir. 2. Overlok makinesinde dikim egzersizleri yapar. • Öğrenci overlok dikişi yapmayı en düzgün şekilde yapıncaya kadar dikme işlemi tekrar ettirilir. 3. Overlok makinesinin temizlik ve bakımını yapar. • Ders sonunda makinenin günlük temizliği yaptırılmalıdır.",
+          "konular": [
+            "temizlik ve bakımı",
+            "Overlok makinesini",
+            "dikime hazırlama",
+            "Overlok makinesinde",
+            "Overlok makinesinin",
+            "dikim egzersizi"
+          ],
+          "kazanimlar": []
+        }
+      ],
+      "uygulama_faaliyetleri": [
+        "Uygulama faaliyeti/temrinler; ders kazanımına uygun olarak okulun fiziki kapasitesi ve donatımı, öğrenci sayısı göz önünde bulundurularak en fazla uygulama faaliyeti/temrini yaptıracak şekilde meslek alan zümre öğretmenler kurulu tarafından seçilir. Meslek alan zümre öğretmenleri tarafından aşağıda yer alan temrinlerden farklı temrinlerin uygulanmasına karar verilebilir.",
+        "Model Tasarlama ve Desen Çizme",
+        "Tasarım eğitimine dair basamaklarını uygulamak",
+        "Kompozisyon kalıp hazırlama ve modernizasyon aşamaları uygulamak",
+        "Boyama teknikleri uygulamak.",
+        "Makineyi Hazırlama ve Basit Arızalar",
+        "Makineye üst ipliğini takmak.",
+        "Masuraya ip sarmak.",
+        "Düz dikiş makinesindeki basit arızaları gidermek.",
+        "Ev ve sanayi tipi nakış makinesindeki basit arızaları gidermek."
+      ]
+    },
+    "9. sınıf anne çocuk sağlığı.pdf": {
+      "metadata": {
+        "processed_at": "2025-07-11T20:44:58.202277",
+        "source_file": "9. sınıf anne çocuk sağlığı.pdf",
+        "file_path": "./9. sınıf anne çocuk sağlığı.pdf",
+        "status": "success"
+      },
+      "ders_bilgileri": {
+        "ders_adi": "ANNE-ÇOCUK SAĞLIĞI",
+        "ders_sinifi": 9,
+        "haftalik_ders_saati": 3,
+        "dersin_amaci": "Bu derste öğrenciye; doğum öncesi, doğum, doğum sonrası gelişim dönemleri, çocukta sık görülen şikâyetler ve hastalıklar, lohusalık ve emziklilik dönemi özellikleri ile ilgili bilgi ve becerilerin kazandırılması amaçlanmaktadır.",
+        "dersin_genel_kazanimlari": [],
+        "egitim_ortam_donanimi": [],
+        "olcme_degerlendirme": []
+      },
+      "ogrenme_birimleri_ozeti": [],
+      "ogrenme_birimleri_detayi": [
+        {
+          "birim_adi": "1. Genital sistemi açıklar. • Türkiye de anne çocuk sağlığına verilen önem özetlenir. • Kadın / Erkek genital sistemi tanıtılır. • Mensürasyon dönemi açıklanır. 2. Döllenmeyi açıklar. • Döllenme, suni döllenme ve suni döllenmedeki yenilikler açıklanır. • Erkeğe ve kadına ait kısırlık nedenlerine değinilir. • Aile planlamasına değinilir. 3. Gebelik belirtileri ve gebelikte uygulanan testleri açıklar. • Gebelikte olası gebelik belirtileri açıklanır. • Kesin gebelik belirtileri açıklanır. • Gebelikte uygulanan testler ve muayeneler açıklanır 4. Gebelik döneminde karşılaşılan şikayet ve hastalıkları açıklar • Gebelikte görülen şikayetler, gebeye etkileri ve yapılması gerekenler belirtilir. • Gebeliği etkileyen hastalıklar, hastalıkların anne ve bebeğe olan etkileri, gebelikte tehlikeli durumlar açıklanır. 5. Gebelik döneminde temizlik ve bakımı açıklar. • Gebelikte bakım; beslenme, temizlik, uyku ve dinlenme, giyim, beden hareketleri, yolculuk, cinsellik ve gebelik psikolojisi olarak açıklanır. 6. Normal olmayan gebelikleri açıklar. • Dış, çoğul ve yalancı gebelik açıklanır. • Gebelikte yanlış inanışlara değinilmez.",
+          "konular": [
+            "Normal",
+            "Gebelik",
+            "şikayet",
+            "ve hastalıklar",
+            "testler",
+            "gebelikler",
+            "Döllenme",
+            "gebelikte",
+            "karşılaşılan",
+            "temizlik ve bakım",
+            "Genital sistem",
+            "Gebelik belirtileri ve",
+            "olmayan",
+            "döneminde",
+            "uygulanan"
+          ],
+          "kazanimlar": []
+        },
+        {
+          "birim_adi": "1. Doğum türleri ve doğum eylemi evrelerini açıklar. • Doğum eylemi ve normal doğum açıklanır. • Doğum eyleminin özellikleri ve rol oynayan faktörlere değinilir. • Doğum eyleminin başlama belirtileri (olası belirtiler /kesin belirtiler), açıklanır. • Doğum eylemi evreleri açıklanır. 2. Normal olmayan doğumlar ve doğum müdahalelerini açıklar. • Geliş bozuklukları ve Doğum müdahaleleri açıklanır. • Erken / Geç doğum, düşük, suyun erken gelmesi, hızlı doğum, ağrı zaafı kordon sarkması, fetal sıkıntı, kürtaj konularına kısaca değinilir. 3. Yenidoğanın özelliklerini ve bakımını açıklar. • Yenidoğana uygulanan kordon kan gazları, kan testleri ve APGAR Skoru testleri açıklanır. • Yenidoğanın fiziksel, fizyolojik ve nörolojik özellikleri açıklanır. • Yenidoğanın bakımı, temizliği, beslenmesi ve giyimi açıklanır,",
+          "konular": [
+            "Normal olmayan",
+            "doğum evreleri",
+            "Yenidoğanın",
+            "özellikleri ve bakımı",
+            "Doğum türleri ve",
+            "müdahaleleri",
+            "doğumlar ve doğum"
+          ],
+          "kazanimlar": []
+        }
+      ],
+      "uygulama_faaliyetleri": []
+    },
+    "HABER TOPLAMA VE YAZMA DBF-28.06.2020.pdf": {
+      "metadata": {
+        "processed_at": "2025-07-11T20:45:04.417972",
+        "source_file": "HABER TOPLAMA VE YAZMA DBF-28.06.2020.pdf",
+        "file_path": "./HABER TOPLAMA VE YAZMA DBF-28.06.2020.pdf",
+        "status": "success"
+      },
+      "ders_bilgileri": {
+        "ders_adi": "HABER TOPLAMA VE YAZMA",
+        "ders_sinifi": 9,
+        "haftalik_ders_saati": 4,
+        "dersin_amaci": "Bu derste öğrenciye; iş sağlığı ve güvenliği tedbirleri doğrultusunda habertoplamaveyazmaileilgilitemelbilgivebecerilerinkazandırılmasısamaçlanmakt adır.",
+        "dersin_genel_kazanimlari": [],
+        "egitim_ortam_donanimi": [],
+        "olcme_degerlendirme": []
+      },
+      "ogrenme_birimleri_ozeti": [],
+      "ogrenme_birimleri_detayi": [
+        {
+          "birim_adi": "1. Gazetenin tarihsel gelişimini açıklar. • Gazetenin dünyadaki tarihsel gelişimi üzerinde durulur. • Gazetenin ülkemizdeki tarihsel gelişimiüzerinde durulur. • Tarihteki ilk gazete örneklerinin incelenmesi sağlanır. 2. Gazeteciliğin temel kavramlarını açıklar. 3. Basın yayın işletmeciliğini açıklar. • Basın yayın işletmelerinin kurumsal örgütlenmesi üzerinde durulur. • İlan/reklam organizasyonu üzerinde durulur. • Yayın/dağıtım organizasyonu üzerinde durulur. .",
+          "konular": [
+            "işletmeciliği",
+            "Gazeteciliğin tarihsel",
+            "Gazeteciliğin temel",
+            "kavramları",
+            "Basın yayın",
+            "gelişimi"
+          ],
+          "kazanimlar": []
+        },
+        {
+          "birim_adi": "1. Gündemdeki olaylar içinden haber niteliği taşıyan olayları seçer. • Haber ve olay kavramları üzerinde durulur. • Haberin nitelikleri açıklanır. • Haberin değerini belirleyen ölçütler üzerinde durulur. • Haber türleri açıklanır. • Farklı türdeki haber örneklerinin incelenmesi sağlanır. 2. Canlandırma yöntemi ile gündem toplantısı yapar. • Gündem toplantısının önemi üzerinde durulur. • Gündem toplantılarının farklı basın yayın kuruluşlarındaki uygulamaları açıklanır. • Rutin ve özel haber üzerinde durulur. • Yayın kimliği ve yayın politikası kavramları açıklanır.",
+          "konular": [
+            "Gündem organizasyonu",
+            "Haberin nitelikleri"
+          ],
+          "kazanimlar": []
+        },
+        {
+          "birim_adi": "1. Güvenilir kaynaklardan haber toplar. • Haber kaynakları açıklanır. • Güvenilir haber kaynaklarından bilgi toplamanın önemi üzerinde durulur. • Haber kaynakları ile ilişki kurarken dikkat edilmesi gereken unsurlar üzerinde durulur. • Randevunun önemi üzerinde durulur. 2. Farklı veri toplama yöntemleri ile haber toplar. • Haber toplama için gerekli araç gereçlervurgulanır. • Not alma teknikleri açıklanır. • Haber izleme yöntemleri açıklanır. • Haber toplarken dikkat etmesi gereken etik ve yasal kurallar üzerinde durulur.",
+          "konular": [
+            "yöntemleri",
+            "Haber kaynakları",
+            "Haber toplama"
+          ],
+          "kazanimlar": []
+        }
+      ],
+      "uygulama_faaliyetleri": []
+    }
+  }
+}

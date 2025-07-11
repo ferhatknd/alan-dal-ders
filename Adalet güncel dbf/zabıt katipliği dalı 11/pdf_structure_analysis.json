@@ -1,0 +1,18 @@
+{
+  "1_TEKNİK_RESİM_DBF_9.pdf": {
+    "pdf_name": "1_TEKNİK_RESİM_DBF_9.pdf",
+    "total_pages": 0,
+    "total_tables": 0,
+    "sections_found": {},
+    "page_structure": {},
+    "error": "[Errno 2] No such file or directory: '1_TEKNİK_RESİM_DBF_9.pdf'"
+  },
+  "2_GEMİ_TEMEL_İŞLEMLERİ_DBF_9.pdf": {
+    "pdf_name": "2_GEMİ_TEMEL_İŞLEMLERİ_DBF_9.pdf",
+    "total_pages": 0,
+    "total_tables": 0,
+    "sections_found": {},
+    "page_structure": {},
+    "error": "[Errno 2] No such file or directory: '2_GEMİ_TEMEL_İŞLEMLERİ_DBF_9.pdf'"
+  }
+}
