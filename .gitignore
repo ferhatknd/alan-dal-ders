@@ -22,5 +22,32 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-dbf/*
-sinif*
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# DBF indirme dizini - büyük dosyalar içerdiği için git'e dahil edilmemeli
+dbf/
+sinif_9/
+sinif_10/
+sinif_11/
+sinif_12/
+
+# Analiz sonuç dosyaları
+kelime_arama_sonuclari.json
+pdf_structure_analysis.json
+ogrenme_birimleri_extraction_result.json
+oku_sonuc.json
+
+# Örnek PDF dosyaları
+*.pdf
+!data/alan-dal-listesi-2023.pdf
+
+# Geçici ve debug dosyaları
+debug_*
+test_*
+*.tmp
+*.bak
+*.old

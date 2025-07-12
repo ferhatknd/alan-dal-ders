@@ -633,50 +633,270 @@ def extract_kazanim_tablosu(file_path):
         print(f"Error extracting kazanım tablosu: {str(e)}")
         return []
 
-def extract_ogrenme_birimleri(pdf_path):
+def extract_ogrenme_birimleri(file_path):
     """
-    PDF'den öğrenme birimlerini detaylı olarak çıkar (sayfa 2+)
+    PDF veya DOCX dosyasından öğrenme birimlerini detaylı olarak çıkar
     3 sütunlu tablo: ÖĞRENME BİRİMİ | KONULAR | KAZANIMLAR
     """
     try:
-        with pdfplumber.open(pdf_path) as pdf:
-            all_tables = []
-            for page in pdf.pages:
-                tables = page.extract_tables()
-                all_tables.extend(tables)
-        
-        ogrenme_birimleri = []
-        
-        for page_num, table in enumerate(all_tables):
+        if file_path.lower().endswith('.docx'):
+            # DOCX dosyası için
+            import docx
+            doc = docx.Document(file_path)
             
-            # Basit metin tabanlı çıkarım yap (karmaşık tablo parsing yerine)
-            for i, row in enumerate(table):
-                if row and len(row) > 0:
-                    first_cell = str(row[0]) if row[0] else ""
-                    if len(first_cell) > 50:  # Uzun metin içeriği - muhtemelen öğrenme birimi
-                        # Basit birim oluştur
-                        birim = {
-                            "birim_adi": clean_text(first_cell[:200]),  # İlk 200 karakter
-                            "konular": [],
-                            "kazanimlar": []
-                        }
-                        
-                        # Diğer sütunlardaki konuları al
-                        for j in range(1, len(row)):
-                            if row[j] and len(str(row[j]).strip()) > 5:
-                                # Virgül ile ayrılmış konuları ayır
-                                konu_items = str(row[j]).split(',')
-                                for item in konu_items:
-                                    clean_item = clean_text(item.strip())
-                                    if clean_item and len(clean_item) > 3:
-                                        birim["konular"].append(clean_item)
-                        
-                        if birim["birim_adi"]:
-                            ogrenme_birimleri.append(birim)
+            ogrenme_birimleri = []
+            
+            for table in doc.tables:
+                # 3 sütunlu öğrenme birimleri tablosunu bul
+                if table.rows:
+                    first_row = table.rows[0]
+                    first_row_cells = [cell.text.strip() for cell in first_row.cells]
+                    row_text = ' '.join(first_row_cells).upper()
                     
+                    # Header kontrolü: ÖĞRENME BİRİMİ, KONULAR, KAZANIMLARI
+                    if ('ÖĞRENME BİRİMİ' in row_text and 'KONULAR' in row_text and 
+                        'KAZANIMLARI' in row_text):
+                        
+                        # Veri satırlarını işle (header'dan sonraki satırlar)
+                        for row_idx in range(1, len(table.rows)):
+                            row = table.rows[row_idx]
+                            row_cells = [cell.text.strip() for cell in row.cells]
+                            
+                            if len(row_cells) >= 3:
+                                birim_adi = clean_text(row_cells[0]) if row_cells[0] else ""
+                                konular_text = row_cells[1] if row_cells[1] else ""
+                                kazanimlar_text = row_cells[2] if row_cells[2] else ""
+                                
+                                if birim_adi and len(birim_adi) > 3:
+                                    # Konuları parse et
+                                    konular = []
+                                    if konular_text:
+                                        # Satır satır ayır ve temizle
+                                        konu_lines = konular_text.split('\n')
+                                        for line in konu_lines:
+                                            line = line.strip()
+                                            if line and len(line) > 5:
+                                                # Numaralandırma varsa kaldır
+                                                clean_line = re.sub(r'^\d+\.\s*', '', line)
+                                                if clean_line:
+                                                    konular.append(clean_text(clean_line))
+                                    
+                                    # Ana kazanımları parse et
+                                    kazanimlar = []
+                                    if kazanimlar_text:
+                                        # Önce numaralı kazanımları dene
+                                        ana_kazanim_pattern = r'(\d+\.\s*[^•\uf0b7\n]*?)(?=\n[\s]*[\uf0b7•]|\n\d+\.|\Z)'
+                                        ana_kazanimlar = re.findall(ana_kazanim_pattern, kazanimlar_text, re.DOTALL)
+                                        
+                                        if ana_kazanimlar:
+                                            # Numaralı kazanımlar bulundu
+                                            for kazanim in ana_kazanimlar:
+                                                kazanim = kazanim.strip()
+                                                if kazanim and len(kazanim) > 10:
+                                                    # Numarayı kaldır
+                                                    clean_kazanim = re.sub(r'^\d+\.\s*', '', kazanim)
+                                                    if clean_kazanim:
+                                                        kazanimlar.append(clean_text(clean_kazanim))
+                                        else:
+                                            # Numaralı kazanım yoksa, cümle sonlarını al
+                                            lines = kazanimlar_text.split('\n')
+                                            for line in lines:
+                                                line = line.strip()
+                                                if (line and len(line) > 10 and 
+                                                    (line.endswith('.') or line.endswith('r.')) and
+                                                    not any(char in line for char in ['•', '\uf0b7'])):
+                                                    kazanimlar.append(clean_text(line))
+                                    
+                                    birim = {
+                                        "birim_adi": birim_adi,
+                                        "konular": konular,
+                                        "kazanimlar": kazanimlar
+                                    }
+                                    
+                                    ogrenme_birimleri.append(birim)
+                        
+                        # Tablo bulunduysa döngüden çık
+                        if ogrenme_birimleri:
+                            break
+            
+            return ogrenme_birimleri
+            
+        else:
+            # PDF dosyası için (geliştirilmiş kod)
+            with pdfplumber.open(file_path) as pdf:
+                all_tables = []
+                for page in pdf.pages:
+                    tables = page.extract_tables()
+                    all_tables.extend(tables)
+            
+            ogrenme_birimleri = []
+            
+            # Öğrenme birimlerini içeren tabloları bul (basitleştirilmiş yaklaşım)
+            # Analiz sonucuna göre tables 5, 6, 7'de öğrenme birimleri var
+            learning_unit_tables = []
+            
+            # Önce header'ı olan ana tabloyu bul
+            for table_idx, table in enumerate(all_tables):
+                if not table or len(table) < 2:
+                    continue
+                
+                for row in table:
+                    if row and len(row) > 0:
+                        row_text = ' '.join([str(cell) if cell else '' for cell in row]).upper()
+                        if ('ÖĞRENME BİRİMİ' in row_text and 'KONULAR' in row_text):
+                            learning_unit_tables.append(table_idx)
+                            # Bu tablodan sonraki 2-3 tabloyu da ekle (devam tabloları)
+                            for next_idx in range(table_idx + 1, min(table_idx + 4, len(all_tables))):
+                                if next_idx < len(all_tables):
+                                    learning_unit_tables.append(next_idx)
+                            break
+                if learning_unit_tables:
                     break
-        
-        return ogrenme_birimleri
+            
+            # Eğer header tablosu bulunamazsa, bilinen tablo indekslerini kullan
+            if not learning_unit_tables and len(all_tables) > 7:
+                learning_unit_tables = [5, 6, 7]
+            
+            # Öğrenme birimlerini çıkar
+            seen_units = set()  # Dublicate kontrolü
+            
+            for table_idx in learning_unit_tables:
+                table = all_tables[table_idx]
+                
+                for row_idx, row in enumerate(table):
+                    if not row or len(row) < 2:
+                        continue
+                    
+                    birim_adi = str(row[0]).strip() if row[0] else ""
+                    if not birim_adi or len(birim_adi) < 5:
+                        continue
+                    
+                    # Header satırlarını atla
+                    birim_adi_upper = birim_adi.upper()
+                    if any(header in birim_adi_upper for header in ['ÖĞRENME BİRİMİ', 'KONULAR', 'KAZANIM', 'AÇIKLAMA']):
+                        continue
+                    
+                    # Öğrenme birimi ismini temizle
+                    birim_adi = birim_adi.replace('\n', ' ').strip()
+                    
+                    # Öğrenme birimi kontrolü - daha spesifik
+                    expected_units = [
+                        "SAYI SİSTEMLERİ", "DATA ÇEVİRİCİLER", 
+                        "DİSPLAYLER", "KOKPİT ALETLER",
+                        "ELEKTROSTATİK DEŞARJ", "ELEKTROMANYETİK",
+                        "DİJİTAL UÇAK SİSTEMLERİ",
+                        "FİBER OPTİK",
+                        "KABİN BAKIM"
+                    ]
+                    
+                    is_learning_unit = False
+                    
+                    # Tam eşleşme kontrolü
+                    for expected in expected_units:
+                        expected_words = expected.split()
+                        matches = sum(1 for word in expected_words if word in birim_adi_upper)
+                        if matches >= len(expected_words) // 2:  # En az yarısı eşleşsin
+                            is_learning_unit = True
+                            break
+                    
+                    # Bilinen öğrenme birimi isimlerini kontrol et
+                    if not is_learning_unit:
+                        known_units = [
+                            "SAYI SİSTEMLERİ VE DATA ÇEVİRİCİLER",
+                            "DİSPLAYLER VE KOKPİT ALETLERİ",
+                            "ELEKTROSTATİK DEŞARJ VE ELEKTROMANYETİK ÇEVRE",
+                            "DİJİTAL UÇAK SİSTEMLERİ",
+                            "FİBER OPTİK",
+                            "KABİN BAKIM"
+                        ]
+                        
+                        for known in known_units:
+                            known_words = known.split()
+                            matches = sum(1 for word in known_words if word in birim_adi_upper)
+                            if matches >= 2:  # En az 2 kelime eşleşsin
+                                is_learning_unit = True
+                                break
+                    
+                    if not is_learning_unit:
+                        continue
+                    
+                    # Dublicate kontrolü
+                    if birim_adi in seen_units:
+                        continue
+                    seen_units.add(birim_adi)
+                    
+                    # Konuları çıkar (sütun 1)
+                    konular = []
+                    if len(row) > 1 and row[1]:
+                        topics_text = str(row[1])
+                        # Numaralı konuları bul
+                        topic_matches = re.findall(r'(\d+\.\s*[^.\n\d]+)', topics_text)
+                        if topic_matches:
+                            for topic in topic_matches:
+                                clean_topic = re.sub(r'^\d+\.\s*', '', topic.strip())
+                                if clean_topic and len(clean_topic) > 5:
+                                    konular.append(clean_text(clean_topic))
+                        else:
+                            # Satır satır ayır
+                            lines = topics_text.split('\n')
+                            for line in lines:
+                                line = line.strip()
+                                if line and len(line) > 5:
+                                    clean_line = re.sub(r'^\d+\.\s*', '', line)
+                                    if clean_line and not clean_line.startswith('•'):
+                                        konular.append(clean_text(clean_line))
+                    
+                    # Kazanımları çıkar (sütun 2)
+                    kazanimlar = []
+                    achievements_text = ""
+                    
+                    if len(row) > 2 and row[2]:
+                        achievements_text = str(row[2])
+                    elif len(row) > 3 and row[3]:  # Bazen 4. sütunda olabiliyor
+                        achievements_text = str(row[3])
+                    
+                    if achievements_text:
+                        # Ana kazanımları bul (numara ile başlayanlar)
+                        achievement_matches = re.findall(r'(\d+\.\s*[^•\uf0b7\n]*?)(?=\n[\s]*[\uf0b7•]|\n\d+\.|\Z)', achievements_text, re.DOTALL)
+                        if achievement_matches:
+                            for achievement in achievement_matches:
+                                achievement = achievement.strip()
+                                if achievement and len(achievement) > 10:
+                                    clean_achievement = re.sub(r'^\d+\.\s*', '', achievement)
+                                    if clean_achievement:
+                                        kazanimlar.append(clean_text(clean_achievement))
+                        else:
+                            # Cümle sonlarına göre ayır
+                            sentences = re.findall(r'[^.]+\.', achievements_text)
+                            for sentence in sentences:
+                                sentence = sentence.strip()
+                                if sentence and len(sentence) > 15 and not sentence.startswith('•'):
+                                    kazanimlar.append(clean_text(sentence))
+                    
+                    # Devam eden tablolarda ek veri kontrolü
+                    if table_idx < len(all_tables) - 1:
+                        next_table = all_tables[table_idx + 1]
+                        if next_table and len(next_table) > 0:
+                            first_row_next = next_table[0]
+                            if (first_row_next and len(first_row_next) > 2 and 
+                                first_row_next[0] is None and first_row_next[2]):
+                                continuation_text = str(first_row_next[2])
+                                if continuation_text and len(continuation_text) > 20:
+                                    additional_achievements = re.findall(r'[^.]+\.', continuation_text)
+                                    for sentence in additional_achievements:
+                                        sentence = sentence.strip()
+                                        if sentence and len(sentence) > 15:
+                                            kazanimlar.append(clean_text(sentence))
+                    
+                    if birim_adi and (konular or kazanimlar):
+                        birim = {
+                            "birim_adi": clean_text(birim_adi),
+                            "konular": konular,
+                            "kazanimlar": kazanimlar
+                        }
+                        ogrenme_birimleri.append(birim)
+            
+            return ogrenme_birimleri
         
     except Exception as e:
         print(f"Error extracting öğrenme birimleri: {str(e)}")
@@ -825,12 +1045,44 @@ def analyze_measurement_content(content):
     """
     olcme_yontemleri = []
     
-    # Bilinen ölçme araçlarını tespit et
+    # Bilinen ölçme araçlarını tespit et (yazım varyasyonları dahil)
     olcme_araclari = [
-        'gözlem formu', 'derecelendirme ölçeği', 'dereceli puanlama anahtarı',
-        'öz değerlendirme', 'akran değerlendirme', 'performans değerlendirme',
-        'portfolyo', 'proje değerlendirme', 'rubrik', 'kontrol listesi',
-        'açık uçlu', 'çoktan seçmeli', 'doğru yanlış', 'eşleştirme'
+        'gözlem formu', 'gozlem formu', 'derecelendirme ölçeği', 'derecelendirme olceği',
+        'dereceli puanlama anahtarı', 'dereceli puanlama anahtari',
+        'öz değerlendirme', 'oz degerlendirme', 'öz-değerlendirme',
+        'akran değerlendirme', 'akran degerlendirme', 'akran değerlendirmesi',
+        'performans değerlendirme', 'performans degerlendirme', 'performans değerlendirmesi',
+        'portfolyo', 'portföy', 'portfolio', 'proje değerlendirme', 'proje degerlendirme',
+        'rubrik', 'rubric', 'kontrol listesi', 'açık uçlu', 'acik uclu', 'açık-uçlu',
+        'çoktan seçmeli', 'coktan secmeli', 'çoktan-seçmeli', 'doğru yanlış', 'dogru yanlis',
+        'doğru-yanlış', 'eşleştirme', 'eslestirme', 'geçerlik', 'gecerlik',
+        'güvenirlik', 'guvenirlik', 'güvenilirlik', 'biçimlendirici değerlendirme',
+        'bicimlendirici degerlendirme', 'düzey belirleyici değerlendirme',
+        'duzey belirleyici degerlendirme', 'tanılayıcı değerlendirme', 'tanilayici degerlendirme',
+        'otantik değerlendirme', 'otantik degerlendirme', 'özgün değerlendirme',
+        'performansa dayalı değerlendirme', 'performansa dayali degerlendirme',
+        'e-sınav', 'e sinav', 'elektronik sınav', 'elektronik sinav',
+        'e-sınav merkezi', 'e sinav merkezi', 'anket', 'açık uçlu soru', 'acik uclu soru',
+        'çoktan seçmeli test', 'coktan secmeli test', 'klasik sınav', 'klasik sinav',
+        'kısa cevaplı soru', 'kisa cevapli soru', 'doğru–yanlış testi', 'dogru-yanlis testi',
+        'eşleştirme testi', 'eslestirme testi', 'ölçme aracı', 'olcme araci',
+        'puanlama anahtarı', 'puanlama anahtari', 'çeldirici', 'celdirici',
+        'madde analizi', 'deneme uygulaması', 'deneme uygulamasi',
+        'bireyselleştirilmiş eğitim programı', 'bireysellestirilmis egitim programi',
+        'bep', 'b.e.p', 'öğrenci ürün dosyası', 'ogrenci urun dosyasi',
+        'performans görevi', 'performans gorevi', 'proje ödevi', 'proje odevi',
+        'izleme değerlendirme', 'izleme degerlendirme', 'süreç değerlendirme',
+        'surec degerlendirme', 'ürün değerlendirme', 'urun degerlendirme',
+        'otomatik puanlama', 'elektronik ölçme araçları', 'elektronik olcme araclari',
+        'karne notu', 'başarı puanı', 'basari puani', 'sınav uygulama kılavuzu',
+        'sinav uygulama kilavuzu', 'değerlendirme kriteri', 'degerlendirme kriteri',
+        'geri bildirim', 'geribildirim', 'puanlama ölçeği', 'puanlama olcegi',
+        'öğrenme çıktısı', 'ogrenme ciktisi', 'zümre değerlendirmesi', 'zumre degerlendirmesi',
+        'öğretmen gözlemi', 'ogretmen gozlemi', 'öğrenci öz değerlendirmesi',
+        'ogrenci oz degerlendirmesi', 'ölçme ve değerlendirme uzmanı',
+        'olcme ve degerlendirme uzmani', 'ölçme değerlendirme merkezi',
+        'olcme degerlendirme merkezi', 'veri analizi', 'raporlama',
+        'değerlendirme formu', 'degerlendirme formu'
     ]
     
     content_lower = content.lower()
@@ -873,8 +1125,8 @@ def oku(file_path):
             return toplam_kazanim, toplam_saat
         
         # İstatistikleri yazdır
-        print(f"{'='*60}")
         print(f"İşlenen Dosya          : {filename}")
+        print(f"{'='*60}")
         print(f"Dersin Adı             : {ders_adi or 'Bulunamadı'}")
         print(f"Sınıf                  : {ders_sinifi or 'Bulunamadı'}")
         print(f"Dersin Süresi          : {ders_saati or 'Bulunamadı'}")
@@ -885,6 +1137,12 @@ def oku(file_path):
         
         toplam_kazanim, toplam_saat = toplam_kazanim_saati(kazanim_tablosu)
         print(f"Dersin Kazanım Tablosu : {len(kazanim_tablosu)} Öğrenme Birimi, {toplam_kazanim} Kazanım, {toplam_saat} Saat")
+        
+        # ÖB - Konu - Kazanım detay istatistikleri
+        toplam_ob = len(ogrenme_birimleri)
+        toplam_konu = sum(len(birim.get('konular', [])) for birim in ogrenme_birimleri)
+        toplam_detay_kazanim = sum(len(birim.get('kazanimlar', [])) for birim in ogrenme_birimleri)
+        print(f"ÖB - Konu- Kazanım     : {toplam_ob} Öğrenme Birimi, {toplam_konu} Konu, {toplam_detay_kazanim} Kazanım")
         print(f"{'='*60}")
         print()
         

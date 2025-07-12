@@ -4,24 +4,32 @@
 
 Bu proje, Türkiye Cumhuriyeti Millî Eğitim Bakanlığı'na (MEB) bağlı Mesleki ve Teknik Eğitim Genel Müdürlüğü'nün web sitesinden (`meslek.meb.gov.tr`) alan ve ders bilgilerini çekmek, bu verileri bir web arayüzünde göstermek ve derslere ait PDF dosyalarının içeriğini yapısal veriye dönüştürmek için geliştirilmiştir.
 
-Proje üç ana bileşenden oluşmaktadır:
+Proje iki ana bileşenden oluşmaktadır:
 
-1.  **Veri Çekici ve API (`server.py` & `alanlar_ve_dersler3.py`):** MEB'in web sitesinden tüm alanları, sınıfları ve bu alanlara ait dersleri (isim, PDF linki vb.) kazıyan Python tabanlı bir web scraper ve bu verileri sunan bir Flask API'sidir.
-2.  **Web Arayüzü (React):** Flask API'sinden gelen verileri listeleyen, aranabilir ve filtrelenebilir bir şekilde kullanıcıya sunan modern bir web arayüzüdür.
-3.  **PDF Ayrıştırıcı (`dbf_parser_final.py`):** İndirilen ders bilgi formu (DBF) PDF'lerini işleyerek içerisindeki ders adı, kazanımlar, üniteler, konular gibi detaylı bilgileri çıkaran ve bir SQLite veritabanına aktarılmak üzere SQL komutları üreten bir komut satırı aracıdır.
+1.  **Flask Backend (`server.py`):** MEB'in web sitesinden veri çeken, DBF dosyalarını indirip açan, PDF'leri ayrıştıran ve tüm bu işlemleri Server-Sent Events (SSE) üzerinden real-time olarak raporlayan bir REST API sunucusudur.
+2.  **React Frontend (`src/App.js`):** Backend'den gelen verileri kullanıcı dostu bir arayüzde gösteren, real-time progress takibi yapan ve filtreleme/arama özellikli modern bir web uygulamasıdır.
 
-### Çekilen Veri Türleri
+### Sistem Özellikleri
 
-`alanlar_ve_dersler3.py` betiği `meslek.meb.gov.tr` sitesinden aşağıdaki veri türlerini çeker:
+#### Backend Fonksiyonalite (`server.py`)
+-   **Web Scraping:** `alanlar_ve_dersler3.py` ile MEB sitesinden veri çekme
+-   **Real-time İletişim:** Server-Sent Events (SSE) ile anlık progress raporlama
+-   **DBF İşlemleri:** RAR/ZIP dosyalarını otomatik indirme ve açma
+-   **PDF Ayrıştırma:** `oku.py` modülü ile PDF içerik analizi
+-   **Önbellekleme:** JSON dosyalarında veri saklama ve cache yönetimi
 
--   **Alanlar ve Ders Materyalleri:** Alan listeleri ve bu alanlara ait ders materyallerinin (PDF) linkleri.
-    -   *Kaynak:* `cercevelistele.aspx`, `dmgoster.aspx`
--   **Ders Bilgi Formları (DBF):** Her alan ve sınıf düzeyine ait ders bilgi formlarının (RAR/ZIP) linkleri.
-    -   *Kaynak:* `dbflistele.aspx`
--   **Çerçeve Öğretim Programları (ÇÖP):** Alanlara ait öğretim programlarının (PDF) linkleri.
-    -   *Kaynak:* `cercevelistele.aspx`
--   **Bireysel Öğrenme Materyalleri (BÖM):** Alan ve ders bazında modül PDF'lerinin listesi.
-    -   *Kaynak:* `moduller`
+#### Frontend Özellikleri (`src/App.js`)
+-   **Real-time Progress:** SSE ile backend işlemlerini canlı takip
+-   **Arama ve Filtreleme:** Debounced search ile performanslı filtreleme  
+-   **Kategorik Veri Görüntüleme:** DBF, ÇÖP, DM, BÖM verilerini ayrı ayrı getirme
+-   **Dosya İşlemleri:** DBF dosyalarını indirme, açma ve eşleştirme
+-   **Hata Yönetimi:** Başarısız işlemler için retry mekanizması
+
+#### Çekilen Veri Türleri
+-   **Alanlar ve Ders Materyalleri:** Alan listeleri ve ders PDF linkleri (`dmgoster.aspx`)
+-   **Ders Bilgi Formları (DBF):** Sınıf bazında DBF RAR/ZIP dosyaları (`dbflistele.aspx`)
+-   **Çerçeve Öğretim Programları (ÇÖP):** Alan öğretim programları (`cercevelistele.aspx`)
+-   **Bireysel Öğrenme Materyalleri (BÖM):** Modül PDF'leri (`moduller`)
 
 !Proje Arayüzü
 
@@ -74,18 +82,23 @@ npm start
 
 Tarayıcınızda `http://localhost:3000` adresini açtığınızda, "Verileri Çek" butonuna tıklayarak veri kazıma işlemini başlatabilirsiniz. İşlem tamamlandığında veriler ekranda listelenecektir.
 
-### 3. PDF Ayrıştırıcı Kullanımı
+### 3. PDF İşleme
 
-Bu araç, web arayüzü aracılığıyla linklerini elde ettiğiniz PDF dosyalarını indirip bir klasöre koyduktan sonra kullanılır. PDF'lerin içindeki detaylı müfredat bilgilerini ayıklayıp bir `.sql` dosyası oluşturur.
+PDF dosyaları iki yolla işlenebilir:
 
-*Not: Gerekli kütüphaneler bir önceki adımda `requirements.txt` ile yüklendiği için ek bir kurulum gerekmez.*
+#### A) Web Arayüzü Üzerinden (Önerilen)
+1. React arayüzünde "PDF URL'si işle" özelliğini kullanın
+2. PDF URL'sini girin, sistem otomatik olarak indirir ve analiz eder
+3. İşlem sonuçları real-time olarak görüntülenir
 
+#### B) Komut Satırından
 ```bash
-# PDF'lerinizin bulunduğu dizini ve çıktı dosyasının adını belirtin.
+# Tek PDF dosyası işleme
+python oku.py dosya.pdf
+
+# Toplu PDF işleme (eski yöntem)
 python dbf_parser_final.py ./indirilen_pdfler -o cikti.sql
 ```
-
-Bu komut, `indirilen_pdfler` klasöründeki tüm PDF'leri işleyecek ve veritabanı şeması ile birlikte `INSERT` komutlarını içeren `cikti.sql` dosyasını oluşturacaktır.
 
 ## Veri Dosyalarının Yapısı
 
@@ -95,16 +108,33 @@ Proje çalıştırıldığında `data/` klasörü altında bazı önemli dosyala
 -   `dbf_data_final.json`: `dbf_parser_final.py` betiği çalıştırıldığında, PDF'lerden ayrıştırılan detaylı ders içeriklerinin yapısal olarak tutulduğu JSON dosyasıdır.
 -   `indirilen_pdfler/`: (Manuel oluşturulur) Arayüzden linkleri alınan Ders Bilgi Formu (DBF) PDF'lerinin indirileceği klasördür. `dbf_parser_final.py` bu klasörü kaynak olarak kullanır.
 
+## API Endpoints
+
+### Veri Çekme
+- `GET /api/get-cached-data` - Önbellekteki verileri getir
+- `GET /api/scrape-stream` - MEB sitesinden veri çek (SSE)
+- `POST /api/process-pdf` - PDF dosyasını işle (SSE)
+
+### Kategorik Veri
+- `GET /api/get-dbf` - Ders Bilgi Formu verilerini getir
+- `GET /api/get-cop` - Çerçeve Öğretim Programı verilerini getir  
+- `GET /api/get-dm` - Ders Materyali verilerini getir
+- `GET /api/get-bom` - Bireysel Öğrenme Materyali verilerini getir
+
+### DBF İşlemleri
+- `GET /api/dbf-download-extract` - DBF dosyalarını indir ve aç (SSE)
+- `GET /api/dbf-retry-extract-all` - Tüm DBF'leri tekrar aç (SSE)
+- `POST /api/dbf-retry-extract` - Belirli DBF'yi tekrar aç
+- `POST /api/dbf-match-refresh` - DBF eşleştirmesini güncelle
+
 ## Veri Akışı
 
-1.  Kullanıcı, React arayüzündeki butona tıklar.
-2.  Frontend, Flask backend'indeki `/api/scrape-stream` endpoint'ine istek gönderir.
-3.  Backend, `alanlar_ve_dersler3.py` scriptini kullanarak MEB sitesinden verileri çekmeye başlar.
-4.  İlerleme durumu anlık olarak (Server-Sent Events ile) arayüze gönderilir.
-5.  Veri çekme işlemi tamamlandığında, sonuçlar `data/scraped_data.json` dosyasına önbelleklenir.
-6.  Arayüz, gelen verileri işleyerek kullanıcıya sunar.
-7.  (Manuel Adım) Kullanıcı, arayüzdeki linkleri kullanarak istediği derslerin PDF'lerini indirir.
-8.  (Manuel Adım) `dbf_parser_final.py` aracı ile bu PDF'ler işlenerek veritabanı için SQL dosyası oluşturulur.
+1.  **İlk Yükleme:** Frontend önbellekten veri çeker (`/api/get-cached-data`)
+2.  **Veri Çekme:** Kullanıcı butona tıklayınca SSE ile real-time veri çekme başlar
+3.  **Progress Takibi:** Her adım SSE ile frontend'e gönderilir ve UI güncellenir
+4.  **Önbellekleme:** Veriler `data/scraped_data.json` dosyasına kaydedilir
+5.  **DBF İşlemleri:** Opsiyonel olarak DBF dosyaları otomatik indirilebilir/açılabilir
+6.  **PDF İşleme:** Seçilen PDF'ler `oku.py` ile ayrıştırılıp yapısal veriye dönüştürülür
 
 ## Lisans
 
