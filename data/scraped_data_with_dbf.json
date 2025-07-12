@@ -7,7 +7,8 @@
           "isim": "Hukuk Dili Ve Terminolojisi",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Adalet/adalet/10.SINIF/10-HUKUKİ DOSYALAMA VE EVRAK İŞLEMLERİ DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BY2024KT0902.pdf": {
           "isim": "Klavye Teknikleri",
@@ -19,7 +20,8 @@
           "isim": "Hukuki Dosyalama Ve Evrak İşlemleri",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Adalet/adalet/10.SINIF/10-HUKUKİ DOSYALAMA VE EVRAK İŞLEMLERİ DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/A2024NI1105.pdf": {
           "isim": "Personel Hukuku Uygulamaları",
@@ -38,20 +40,23 @@
           "isim": "Hukuki Klavye Teknikleri",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Adalet/adalet/10.SINIF/10-HUKUKİ DOSYALAMA VE EVRAK İŞLEMLERİ DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/A2024MHMUH1001.pdf": {
           "isim": "Medeni Hukuk Ve Medeni Usul Hukuku Uygulamaları",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Adalet/adalet/10.SINIF/10-HUKUKİ DOSYALAMA VE EVRAK İŞLEMLERİ DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/A2024NAK111203.pdf": {
           "isim": "Noter ve Avukat Kâtipliği",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Adalet/adalet/10.SINIF/10-HUKUKİ DOSYALAMA VE EVRAK İŞLEMLERİ DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/A2024AT111205.pdf": {
           "isim": "Cumuriyet Başsavcılığı Kalem Hizmetleri",
@@ -64,7 +69,8 @@
           "isim": "Ceza Ve Ceza Muhakemesi Hukuku Uygulamaları",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Adalet/Adalet güncel dbf/infaz koruma dalı 11/ceza infaz kurumu güvenliği.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/A2024KH1104.pdf": {
           "isim": "Kalem Hizmetleri",
@@ -76,19 +82,22 @@
           "isim": "Hükümlü ve Tutuklu Psikolojisi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Adalet/adalet/10.SINIF/10-HUKUKİ DOSYALAMA VE EVRAK İŞLEMLERİ DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/A2024CIH1107.pdf": {
           "isim": "Ceza ve İnfaz Hukuku Uygulamaları",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Adalet/Adalet güncel dbf/infaz koruma dalı 11/ceza infaz kurumu güvenliği.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/A2024CIKG1108.pdf": {
           "isim": "Ceza İnfaz Kurumu Güvenliği",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Adalet/Adalet güncel dbf/infaz koruma dalı 11/ceza infaz kurumu güvenliği.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/A2024IHU1101.pdf": {
           "isim": "İdare Hukuku Uygulamaları",
@@ -108,7 +117,8 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Adalet/adalet/10.SINIF/10-HUKUKİ DOSYALAMA VE EVRAK İŞLEMLERİ DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/A2024DS111204.pdf": {
           "isim": "Denetimli Serbestlik",
@@ -122,7 +132,8 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Adalet/adalet/10.SINIF/10-HUKUKİ DOSYALAMA VE EVRAK İŞLEMLERİ DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BY2024HKK1004.pdf": {
           "isim": "Hızlı Klavye",
@@ -164,7 +175,8 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Adalet/Adalet güncel dbf/infaz koruma dalı 11/ceza infaz kurumu güvenliği.pdf"
         }
       },
       "dbf_links": {
@@ -219,7 +231,8 @@
           "isim": "Sosyal Destek Alanları 9",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Aile_ve_Tüketici_Hizmetleri/AİLE VE TÜKETİCİ HİZMETLERİ ALANI/aile 10/ATÖLYE UYGULAMALARI 10 (SOSYAL DESTEK HİZMETLERİ).pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ATH2024ETIL0901.pdf": {
           "isim": "Etkili İletişim 9",
@@ -231,37 +244,43 @@
           "isim": "Zararlı Alışkanlıklardan Korunma 10",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Aile_ve_Tüketici_Hizmetleri/AİLE VE TÜKETİCİ HİZMETLERİ ALANI/aile 10/ATÖLYE UYGULAMALARI 10 (SOSYAL DESTEK HİZMETLERİ).pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ATH2024TD1008.pdf": {
           "isim": "Tüketici Davranışları 10",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Aile_ve_Tüketici_Hizmetleri/AİLE VE TÜKETİCİ HİZMETLERİ ALANI/aile 10/ATÖLYE UYGULAMALARI 10 (SOSYAL DESTEK HİZMETLERİ).pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ATH2024DOAR1007.pdf": {
           "isim": "Dosyalama Ve Arşivleme 10",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Aile_ve_Tüketici_Hizmetleri/AİLE VE TÜKETİCİ HİZMETLERİ ALANI/aile 10/ATÖLYE UYGULAMALARI 10 (SOSYAL DESTEK HİZMETLERİ).pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ATH2024BESL1006.pdf": {
           "isim": "Beslenme 10",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Aile_ve_Tüketici_Hizmetleri/AİLE VE TÜKETİCİ HİZMETLERİ ALANI/aile 10/ATÖLYE UYGULAMALARI 10 (SOSYAL DESTEK HİZMETLERİ).pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ATH2024AUTH1005.pdf": {
           "isim": "Atölye Uygulamaları 10 (Tüketici Hizmetleri)",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Aile_ve_Tüketici_Hizmetleri/AİLE VE TÜKETİCİ HİZMETLERİ ALANI/aile 10/ATÖLYE UYGULAMALARI 10 (SOSYAL DESTEK HİZMETLERİ).pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ATH2024AUSDH1004.pdf": {
           "isim": "Atölye Uygulamaları 10 (Sosyal Destek Hizmetleri)",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Aile_ve_Tüketici_Hizmetleri/AİLE VE TÜKETİCİ HİZMETLERİ ALANI/aile 10/ATÖLYE UYGULAMALARI 10 (SOSYAL DESTEK HİZMETLERİ).pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ATH2024ISHAYIL111223.pdf": {
           "isim": "İş Hayatında İletişim 11-12",
@@ -274,7 +293,8 @@
           "isim": "Çocuklarda Ve Gençlerde Sosyal Destek Hizmetleri 11",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Aile_ve_Tüketici_Hizmetleri/AİLE VE TÜKETİCİ HİZMETLERİ ALANI/aile 10/ATÖLYE UYGULAMALARI 10 (SOSYAL DESTEK HİZMETLERİ).pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ATH2024TMHKB1112.pdf": {
           "isim": "Temel Hukuk Bilgileri 11",
@@ -298,7 +318,8 @@
           "isim": "Yaşlı Ve Engelli Bireylerde Sosyal Destek Hizmetleri 11",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Aile_ve_Tüketici_Hizmetleri/AİLE VE TÜKETİCİ HİZMETLERİ ALANI/aile 10/ATÖLYE UYGULAMALARI 10 (SOSYAL DESTEK HİZMETLERİ).pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ATH2024AEKO111217.pdf": {
           "isim": "Aile Ekonomisi 11-12",
@@ -326,7 +347,8 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Aile_ve_Tüketici_Hizmetleri/AİLE VE TÜKETİCİ HİZMETLERİ ALANI-11/SEÇMELİ DERSLER/ATIKLAR.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ATH2024EVHZ111220.pdf": {
           "isim": "Ev Hizmetleri 11-12",
@@ -339,7 +361,8 @@
           "isim": "Atölye Uygulamaları 11 (Sosyal Destek Hizmetleri)",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Aile_ve_Tüketici_Hizmetleri/AİLE VE TÜKETİCİ HİZMETLERİ ALANI/aile 10/ATÖLYE UYGULAMALARI 10 (SOSYAL DESTEK HİZMETLERİ).pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ATH2024IETDR111222.pdf": {
           "isim": "İletişimde Etkili Drama 11-12",
@@ -367,14 +390,16 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Aile_ve_Tüketici_Hizmetleri/AİLE VE TÜKETİCİ HİZMETLERİ ALANI/aile 10/ATÖLYE UYGULAMALARI 10 (SOSYAL DESTEK HİZMETLERİ).pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ATH2024MYDTH111226.pdf": {
           "isim": "Mesleki Yabancı Dil 11-12 (Tüketici Hizmetleri)",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Aile_ve_Tüketici_Hizmetleri/AİLE VE TÜKETİCİ HİZMETLERİ ALANI/aile 10/ATÖLYE UYGULAMALARI 10 (SOSYAL DESTEK HİZMETLERİ).pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ATH2024PAZILE111227.pdf": {
           "isim": "Pazarlama İletişimi 11-12",
@@ -528,13 +553,15 @@
           "isim": "Bilgisayarlı Tasarım Uygulamaları",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Bilişim_Teknolojileri/bilisim/Bilişim Teknolojileri_Bilgisayarlı Tasarım Uygulamaları 9.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BT2024BTT920.pdf": {
           "isim": "Bilişim Teknolojilerinin Temelleri",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Bilişim_Teknolojileri/bilisim/Bilişim Teknolojileri_Bilgisayarlı Tasarım Uygulamaları 9.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BT2024PT918.pdf": {
           "isim": "Programlama Temelleri",
@@ -602,7 +629,8 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Bilişim_Teknolojileri/bilisim/Bilişim Teknolojileri_Bilgisayarlı Tasarım Uygulamaları 9.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BT2024MKR111203.pdf": {
           "isim": "Mikrodenetleyici",
@@ -699,7 +727,8 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Bilişim_Teknolojileri/bilisim/Bilişim Teknolojileri_Bilgisayarlı Tasarım Uygulamaları 9.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BT2024SM111226.pdf": {
           "isim": "Sosyal Medya",
@@ -762,13 +791,15 @@
           "isim": "Biyo Ölçme Atölyesi",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Biyomedikal_Cihaz_Teknolojileri/biyomedikal dbf/BÿYOMEDÿKAL 9/BÿYO ÖLÇME ATÖLYESÿ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BM2024MFT1004": {
           "isim": "Mesleki Fizyoloji Ve Terminoloji",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Biyomedikal_Cihaz_Teknolojileri/biyomedikal dbf/BÿYOMEDÿKAL 11/TIBBÿ LABORATUVAR VE HASTA DI₧I UYGULAMA CÿHAZLARI/ANALÿZ VE LABORATUVAR CÿHAZLARI.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BM2024BTR1003": {
           "isim": "Biyomedikal Teknik Resim",
@@ -787,7 +818,8 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Biyomedikal_Cihaz_Teknolojileri/biyomedikal dbf/BÿYOMEDÿKAL 11/TIBBÿ LABORATUVAR VE HASTA DI₧I UYGULAMA CÿHAZLARI/ANALÿZ VE LABORATUVAR CÿHAZLARI.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BT2024SM111226.pdf": {
           "isim": "Sosyal Medya",
@@ -829,13 +861,15 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Biyomedikal_Cihaz_Teknolojileri/biyomedikal dbf/BÿYOMEDÿKAL 11/SEÇMELÿ/3-D YAZICILAR.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BM2024YDC1111": {
           "isim": "Yaşam Destek Cihazları Atölyesi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Biyomedikal_Cihaz_Teknolojileri/BİYOMEDİKAL CİHAZ TEKNOLOJİLERİ ALANI/BİYOMEDİKAL 11 DBF LER MESLEK EBA/ACİL SERVİS VE DESTEK TEDAVİ CİHAZLARI.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BM2024TTO1110": {
           "isim": "Tıbbi Teknoloji Organizasyonu",
@@ -847,31 +881,36 @@
           "isim": "Laboratuvar Destek Cihazları",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Biyomedikal_Cihaz_Teknolojileri/biyomedikal dbf/BÿYOMEDÿKAL 11/TIBBÿ LABORATUVAR VE HASTA DI₧I UYGULAMA CÿHAZLARI/LABORATUVAR DESTEK CÿHAZLARI.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BM2024KLC1108": {
           "isim": "Klinik Laboratuvar Cihazları Atölyesi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Biyomedikal_Cihaz_Teknolojileri/biyomedikal dbf/BÿYOMEDÿKAL 11/TIBBÿ LABORATUVAR VE HASTA DI₧I UYGULAMA CÿHAZLARI/ANALÿZ VE LABORATUVAR CÿHAZLARI.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BM2024EFC1107": {
           "isim": "Elektrofizyoloji Cihazları",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Biyomedikal_Cihaz_Teknolojileri/BİYOMEDİKAL CİHAZ TEKNOLOJİLERİ ALANI/BİYOMEDİKAL 11 DBF LER MESLEK EBA/ACİL SERVİS VE DESTEK TEDAVİ CİHAZLARI.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BM2024DTC1106": {
           "isim": "Acil Servis Ve Destek Tedavi Cihazları",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Biyomedikal_Cihaz_Teknolojileri/BİYOMEDİKAL CİHAZ TEKNOLOJİLERİ ALANI/BİYOMEDİKAL 11 DBF LER MESLEK EBA/ACİL SERVİS VE DESTEK TEDAVİ CİHAZLARI.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BM2024YBC1105": {
           "isim": "Ameliyathane Ve Yoğun Bakım Cihazları",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Biyomedikal_Cihaz_Teknolojileri/biyomedikal dbf/BÿYOMEDÿKAL 11/YA₧AM DESTEK VE TEDAVÿ CÿHAZLARI/AMELÿYATHANE VE YOªUN BAKIM CÿHAZLARI.pdf"
         }
       },
       "dbf_links": {
@@ -932,7 +971,8 @@
           "isim": "Büro Teknolojileri",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Büro_Yönetimi_ve_Yönetici_Asistanlığı/buro/10.SINIF/Büro_Hizmetleri_Dbf.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BY2024HKK1004.pdf": {
           "isim": "Hızlı Klavye Kullanımı",
@@ -956,7 +996,8 @@
           "isim": "Büro Hizmetleri",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Büro_Yönetimi_ve_Yönetici_Asistanlığı/buro/10.SINIF/Büro_Hizmetleri_Dbf.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MF2024MMA0902..pdf": {
           "isim": "Mesleki Matematik",
@@ -1007,7 +1048,8 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Büro_Yönetimi_ve_Yönetici_Asistanlığı/buro/10.SINIF/Büro_Hizmetleri_Dbf.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BY2024YDT1101.pdf": {
           "isim": "Yazışma Ve Dosyalama Teknikleri",
@@ -1041,7 +1083,8 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Büro_Yönetimi_ve_Yönetici_Asistanlığı/buro/10.SINIF/Büro_Hizmetleri_Dbf.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BY2024IKY111204.pdf": {
           "isim": "İnsan Kaynakları Yönetimi",
@@ -1083,7 +1126,8 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Büro_Yönetimi_ve_Yönetici_Asistanlığı/buro/10.SINIF/Büro_Hizmetleri_Dbf.pdf"
         }
       },
       "dbf_links": {
@@ -1132,51 +1176,59 @@
           "isim": "Müzik Ve Dramatik Etkinlikler Atölyesi",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Çocuk_Gelişimi_ve_Eğitimi/çocuk geliƒimi dbf/ÇOCUK GELÿ₧ÿMÿ 10/ERKEN ÇOCUKLUK VE ÖZEL EªÿTÿMDE ÖZ BAKIM.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/CG2024CRS0902": {
           "isim": "Çocuk Ruh Sağlığı",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Çocuk_Gelişimi_ve_Eğitimi/çocuk geliƒimi dbf/ÇOCUK GELÿ₧ÿMÿ 9/ÇOCUK RUH SAªLIªI.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/CG2024ACS0901": {
           "isim": "Anne-Çocuk Sağlığı",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Çocuk_Gelişimi_ve_Eğitimi/çocuk geliƒimi dbf/ÇOCUK GELÿ₧ÿMÿ 9/Anne-çocuk saºlìºì.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/CG2024OOA1006": {
           "isim": "Oyun Ve Oyuncak Atölyesi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Çocuk_Gelişimi_ve_Eğitimi/çocuk geliƒimi dbf/ÇOCUK GELÿ₧ÿMÿ 10/OYUN VE OYUNCAK ATÖLYESÿ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/CG2024OEB1005": {
           "isim": "Erken Çocukluk Ve Özel Eğitimde Öz Bakım",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Çocuk_Gelişimi_ve_Eğitimi/çocuk geliƒimi dbf/ÇOCUK GELÿ₧ÿMÿ 10/ERKEN ÇOCUKLUK VE ÖZEL EªÿTÿMDE ÖZ BAKIM.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/CG2024CCG1004": {
           "isim": "Çocuk Gelişimi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Çocuk_Gelişimi_ve_Eğitimi/çocuk geliƒimi dbf/ÇOCUK GELÿ₧ÿMÿ 10/ÇOCUK GELÿ₧ÿMÿ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ahilik_kulturu_ve_girisimcilik.pdf": {
           "isim": "Ahilik Kültürü ve Girişimcilik",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Çocuk_Gelişimi_ve_Eğitimi/çocuk geliƒimi dbf/ÇOCUK GELÿ₧ÿMÿ 10/ERKEN ÇOCUKLUK VE ÖZEL EªÿTÿMDE ÖZ BAKIM.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BT2024SM111226.pdf": {
           "isim": "Sosyal Medya",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Çocuk_Gelişimi_ve_Eğitimi/çocuk geliƒimi dbf/ÇOCUK GELÿ₧ÿMÿ 11/SEÇMELÿ/SOSYAL DESTEK HÿZMETLERÿ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BT2024DT111227.pdf": {
           "isim": "Dijital Tasarım",
@@ -1197,60 +1249,69 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Çocuk_Gelişimi_ve_Eğitimi/çocuk geliƒimi dbf/ÇOCUK GELÿ₧ÿMÿ 11/SEÇMELÿ/SANAT VE OYUN 2.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/CG2024SVOI111214": {
           "isim": "Sanat Ve Oyun-1",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Çocuk_Gelişimi_ve_Eğitimi/çocuk geliƒimi dbf/ÇOCUK GELÿ₧ÿMÿ 11/SEÇMELÿ/SANAT VE OYUN 1.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/CG2024KSM111213": {
           "isim": "Kostüm Ve Sahne Makyajı",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Çocuk_Gelişimi_ve_Eğitimi/çocuk geliƒimi dbf/ÇOCUK GELÿ₧ÿMÿ 11/SEÇMELÿ/KOSTÜM VE SAHNE MAKYAJI.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/CG2024CIY111212": {
           "isim": "Çocuklara İlk Yardım",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Çocuk_Gelişimi_ve_Eğitimi/çocuk geliƒimi dbf/ÇOCUK GELÿ₧ÿMÿ 11/SEÇMELÿ/ÇOCUKLARA ÿLK YARDIM.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/CG2024EMA111211": {
           "isim": "Çocuk Edebiyatı Ve Masal Anlatımı",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Çocuk_Gelişimi_ve_Eğitimi/çocuk geliƒimi dbf/ÇOCUK GELÿ₧ÿMÿ 11/SEÇMELÿ/ÇOCUK EDEBÿYATI VE MASAL ANLATIMI.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/CG2024CCA111210": {
           "isim": "Çocuk Aktiviteleri",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Çocuk_Gelişimi_ve_Eğitimi/çocuk geliƒimi dbf/ÇOCUK GELÿ₧ÿMÿ 10/ÇOCUK GELÿ₧ÿMÿ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/CG2024OPA1109": {
           "isim": "Erken Çocukluk Ve Özel Eğitimde Program Atölyesi Cilt-2",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Çocuk_Gelişimi_ve_Eğitimi/çocuk geliƒimi dbf/ÇOCUK GELÿ₧ÿMÿ 11/ERKEN ÇOCUKLUK VE ÖZEL EªÿTÿMDE PROGRAM ATÖLYESÿ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/CG2024OPA1108": {
           "isim": "Erken Çocukluk Ve Özel Eğitimde Program Atölyesi Cilt-1",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Çocuk_Gelişimi_ve_Eğitimi/çocuk geliƒimi dbf/ÇOCUK GELÿ₧ÿMÿ 11/ERKEN ÇOCUKLUK VE ÖZEL EªÿTÿMDE PROGRAM ATÖLYESÿ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/CG2024YTK1107": {
           "isim": "Yetersizlik Türleri Ve Kaynaştırma Eğitimi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Çocuk_Gelişimi_ve_Eğitimi/Çocuk Gelişimi ve Eğitimi 11 ve Seçmeli DBF/11-YETERSİZLİK TÜRLERİ VE KAYNAŞTIRMA EĞİTİMİ.pdf"
         }
       },
       "dbf_links": {
@@ -1466,110 +1527,127 @@
           "isim": "Temel Teknikler Atölyesi",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/El_Sanatları_Teknolojisi/EL SANATLARI TEKNOLOJİSİ/9.SINIF/TEMEL TEKNİKLER ATÖLYESİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ELSN2024STA1004.pdf": {
           "isim": "Süsleme Teknikleri Atölyesi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/El_Sanatları_Teknolojisi/EL SANATLARI TEKNOLOJİSİ/10.SINIF/SÜSLEME TEKNİKLERİ ATÖLYESİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ELSN2024ETU1003.pdf": {
           "isim": "Ev Tekstili Üretimi Atölyesi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/El_Sanatları_Teknolojisi/EL SANATLARI TEKNOLOJİSİ/11.SINIF/EV TEKSTİLİ ÜRETİMİ ATÖLYESİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ELSN2024DT1002.pdf": {
           "isim": "Desen Tasarım",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/El_Sanatları_Teknolojisi/EL SANATLARI TEKNOLOJİSİ/10.SINIF/DESEN TASARIM.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ELSN2024ELA1001.pdf": {
           "isim": "Aksesuar Atölyesi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/El_Sanatları_Teknolojisi/EL SANATLARI TEKNOLOJİSİ/SEÇMELİ DERSLER 11.-12. SINIF/DEKORATİF EV AKSESUARLARI ATÖLYESİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ELSN2024KU1204.pdf": {
           "isim": "Kırkyama Üretimi",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/El_Sanatları_Teknolojisi/EL SANATLARI TEKNOLOJİSİ/SEÇMELİ DERSLER 11.-12. SINIF/KIRKYAMA ÜRETİMİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ELSN2024GES1102.pdf": {
           "isim": "Geleneksel El Sanatları",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/El_Sanatları_Teknolojisi/EL SANATLARI TEKNOLOJİSİ/11.SINIF/GELENEKSEL EL SANATLARI.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ELSN2024ETU1103.pdf": {
           "isim": "Ev Tekstili Üretimi Atölyesi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/El_Sanatları_Teknolojisi/EL SANATLARI TEKNOLOJİSİ/11.SINIF/EV TEKSTİLİ ÜRETİMİ ATÖLYESİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ELSN2024OA1104.pdf": {
           "isim": "Örgü Atölyesi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/El_Sanatları_Teknolojisi/EL SANATLARI TEKNOLOJİSİ/11.SINIF/ÖRGÜ ATÖLYESİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ELSN2024PUO1105.pdf": {
           "isim": "Prototip Ürünler ve Organizasyon Atölyesi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/El_Sanatları_Teknolojisi/EL SANATLARI TEKNOLOJİSİ/11.SINIF/Prototip Ürünler ve Organizasyon Atölyesi.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ELSN2024CD1201.pdf": {
           "isim": "Çarpana Dokuma",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/El_Sanatları_Teknolojisi/EL SANATLARI TEKNOLOJİSİ/SEÇMELİ DERSLER 11.-12. SINIF/ÇARPANA DOKUMA.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ELSN2024ABA1101.pdf": {
           "isim": "Ahşap Boyama Atölyesi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/El_Sanatları_Teknolojisi/EL SANATLARI TEKNOLOJİSİ/11.SINIF/AHŞAP BOYAMA.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ELSN2024ELN1203.pdf": {
           "isim": "El Nakışları",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/El_Sanatları_Teknolojisi/EL SANATLARI TEKNOLOJİSİ/SEÇMELİ DERSLER 11.-12. SINIF/EL NAKIŞLARI.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ahilik_kulturu_ve_girisimcilik.pdf": {
           "isim": "Ahilik Kültürü ve Girişimcilik",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/El_Sanatları_Teknolojisi/EL SANATLARI TEKNOLOJİSİ/11.SINIF/Prototip Ürünler ve Organizasyon Atölyesi.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ELSN2024NT1205.pdf": {
           "isim": "Nakış Tasarımları",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/El_Sanatları_Teknolojisi/EL SANATLARI TEKNOLOJİSİ/SEÇMELİ DERSLER 11.-12. SINIF/NAKIŞ TASARIMLARI.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ELSN2024YBT1206.pdf": {
           "isim": "Yapma Bebek Teknikleri",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/El_Sanatları_Teknolojisi/EL SANATLARI TEKNOLOJİSİ/SEÇMELİ DERSLER 11.-12. SINIF/YAPMA BEBEK TEKNİKLERİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ELSN2024YU1207.pdf": {
           "isim": "Yorgan Üretimi",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/El_Sanatları_Teknolojisi/EL SANATLARI TEKNOLOJİSİ/SEÇMELİ DERSLER 11.-12. SINIF/YORGAN ÜRETİMİ ATÖLYESİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BT2024PRG111228.pdf": {
           "isim": "Programlama",
@@ -1582,7 +1660,8 @@
           "isim": "Dijital Tasarım",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/El_Sanatları_Teknolojisi/EL SANATLARI TEKNOLOJİSİ/10.SINIF/DESEN TASARIM.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BT2024SM111226.pdf": {
           "isim": "Sosyal Medya",
@@ -1596,7 +1675,8 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/El_Sanatları_Teknolojisi/EL SANATLARI TEKNOLOJİSİ/SEÇMELİ DERSLER 11.-12. SINIF/DEKORATİF ÜRÜNLERDE BAKIM ONARIM.pdf"
         }
       },
       "dbf_links": {
@@ -1645,43 +1725,50 @@
           "isim": "Temel Elektrik-Elektronik Atölyesi",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Elektrik-Elektronik_Teknolojisi/ELEKTRİK-ELEKTRONİK TEKNOLOJİSİ/10. SINIF/ANALOG-DİJİTAL ELEKTRONİK ATÖLYESİ-DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/EET2024ADE1009.pdf": {
           "isim": "Analog-Dijital Elektronik Atölyesi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Elektrik-Elektronik_Teknolojisi/ELEKTRİK-ELEKTRONİK TEKNOLOJİSİ/10. SINIF/ANALOG-DİJİTAL ELEKTRONİK ATÖLYESİ-DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/EET2024KKA1008.pdf": {
           "isim": "Kumanda Ve Kontrol Atölyesi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Elektrik-Elektronik_Teknolojisi/ELEKTRİK-ELEKTRONİK TEKNOLOJİSİ/10. SINIF/ANALOG-DİJİTAL ELEKTRONİK ATÖLYESİ-DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/EET2024EA1007.pdf": {
           "isim": "Elektronik Atölyesi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Elektrik-Elektronik_Teknolojisi/ELEKTRİK-ELEKTRONİK TEKNOLOJİSİ/10. SINIF/ANALOG-DİJİTAL ELEKTRONİK ATÖLYESİ-DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/EET2024KEA1006.pdf": {
           "isim": "Küçük Ev Aletleri Atölyesi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Elektrik-Elektronik_Teknolojisi/ELEKTRİK-ELEKTRONİK TEKNOLOJİSİ/10. SINIF/ANALOG-DİJİTAL ELEKTRONİK ATÖLYESİ-DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/EET2024TA1005.pdf": {
           "isim": "Tesisat Atölyesi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Elektrik-Elektronik_Teknolojisi/ELEKTRİK-ELEKTRONİK TEKNOLOJİSİ/10. SINIF/ANALOG-DİJİTAL ELEKTRONİK ATÖLYESİ-DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/EET2024KTA1004.pdf": {
           "isim": "Kumanda Teknikleri Atölyesi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Elektrik-Elektronik_Teknolojisi/ELEKTRİK-ELEKTRONİK TEKNOLOJİSİ/10. SINIF/ANALOG-DİJİTAL ELEKTRONİK ATÖLYESİ-DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/EET2024BDD1003.pdf": {
           "isim": "Bilgisayarla Devre Dizaynı",
@@ -1693,7 +1780,8 @@
           "isim": "Elektrik-Elektronik Esasları",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Elektrik-Elektronik_Teknolojisi/ELEKTRİK-ELEKTRONİK TEKNOLOJİSİ/10. SINIF/ANALOG-DİJİTAL ELEKTRONİK ATÖLYESİ-DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/EET2024ACS1225.pdf": {
           "isim": "Ac Motor Kumanda Ve Sarım Teknikleri",
@@ -1718,7 +1806,8 @@
           "isim": "Pano Atölyesi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Elektrik-Elektronik_Teknolojisi/ELEKTRİK-ELEKTRONİK TEKNOLOJİSİ/10. SINIF/ANALOG-DİJİTAL ELEKTRONİK ATÖLYESİ-DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/EET2024ETP1114.pdf": {
           "isim": "Elektrik Tesisat Projeleri",
@@ -1736,7 +1825,8 @@
           "isim": "Tesisatlı Ev Cihazları Atölyesi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Elektrik-Elektronik_Teknolojisi/ELEKTRİK-ELEKTRONİK TEKNOLOJİSİ/10. SINIF/ANALOG-DİJİTAL ELEKTRONİK ATÖLYESİ-DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/EET2024SK1117.pdf": {
           "isim": "Soğutucular Ve Klimalar",
@@ -1748,7 +1838,8 @@
           "isim": "Mikrodenetleyiciler Ve Güvenlik Atölyesi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Elektrik-Elektronik_Teknolojisi/ELEKTRİK-ELEKTRONİK TEKNOLOJİSİ/10. SINIF/ANALOG-DİJİTAL ELEKTRONİK ATÖLYESİ-DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/EET2024GS1119.pdf": {
           "isim": "Görüntü Sistemleri",
@@ -1766,19 +1857,22 @@
           "isim": "Otomasyon Atölyesi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Elektrik-Elektronik_Teknolojisi/ELEKTRİK-ELEKTRONİK TEKNOLOJİSİ/10. SINIF/ANALOG-DİJİTAL ELEKTRONİK ATÖLYESİ-DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/EET2024EE1122.pdf": {
           "isim": "Endüstriyel Elektronik",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Elektrik-Elektronik_Teknolojisi/ELEKTRİK-ELEKTRONİK TEKNOLOJİSİ/10. SINIF/ANALOG-DİJİTAL ELEKTRONİK ATÖLYESİ-DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/EET2024AMA1110.pdf": {
           "isim": "Asansör Montaj Atölyesi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Elektrik-Elektronik_Teknolojisi/ELEKTRİK-ELEKTRONİK TEKNOLOJİSİ/10. SINIF/ANALOG-DİJİTAL ELEKTRONİK ATÖLYESİ-DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/EET2024MP1124.pdf": {
           "isim": "Mikrodenetleyici İle Programlama",
@@ -1819,7 +1913,8 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Elektrik-Elektronik_Teknolojisi/ELEKTRİK-ELEKTRONİK TEKNOLOJİSİ/10. SINIF/ANALOG-DİJİTAL ELEKTRONİK ATÖLYESİ-DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/EET2024HPS1230.pdf": {
           "isim": "Hidrolik Ve Pnömatik Sistemler",
@@ -1868,7 +1963,8 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Elektrik-Elektronik_Teknolojisi/ELEKTRİK-ELEKTRONİK TEKNOLOJİSİ/10. SINIF/ANALOG-DİJİTAL ELEKTRONİK ATÖLYESİ-DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BT2024SM111226.pdf": {
           "isim": "Sosyal Medya",
@@ -1930,7 +2026,8 @@
           "isim": "Atölye",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Endüstriyel_Otomasyon_Teknolojileri/ENDÜSTRİYEL OTOMASYON TEKNOLOJİLERİ/10. SINIF/003_10_ATOLYE_DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/EOT2024ELE0901.pdf": {
           "isim": "Elektroteknik",
@@ -1942,7 +2039,8 @@
           "isim": "Atölye",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Endüstriyel_Otomasyon_Teknolojileri/ENDÜSTRİYEL OTOMASYON TEKNOLOJİLERİ/10. SINIF/003_10_ATOLYE_DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/EOT2024SEN1004.pdf": {
           "isim": "Sensörler",
@@ -2017,13 +2115,15 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Endüstriyel_Otomasyon_Teknolojileri/endustriyel/11-12 seçmeli/0020_11_12_SECMELİ_DENETIM_SISTEMLERI_DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/EOT2024ATL1108.pdf": {
           "isim": "Atölye",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Endüstriyel_Otomasyon_Teknolojileri/ENDÜSTRİYEL OTOMASYON TEKNOLOJİLERİ/10. SINIF/003_10_ATOLYE_DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/EOT2024OTO1107.pdf": {
           "isim": "Otomatik Üretim",
@@ -2102,7 +2202,8 @@
           "isim": "Dijital Görsel Düzenleme",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Gazetecilik/GAZETECİLİK ALANI/10. SINIF/DİJİTAL GÖRSEL DÜZENLEME 10.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/G2024HF1003.pdf": {
           "isim": "Haber Fotoğrafçılığı",
@@ -2129,7 +2230,8 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Gazetecilik/GAZETECİLİK ALANI/10. SINIF/DİJİTAL GÖRSEL DÜZENLEME 10.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BT2024PRG111228.pdf": {
           "isim": "Programlama",
@@ -2162,7 +2264,8 @@
           "isim": "Dijital Medyada Habercilik",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Gazetecilik/gazetecilik_2020_11/gazetecilik/DİJİTAL MEDYADA HABERCİLİK DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/G2024R1106.pdf": {
           "isim": "Redaksiyon",
@@ -2217,37 +2320,43 @@
           "isim": "Geleneksel Türk Sanatları Desen",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Geleneksel_Türk_Sanatları/GELENEKSEL TÜRK SANATLARI DBF 9/GELENEKSEL TÜRK SANATLARI DESEN_DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GTS2024TGTS0901.pdf": {
           "isim": "Temel Geleneksel Türk Sanatları",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Geleneksel_Türk_Sanatları/GELENEKSEL TÜRK SANATLARI DBF 9/TEMEL GELENEKSEL TÜRK SANATLARI_DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GTS2024MIA1006.pdf": {
           "isim": "Minyatür Atölyesi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Geleneksel_Türk_Sanatları/GELENEKSEL TÜRK SANATLARI DBF 10/MİNYATÜR ATÖLYESİ_DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GTS2024KAT1005.pdf": {
           "isim": "Kātı’ Atölyesi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Geleneksel_Türk_Sanatları/GELENEKSEL TÜRK SANATLARI/CİLT ATÖLYESİ 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GTS2024HHA1004.pdf": {
           "isim": "Hüsn-i Hat Atölyesi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Geleneksel_Türk_Sanatları/GELENEKSEL TÜRK SANATLARI DBF 10/HÜSN-İ HAT ATÖLYESİ_DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GTS2024EA1003.pdf": {
           "isim": "Ebru Atölyesi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Geleneksel_Türk_Sanatları/GELENEKSEL TÜRK SANATLARI DBF 10/EBRU ATÖLYESİ_DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ahilik_kulturu_ve_girisimcilik.pdf": {
           "isim": "Ahilik Kültürü ve Girişimcilik",
@@ -2267,7 +2376,8 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Geleneksel_Türk_Sanatları/GELENEKSEL TÜRK SANATLARI DBF 9/TEMEL TASARIM.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BT2024PRG111228.pdf": {
           "isim": "Programlama",
@@ -2281,38 +2391,44 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Geleneksel_Türk_Sanatları/GELENEKSEL TÜRK SANATLARI DBF 11/EBRU UYGULAMALARI 11-12.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GTS2024TEZU1211.pdf": {
           "isim": "Tezhip Uygulamalar",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Geleneksel_Türk_Sanatları/GELENEKSEL TÜRK SANATLARI DBF 11/TEZHİP ATÖLYESİ 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GTS2024TEZA1110.pdf": {
           "isim": "Tezhip Atölyesi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Geleneksel_Türk_Sanatları/GELENEKSEL TÜRK SANATLARI DBF 11/TEZHİP ATÖLYESİ 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GTS2024KA1108.pdf": {
           "isim": "Kalemişi Atölyesi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Geleneksel_Türk_Sanatları/GELENEKSEL TÜRK SANATLARI DBF 11/KALEMİŞİ ATÖLYESİ 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GTS2024CIA1107.pdf": {
           "isim": "Çini Atölyesi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Geleneksel_Türk_Sanatları/GELENEKSEL TÜRK SANATLARI DBF 11/ÇİNİ ATÖLYESİ 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GTS2024CA1109.pdf": {
           "isim": "Cilt Atölyesi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Geleneksel_Türk_Sanatları/GELENEKSEL TÜRK SANATLARI/CİLT ATÖLYESİ 11.pdf"
         }
       },
       "dbf_links": {
@@ -2361,7 +2477,8 @@
           "isim": "Gemi Temel İşlemleri",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Gemi_Yapımı/GEMİ YAPIMI/11.SINIF/GEMİ BAKIM ONARIMI_DBF_11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MTT2024TR0902.pdf": {
           "isim": "Teknik Resim",
@@ -2373,13 +2490,15 @@
           "isim": "Ahşap Yat İmalatı",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Gemi_Yapımı/GEMİ YAPIMI_DBF/10.SINIF/Ahşap Yat İmalatı_10.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GY2024GI1003.pdf": {
           "isim": "Gemi İmalatı",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Gemi_Yapımı/GEMİ YAPIMI/11.SINIF/GEMİ BAKIM ONARIMI_DBF_11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GY2024EÇ1002.pdf": {
           "isim": "Endaze Çizimi",
@@ -2392,68 +2511,79 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Gemi_Yapımı/GEMİ YAPIMI/11.SINIF/GEMİ BAKIM ONARIMI_DBF_11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GY2024GIR1106.pdf": {
           "isim": "Gemi İmalat Resmi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Gemi_Yapımı/GEMİ YAPIMI/11.SINIF/GEMİ BAKIM ONARIMI_DBF_11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GY2024GKU1107.pdf": {
           "isim": "Gemi Kaynak Uygulamaları",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Gemi_Yapımı/GEMİ YAPIMI/11.SINIF/GEMİ BAKIM ONARIMI_DBF_11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GY2024YIR1108.pdf": {
           "isim": "Yat İmalatı Resmi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Gemi_Yapımı/GEMİ YAPIMI_DBF/10.SINIF/Ahşap Yat İmalatı_10.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GY2024YBO1109.pdf": {
           "isim": "Yat Bakım Onarımı",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Gemi_Yapımı/GEMİ YAPIMI/11.SINIF/GEMİ BAKIM ONARIMI_DBF_11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GY2024KYI1110.pdf": {
           "isim": "Kompozit Yat İmalatı",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Gemi_Yapımı/GEMİ YAPIMI_DBF/10.SINIF/Ahşap Yat İmalatı_10.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GY2024GDR1111.pdf": {
           "isim": "Gemi Donatım Resmi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Gemi_Yapımı/GEMİ YAPIMI/11.SINIF/GEMİ BAKIM ONARIMI_DBF_11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GY2024GBI1112.pdf": {
           "isim": "Gemi Boru İşçiliği",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Gemi_Yapımı/GEMİ YAPIMI/11.SINIF/GEMİ BAKIM ONARIMI_DBF_11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GY2024GMD1113.pdf": {
           "isim": "Gemi Makine Donatımı",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Gemi_Yapımı/GEMİ YAPIMI/11.SINIF/GEMİ BAKIM ONARIMI_DBF_11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GY2024GDI1005.pdf": {
           "isim": "Gemi Donatım İmalatı",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Gemi_Yapımı/GEMİ YAPIMI/11.SINIF/GEMİ BAKIM ONARIMI_DBF_11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GY2024GBK111215.pdf": {
           "isim": "Gemi Boru Kaynakçılığı",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Gemi_Yapımı/GEMİ YAPIMI/11.SINIF/GEMİ BAKIM ONARIMI_DBF_11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ahilik_kulturu_ve_girisimcilik.pdf": {
           "isim": "Ahilik Kültürü ve Girişimcilik",
@@ -2474,21 +2604,24 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Gemi_Yapımı/GEMİ YAPIMI/11.SINIF/GEMİ BAKIM ONARIMI_DBF_11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GY2024GOKT111219.pdf": {
           "isim": "Gemi Özel Kaynak Yöntemleri",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Gemi_Yapımı/GEMİ YAPIMI/11.SINIF/GEMİ BAKIM ONARIMI_DBF_11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GY2024GTYO111220.pdf": {
           "isim": "Gemi Tipleri ve Yapısal Özellikleri",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Gemi_Yapımı/GEMİ YAPIMI/11.SINIF/GEMİ BAKIM ONARIMI_DBF_11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GY2024TO111221.pdf": {
           "isim": "Tersane Organizasyonu",
@@ -2502,7 +2635,8 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Gemi_Yapımı/GEMİ YAPIMI/11.SINIF/GEMİ BAKIM ONARIMI_DBF_11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BT2024PRG111228.pdf": {
           "isim": "Programlama",
@@ -2530,7 +2664,8 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Gemi_Yapımı/GEMİ YAPIMI/11.SINIF/GEMİ BAKIM ONARIMI_DBF_11.pdf"
         }
       },
       "dbf_links": {
@@ -2579,7 +2714,8 @@
           "isim": "Gıda Hijyeni ve Sanitasyon",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Gıda_Teknolojisi/GIDA TEKNOLOJİSİ ALANI/GIDA 10/GIDA KİMYASI 10 DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GD2024LBT0903.pdf": {
           "isim": "Laboratuvar Tekniği",
@@ -2591,13 +2727,15 @@
           "isim": "Gıda Mikrobiyoloji",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Gıda_Teknolojisi/GIDA TEKNOLOJİSİ ALANI/GIDA 10/GIDA KİMYASI 10 DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GD2024GMA1007.pdf": {
           "isim": "Gıda Muhafaza ve Ambalajlama Teknikleri",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Gıda_Teknolojisi/GIDA TEKNOLOJİSİ ALANI/GIDA 10/GIDA KİMYASI 10 DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GD2024MTD1006.pdf": {
           "isim": "Maddede Temel Değişim ve Ölçümler",
@@ -2609,7 +2747,8 @@
           "isim": "Gıda Kimyası",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Gıda_Teknolojisi/GIDA TEKNOLOJİSİ ALANI/GIDA 10/GIDA KİMYASI 10 DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GD2024GMA1004.pdf": {
           "isim": "Gıdalarda Mikrobiyolojik Analizler",
@@ -2628,34 +2767,39 @@
           "isim": "Gıda Üretim Teknolojileri",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Gıda_Teknolojisi/GIDA TEKNOLOJİSİ ALANI/GIDA 10/GIDA KİMYASI 10 DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GD2024GIM1110.pdf": {
           "isim": "Gıda İşleme Makineleri",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Gıda_Teknolojisi/GIDA TEKNOLOJİSİ ALANI/GIDA 10/GIDA KİMYASI 10 DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GD2024GKK111211.pdf": {
           "isim": "Gıda Kalite Kontrol",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Gıda_Teknolojisi/GIDA TEKNOLOJİSİ ALANI/GIDA 10/GIDA KİMYASI 10 DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GD2024GAK111212.pdf": {
           "isim": "Gıda Ambalajları Kontrolü",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Gıda_Teknolojisi/GIDA TEKNOLOJİSİ ALANI/GIDA 10/GIDA KİMYASI 10 DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GD2024BES111213.pdf": {
           "isim": "Beslenme",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Gıda_Teknolojisi/GIDA TEKNOLOJİSİ 11 DBF/BESLENME-SEÇMELİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GD2024ORGB111214.pdf": {
           "isim": "Organik Bileşikler",
@@ -2829,38 +2973,44 @@
           "isim": "Temel Bakım Atölyesi",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Güzellik_Hizmetleri/GÜZELLİK HİZMETLERİ DBF 9/TEMEL BAKIM ATÖLYESİ 9.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GSBH2024TAF9001.pdf": {
           "isim": "Temel Anatomi Ve Fizyoloji",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Güzellik_Hizmetleri/GÜZELLİK HİZMETLERİ DBF 9/TEMEL ANATOMİ VE FİZYOLOJİ 9.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GSBH2024MUA1004.pdf": {
           "isim": "Makyaj Uygulamaları Atölyesi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Güzellik_Hizmetleri/GÜZELLİK HİZMETLERİ DBF 10/MAKYAJ UYGULAMALARI ATÖLYESİ 10.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GSBH2024MR1003.pdf": {
           "isim": "Mesleki Resim",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Güzellik_Hizmetleri/GÜZELLİK HİZMETLERİ DBF 10/MESLEKİ RESİM 10.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GSBH2024CBUA1005.pdf": {
           "isim": "Cilt Bakım Uygulamaları Atölyesi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Güzellik_Hizmetleri/GÜZELLİK HİZMETLERİ DBF 10/CİLT BAKIM UYGULAMALARI ATÖLYESİ 10.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ahilik_kulturu_ve_girisimcilik.pdf": {
           "isim": "Ahilik Kültürü ve Girişimcilik",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Güzellik_Hizmetleri/GÜZELLİK HİZMETLERİ DBF 9/TEMEL ANATOMİ VE FİZYOLOJİ 9.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BT2024SM111226.pdf": {
           "isim": "Sosyal Medya",
@@ -2888,39 +3038,45 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Güzellik_Hizmetleri/GÜZELLİK HİZMETLERİ SEÇMELİ DERSLER DBF/TEMEL İLKYARDIM.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GSBH2024TBE1210.pdf": {
           "isim": "Temel Beslenme",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Güzellik_Hizmetleri/GÜZELLİK HİZMETLERİ SEÇMELİ DERSLER DBF/TEMEL BESLENME.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GSBH2024MYD1209.pdf": {
           "isim": "Mesleki Yabancı Dil",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Güzellik_Hizmetleri/GÜZELLİK HİZMETLERİ SEÇMELİ DERSLER DBF/MESLEKİ YABANCI DİL (GÜZELLİK HİZMETLERİ).pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GSBH2024MUA1107.pdf": {
           "isim": "Makyaj Uygulamaları Atölyesi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Güzellik_Hizmetleri/GÜZELLİK HİZMETLERİ DBF 10/MAKYAJ UYGULAMALARI ATÖLYESİ 10.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GSBH2024MIY1108.pdf": {
           "isim": "Müşteri İlişkileri Yönetimi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Güzellik_Hizmetleri/GÜZELLİK HİZMETLERİ DBF 11/MÜŞTERİ İLŞKİLERİ YÖNETİMİ-11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/GSBH2024CBUA1106.pdf": {
           "isim": "Cilt Bakım Uygulamaları Atölyesi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Güzellik_Hizmetleri/GÜZELLİK HİZMETLERİ DBF 10/CİLT BAKIM UYGULAMALARI ATÖLYESİ 10.pdf"
         }
       },
       "dbf_links": {
@@ -2969,13 +3125,15 @@
           "isim": "Halkla İlişkiler Ve İletişim",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Halkla_İlişkiler/HALKLA İLİŞKİLER ALANI/halklailiskiler 10/halkla ilişkiler ve medya 10 dbf.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/HAL2024HYK0901.pdf": {
           "isim": "Halkla İlişkilerde Yazma Ve Konuşma",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Halkla_İlişkiler/HALKLA İLİŞKİLER ALANI/halklailiskiler 10/halkla ilişkiler ve medya 10 dbf.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/HAL2024MSH1005.pdf": {
           "isim": "Mesleki Hukuk",
@@ -2987,27 +3145,31 @@
           "isim": "Halkla İlişkiler Ve Medya",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Halkla_İlişkiler/HALKLA İLİŞKİLER ALANI/halklailiskiler 10/halkla ilişkiler ve medya 10 dbf.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/HAL2024HMU1003.pdf": {
           "isim": "Halkla İlişkiler Ve Meslek Uygulamaları",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Halkla_İlişkiler/HALKLA İLİŞKİLER ALANI/halklailiskiler 10/halkla ilişkiler ve medya 10 dbf.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ahilik_kulturu_ve_girisimcilik.pdf": {
           "isim": "Ahilik Kültürü ve Girişimcilik",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Halkla_İlişkiler/HALKLA İLİŞKİLER ALANI/halklailiskiler 10/halkla ilişkiler ve medya 10 dbf.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BT2024SM111226.pdf": {
           "isim": "Sosyal Medya",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Halkla_İlişkiler/HALKLA İLİŞKİLER ALANI/halklailiskiler 10/halkla ilişkiler ve medya 10 dbf.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BT2024DT111227.pdf": {
           "isim": "Dijital Tasarım",
@@ -3056,7 +3218,8 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Halkla_İlişkiler/halklailiskiler_11/11. Sınıf Zorunlu Dersleri/11. SINIF Halkla İlişkilerde Bütünleşik Pazarlama İletişimi Dersi .pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/HAL2024MST1210.pdf": {
           "isim": "Müşteri Temsilciliği",
@@ -3075,19 +3238,22 @@
           "isim": "Yeni Medyada Halkla İlişkiler",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Halkla_İlişkiler/HALKLA İLİŞKİLER ALANI/halklailiskiler 10/halkla ilişkiler ve medya 10 dbf.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/HAL2024HİR1107.pdf": {
           "isim": "Halkla İlişkiler Ve Reklam",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Halkla_İlişkiler/HALKLA İLİŞKİLER ALANI/halklailiskiler 10/halkla ilişkiler ve medya 10 dbf.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/HAL2024BPİ1106.pdf": {
           "isim": "Halkla İlişkilerde Bütünleşik Pazarlama İletişimi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Halkla_İlişkiler/halklailiskiler_11/11. Sınıf Zorunlu Dersleri/11. SINIF Halkla İlişkilerde Bütünleşik Pazarlama İletişimi Dersi .pdf"
         }
       },
       "dbf_links": {
@@ -3172,7 +3338,8 @@
           "isim": "Harita Hesapları",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Harita-Tapu-Kadastro/harita/10.SINIF/HARİTA KADASTRO DALI/HARİTA HESAPLARI 10.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ahilik_kulturu_ve_girisimcilik.pdf": {
           "isim": "Ahilik Kültürü ve Girişimcilik",
@@ -3250,7 +3417,8 @@
           "isim": "Bilgisayarla Harita Çizimi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Harita-Tapu-Kadastro/harita_2020_11/harita/harita/BİLGİSAYARLA_HARİTA_ÇİZİMİ_11.SINIF_DBF.pdf"
         }
       },
       "dbf_links": {
@@ -3299,7 +3467,8 @@
           "isim": "Atölye",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Hasta_ve_Yaşlı_Hizmetleri/HASTA VE YAŞLI HİZMETLERİ DBF/10.sınıf/ATÖLYE 10.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/SA2024ANT0901.pdf": {
           "isim": "Anatomi ve Fizyoloji",
@@ -3329,7 +3498,8 @@
           "isim": "Atölye",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Hasta_ve_Yaşlı_Hizmetleri/HASTA VE YAŞLI HİZMETLERİ DBF/10.sınıf/ATÖLYE 10.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/HAY2024MING111213_1.pdf": {
           "isim": "Mesleki İngilizce (Hasta ve Yaşlı Hizmetleri/Sağlık Hizmetleri)",
@@ -3382,7 +3552,8 @@
           "isim": "Atölye",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Hasta_ve_Yaşlı_Hizmetleri/HASTA VE YAŞLI HİZMETLERİ DBF/10.sınıf/ATÖLYE 10.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/HAY2024AFTM111212_1.pdf": {
           "isim": "Afetle Mücadele",
@@ -3529,7 +3700,8 @@
           "isim": "Anatomi ve Fizyoloji Laboratuvarı",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Hayvan_Yetiştiriciliği_ve_Sağlığı/HAYVAN YETİŞTİRİCİLİĞİ VE SAĞLIĞI DBF/10. SINIF/HAYVAN YETİŞTİRİCİLİĞİ VE SAĞLIĞI DALI/MİKROBİYOLOJİ VE HİJYEN 10.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/HYS2024HG0901.pdf": {
           "isim": "Hayvancılığa Giriş",
@@ -3541,7 +3713,8 @@
           "isim": "Mikrobiyoloji ve Hijyen",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Hayvan_Yetiştiriciliği_ve_Sağlığı/HAYVAN YETİŞTİRİCİLİĞİ VE SAĞLIĞI DBF/10. SINIF/HAYVAN YETİŞTİRİCİLİĞİ VE SAĞLIĞI DALI/MİKROBİYOLOJİ VE HİJYEN 10.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/HYS2024ZOO1005.pdf": {
           "isim": "Zootekni",
@@ -3560,7 +3733,8 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Hayvan_Yetiştiriciliği_ve_Sağlığı/HAYVAN YETİŞTİRİCİLİĞİ VE SAĞLIĞI DBF/10. SINIF/HAYVAN YETİŞTİRİCİLİĞİ VE SAĞLIĞI DALI/MİKROBİYOLOJİ VE HİJYEN 10.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BT2024SM111226.pdf": {
           "isim": "Sosyal Medya",
@@ -3588,7 +3762,8 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Hayvan_Yetiştiriciliği_ve_Sağlığı/HAYVAN YETİŞTİRİCİLİĞİ VE SAĞLIĞI DBF/10. SINIF/HAYVAN YETİŞTİRİCİLİĞİ VE SAĞLIĞI DALI/MİKROBİYOLOJİ VE HİJYEN 10.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/HYS2024ARI111210.pdf": {
           "isim": "Arıcılık",
@@ -3602,7 +3777,8 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Hayvan_Yetiştiriciliği_ve_Sağlığı/HAYVAN YETİŞTİRİCİLİĞİ VE SAĞLIĞI DBF/10. SINIF/HAYVAN YETİŞTİRİCİLİĞİ VE SAĞLIĞI DALI/MİKROBİYOLOJİ VE HİJYEN 10.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/HYS2024SY111214.pdf": {
           "isim": "Sürü Yönetimi",
@@ -3623,7 +3799,8 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Hayvan_Yetiştiriciliği_ve_Sağlığı/HAYVAN YETİŞTİRİCİLİĞİ VE SAĞLIĞI DBF/10. SINIF/HAYVAN YETİŞTİRİCİLİĞİ VE SAĞLIĞI DALI/MİKROBİYOLOJİ VE HİJYEN 10.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/HYS2024HM111213.pdf": {
           "isim": "Hayvancılıkta Mekanizasyon",
@@ -3636,7 +3813,8 @@
           "isim": "Suni Tohumlama ve Doğum",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Hayvan_Yetiştiriciliği_ve_Sağlığı/HAYVAN YETİŞTİRİCİLİĞİ VE SAĞLIĞI DBF/10. SINIF/HAYVAN YETİŞTİRİCİLİĞİ VE SAĞLIĞI DALI/MİKROBİYOLOJİ VE HİJYEN 10.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/HYS2024KH1107.pdf": {
           "isim": "Klinik Hizmetleri",
@@ -3648,7 +3826,8 @@
           "isim": "Hastalıklarla Mücadele",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Hayvan_Yetiştiriciliği_ve_Sağlığı/hayvanyetistiriciligi_11/11. SINIF DERSLERİ_DBF/HASTALIKLARLA_MÜCADELE_DERSİ_DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/HYS2024UYG1109.pdf": {
           "isim": "Uygulama",
@@ -3739,7 +3918,8 @@
           "isim": "Meslek Hesapları 10",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/İnşaat_Teknolojisi/11 SINIF/BİLGİSAYARLA ALTYAPI MALİYET  HESAPLARI 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/IT2024KT1007.pdf": {
           "isim": "Karayolları Ve Trafik 10",
@@ -3757,102 +3937,118 @@
           "isim": "İnşaat Altyapı Atölyesi 10",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/İnşaat_Teknolojisi/11 SINIF/BİLGİSAYARLA ALTYAPI MALİYET  HESAPLARI 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/IT2024BSPCA1004.pdf": {
           "isim": "Bilgisayarla Statik Proje Çizim Atölyesi 10",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/İnşaat_Teknolojisi/11 SINIF/BİLGİSAYARLA ALTYAPI MALİYET  HESAPLARI 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/IT2024BMPCA1003.pdf": {
           "isim": "Bilgisayarla Mimari Proje Çizim Atölyesi 10",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/İnşaat_Teknolojisi/11 SINIF/BİLGİSAYARLA ALTYAPI MALİYET  HESAPLARI 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/IT2024BM111226.pdf": {
           "isim": "Bina Maketleri 11-12",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/İnşaat_Teknolojisi/11 SINIF/BİLGİSAYARLA ALTYAPI MALİYET  HESAPLARI 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/IT2024BMPM1114.pdf": {
           "isim": "Bilgisayarla Mimari Proje Modelleme 11",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/İnşaat_Teknolojisi/11 SINIF/BİLGİSAYARLA ALTYAPI MALİYET  HESAPLARI 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/IT2024BRMR1115.pdf": {
           "isim": "Bilgisayarla Restorasyon Meslek Resmi 11",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/İnşaat_Teknolojisi/11 SINIF/BİLGİSAYARLA ALTYAPI MALİYET  HESAPLARI 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/IT2024BUYMR1116.pdf": {
           "isim": "Bilgisayarla Üstyapı Meslek Resmi 11",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/İnşaat_Teknolojisi/11 SINIF/BİLGİSAYARLA ALTYAPI MALİYET  HESAPLARI 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/IT2024BYMH1117.pdf": {
           "isim": "Bilgisayarla Yapı Maliyet Hesapları 11",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/İnşaat_Teknolojisi/11 SINIF/BİLGİSAYARLA ALTYAPI MALİYET  HESAPLARI 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/IT2024BYKMR1118.pdf": {
           "isim": "Bilgisayarla Yüzey Kaplama Meslek Resmi 11",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/İnşaat_Teknolojisi/11 SINIF/BİLGİSAYARLA ALTYAPI MALİYET  HESAPLARI 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/IT2024IAYA1119.pdf": {
           "isim": "İnşaat Altyapı Atölyesi 11",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/İnşaat_Teknolojisi/11 SINIF/BİLGİSAYARLA ALTYAPI MALİYET  HESAPLARI 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/IT2024MRA1120.pdf": {
           "isim": "Mimari Restorasyon Atölyesi 11",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/İnşaat_Teknolojisi/11 SINIF/BİLGİSAYARLA ALTYAPI MALİYET  HESAPLARI 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/IT2024AOT111221.pdf": {
           "isim": "Arazide Ölçme Teknikleri 11-12",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/İnşaat_Teknolojisi/11 SINIF/BİLGİSAYARLA ALTYAPI MALİYET  HESAPLARI 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/IT2024BSD111222.pdf": {
           "isim": "Bezeme Ve Süsleme Detayları 11-12",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/İnşaat_Teknolojisi/11 SINIF/BİLGİSAYARLA ALTYAPI MALİYET  HESAPLARI 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/IT2024BADD111223.pdf": {
           "isim": "Bilgisayarla Ahşap Doğrama Detayları 11-12",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/İnşaat_Teknolojisi/11 SINIF/BİLGİSAYARLA ALTYAPI MALİYET  HESAPLARI 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/IT2024BAYMR1113.pdf": {
           "isim": "Bilgisayarla Altyapı Meslek Resmi 11",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/İnşaat_Teknolojisi/11 SINIF/BİLGİSAYARLA ALTYAPI MALİYET  HESAPLARI 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/IT2024BDD111225.pdf": {
           "isim": "Bilgisayarla Duvar Detayları 11-12",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/İnşaat_Teknolojisi/11 SINIF/BİLGİSAYARLA ALTYAPI MALİYET  HESAPLARI 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ahilik_kulturu_ve_girisimcilik.pdf": {
           "isim": "Ahilik Kültürü ve Girişimcilik",
@@ -3866,49 +4062,56 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/İnşaat_Teknolojisi/11 SINIF/BİLGİSAYARLA ALTYAPI MALİYET  HESAPLARI 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/IT2024GJZE111228.pdf": {
           "isim": "Genel Jeoloji Ve Zemin Etütleri 11-12",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/İnşaat_Teknolojisi/11 SINIF/BİLGİSAYARLA ALTYAPI MALİYET  HESAPLARI 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/IT2024ME111229.pdf": {
           "isim": "Mimari Eserler 11-12",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/İnşaat_Teknolojisi/11 SINIF/BİLGİSAYARLA ALTYAPI MALİYET  HESAPLARI 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/IT2024MK111230.pdf": {
           "isim": "Müze Ve Konservasyon 11-12",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/İnşaat_Teknolojisi/11 SINIF/BİLGİSAYARLA ALTYAPI MALİYET  HESAPLARI 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/IT2024RT111231.pdf": {
           "isim": "Renklerle Tasarım 11-12",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/İnşaat_Teknolojisi/11 SINIF/BİLGİSAYARLA ALTYAPI MALİYET  HESAPLARI 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/IT2024YSH111232.pdf": {
           "isim": "Yapı Statik Hesapları 11-12",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/İnşaat_Teknolojisi/11 SINIF/BİLGİSAYARLA ALTYAPI MALİYET  HESAPLARI 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/IT2024YTG111233.pdf": {
           "isim": "Yapıda Tasarı Ve Geometri 11-12",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/İnşaat_Teknolojisi/11 SINIF/BİLGİSAYARLA ALTYAPI MALİYET  HESAPLARI 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BT2024PRG111228.pdf": {
           "isim": "Programlama",
@@ -3936,7 +4139,8 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/İnşaat_Teknolojisi/11 SINIF/BİLGİSAYARLA ALTYAPI MALİYET  HESAPLARI 11.pdf"
         }
       },
       "dbf_links": {
@@ -3985,7 +4189,8 @@
           "isim": "Atölye 9",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/İtfaiyecilik_ve_Yangın_Güvenliği/İTFAİYE VE YANGIN GÜVENLİĞİ_DBF/10.SINIF/ATÖLYE_DBF_10.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/IYG2024TII0902.pdf": {
           "isim": "Temel İtfaiyecilik",
@@ -3997,7 +4202,8 @@
           "isim": "Atölye 10",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/İtfaiyecilik_ve_Yangın_Güvenliği/İTFAİYE VE YANGIN GÜVENLİĞİ_DBF/10.SINIF/ATÖLYE_DBF_10.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/IYG2024ITR1004.pdf": {
           "isim": "İtfaiyecilik ve Teknik Resim",
@@ -4044,7 +4250,8 @@
           "isim": "Atölye 11",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/İtfaiyecilik_ve_Yangın_Güvenliği/İTFAİYE VE YANGIN GÜVENLİĞİ_DBF/10.SINIF/ATÖLYE_DBF_10.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/IYG2024UKKY1107.pdf": {
           "isim": "Uçak Kaza Kırım ve Yangınları",
@@ -4135,13 +4342,15 @@
           "isim": "Kimyasal Kinetik",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Kimya_Teknolojisi/KİMYA TEKNOLOJİSİ DBF/10. SINIF/KİMYA LABORATUVARI/10_KİMYASAL KİNETİK_DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/KT2024NA1003.pdf": {
           "isim": "Nitel Analiz",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Kimya_Teknolojisi/KİMYA TEKNOLOJİSİ/11_DBF_ZORUNLU/NİCEL ANALİZ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/KT2024SK1005.pdf": {
           "isim": "Sınai Kimya",
@@ -4153,7 +4362,8 @@
           "isim": "Nicel Analiz",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Kimya_Teknolojisi/KİMYA TEKNOLOJİSİ/11_DBF_ZORUNLU/NİCEL ANALİZ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/KT2024BU111217.pdf": {
           "isim": "Boya Üretimi",
@@ -4259,7 +4469,8 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Kimya_Teknolojisi/KİMYA TEKNOLOJİSİ/11_DBF_ZORUNLU/NİCEL ANALİZ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BT2024PRG111228.pdf": {
           "isim": "Programlama",
@@ -4286,7 +4497,8 @@
           "isim": "Enstrümantal Analiz",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Kimya_Teknolojisi/KİMYA TEKNOLOJİSİ/11_DBF_ZORUNLU/NİCEL ANALİZ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/KT2024BUY111218. pdf": {
           "isim": "Boya Uygulamaları",
@@ -4661,14 +4873,16 @@
           "isim": "Atölye",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Kuyumculuk_Teknolojisi/KUYUMCULUK TEKNOLOJÿSÿ & 2022_DBF & PDF/1 - TAKI ÿMALATI DALI -PDF/11.sìnìf+/ATÖLYE (3) _BDF-2022.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ahilik_kulturu_ve_girisimcilik.pdf": {
           "isim": "Ahilik Kültürü ve Girişimcilik",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Kuyumculuk_Teknolojisi/KUYUMCULUK TEKNOLOJÿSÿ & 2022_DBF & PDF/1 - TAKI ÿMALATI DALI -PDF/11.sìnìf+/MUM MODELAJ ve DÖKÜM_DBF-2022.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BT2024SM111226.pdf": {
           "isim": "Sosyal Medya",
@@ -4682,7 +4896,8 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Kuyumculuk_Teknolojisi/KUYUMCULUK TEKNOLOJÿSÿ & 2022_DBF & PDF/1 - TAKI ÿMALATI DALI -PDF/10.sìnìf+/TAKIDA TEMEL TASARIM_DBF-2022.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BT2024PRG111228.pdf": {
           "isim": "Programlama",
@@ -4738,19 +4953,22 @@
           "isim": "Laboratuvar Temel İşlemleri",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Laboratuvar_Hizmetleri/laboratuvar dbf/9. sìnìf/LABORATUVAR TEMEL ÿ₧LEMLERÿ 9.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/LH2024LG0901.pdf": {
           "isim": "Laboratuvar Güvenliği Ve Analizlere Hazırlık",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Laboratuvar_Hizmetleri/laboratuvar dbf/9. sìnìf/LABORATUVAR GÜVENLÿªÿ VE ANALÿZLERE HAZIRLIK 9.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/LH2024TA1004.pdf": {
           "isim": "Tarım Analizleri",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Laboratuvar_Hizmetleri/laboratuvar dbf/10. sìnìf/TARIM ANALÿZLERÿ 10.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/LH2024MA1003.pdf": {
           "isim": "Mikrobiyolojik Analizler",
@@ -4763,7 +4981,8 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Laboratuvar_Hizmetleri/laboratuvar dbf/9. sìnìf/LABORATUVAR GÜVENLÿªÿ VE ANALÿZLERE HAZIRLIK 9.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BT2024SM111226.pdf": {
           "isim": "Sosyal Medya",
@@ -4791,67 +5010,77 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Laboratuvar_Hizmetleri/laboratuvar dbf/11. sìnìf/TOHUMLUK ANALÿZLERÿ-SEÇMELÿ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/LH2024LKY1213.pdf": {
           "isim": "Laboratuvar Kalite Yönetim Sistemi",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Laboratuvar_Hizmetleri/laboratuvar dbf/9. sìnìf/LABORATUVAR TEMEL ÿ₧LEMLERÿ 9.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/LH2024LST1212.pdf": {
           "isim": "Laboratuvar Araç Gereçleri Satış Ve Tanıtım",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Laboratuvar_Hizmetleri/laboratuvar dbf/11. sìnìf/LABORATUVAR ARAÇ GEREÇLERÿ SATI₧ TANITIM-SEÇMELÿ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/LH2024KU1211.pdf": {
           "isim": "Kontrollü Üretim Uygulamaları",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Laboratuvar_Hizmetleri/laboratuvar dbf/11. sìnìf/KONTROLLÜ ÜRETÿM UYGULAMALARI-SEÇMELÿ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/LH2024KA1210.pdf": {
           "isim": "Kalıntı Analizleri",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Laboratuvar_Hizmetleri/laboratuvar dbf/11. sìnìf/KALINTI ANALÿZLERÿ-SEÇMELÿ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/LH2024IS1209.pdf": {
           "isim": "İmmünoloji Ve Seroloji",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Laboratuvar_Hizmetleri/laboratuvar dbf/9. sìnìf/LABORATUVAR GÜVENLÿªÿ VE ANALÿZLERE HAZIRLIK 9.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/LH2024BC1208.pdf": {
           "isim": "Bitki Doku Kültürü İle Çoğaltma",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Laboratuvar_Hizmetleri/laboratuvar_11/BİTKİ DOKU KÜLTÜRÜ İLE ÇOĞALTMA-SEÇMELİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/LH2024YA1107.pdf": {
           "isim": "Yem Analizleri",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Laboratuvar_Hizmetleri/laboratuvar dbf/11. sìnìf/YEM  ANALÿZLERÿ-11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/LH2024HS1106.pdf": {
           "isim": "Hayvan Sağlığı Laboratuvarı",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Laboratuvar_Hizmetleri/laboratuvar dbf/11. sìnìf/HAYVAN SAª.LABORATUVARI-11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/LH2024GA1105.pdf": {
           "isim": "Gıda Analizleri",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Laboratuvar_Hizmetleri/laboratuvar dbf/11. sìnìf/GIDA ANALÿZLERÿ-11.pdf"
         }
       },
       "dbf_links": {
@@ -4900,7 +5129,8 @@
           "isim": "Makine Elemanları Ve Maden Makineleri",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Maden_Teknolojisi/maden/MADEN 11.SINIF DBF/1_ YER ÜSTÜ MADEN İŞLEMLERİ_DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MDN2024MDG0902.pdf": {
           "isim": "Madenciliğe Giriş",
@@ -4918,13 +5148,15 @@
           "isim": "Yeraltı Maden İşlemleri",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Maden_Teknolojisi/maden/10.SINIF/2_YERALTI MADEN İŞLEMLERİ _DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MDN2024MDT1004.pdf": {
           "isim": "Maden Topoğrafyası",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Maden_Teknolojisi/maden/MADEN 11.SINIF DBF/1_ YER ÜSTÜ MADEN İŞLEMLERİ_DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ahilik_kulturu_ve_girisimcilik.pdf": {
           "isim": "Ahilik Kültürü ve Girişimcilik",
@@ -5031,7 +5263,8 @@
           "isim": "Bilgisayar Destekli Tıbbi Cihaz Çizimi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Makine_ve_Tasarım_Teknolojisi/MAKİNE VE TAS. TEK/10.SINIF/1-Bilgisayarlı_Makine_İmalatı/10 Sınıf/Bilgisayar Destekli Çizim_DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MTT2024BTI1005.pdf": {
           "isim": "Bilgisayarlı Tezgâhlarda İmalat(CNC)",
@@ -5079,7 +5312,8 @@
           "isim": "Bilgisayar Destekli Çizim",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Makine_ve_Tasarım_Teknolojisi/MAKİNE VE TAS. TEK/10.SINIF/1-Bilgisayarlı_Makine_İmalatı/10 Sınıf/Bilgisayar Destekli Çizim_DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MTT2024MB1013.pdf": {
           "isim": "Malzeme Bilgisi",
@@ -5157,31 +5391,36 @@
           "isim": "Bilgisayar Destekli Seri Üretim Modellemeleri",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Makine_ve_Tasarım_Teknolojisi/MAKİNE VE TAS. TEK/10.SINIF/1-Bilgisayarlı_Makine_İmalatı/10 Sınıf/Bilgisayar Destekli Çizim_DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MTT2024BDT1126.pdf": {
           "isim": "Bilgisayar Destekli Tasarım(CAD)",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Makine_ve_Tasarım_Teknolojisi/MAKİNE VE TAS. TEK/10.SINIF/1-Bilgisayarlı_Makine_İmalatı/10 Sınıf/Bilgisayar Destekli Çizim_DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MTT2024BKT1127.pdf": {
           "isim": "Bilgisayar Kontrollü Tasarım ve İmalat(CAD_CAM)",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Makine_ve_Tasarım_Teknolojisi/MAKİNE VE TAS. TEK/10.SINIF/1-Bilgisayarlı_Makine_İmalatı/10 Sınıf/Bilgisayar Destekli Çizim_DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MTT2024BKTT1128.pdf": {
           "isim": "Bilgisayar Kontrollü Tezgâhlarla Tıbbi Cihaz Üretimi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Makine_ve_Tasarım_Teknolojisi/MAKİNE VE TAS. TEK/10.SINIF/1-Bilgisayarlı_Makine_İmalatı/10 Sınıf/Bilgisayar Destekli Çizim_DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MTT2024BKU1129.pdf": {
           "isim": "Bilgisayar Kontrollü Üretim(CNC_CAM)",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Makine_ve_Tasarım_Teknolojisi/MAKİNE VE TAS. TEK/10.SINIF/1-Bilgisayarlı_Makine_İmalatı/10 Sınıf/Bilgisayar Destekli Çizim_DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MTT2024CD1130.pdf": {
           "isim": "Cisimlerin Dayanımı",
@@ -5205,7 +5444,8 @@
           "isim": "Bilgisayar Destekli Modellemeler",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Makine_ve_Tasarım_Teknolojisi/MAKİNE VE TAS. TEK/10.SINIF/1-Bilgisayarlı_Makine_İmalatı/10 Sınıf/Bilgisayar Destekli Çizim_DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MTT2024KMT1134.pdf": {
           "isim": "Kompozit Modelleme Teknikleri",
@@ -5326,25 +5566,29 @@
           "isim": "Baskı Ve Baskı Sonrası İşlemler",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Matbaa_Teknolojisi/MATBAA TEKNOLOJİSİ ALANI/10.SINIF/BASKI SONRASI TEKNİKLERİ 10 .pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MT2024BOI0901.pdf": {
           "isim": "Baskı Öncesi İşlemler",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Matbaa_Teknolojisi/MATBAA TEKNOLOJİSİ ALANI/10.SINIF/BASKI SONRASI TEKNİKLERİ 10 .pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MT2024OBT1003.pdf": {
           "isim": "Ofset Baskı Teknikleri",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Matbaa_Teknolojisi/MATBAA TEKNOLOJİSİ ALANI/10.SINIF/BASKI SONRASI TEKNİKLERİ 10 .pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MT2024BST1001.pdf": {
           "isim": "Baskı Sonrası Teknikleri",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Matbaa_Teknolojisi/MATBAA TEKNOLOJİSİ ALANI/10.SINIF/BASKI SONRASI TEKNİKLERİ 10 .pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MT2024VC1004.pdf": {
           "isim": "Vektörel Çizim",
@@ -5363,13 +5607,15 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Matbaa_Teknolojisi/MATBAA TEKNOLOJİSİ ALANI/10.SINIF/BASKI SONRASI TEKNİKLERİ 10 .pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MT2024DB1103.pdf": {
           "isim": "Dijital Baskı",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Matbaa_Teknolojisi/MATBAA TEKNOLOJİSİ ALANI/10.SINIF/BASKI SONRASI TEKNİKLERİ 10 .pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MT2024VCU1105.pdf": {
           "isim": "Vektörel Çizim Uygulamaları",
@@ -5381,13 +5627,15 @@
           "isim": "Ciltleme Teknikleri",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Matbaa_Teknolojisi/MATBAA TEKNOLOJİSİ ALANI/10.SINIF/BASKI SONRASI TEKNİKLERİ 10 .pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MT2024OBU1104.pdf": {
           "isim": "Ofset Baskı Uygulamaları",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Matbaa_Teknolojisi/MATBAA TEKNOLOJİSİ ALANI/10.SINIF/BASKI SONRASI TEKNİKLERİ 10 .pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MT2024MON111203.pdf": {
           "isim": "Montaj",
@@ -5407,14 +5655,16 @@
           "isim": "Bilgisayardan Kalıba Çıkış",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Matbaa_Teknolojisi/matbaa 11. sınıf/BİLGİSAYARDAN KALIBA ÇIKIŞ DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MT2024SB111204.pdf": {
           "isim": "Serigrafi Baskı",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Matbaa_Teknolojisi/MATBAA TEKNOLOJİSİ ALANI/10.SINIF/BASKI SONRASI TEKNİKLERİ 10 .pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ahilik_kulturu_ve_girisimcilik.pdf": {
           "isim": "Ahilik Kültürü ve Girişimcilik",
@@ -5463,7 +5713,8 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Matbaa_Teknolojisi/MATBAA TEKNOLOJİSİ ALANI/10.SINIF/BASKI SONRASI TEKNİKLERİ 10 .pdf"
         }
       },
       "dbf_links": {
@@ -5518,7 +5769,8 @@
           "isim": "Atölye",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Metal_Teknolojisi/11 SINIF/ARK KAYNAK ATÖLYESİ 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MET2024BKM1005.pdf": {
           "isim": "Bilgisayarda Katı Modelleme",
@@ -5530,13 +5782,15 @@
           "isim": "Temel Kaynak Teknolojisi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Metal_Teknolojisi/11 SINIF/ARK KAYNAK ATÖLYESİ 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MET2024TKA1003.pdf": {
           "isim": "Temel Kaynak Atölyesi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Metal_Teknolojisi/11 SINIF/ARK KAYNAK ATÖLYESİ 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ahilik_kulturu_ve_girisimcilik.pdf": {
           "isim": "Ahilik Kültürü ve Girişimcilik",
@@ -5584,25 +5838,29 @@
           "isim": "Gaz Korumalı Kaynak Teknolojisi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Metal_Teknolojisi/11 SINIF/ARK KAYNAK ATÖLYESİ 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MET2024GKA1108.pdf": {
           "isim": "Gaz Korumalı Kaynak Atölyesi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Metal_Teknolojisi/11 SINIF/ARK KAYNAK ATÖLYESİ 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MET2024AKA1107.pdf": {
           "isim": "Ark Kaynak Atölyesi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Metal_Teknolojisi/11 SINIF/ARK KAYNAK ATÖLYESİ 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MET2024AKT1106.pdf": {
           "isim": "Ark Kaynak Teknolojisi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Metal_Teknolojisi/11 SINIF/ARK KAYNAK ATÖLYESİ 11.pdf"
         }
       },
       "dbf_links": {
@@ -5651,7 +5909,8 @@
           "isim": "Atölye",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Metalürji_Teknolojisi/11 SINIF/ATÖLYE  DÖKÜM 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MTJ2024MTM0901.pdf": {
           "isim": "Meslek Teknolojisi",
@@ -5669,19 +5928,22 @@
           "isim": "Meslek Teknolojisi Döküm",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Metalürji_Teknolojisi/11 SINIF/ATÖLYE  DÖKÜM 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MTJ2024ATI1004.pdf": {
           "isim": "Atölye İzabe",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Metalürji_Teknolojisi/11 SINIF/ATÖLYE  DÖKÜM 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MTJ2024ATD1003.pdf": {
           "isim": "Atölye Döküm",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Metalürji_Teknolojisi/11 SINIF/ATÖLYE  DÖKÜM 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ahilik_kulturu_ve_girisimcilik.pdf": {
           "isim": "Ahilik Kültürü ve Girişimcilik",
@@ -5723,7 +5985,8 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Metalürji_Teknolojisi/11 SINIF/ATÖLYE  DÖKÜM 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MTJ2024MYD111213.pdf": {
           "isim": "Mesleki Yabancı Dil",
@@ -5744,7 +6007,8 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Metalürji_Teknolojisi/11 SINIF/ATÖLYE  DÖKÜM 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MTJ2024KLK1110.pdf": {
           "isim": "Kalite Kontrol",
@@ -5762,13 +6026,15 @@
           "isim": "Meslek Teknolojisi Döküm",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Metalürji_Teknolojisi/11 SINIF/ATÖLYE  DÖKÜM 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MTJ2024ATD1107.pdf": {
           "isim": "Atölye Döküm 11",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Metalürji_Teknolojisi/11 SINIF/ATÖLYE  DÖKÜM 11.pdf"
         }
       },
       "dbf_links": {
@@ -5975,7 +6241,8 @@
           "isim": "Bilgisayar Kontrollü Makinelerde Üretim(Cnc)",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Mobilya_ve_İç_Mekân_Tasarımı/mobilya_2020_11/MOBİLYA 11/BİLGİSAYAR KONTROLLÜ MAKİNELERDE ÜRETİM (CNC).pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MIT2024TMB1101.pdf": {
           "isim": "Tasarım ve Malzeme Bilgisi 11",
@@ -6030,118 +6297,136 @@
           "isim": "Model Analizi ve Model Geliştirme",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Moda_Tasarım_Teknolojileri/MODA TASARIM TEKNOLOJİSİ/9.SINIF/model_analizi_ve_model_gelistirme_9_MODA.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MOD2024MDA0901.pdf": {
           "isim": "Atölye",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Moda_Tasarım_Teknolojileri/MODA TASARIM TEKNOLOJİSİ/11.SINIF/TERZİLİK ATÖLYESİ 11. SINIF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MOD2024TA1003.pdf": {
           "isim": "Terzilik Atölyesi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Moda_Tasarım_Teknolojileri/MODA TASARIM TEKNOLOJİSİ/11.SINIF/TERZİLİK ATÖLYESİ 11. SINIF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MOD2024MTS1002.pdf": {
           "isim": "Modada Temel Sanat",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Moda_Tasarım_Teknolojileri/MODA TASARIM TEKNOLOJİSİ/10.SINIF/MODADA TEMEL SANAT.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MOD2024GKT1001.pdf": {
           "isim": "Giysi Kalıp Tasarımı ve Üretimi Atölyesi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Moda_Tasarım_Teknolojileri/11. SINIF/GİYSİ KALIP TASARIMI VE ÜRETİMİ DALI/GİYSİ KALIP TASARIMI VE ÜRETİMİ ATÖLYESİ 11. SINIF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MOD2024MYD1206.pdf": {
           "isim": "Mesleki Yabancı Dil",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Moda_Tasarım_Teknolojileri/MODA TASARIM TEKNOLOJİSİ/SEÇMELİ/MESLEKİ YABANCI DİL DBF (MODA).pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MOD2024GKT1102.pdf": {
           "isim": "Giysi Kalıp Tasarımı ve Üretimi Atölyesi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Moda_Tasarım_Teknolojileri/11. SINIF/GİYSİ KALIP TASARIMI VE ÜRETİMİ DALI/GİYSİ KALIP TASARIMI VE ÜRETİMİ ATÖLYESİ 11. SINIF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MOD2024MT1103.pdf": {
           "isim": "Model Tasarımı",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Moda_Tasarım_Teknolojileri/MODA TASARIM TEKNOLOJİSİ/SEÇMELİ/MODEL TASARIMI 11. SINIF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MOD2024TA1104.pdf": {
           "isim": "Terzilik Atölyesi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Moda_Tasarım_Teknolojileri/MODA TASARIM TEKNOLOJİSİ/11.SINIF/TERZİLİK ATÖLYESİ 11. SINIF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MOD2024AGU1201.pdf": {
           "isim": "Abiye Giysi Üretimi",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Moda_Tasarım_Teknolojileri/MODA TASARIM TEKNOLOJİSİ/SEÇMELİ/ABİYE GİYSİ ÜRETİMİ SEÇMELİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MOD2024MD1202.pdf": {
           "isim": "Drapaj",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Moda_Tasarım_Teknolojileri/MODA TASARIM TEKNOLOJİSİ/SEÇMELİ/DRAPAJ DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MOD2024GM1203.pdf": {
           "isim": "Görsel Mağazacılık",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Moda_Tasarım_Teknolojileri/MODA TASARIM TEKNOLOJİSİ/SEÇMELİ/GÖRSEL MAĞAZACILIK DBF seçmeli.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MOD2024GA1101.pdf": {
           "isim": "Giyim Aksesuarları",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Moda_Tasarım_Teknolojileri/MODA TASARIM TEKNOLOJİSİ/11.SINIF/GİYİM AKSESUARLARI.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MOD2024MBO1205.pdf": {
           "isim": "Makine Bakım ve Onarım",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Moda_Tasarım_Teknolojileri/MODA TASARIM TEKNOLOJİSİ/SEÇMELİ/MAKİNE BAKIM ONARIM SEÇMELİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ahilik_kulturu_ve_girisimcilik.pdf": {
           "isim": "Ahilik Kültürü ve Girişimcilik",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Moda_Tasarım_Teknolojileri/MODA TASARIM TEKNOLOJİSİ/SEÇMELİ/GİYSİ KALIP TASARIMI VE ÜRETİMİ 11. SINIF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MOD2024MP1207.pdf": {
           "isim": "Moda Pazarlama",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Moda_Tasarım_Teknolojileri/MODA TASARIM TEKNOLOJİSİ/SEÇMELİ/MODA PAZARLAMA DERSİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MOD2024PH1208.pdf": {
           "isim": "Portfolyo Hazırlama",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Moda_Tasarım_Teknolojileri/MODA TASARIM TEKNOLOJİSİ/SEÇMELİ/Portfolyo Hazırlama SEÇMELİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MOD2024TYM1209.pdf": {
           "isim": "Tekstil Yüzeyleri Malzeme Bilgisi",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Moda_Tasarım_Teknolojileri/MODA TASARIM TEKNOLOJİSİ/SEÇMELİ/TEKSTİL YÜZEYLERİ VE MALZEME BİLGİSİ SEÇMELİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BT2024PRG111228.pdf": {
           "isim": "Programlama",
@@ -6169,7 +6454,8 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Moda_Tasarım_Teknolojileri/MODA TASARIM TEKNOLOJİSİ/SEÇMELİ/I KOSTÜM TASARIMI VE ÜRETİMİ seçmeli.pdf"
         }
       },
       "dbf_links": {
@@ -6218,14 +6504,16 @@
           "isim": "Araç Teknolojisi Atölyesi",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Motorlu_Araçlar_Teknolojisi/motorluaraclar/elektrikli araçlar/BATARYA TEKNOLOJİSİ 11_DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MAT2024AHPS0001.pdf": {
           "isim": "Araçlarda Hidrolik ve Pnömatik Sistemler",
           "siniflar": [
             "10",
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Motorlu_Araçlar_Teknolojisi/MOTORLU ARAÇLAR TEKNOLOJİSİ ALANI DBF/10.SINIF/ELEKTRİKLİ ARAÇLAR DALI/ELEKTRİK MAKİNELERİ VE DÖNÜŞTÜRÜCÜLER 10_DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MAT2024OTR1004.pdf": {
           "isim": "Otomotiv Teknik Resim",
@@ -6237,7 +6525,8 @@
           "isim": "Otomotiv Gövde Teknolojisi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Motorlu_Araçlar_Teknolojisi/motorluaraclar/elektrikli araçlar/BATARYA TEKNOLOJİSİ 11_DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MAT2024OGKA1002.pdf": {
           "isim": "Otomotiv Gövde Kaynak Atölyesi",
@@ -6249,14 +6538,16 @@
           "isim": "Elektrik Makineleri ve Dönüştürücüler",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Motorlu_Araçlar_Teknolojisi/MOTORLU ARAÇLAR TEKNOLOJİSİ ALANI DBF/10.SINIF/ELEKTRİKLİ ARAÇLAR DALI/ELEKTRİK MAKİNELERİ VE DÖNÜŞTÜRÜCÜLER 10_DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ahilik_kulturu_ve_girisimcilik.pdf": {
           "isim": "Ahilik Kültürü ve Girişimcilik",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Motorlu_Araçlar_Teknolojisi/MOTORLU ARAÇLAR TEKNOLOJİSİ ALANI DBF/10.SINIF/ELEKTRİKLİ ARAÇLAR DALI/ELEKTRİK MAKİNELERİ VE DÖNÜŞTÜRÜCÜLER 10_DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BT2024SM111226.pdf": {
           "isim": "Sosyal Medya",
@@ -6369,7 +6660,8 @@
           "isim": "Dış Ticarete Giriş",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Muhasebe_ve_Finansman/MUHASEBE VE FİNANSMAN ALANI/10.SINIF/DIŞ TİCARETE GİRİŞ 10.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BY2024KT0902.pdf": {
           "isim": "Klavye Teknikleri",
@@ -6436,13 +6728,15 @@
           "isim": "Dış Ticaret Uygulamaları",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Muhasebe_ve_Finansman/MUHASEBE VE FİNANSMAN ALANI/10.SINIF/DIŞ TİCARETE GİRİŞ 10.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MF2024DTMU1108.pdf": {
           "isim": "Dış Ticaret Mevzuatı Ve Uygulama",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Muhasebe_ve_Finansman/MUHASEBE VE FİNANSMAN ALANI/10.SINIF/DIŞ TİCARETE GİRİŞ 10.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MF2024BMU1101.pdf": {
           "isim": "Bilgisayarlı Muhasebe",
@@ -6475,7 +6769,8 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Muhasebe_ve_Finansman/MUHASEBE VE FİNANSMAN ALANI/10.SINIF/DIŞ TİCARETE GİRİŞ 10.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BY2024HKK1004.pdf": {
           "isim": "Hızlı Klavye Kullanımı",
@@ -6523,7 +6818,8 @@
           "isim": "Dış Ticaret Muhasebesi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Muhasebe_ve_Finansman/MUHASEBE VE FİNANSMAN ALANI/10.SINIF/DIŞ TİCARETE GİRİŞ 10.pdf"
         }
       },
       "dbf_links": {
@@ -6614,7 +6910,8 @@
           "isim": "Mesleki Matematik",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Pazarlama_ve_Perakende/PAZARLAMA VE PERAKENDE ALANI/10.SINIF/MESLEKİ MATEMATİK 10.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MF2024THU1004.pdf": {
           "isim": "Temel Hukuk",
@@ -6645,7 +6942,8 @@
           "isim": "Mağaza Atmosferi Ve Görsellik",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Pazarlama_ve_Perakende/PAZARLAMA VE PERAKENDE ALANI/SATIŞ DANIŞMANLIĞI DALI/MAĞAZA ATMOSFERİ VE GÖRSELLİK.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/PP2024PEM1105.pdf": {
           "isim": "Perakende Matematiği",
@@ -6663,7 +6961,8 @@
           "isim": "Risk Ve Hasar Yönetimi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Pazarlama_ve_Perakende/PAZARLAMA VE PERAKENDE ALANI/SATIŞ DANIŞMANLIĞI DALI/MAĞAZA ATMOSFERİ VE GÖRSELLİK.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/PP2024SH1108.pdf": {
           "isim": "Sigorta Hukuku",
@@ -6675,7 +6974,8 @@
           "isim": "Can Sigortaları Ve Bireysel Emeklilik Sistemi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Pazarlama_ve_Perakende/PAZARLAMA VE PERAKENDE ALANI/SATIŞ DANIŞMANLIĞI DALI/MAĞAZA ATMOSFERİ VE GÖRSELLİK.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/PP2024UB1109.pdf": {
           "isim": "Ürün Bilgisi",
@@ -6695,7 +6995,8 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Pazarlama_ve_Perakende/PAZARLAMA VE PERAKENDE ALANI/SATIŞ DANIŞMANLIĞI DALI/MAĞAZA ATMOSFERİ VE GÖRSELLİK.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MF2024FOK111202.pdf": {
           "isim": "Finansal Okuryazarlık",
@@ -6813,13 +7114,15 @@
           "isim": "Resim Uygulamaları Atölyesi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Plastik_Sanatlar/plastiksanatlar_2020_11/HEYKEL SANATI ATÖLYESİ 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/PS2024BIC1001.pdf": {
           "isim": "Bilgisayarda İki Boyutlu Çizim",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Plastik_Sanatlar/plastiksanatlar/10.SINIF/BİGİSAYARDA İKİ BOYUTLU ÇİZİM_DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ahilik_kulturu_ve_girisimcilik.pdf": {
           "isim": "Ahilik Kültürü ve Girişimcilik",
@@ -6866,7 +7169,8 @@
           "isim": "Heykel Sanatı Atölyesi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Plastik_Sanatlar/plastiksanatlar_2020_11/HEYKEL SANATI ATÖLYESİ 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/PS2024DS1206.pdf": {
           "isim": "Dekoratif Sanatlar",
@@ -7065,37 +7369,43 @@
           "isim": "Temel Raylı Sistemler Atölyesi",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Raylı_Sistemler_Teknolojisi/RAYLI SİSTEMLER TEKNOLOJİSİ ALANI DBF/10. SINIF/RAYLI SİSTEM ARAÇLARI DALI/Raylı_Sistem_Araç_Mekanik_Atölyesi_Ders_Bilgi_Formu.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/MAT2024AHPS0001.pdf": {
           "isim": "Araçlarda Hidrolik ve Pnömatik Sistemler",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Raylı_Sistemler_Teknolojisi/rayli/11-12 SEÇMELİ/1.MİKRODENETLEYİCİ VE KODLAMA-DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/RST2024DAA0901.pdf": {
           "isim": "Demiryolu Altyapı Atölyesi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Raylı_Sistemler_Teknolojisi/RAYLI SİSTEMLER TEKNOLOJİSİ ALANI DBF/10. SINIF/RAYLI SİSTEM ARAÇLARI DALI/Raylı_Sistem_Araç_Mekanik_Atölyesi_Ders_Bilgi_Formu.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/RST2024TMR1004.pdf": {
           "isim": "Teknik ve Meslek Resim",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Raylı_Sistemler_Teknolojisi/rayli/11-12 SEÇMELİ/1.MİKRODENETLEYİCİ VE KODLAMA-DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/RST2024RSAMA1001.pdf": {
           "isim": "Raylı Sistem Araç Mekanik Atölyesi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Raylı_Sistemler_Teknolojisi/RAYLI SİSTEMLER TEKNOLOJİSİ ALANI DBF/10. SINIF/RAYLI SİSTEM ARAÇLARI DALI/Raylı_Sistem_Araç_Mekanik_Atölyesi_Ders_Bilgi_Formu.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/RST2024EA1002.pdf": {
           "isim": "Elektrifikasyon Atölyesi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Raylı_Sistemler_Teknolojisi/RAYLI SİSTEMLER TEKNOLOJİSİ ALANI DBF/10. SINIF/RAYLI SİSTEM ARAÇLARI DALI/Raylı_Sistem_Araç_Mekanik_Atölyesi_Ders_Bilgi_Formu.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/RST2024TR1003.pdf": {
           "isim": "Teknik Resim",
@@ -7107,14 +7417,16 @@
           "isim": "Raylı Sistem Bilgisi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Raylı_Sistemler_Teknolojisi/RAYLI SİSTEMLER TEKNOLOJİSİ ALANI DBF/10. SINIF/RAYLI SİSTEM ARAÇLARI DALI/Raylı_Sistem_Araç_Mekanik_Atölyesi_Ders_Bilgi_Formu.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ahilik_kulturu_ve_girisimcilik.pdf": {
           "isim": "Ahilik Kültürü ve Girişimcilik",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Raylı_Sistemler_Teknolojisi/rayli/11-12 SEÇMELİ/1.MİKRODENETLEYİCİ VE KODLAMA-DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BT2024SM111226.pdf": {
           "isim": "Sosyal Medya",
@@ -7156,7 +7468,8 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Raylı_Sistemler_Teknolojisi/rayli/11-12 SEÇMELİ/1.MİKRODENETLEYİCİ VE KODLAMA-DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/RST2024DEYS1101.pdf": {
           "isim": "Demiryolu Emniyet Yönetim  Sistemi",
@@ -7237,13 +7550,15 @@
           "isim": "Anatomi ve Fizyoloji",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Sağlık_Hizmetleri/SAĞLIK HİZMETLERİ DBF/10.SINIF/ASEPTİK TEKNİKLER VE KİŞİSEL BAKIM UYGULAMALARI.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/SA2024TMU0902.pdf": {
           "isim": "Temel Mesleki Uygulamalar",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Sağlık_Hizmetleri/SAĞLIK HİZMETLERİ 11 DBF/EBE YARDIMCILIĞI/EBE YARDIMCILIĞI MESLEKİ UYGULAMALAR 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/SA2024ENF1005.pdf": {
           "isim": "Enfeksiyon Hastalıkları",
@@ -7267,50 +7582,58 @@
           "isim": "Temel Mesleki Uygulamalar Cilt 2",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Sağlık_Hizmetleri/SAĞLIK HİZMETLERİ 11 DBF/EBE YARDIMCILIĞI/EBE YARDIMCILIĞI MESLEKİ UYGULAMALAR 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/SA2024TMU10C106.pdf": {
           "isim": "Temel Mesleki Uygulamalar Cilt 1",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Sağlık_Hizmetleri/SAĞLIK HİZMETLERİ 11 DBF/EBE YARDIMCILIĞI/EBE YARDIMCILIĞI MESLEKİ UYGULAMALAR 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/HAY2024TRMUY111218_1.pdf": {
           "isim": "Termal Uygulamalar",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Sağlık_Hizmetleri/SAĞLIK HİZMETLERİ 11 DBF/EBE YARDIMCILIĞI/EBE YARDIMCILIĞI MESLEKİ UYGULAMALAR 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/SA2024EBEYRDMU11C214.pdf": {
           "isim": "Ebe Yardımcılığı Mesleki Uygulamalar Cilt 2",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Sağlık_Hizmetleri/SAĞLIK HİZMETLERİ 11 DBF/EBE YARDIMCILIĞI/EBE YARDIMCILIĞI MESLEKİ UYGULAMALAR 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/SA2024HEMYRDMU11C108.pdf": {
           "isim": "Hemşire Yardımcılığı Mesleki Uygulamalar Cilt 1",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Sağlık_Hizmetleri/SAĞLIK HİZMETLERİ 11 DBF/EBE YARDIMCILIĞI/EBE YARDIMCILIĞI MESLEKİ UYGULAMALAR 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/SA2024HEMYRDMU11C209.pdf": {
           "isim": "Hemşire Yardımcılığı Mesleki Uygulamalar Cilt 2",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Sağlık_Hizmetleri/SAĞLIK HİZMETLERİ 11 DBF/EBE YARDIMCILIĞI/EBE YARDIMCILIĞI MESLEKİ UYGULAMALAR 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/SA2024SBTMU11C115.pdf": {
           "isim": "Sağlık Bakım Teknisyenliği Mesleki Uygulamalar Cilt 1",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Sağlık_Hizmetleri/SAĞLIK HİZMETLERİ 11 DBF/EBE YARDIMCILIĞI/EBE YARDIMCILIĞI MESLEKİ UYGULAMALAR 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/SA2024SBTMU11C216.pdf": {
           "isim": "Sağlık Bakım Teknisyenliği Mesleki Uygulamalar Cilt 2",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Sağlık_Hizmetleri/SAĞLIK HİZMETLERİ 11 DBF/EBE YARDIMCILIĞI/EBE YARDIMCILIĞI MESLEKİ UYGULAMALAR 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/SA2024SISH1110.pdf": {
           "isim": "Sistem Hastalıkları",
@@ -7341,7 +7664,8 @@
           "isim": "Ebe Yardımcılığı Mesleki Uygulamalar Cilt 1",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Sağlık_Hizmetleri/SAĞLIK HİZMETLERİ 11 DBF/EBE YARDIMCILIĞI/EBE YARDIMCILIĞI MESLEKİ UYGULAMALAR 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/HAY2024HDRT111210_1.pdf": {
           "isim": "Hidroterapi",
@@ -7355,7 +7679,8 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Sağlık_Hizmetleri/SAĞLIK HİZMETLERİ DBF/10.SINIF/ASEPTİK TEKNİKLER VE KİŞİSEL BAKIM UYGULAMALARI.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/HAY2024KLE111211_1.pdf": {
           "isim": "Klinik Egzersiz",
@@ -7376,21 +7701,24 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Sağlık_Hizmetleri/SAĞLIK HİZMETLERİ 11 DBF/EBE YARDIMCILIĞI/EBE YARDIMCILIĞI MESLEKİ UYGULAMALAR 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/HAY2024MALM111214_1.pdf": {
           "isim": "Mesleki Almanca (Hasta ve Yaşlı Hizmetleri/Sağlık Hizmetleri)",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Sağlık_Hizmetleri/SAĞLIK HİZMETLERİ 11 DBF/EBE YARDIMCILIĞI/EBE YARDIMCILIĞI MESLEKİ UYGULAMALAR 11.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/HAY2024SSF111215_1.pdf": {
           "isim": "Sağlık Sigorta ve Finansmanı",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Sağlık_Hizmetleri/SAĞLIK HİZMETLERİ DBF/10.SINIF/ASEPTİK TEKNİKLER VE KİŞİSEL BAKIM UYGULAMALARI.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/HAY2024STM111216_1.pdf": {
           "isim": "Sağlık Turizmi Merkezleri",
@@ -7564,7 +7892,8 @@
           "isim": "Sistem Güvenliği",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Siber_Güvenlik/9_Sistem ve Ağ Temelleri_DBF (1).pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/SG2024SGA1002.pdf": {
           "isim": "Siber Güvenlik Atölyesi",
@@ -7577,7 +7906,8 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Siber_Güvenlik/9_Sistem ve Ağ Temelleri_DBF (1).pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BT2024SM111226.pdf": {
           "isim": "Sosyal Medya",
@@ -7889,37 +8219,43 @@
           "isim": "Temel Tekstil Uygulamaları Atölyesi",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Tekstil_Teknolojisi/TEKSTİL TEKNOLOJİSİ/9.SINIF/TEMEL TEKSTİL UYGULAMALARI ATÖLYESİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/TEK2024YIU1012.pdf": {
           "isim": "Yün İplik Üretim Atölyesi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Tekstil_Teknolojisi/TEKSTİL TEKNOLOJİSİ/11.SINIF/BOYA VE APRE VE LABORANTLIĞI TEK. BOYAMA VE APRE TEKNİKLERİ ATÖLYESİ DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/TEK2024TIMH1011.pdf": {
           "isim": "Temel İplik Meslek Hesapları",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Tekstil_Teknolojisi/TEKSTİL TEKNOLOJİSİ/9.SINIF/TEMEL TEKSTİL UYGULAMALARI ATÖLYESİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/TEK2024TLL1010.pdf": {
           "isim": "Tekstil Lifleri Laboratuvarı",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Tekstil_Teknolojisi/TEKSTİL TEKNOLOJİSİ/9.SINIF/TEMEL TEKSTİL UYGULAMALARI ATÖLYESİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/TEK2024TK1009.pdf": {
           "isim": "Tekstil Kimyası",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Tekstil_Teknolojisi/TEKSTİL TEKNOLOJİSİ/11.SINIF/BASKI KİMYASI.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/TEK2024PIUA1008.pdf": {
           "isim": "Pamuk İplik Üretim Atölyesi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Tekstil_Teknolojisi/TEKSTİL TEKNOLOJİSİ/11.SINIF/BOYA VE APRE VE LABORANTLIĞI TEK. BOYAMA VE APRE TEKNİKLERİ ATÖLYESİ DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/TEK2024OMH1007.pdf": {
           "isim": "Örmede Meslek Hesapları",
@@ -7937,19 +8273,22 @@
           "isim": "Örme Makineleri Atölyesi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Tekstil_Teknolojisi/TEKSTİL TEKNOLOJİSİ/11.SINIF/BOYA VE APRE VE LABORANTLIĞI TEK. BOYAMA VE APRE TEKNİKLERİ ATÖLYESİ DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/TEK2024OTİ1004.pdf": {
           "isim": "Ön Terbiye İşlemleri Atölyesi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Tekstil_Teknolojisi/TEKSTİL TEKNOLOJİSİ/11.SINIF/BOYA VE APRE VE LABORANTLIĞI TEK. BOYAMA VE APRE TEKNİKLERİ ATÖLYESİ DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/TEK2024KAA1003.pdf": {
           "isim": "Kumaş Analizi Atölyesi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Tekstil_Teknolojisi/TEKSTİL TEKNOLOJİSİ/11.SINIF/BOYA VE APRE VE LABORANTLIĞI TEK. BOYAMA VE APRE TEKNİKLERİ ATÖLYESİ DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/TEK2024DO1002.pdf": {
           "isim": "Dokuma Örgüleri",
@@ -7961,19 +8300,22 @@
           "isim": "Baskı Deseni Hazırlama Atölyesi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Tekstil_Teknolojisi/TEKSTİL TEKNOLOJİSİ/11.SINIF/BOYA VE APRE VE LABORANTLIĞI TEK. BOYAMA VE APRE TEKNİKLERİ ATÖLYESİ DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/TEK2024NKD1110.pdf": {
           "isim": "Numune Kumaş Dokuma Atölyesi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Tekstil_Teknolojisi/TEKSTİL TEKNOLOJİSİ/11.SINIF/BOYA VE APRE VE LABORANTLIĞI TEK. BOYAMA VE APRE TEKNİKLERİ ATÖLYESİ DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/TEK2024BTA1102.pdf": {
           "isim": "Baskı Teknikleri Atölyesi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Tekstil_Teknolojisi/TEKSTİL TEKNOLOJİSİ/11.SINIF/BOYA VE APRE VE LABORANTLIĞI TEK. BOYAMA VE APRE TEKNİKLERİ ATÖLYESİ DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/TEK2024DH1103.pdf": {
           "isim": "Dokuma Hazırlık",
@@ -7985,13 +8327,15 @@
           "isim": "Düz ve Çorap Örme Üretim Atölyesi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Tekstil_Teknolojisi/TEKSTİL TEKNOLOJİSİ/11.SINIF/BOYA VE APRE VE LABORANTLIĞI TEK. BOYAMA VE APRE TEKNİKLERİ ATÖLYESİ DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/TEK2024IBIA1105.pdf": {
           "isim": "İplik Bitim İşlemleri Atölyesi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Tekstil_Teknolojisi/TEKSTİL TEKNOLOJİSİ/11.SINIF/BOYA VE APRE VE LABORANTLIĞI TEK. BOYAMA VE APRE TEKNİKLERİ ATÖLYESİ DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/TEK2024IUH1106.pdf": {
           "isim": "İplik Üretim Hesapları",
@@ -8003,44 +8347,51 @@
           "isim": "İplik Üretiminde Kontroller Atölyesi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Tekstil_Teknolojisi/TEKSTİL TEKNOLOJİSİ/11.SINIF/BOYA VE APRE VE LABORANTLIĞI TEK. BOYAMA VE APRE TEKNİKLERİ ATÖLYESİ DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/TEK2024BK1101.pdf": {
           "isim": "Baskı Kimyası",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Tekstil_Teknolojisi/TEKSTİL TEKNOLOJİSİ/11.SINIF/BASKI KİMYASI.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/TEK2024KDM1109.pdf": {
           "isim": "Kumaş Dokuma ve Makine Sistemleri Atölyesi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Tekstil_Teknolojisi/TEKSTİL TEKNOLOJİSİ/11.SINIF/BOYA VE APRE VE LABORANTLIĞI TEK. BOYAMA VE APRE TEKNİKLERİ ATÖLYESİ DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ahilik_kulturu_ve_girisimcilik.pdf": {
           "isim": "Ahilik Kültürü ve Girişimcilik",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Tekstil_Teknolojisi/TEKSTİL TEKNOLOJİSİ/11.SINIF/BOYA VE APRE VE LABORANTLIĞI TEK. BOYAMA VE APRE TEKNİKLERİ ATÖLYESİ DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/TEK2024OAD1111.pdf": {
           "isim": "Örmede Analiz ve Desen Atölyesi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Tekstil_Teknolojisi/TEKSTİL TEKNOLOJİSİ/11.SINIF/BOYA VE APRE VE LABORANTLIĞI TEK. BOYAMA VE APRE TEKNİKLERİ ATÖLYESİ DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/TEK2024TM1112.pdf": {
           "isim": "Terbiye Makineleri",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Tekstil_Teknolojisi/TEKSTİL TEKNOLOJİSİ/11.SINIF/TERBİYE MAKİNELERİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/TEK2024YOU1113.pdf": {
           "isim": "Yuvarlak Örme Üretim Atölyesi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Tekstil_Teknolojisi/TEKSTİL TEKNOLOJİSİ/11.SINIF/BOYA VE APRE VE LABORANTLIĞI TEK. BOYAMA VE APRE TEKNİKLERİ ATÖLYESİ DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/TEK2024TMYD1201.pdf": {
           "isim": "Mesleki Yabancı Dil",
@@ -8074,7 +8425,8 @@
           "isim": "İplikte Farklı Üretim Sistemleri Atölyesi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Tekstil_Teknolojisi/TEKSTİL TEKNOLOJİSİ/11.SINIF/BOYA VE APRE VE LABORANTLIĞI TEK. BOYAMA VE APRE TEKNİKLERİ ATÖLYESİ DBF.pdf"
         }
       },
       "dbf_links": {
@@ -8123,19 +8475,22 @@
           "isim": "Temel İşlemler ve Kaynak Atölyesi",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Tesisat_Teknolojisi_ve_İklimlendirme/TESİSAT DBF SEÇMELİ/BACALAR VE YANMA VERİMLİLİĞİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/TES2024IDG1005.pdf": {
           "isim": "Isıtma ve Doğal Gaz Tesisatı Atölyesi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Tesisat_Teknolojisi_ve_İklimlendirme/TESİSAT DBF SEÇMELİ/BACALAR VE YANMA VERİMLİLİĞİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/TES2024TSI1004.pdf": {
           "isim": "Temel Soğutma ve İklimlendirme Atölyesi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Tesisat_Teknolojisi_ve_İklimlendirme/TESİSAT DBF SEÇMELİ/BACALAR VE YANMA VERİMLİLİĞİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/TES2024BDS1003.pdf": {
           "isim": "Bilgisayar Destekli Soğutma Meslek Resmi",
@@ -8160,7 +8515,8 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Tesisat_Teknolojisi_ve_İklimlendirme/TESİSAT DBF SEÇMELİ/BACALAR VE YANMA VERİMLİLİĞİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/TES2024GYC1102.pdf": {
           "isim": "Gaz Yakıcı Cihazlar Atölyesi",
@@ -8172,13 +8528,15 @@
           "isim": "Sıhhi Tesisat ve Güneş Enerjisi Atölyesi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Tesisat_Teknolojisi_ve_İklimlendirme/TESİSAT DBF SEÇMELİ/BACALAR VE YANMA VERİMLİLİĞİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/TES2024ISP1104.pdf": {
           "isim": "İklimlendirme ve Soğutma Projeleri",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Tesisat_Teknolojisi_ve_İklimlendirme/TESİSAT DBF SEÇMELİ/BACALAR VE YANMA VERİMLİLİĞİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/TES2024ESA1105.pdf": {
           "isim": "Endüstriyel Soğutma Atölyesi",
@@ -8190,7 +8548,8 @@
           "isim": "Merkezi İklimlendirme ve Havalandırma Atölyesi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Tesisat_Teknolojisi_ve_İklimlendirme/TESİSAT DBF SEÇMELİ/BACALAR VE YANMA VERİMLİLİĞİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/TES2024EK1201.pdf": {
           "isim": "Endüstriyel Kazanlar",
@@ -8218,7 +8577,8 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Tesisat_Teknolojisi_ve_İklimlendirme/TESİSAT DBF SEÇMELİ/BACALAR VE YANMA VERİMLİLİĞİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/TES2024TP1101.pdf": {
           "isim": "Tesisat Projeleri",
@@ -8238,7 +8598,8 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Tesisat_Teknolojisi_ve_İklimlendirme/TESİSAT DBF SEÇMELİ/BACALAR VE YANMA VERİMLİLİĞİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/TES2024TI1209.pdf": {
           "isim": "Taşıt İklimlendirmesi",
@@ -8259,14 +8620,16 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Tesisat_Teknolojisi_ve_İklimlendirme/TESİSAT DBF SEÇMELİ/BACALAR VE YANMA VERİMLİLİĞİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/TES2024TSE1212.pdf": {
           "isim": "Tesisat Sistemlerinde Enerji Verimliliği",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Tesisat_Teknolojisi_ve_İklimlendirme/TESİSAT DBF SEÇMELİ/BACALAR VE YANMA VERİMLİLİĞİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/TES2024IP1213.pdf": {
           "isim": "Isı Pompaları",
@@ -8364,50 +8727,58 @@
           "isim": "Elektrik Devre Analizi Atölyesi",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Uçak_Bakım/UÇAK BAKIM/9.SINIF/2- ELEKTRİK DEVRE ANALİZİ ATÖLYESİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/UB2024UMD906.pdf": {
           "isim": "Uçak Malzeme ve Donatım Atölyesi",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Uçak_Bakım/UÇAK BAKIM/9.SINIF/1- UÇAK MALZEME VE DONANIM ATÖLYESİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/UB2024DUA1002.pdf": {
           "isim": "Dijital Uygulamalar Atölyesi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Uçak_Bakım/UÇAK BAKIM/11.SINIF/UÇAK ELEKTRONİĞİ 11.SINIF/İLERİ DİJİTAL TEKNİKLERİ ATÖLYESİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/UB2024AEA1001.pdf": {
           "isim": "Analog Elektronik Atölyesi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Uçak_Bakım/UÇAK BAKIM/10.SINIF/10.SINIF_UÇAK ELEKTRONİĞİ/ANALOG ELEKTRONİK ATÖLYESİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/UB2024UTR1004.pdf": {
           "isim": "Uçak Teknik Resmi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Uçak_Bakım/UÇAK BAKIM/10.SINIF/10.SINIF_UÇAK GÖVDE-MOTOR DALI/UÇAK TEKNİK RESMİ DERSİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/UB2024GZTM1007.pdf": {
           "isim": "Gaz Türbinli Motorlar Atölyesi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Uçak_Bakım/UÇAK BAKIM/10.SINIF/10.SINIF_UÇAK GÖVDE-MOTOR DALI/GAZ TÜRBİNLİ MOTORLAR ATÖLYESİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/UB2024UGY1003.pdf": {
           "isim": "Uçak Gövde ve Yapıları Atölyesi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Uçak_Bakım/UÇAK BAKIM/10.SINIF/10.SINIF_UÇAK GÖVDE-MOTOR DALI/UÇAK GÖVDE VE YAPILARI ATÖLYESİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ahilik_kulturu_ve_girisimcilik.pdf": {
           "isim": "Ahilik Kültürü ve Girişimcilik",
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Uçak_Bakım/UÇAK BAKIM/9.SINIF/1- UÇAK MALZEME VE DONANIM ATÖLYESİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BT2024SM111226.pdf": {
           "isim": "Sosyal Medya",
@@ -8421,7 +8792,8 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Uçak_Bakım/UÇAK BAKIM/11.SINIF/UÇAK ELEKTRONİĞİ 11.SINIF/İLERİ DİJİTAL TEKNİKLERİ ATÖLYESİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BT2024PRG111228.pdf": {
           "isim": "Programlama",
@@ -8435,7 +8807,8 @@
           "siniflar": [
             "11",
             "12"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Uçak_Bakım/UÇAK BAKIM/9.SINIF/1- UÇAK MALZEME VE DONANIM ATÖLYESİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/UB2024MYD1109.pdf": {
           "isim": "Mesleki Yabancı Dil",
@@ -8533,13 +8906,15 @@
           "isim": "Depo Yönetimi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Ulaştırma_Hizmetleri/ULAŞTIRMA HİZMETLERİ ALANI/10. SINIF/DEPO PROGRAMI 10.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/UH2024DP1002.pdf": {
           "isim": "Depo Programı",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Ulaştırma_Hizmetleri/ULAŞTIRMA HİZMETLERİ ALANI/10. SINIF/DEPO PROGRAMI 10.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/UH2024HI1209.pdf": {
           "isim": "Hava Yolunda İletişim",
@@ -8552,7 +8927,8 @@
           "isim": "Gümrük Programı",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Ulaştırma_Hizmetleri/ULAŞTIRMA HİZMETLERİ ALANI/10. SINIF/DEPO PROGRAMI 10.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/UH2024HH1107.pdf": {
           "isim": "Harekat Hizmetleri",
@@ -8746,13 +9122,15 @@
           "isim": "Atölye",
           "siniflar": [
             "9"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Yenilenebilir_Enerji_Teknolojileri/YENİLENEBİLİR ENERJİ TEKNOLOJİLERİ ALANI - 11. SINIF DERSLERİ/4 - ATÖLYE-11 DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/YET2024ATL1004.pdf": {
           "isim": "Atölye",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Yenilenebilir_Enerji_Teknolojileri/YENİLENEBİLİR ENERJİ TEKNOLOJİLERİ ALANI - 11. SINIF DERSLERİ/4 - ATÖLYE-11 DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/YET2024TMR1003.pdf": {
           "isim": "Teknik Ve Meslek Resim",
@@ -8798,7 +9176,8 @@
           "isim": "Atölye",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Yenilenebilir_Enerji_Teknolojileri/YENİLENEBİLİR ENERJİ TEKNOLOJİLERİ ALANI - 11. SINIF DERSLERİ/4 - ATÖLYE-11 DBF.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/YET2024SİS1105.pdf": {
           "isim": "Santral İşletilmesi",
@@ -8871,7 +9250,8 @@
           "isim": "Aşçılık ve Servis Atölyesi",
           "siniflar": [
             "10"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Yiyecek_İçecek_Hizmetleri/yiyecek/10 SINIF/10.SINIF AŞÇILIK VER SERVİS ATÖLYSİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/YIH2024F111214.pdf": {
           "isim": "Fırıncılık",
@@ -8924,7 +9304,8 @@
           "isim": "Aşçılık ve Servis Atölyesi",
           "siniflar": [
             "11"
-          ]
+          ],
+          "dbf_pdf_path": "dbf/Yiyecek_İçecek_Hizmetleri/yiyecek/10 SINIF/10.SINIF AŞÇILIK VER SERVİS ATÖLYSİ.pdf"
         },
         "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/YIH2024B111213.pdf": {
           "isim": "Baklavacılık",

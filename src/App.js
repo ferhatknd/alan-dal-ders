@@ -18,7 +18,7 @@ const OrtakAlanlarCell = ({ dersLink, currentAlanId, ortakAlanIndeksi, allAlans 
       {displayedNames.join(', ')}
       {needsTruncation && !isExpanded && (
         <>
-          ... <button onClick={() => setIsExpanded(true)} className="expand-button">&gt;&gt;</button>
+          ... <button onClick={() => setIsExpanded(true)} className="expand-button">{'>>'}</button>
         </>
       )}
     </td>
@@ -72,6 +72,7 @@ const AlanItem = ({ alan, ortakAlanIndeksi, allAlans, searchTerm }) => {
                   <th>Ders Adı</th>
                   <th>Sınıfı</th>
                   <th>Ders Materyali</th>
+                  <th>DBF PDF</th>
                   <th>Okutulduğu Diğer Alanlar</th>
                 </tr>
               </thead>
@@ -82,6 +83,20 @@ const AlanItem = ({ alan, ortakAlanIndeksi, allAlans, searchTerm }) => {
                     <td>{ders.isim}</td>
                     <td>{ders.siniflar.join('-')}</td>
                     <td><a href={link} target="_blank" rel="noopener noreferrer" className="ders-link">PDF</a></td>
+                    <td>
+                      {ders.dbf_pdf_path ? (
+                        <a
+                          href={`file://${ders.dbf_pdf_path}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="dbf-link"
+                        >
+                          {ders.dbf_pdf_path.split('/').pop()}
+                        </a>
+                      ) : (
+                        "-"
+                      )}
+                    </td>
                     <OrtakAlanlarCell
                       dersLink={link}
                       currentAlanId={alan.id}
@@ -129,8 +144,19 @@ function App() {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedTerm, setDebouncedTerm] = useState(searchTerm);
 
-  // Debouncing efekti: Kullanıcı yazmayı bıraktıktan 300ms sonra
-  // arama terimini günceller.
+  // Kategorik veri state'leri
+  const [dbfData, setDbfData] = useState(null);
+  const [copData, setCopData] = useState(null);
+  const [dmData, setDmData] = useState(null);
+  const [bomData, setBomData] = useState(null);
+  const [catLoading, setCatLoading] = useState(""); // "dbf", "cop", "dm", "bom"
+  const [catError, setCatError] = useState("");
+
+  // DBF rar indir/aç state'leri
+  const [dbfUnrarLoading, setDbfUnrarLoading] = useState(false);
+  const [dbfUnrarError, setDbfUnrarError] = useState("");
+
+  // Debouncing efekti: Kullanıcı yazmayı bıraktıktan 300ms sonra arama terimini günceller.
   useEffect(() => {
     const timerId = setTimeout(() => {
       setDebouncedTerm(searchTerm);
@@ -168,12 +194,9 @@ function App() {
 
   // Veri çekme fonksiyonu (eski startScraping)
   const handleScrape = useCallback(() => {
-    // Eğer veri zaten varsa, kullanıcıya yeniden çekmek isteyip istemediğini sor
     if (data && !window.confirm('Veriler zaten mevcut. En güncel verileri çekmek için yeniden başlatmak istediğinize emin misiniz? Bu işlem biraz zaman alabilir.')) {
-      return; // Kullanıcı iptal ederse işlemi durdur
+      return;
     }
-
-    // Tüm state'leri sıfırla
     setData(null);
     setProgress([]);
     setError(null);
@@ -204,12 +227,105 @@ function App() {
     return () => {
       eventSource.close();
     };
+  }, [data]);
+
+  // DBF Dosyalarını indirip açan fonksiyon
+  const handleDbfUnrar = useCallback(() => {
+    setDbfUnrarLoading(true);
+    setDbfUnrarError("");
+    setProgress([]);
+    setError(null);
+
+    const eventSource = new EventSource("http://localhost:5001/api/dbf-download-extract");
+
+    eventSource.onmessage = (event) => {
+      try {
+        const eventData = JSON.parse(event.data);
+        setProgress(prev => [...prev, eventData]);
+        if (eventData.type === "done") {
+          setDbfUnrarLoading(false);
+          eventSource.close();
+        }
+        if (eventData.type === "error") {
+          setDbfUnrarError(eventData.message || "Bilinmeyen hata");
+        }
+      } catch (e) {
+        setDbfUnrarError("Veri işlenemedi: " + e.message);
+      }
+    };
+
+    eventSource.onerror = (err) => {
+      setDbfUnrarError("Bağlantı hatası veya sunucu yanıt vermiyor.");
+      setDbfUnrarLoading(false);
+      eventSource.close();
+    };
+
+    return () => {
+      eventSource.close();
+    };
   }, []);
+
+  // Kategori veri çekme fonksiyonları
+  const fetchDbf = async () => {
+    setCatLoading("dbf");
+    setCatError("");
+    try {
+      const res = await fetch("http://localhost:5001/api/get-dbf");
+      if (!res.ok) throw new Error("DBF verisi alınamadı");
+      const json = await res.json();
+      setDbfData(json);
+    } catch (e) {
+      setCatError("DBF: " + e.message);
+    } finally {
+      setCatLoading("");
+    }
+  };
+  const fetchCop = async () => {
+    setCatLoading("cop");
+    setCatError("");
+    try {
+      const res = await fetch("http://localhost:5001/api/get-cop");
+      if (!res.ok) throw new Error("ÇÖP verisi alınamadı");
+      const json = await res.json();
+      setCopData(json);
+    } catch (e) {
+      setCatError("ÇÖP: " + e.message);
+    } finally {
+      setCatLoading("");
+    }
+  };
+  const fetchDm = async () => {
+    setCatLoading("dm");
+    setCatError("");
+    try {
+      const res = await fetch("http://localhost:5001/api/get-dm");
+      if (!res.ok) throw new Error("Ders Materyali verisi alınamadı");
+      const json = await res.json();
+      setDmData(json);
+    } catch (e) {
+      setCatError("DM: " + e.message);
+    } finally {
+      setCatLoading("");
+    }
+  };
+  const fetchBom = async () => {
+    setCatLoading("bom");
+    setCatError("");
+    try {
+      const res = await fetch("http://localhost:5001/api/get-bom");
+      if (!res.ok) throw new Error("BOM verisi alınamadı");
+      const json = await res.json();
+      setBomData(json);
+    } catch (e) {
+      setCatError("BOM: " + e.message);
+    } finally {
+      setCatLoading("");
+    }
+  };
 
   // Alanları isme göre sıralamak için bir yardımcı fonksiyon
   const getSortedAlans = useCallback((alanlar) => {
     if (!alanlar) return [];
-    // Alanları ID'ye göre değil, isme göre sırala
     return Object.entries(alanlar).sort(([, a], [, b]) => a.isim.localeCompare(b.isim, 'tr'));
   }, []); 
 
@@ -237,6 +353,75 @@ function App() {
             : 'Verileri Çek'}
       </button>
 
+      {/* Kategorik veri çekme butonları */}
+      <div style={{ margin: "20px 0" }}>
+        <button onClick={fetchDbf} disabled={catLoading === "dbf"}>Ders Bilgi Formu (DBF) Getir</button>{" "}
+        <button onClick={fetchCop} disabled={catLoading === "cop"}>Çerçeve Öğretim Programı (ÇÖP) Getir</button>{" "}
+        <button onClick={fetchDm} disabled={catLoading === "dm"}>Ders Materyali (DM) Getir</button>{" "}
+        <button onClick={fetchBom} disabled={catLoading === "bom"}>Bireysel Öğrenme Materyali (BOM) Getir</button>{" "}
+        <button onClick={handleDbfUnrar} disabled={dbfUnrarLoading} style={{ background: "#e67e22", color: "white" }}>
+          {dbfUnrarLoading ? "DBF Dosyaları İndiriliyor/Açılıyor..." : "DBF Dosyalarını İndir ve Aç"}
+        </button>{" "}
+        <button
+          onClick={async () => {
+            setProgress(prev => [...prev, { type: "status", message: "DBF eşleştirmesi başlatıldı..." }]);
+            try {
+              const res = await fetch("http://localhost:5001/api/dbf-match-refresh", { method: "POST" });
+              const result = await res.json();
+              setProgress(prev => [...prev, result]);
+            } catch (e) {
+              setProgress(prev => [...prev, { type: "error", message: "Eşleştirme isteği başarısız: " + e.message }]);
+            }
+          }}
+          style={{ background: "#16a085", color: "white" }}
+        >
+          DBF Eşleştirmesini Güncelle
+        </button>{" "}
+        <button
+          onClick={() => {
+            setProgress([]);
+            setError(null);
+            const eventSource = new EventSource("http://localhost:5001/api/dbf-retry-extract-all");
+            eventSource.onmessage = (event) => {
+              try {
+                const eventData = JSON.parse(event.data);
+                setProgress(prev => [...prev, eventData]);
+                if (eventData.type === "done") {
+                  eventSource.close();
+                }
+              } catch (e) {
+                setProgress(prev => [...prev, { type: "error", message: "Veri işlenemedi: " + e.message }]);
+              }
+            };
+            eventSource.onerror = (err) => {
+              setProgress(prev => [...prev, { type: "error", message: "Bağlantı hatası veya sunucu yanıt vermiyor." }]);
+              eventSource.close();
+            };
+          }}
+          style={{ background: "#2980b9", color: "white" }}
+        >
+          Tüm İndirilenleri Tekrar Aç
+        </button>{" "}
+        <button
+          onClick={async () => {
+            setProgress(prev => [...prev, { type: "status", message: "DBF eşleştirmesi başlatıldı..." }]);
+            try {
+              const res = await fetch("http://localhost:5001/api/dbf-match-refresh", { method: "POST" });
+              const result = await res.json();
+              setProgress(prev => [...prev, result]);
+            } catch (e) {
+              setProgress(prev => [...prev, { type: "error", message: "Eşleştirme isteği başarısız: " + e.message }]);
+            }
+          }}
+          style={{ background: "#16a085", color: "white" }}
+        >
+          DBF Eşleştirmesini Güncelle
+        </button>
+        {(catLoading || dbfUnrarLoading) && <span style={{ marginLeft: 10 }}>Yükleniyor...</span>}
+        {catError && <span style={{ color: "red", marginLeft: 10 }}>{catError}</span>}
+        {dbfUnrarError && <span style={{ color: "red", marginLeft: 10 }}>{dbfUnrarError}</span>}
+      </div>
+
       {/* Arama Kutusu */}
       {!initialLoading && data && (
         <div className="search-bar">
@@ -254,16 +439,80 @@ function App() {
         <div id="progress-container" style={{ border: '1px solid #ccc', padding: '10px', marginTop: '10px', height: '300px', overflowY: 'scroll', backgroundColor: '#f8f9fa' }}>
           {initialLoading && <p>Önbellek kontrol ediliyor...</p>}
           {error && <p style={{ color: 'red', fontWeight: 'bold' }}>HATA: {error}</p>}
-          {progress.map((p, index) => (
-            <div key={index} style={{ color: p.type === 'error' ? 'red' : p.type === 'warning' ? '#e67e22' : 'black' }}>
-              <p style={{ margin: '2px 0' }}>{p.message}</p>
-              {p.estimation && <small><i>{p.estimation}</i></small>}
-            </div>
-          ))}
+          {progress.map((p, index) => {
+            // Hata mesajından alan_adi ve rar_filename çıkarılabiliyorsa buton ekle
+            let retryButton = null;
+            if (p.type === 'error' && p.message) {
+              // [ALAN] dosyaadı.rar ... şeklinde başlıyor mu?
+              const match = p.message.match(/^\[([^\]]+)\].*?([^\s\/]+\.rar|[^\s\/]+\.zip)/i);
+              if (match) {
+                const alan_adi = match[1];
+                const rar_filename = match[2];
+                retryButton = (
+                  <button
+                    style={{ marginLeft: 8, fontSize: 12, padding: "2px 6px" }}
+                    onClick={async () => {
+                      try {
+                        const res = await fetch("http://localhost:5001/api/dbf-retry-extract", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ alan_adi, rar_filename })
+                        });
+                        const result = await res.json();
+                        // Sonucu progress'e ekle
+                        setProgress(prev => [...prev, result]);
+                      } catch (e) {
+                        setProgress(prev => [...prev, { type: "error", message: "Tekrar deneme isteği başarısız: " + e.message }]);
+                      }
+                    }}
+                  >
+                    Tekrar Dene
+                  </button>
+                );
+              }
+            }
+            return (
+              <div key={index} style={{ color: p.type === 'error' ? 'red' : p.type === 'warning' ? '#e67e22' : 'black' }}>
+                <p style={{ margin: '2px 0' }}>
+                  {p.message}
+                  {retryButton}
+                </p>
+                {p.estimation && <small><i>{p.estimation}</i></small>}
+              </div>
+            );
+          })}
         </div>
       )}
 
-      {/* Veri Görüntüleme Alanı */}
+      {/* Kategorik veri görüntüleme alanları */}
+      <div style={{ margin: "20px 0" }}>
+        {dbfData && (
+          <div>
+            <h2>Ders Bilgi Formu (DBF) Verisi</h2>
+            <pre style={{ maxHeight: 300, overflow: "auto", background: "#f4f4f4", padding: 10 }}>{JSON.stringify(dbfData, null, 2)}</pre>
+          </div>
+        )}
+        {copData && (
+          <div>
+            <h2>Çerçeve Öğretim Programı (ÇÖP) Verisi</h2>
+            <pre style={{ maxHeight: 300, overflow: "auto", background: "#f4f4f4", padding: 10 }}>{JSON.stringify(copData, null, 2)}</pre>
+          </div>
+        )}
+        {dmData && (
+          <div>
+            <h2>Ders Materyali (DM) Verisi</h2>
+            <pre style={{ maxHeight: 300, overflow: "auto", background: "#f4f4f4", padding: 10 }}>{JSON.stringify(dmData, null, 2)}</pre>
+          </div>
+        )}
+        {bomData && (
+          <div>
+            <h2>Bireysel Öğrenme Materyali (BOM) Verisi</h2>
+            <pre style={{ maxHeight: 300, overflow: "auto", background: "#f4f4f4", padding: 10 }}>{JSON.stringify(bomData, null, 2)}</pre>
+          </div>
+        )}
+      </div>
+
+      {/* Eski toplu veri görüntüleme alanı */}
       {!initialLoading && data && (
         <div className="data-display">
           <h2>Alınan Veriler ({filteredAlanlar.length} alan bulundu)</h2>
