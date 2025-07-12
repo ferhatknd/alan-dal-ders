@@ -1,517 +1,55 @@
 {
   "metadata": {
-    "processed_at": "2025-07-12T10:42:55.986722",
+    "processed_at": "2025-07-12T14:07:51.581799",
     "source_directory": "/Users/ferhat/Library/Mobile Documents/com~apple~CloudDocs/Projeler/ProjectDogru/repos/alan-dal-ders",
-    "total_files": 22,
-    "successful_files": 22,
+    "total_files": 5,
+    "successful_files": 5,
     "partial_files": 0,
     "failed_files": 0
   },
   "results": {
-    "TEMEL GELENEKSEL TÜRK SANATLARI_DBF.pdf": {
+    "ATÖLYE_DBF_10.pdf": {
       "metadata": {
-        "processed_at": "2025-07-12T10:42:32.526121",
-        "source_file": "TEMEL GELENEKSEL TÜRK SANATLARI_DBF.pdf",
-        "file_path": "./TEMEL GELENEKSEL TÜRK SANATLARI_DBF.pdf",
-        "status": "success"
-      },
-      "ders_bilgileri": {
-        "ders_adi": "TEMEL GELENEKSEL TÜRK SANATLARI",
-        "ders_sinifi": 9,
-        "haftalik_ders_saati": 2,
-        "dersin_amaci": "Bu derste öğrenciye; geleneksel Türk sanatlarının doğuşu, eğitim yöntemleri, dalları ve dönemleri ile ilgili bilgi ve becerilerin kazandırılması amaçlanmaktadır.",
-        "dersin_genel_kazanimlari": [],
-        "egitim_ortam_donanimi": [
-          "Konu Ile Ilgili Yazılı",
-          "Görsel Yayınlar",
-          "Sanat Eserleri",
-          "Sanat Kitapları",
-          "Resim",
-          "Slayt",
-          "Projeksiyon Makinesi",
-          "Fotoğraf Makinesi",
-          "Görüntü Cihazları",
-          "Not Almak Için Kâğıt",
-          "Kalem V.B"
-        ],
-        "olcme_degerlendirme": [
-          "Öz Değerlendirme"
-        ]
-      },
-      "ogrenme_birimleri_ozeti": [],
-      "ogrenme_birimleri_detayi": [],
-      "uygulama_faaliyetleri": [
-        "Geleneksel Türk Sanatlarının Doğuşu",
-        "İslam Öncesi Türk sanatlarıyla ilgili kompozisyon yazma",
-        "İslam Dininin geleneksel sanatlar üzerindeki etkisi hakkında kompozisyon yazma",
-        "İslam Dininin geleneksel sanatlar üzerindeki etkisi hakkında kompozisyon yazma",
-        "Geleneksel Türk Sanatlarında Eğitim Yöntemleri",
-        "Meşk usulü eğitimi gösteren bir sunum hazırlama",
-        "çırak ilişkisi içerisinde çalışmayı gösteren bir sunum hazırlama"
-      ]
-    },
-    "LABORATUVAR TEKNİĞİ DBF 9.pdf": {
-      "metadata": {
-        "processed_at": "2025-07-12T10:42:33.842879",
-        "source_file": "LABORATUVAR TEKNİĞİ DBF 9.pdf",
-        "file_path": "./LABORATUVAR TEKNİĞİ DBF 9.pdf",
-        "status": "success"
-      },
-      "ders_bilgileri": {
-        "ders_adi": "LABORATUVAR TEKNİĞİ",
-        "ders_sinifi": 9,
-        "haftalik_ders_saati": 3,
-        "dersin_amaci": "Bu derste öğrenciye; iş sağlığı ve güvenliği ile çevre korumaya ilişkin önlemleri uygulayarak mevzuata ve kimya laboratuvarı çalışma kurallarına göre laboratuvar malzeme bilgisi, örnek alma ve örneği analize hazırlama, analizlere uygun temel fiziksel ve kimyasal işlemlerin yapılması ile ilgili bilgi ve becerilerin kazandırılması amaçlanmaktadır.",
-        "dersin_genel_kazanimlari": [],
-        "egitim_ortam_donanimi": [
-          "Laboratuvar",
-          "Teraziler",
-          "Isıtıcılar",
-          "Saf Su Cihazı",
-          "Ekstraksiyon Cihazı",
-          "Damıtma Cihazı",
-          "Erlen",
-          "Beher",
-          "Mezür",
-          "Balon Joje",
-          "Pipet"
-        ],
-        "olcme_degerlendirme": [
-          "Öz Değerlendirme",
-          "Akran Değerlendirme",
-          "Derecelendirme Ölçeği",
-          "Gözlem"
-        ]
-      },
-      "ogrenme_birimleri_ozeti": [
-        {
-          "birim_adi": "Laboratuvar Ön Hazırlıkları",
-          "kazanim_sayisi": "3",
-          "ders_saati_orani": "15"
-        },
-        {
-          "birim_adi": "Laboratuvar Araçları ve Ekipmanları",
-          "kazanim_sayisi": "6",
-          "ders_saati_orani": "32"
-        },
-        {
-          "birim_adi": "Laboratuvar Güvenliği",
-          "kazanim_sayisi": "3",
-          "ders_saati_orani": "8"
-        },
-        {
-          "birim_adi": "Gıda Maddesinden Numune Alımı",
-          "kazanim_sayisi": "2",
-          "ders_saati_orani": "8"
-        },
-        {
-          "birim_adi": "Laboratuvar Temel İşlemleri",
-          "kazanim_sayisi": "8",
-          "ders_saati_orani": "38"
-        },
-        {
-          "birim_adi": "Laboratuvarda Analiz Sonrası İşlemler",
-          "kazanim_sayisi": "3",
-          "ders_saati_orani": "7"
-        }
-      ],
-      "ogrenme_birimleri_detayi": [
-        {
-          "birim_adi": "Bu derste öğrenciye; iş sağlığı ve güvenliği ile çevre korumaya ilişkin",
-          "konular": [],
-          "kazanimlar": []
-        }
-      ],
-      "uygulama_faaliyetleri": [
-        "Uygulama faaliyeti/temrinler; ders kazanımına uygun olarak okulun fiziki kapasitesi ve donatımı, öğrenci sayısı göz",
-        "önünde bulundurularak en fazla uygulama faaliyeti/temrini yaptıracak şekilde meslek alan zümre öğretmenler kurulu",
-        "tarafından seçilir. Meslek alan zümre öğretmenleri tarafından aşağıda yer alan temrinlerden farklı temrinlerin",
-        "uygulanmasına karar verilebilir.",
-        "Laboratuvar Ön Hazırlıkları",
-        "İş sağlığı ve güvenliği tedbirlerini almak ve kişisel koruyucu donanımları giymek",
-        "Laboratuvar düzeni oluşturmak",
-        "Laboratuvar Araçları ve Ekipmanları",
-        "Kütle ölçüm cihazları istenen miktarda madde tartmak",
-        "Analizlerde kullanılan ısıtıcıları kullanmak"
-      ]
-    },
-    "9.SINIF_ETKİLİ KONUŞMA VE YAZMA DBF 28.06.2020.pdf": {
-      "metadata": {
-        "processed_at": "2025-07-12T10:42:34.643188",
-        "source_file": "9.SINIF_ETKİLİ KONUŞMA VE YAZMA DBF 28.06.2020.pdf",
-        "file_path": "./9.SINIF_ETKİLİ KONUŞMA VE YAZMA DBF 28.06.2020.pdf",
-        "status": "success"
-      },
-      "ders_bilgileri": {
-        "ders_adi": "ETKİLİ KONUŞMA VE YAZMA",
-        "ders_sinifi": 9,
-        "haftalik_ders_saati": 2,
-        "dersin_amaci": "Bu derste öğrenciye; iş sağlığı ve güvenliği tedbirleri doğrultusunda etkili iletişim kurma ve etkili konuşma/yazma ile ilgili temel bilgi ve becerilerin kazandırılması amaçlanmaktadır.",
-        "dersin_genel_kazanimlari": [],
-        "egitim_ortam_donanimi": [
-          "Bilgisayar Atölyesi",
-          "Haber Atölyesi",
-          "Konferans Salonu",
-          "Derslik",
-          "Etkileşimli Tahta",
-          "Projeksiyon",
-          "Bilgisayar",
-          "Yazıcı",
-          "Mikrofon",
-          "Ses Sistemi",
-          "Basılı",
-          "Dijital Materyaller"
-        ],
-        "olcme_degerlendirme": [
-          "Öz Değerlendirme",
-          "Akran Değerlendirme"
-        ]
-      },
-      "ogrenme_birimleri_ozeti": [
-        {
-          "birim_adi": "İletişim",
-          "kazanim_sayisi": "5",
-          "ders_saati_orani": "18"
-        },
-        {
-          "birim_adi": "Hitabet",
-          "kazanim_sayisi": "6",
-          "ders_saati_orani": "20"
-        },
-        {
-          "birim_adi": "Bilgisayarda Yazı Yazma",
-          "kazanim_sayisi": "4",
-          "ders_saati_orani": "10"
-        },
-        {
-          "birim_adi": "Planlı Yazı Yazma",
-          "kazanim_sayisi": "4",
-          "ders_saati_orani": "24"
-        }
-      ],
-      "ogrenme_birimleri_detayi": [],
-      "uygulama_faaliyetleri": []
-    },
-    "2_GEMİ_TEMEL_İŞLEMLERİ_DBF_9.pdf": {
-      "metadata": {
-        "processed_at": "2025-07-12T10:42:35.721151",
-        "source_file": "2_GEMİ_TEMEL_İŞLEMLERİ_DBF_9.pdf",
-        "file_path": "./2_GEMİ_TEMEL_İŞLEMLERİ_DBF_9.pdf",
-        "status": "success"
-      },
-      "ders_bilgileri": {
-        "ders_adi": "GEMİ TEMEL İŞLEMLERİ",
-        "ders_sinifi": 9,
-        "haftalik_ders_saati": 6,
-        "dersin_amaci": "Bu derste öğrenciye; iş sağlığı ve güvenliği tedbirleri doğrultusunda gemi temel işlemleri ile ilgili bilgi ve becerilerin kazandırılması amaçlanmaktadır.",
-        "dersin_genel_kazanimlari": [],
-        "egitim_ortam_donanimi": [
-          "Gemi Temel Işlemleri Atölyesi",
-          "Tersane Ortamı",
-          "Ölçme-Kontrol",
-          "Markalama Araçları",
-          "Mengene Tezgâhı",
-          "Kesme Araçları",
-          "Yüzey Düzeltme",
-          "Kontrol Araçları",
-          "Delme Araçları",
-          "Form Verme (Eğme",
-          "Bükme",
-          "Radüs) Araçları"
-        ],
-        "olcme_degerlendirme": [
-          "Öz Değerlendirme",
-          "Akran Değerlendirme"
-        ]
-      },
-      "ogrenme_birimleri_ozeti": [],
-      "ogrenme_birimleri_detayi": [],
-      "uygulama_faaliyetleri": [
-        "Uygulama faaliyeti/temrinler; ders kazanımına uygun olarak okulun fiziki kapasitesi ve donatımı,",
-        "öğrenci sayısı göz önünde bulundurularak en fazla uygulama faaliyeti/temrini yaptıracak şekilde",
-        "meslek alan zümre öğretmenler kurulu tarafından seçilir. Meslek alan zümre öğretmenleri tarafından",
-        "aşağıda yer alan temrinlerden farklı temrinlerin uygulanmasına karar verilebilir.",
-        "Gemi Temel İşlemleri Atölyesinin Donanımları",
-        "İş sağlığı ve güvenliği tedbirlerini alarak kişisel koruyucu donanımlarını kullanma",
-        "İş sağlığı ve güvenliği tedbirlerini doğrultusunda tezgâh, alet ve avadanlıkları kullanma",
-        "Ölçme, Markalama ve Kesme İşlemleri",
-        "İş sağlığı ve güvenliği tedbirlerini alarak iş resmine göre ölçme, kontrol ve markalama işlemleriyle ilgili uygulamalar yapma",
-        "İş sağlığı ve güvenliği tedbirlerini alarak iş resmine göre kesme işlemleriyle ilgili uygulamalar yapma"
-      ]
-    },
-    "muzik.pdf": {
-      "metadata": {
-        "processed_at": "2025-07-12T10:42:37.378891",
-        "source_file": "muzik.pdf",
-        "file_path": "./muzik.pdf",
-        "status": "success"
-      },
-      "ders_bilgileri": {
-        "ders_adi": "MÜZİK VE DRAMATİK ETKİNLİKLER ATÖLYESİ",
-        "ders_sinifi": 9,
-        "haftalik_ders_saati": 4,
-        "dersin_amaci": "Bu derste öğrenciye; iş sağlığı ve güvenliği tedbirlerine uygun olarak çocukların gelişim alanlarını destekleyen müzik ve dramatik etkinlik çalışmaları ile müzik ve dramatik etkinlikte kullanılabilecek araç gereç hazırlama ve uygulama ile ilgili bilgi ve becerilerin kazandırılması amaçlanmaktadır.",
-        "dersin_genel_kazanimlari": [],
-        "egitim_ortam_donanimi": [
-          "Müzik",
-          "Drama Atölyesi",
-          "Etkileşimli Tahta/Bilgisayar",
-          "Yazıcı/Tarayıcı",
-          "Artık Materyaller",
-          "Ritim Araçları Çizim Masası",
-          "Ahşap Boyaları",
-          "Fırçalar",
-          "Dikiş Makinası",
-          "Dikiş Seti",
-          "Keçe",
-          "Polar Pelüş",
-          "Elyaf",
-          "Çeşitli Süsleme Malzemeleri",
-          "Makas",
-          "Yapıştırıcı",
-          "Silikon",
-          "Silikon Makinası",
-          "Örgü Malzemeleri ( Tığ",
-          "Örgü Şişi Yün",
-          "Orlon Ipler Vs.) .Parşömen Kağıdı",
-          "Düğmeler",
-          "Çıt Çıt",
-          "Cırt Cırt",
-          "Fermuar",
-          "Bağcık",
-          "Kurdele",
-          "Mandallar",
-          "Balonlar",
-          "Pinyatalar",
-          "Süsleme Malzemeleri",
-          "Toplar",
-          "Ipler",
-          "Hulahop",
-          "Minderler",
-          "Aynalar",
-          "Kostümve Aksesuarlar",
-          "Başlık",
-          "Maskeler",
-          "Vücut Boyama Malzemeleri",
-          "Kuklalar"
-        ],
-        "olcme_degerlendirme": [
-          "Öz Değerlendirme",
-          "Akran Değerlendirme",
-          "Derecelendirme Ölçeği",
-          "Gözlem"
-        ]
-      },
-      "ogrenme_birimleri_ozeti": [],
-      "ogrenme_birimleri_detayi": [],
-      "uygulama_faaliyetleri": [
-        "MÜZİK ETKİNLİKLERİ",
-        "Müziğin çocuğun gelişimine etkisini açıklayan afiş hazırlama",
-        "Müzik dinleme, sesleri tanıma ve ayırt etme çalışması yapma.",
-        "Nefes açma, ninni / şarkı söyleme çalışmaları yapma.",
-        "Müzikli dramatizasyon çalışması uygulama.",
-        "Yaratıcı hareket ve dans çalışması uygulama.",
-        "Ront çalışması uygulama",
-        "Müzikli öykü oluşturma.",
-        "Şarkı söyleme çalışmalarında ritim araçlarını kullanma",
-        "Değişik nesneleri kullanarak ritim çalışmaları yapma."
-      ]
-    },
-    "9. SINIF MÜZİK VE DRAMATİK ETK ATÖLYESİ.pdf": {
-      "metadata": {
-        "processed_at": "2025-07-12T10:42:39.069346",
-        "source_file": "9. SINIF MÜZİK VE DRAMATİK ETK ATÖLYESİ.pdf",
-        "file_path": "./9. SINIF MÜZİK VE DRAMATİK ETK ATÖLYESİ.pdf",
-        "status": "success"
-      },
-      "ders_bilgileri": {
-        "ders_adi": "MÜZİK VE DRAMATİK ETKİNLİKLER ATÖLYESİ",
-        "ders_sinifi": 9,
-        "haftalik_ders_saati": 4,
-        "dersin_amaci": "Bu derste öğrenciye; iş sağlığı ve güvenliği tedbirlerine uygun olarak çocukların gelişim alanlarını destekleyen müzik ve dramatik etkinlik çalışmaları ile müzik ve dramatik etkinlikte kullanılabilecek araç gereç hazırlama ve uygulama ile ilgili bilgi ve becerilerin kazandırılması amaçlanmaktadır.",
-        "dersin_genel_kazanimlari": [],
-        "egitim_ortam_donanimi": [
-          "Müzik",
-          "Drama Atölyesi",
-          "Etkileşimli Tahta/Bilgisayar",
-          "Yazıcı/Tarayıcı",
-          "Artık Materyaller",
-          "Ritim Araçları Çizim Masası",
-          "Ahşap Boyaları",
-          "Fırçalar",
-          "Dikiş Makinası",
-          "Dikiş Seti",
-          "Keçe",
-          "Polar Pelüş",
-          "Elyaf",
-          "Çeşitli Süsleme Malzemeleri",
-          "Makas",
-          "Yapıştırıcı",
-          "Silikon",
-          "Silikon Makinası",
-          "Örgü Malzemeleri ( Tığ",
-          "Örgü Şişi Yün",
-          "Orlon Ipler Vs.) .Parşömen Kağıdı",
-          "Düğmeler",
-          "Çıt Çıt",
-          "Cırt Cırt",
-          "Fermuar",
-          "Bağcık",
-          "Kurdele",
-          "Mandallar",
-          "Balonlar",
-          "Pinyatalar",
-          "Süsleme Malzemeleri",
-          "Toplar",
-          "Ipler",
-          "Hulahop",
-          "Minderler",
-          "Aynalar",
-          "Kostümve Aksesuarlar",
-          "Başlık",
-          "Maskeler",
-          "Vücut Boyama Malzemeleri",
-          "Kuklalar"
-        ],
-        "olcme_degerlendirme": [
-          "Öz Değerlendirme",
-          "Akran Değerlendirme",
-          "Derecelendirme Ölçeği",
-          "Gözlem"
-        ]
-      },
-      "ogrenme_birimleri_ozeti": [],
-      "ogrenme_birimleri_detayi": [],
-      "uygulama_faaliyetleri": [
-        "MÜZİK ETKİNLİKLERİ",
-        "Müziğin çocuğun gelişimine etkisini açıklayan afiş hazırlama",
-        "Müzik dinleme, sesleri tanıma ve ayırt etme çalışması yapma.",
-        "Nefes açma, ninni / şarkı söyleme çalışmaları yapma.",
-        "Müzikli dramatizasyon çalışması uygulama.",
-        "Yaratıcı hareket ve dans çalışması uygulama.",
-        "Ront çalışması uygulama",
-        "Müzikli öykü oluşturma.",
-        "Şarkı söyleme çalışmalarında ritim araçlarını kullanma",
-        "Değişik nesneleri kullanarak ritim çalışmaları yapma."
-      ]
-    },
-    "TEMEL TASARIM.pdf": {
-      "metadata": {
-        "processed_at": "2025-07-12T10:42:39.956732",
-        "source_file": "TEMEL TASARIM.pdf",
-        "file_path": "./TEMEL TASARIM.pdf",
-        "status": "success"
-      },
-      "ders_bilgileri": {
-        "ders_adi": "TEMEL TASARIM",
-        "ders_sinifi": 9,
-        "haftalik_ders_saati": 6,
-        "dersin_amaci": "Bu derste öğrenciye; iş sağlığı ve güvenliği tedbirlerini alarak çizim araç gereçleriyle, tasarımda kullanacağı temel elemanlar ve tasarımda uygulayacağı ilkeler ile ilgili bilgi ve becerilerin kazandırılması amaçlanmaktadır.",
-        "dersin_genel_kazanimlari": [],
-        "egitim_ortam_donanimi": [
-          "Grafik Atölyesi",
-          "Etkileşimli Tahta/Projeksiyon",
-          "Çizim Masası"
-        ],
-        "olcme_degerlendirme": [
-          "Portfolyo",
-          "Dereceli Puanlama Anahtarı",
-          "Gözlem"
-        ]
-      },
-      "ogrenme_birimleri_ozeti": [
-        {
-          "birim_adi": "Nokta Çizgi",
-          "kazanim_sayisi": "4",
-          "ders_saati_orani": "42"
-        },
-        {
-          "birim_adi": "Tasarı İlkeleri",
-          "kazanim_sayisi": "2",
-          "ders_saati_orani": "36"
-        },
-        {
-          "birim_adi": "Açık Koyu",
-          "kazanim_sayisi": "2",
-          "ders_saati_orani": "24"
-        },
-        {
-          "birim_adi": "Renk",
-          "kazanim_sayisi": "4",
-          "ders_saati_orani": "54"
-        },
-        {
-          "birim_adi": "Doku ve Strüktür",
-          "kazanim_sayisi": "3",
-          "ders_saati_orani": "60"
-        }
-      ],
-      "ogrenme_birimleri_detayi": [],
-      "uygulama_faaliyetleri": [
-        "Uygulama faaliyeti/temrinler; ders kazanımına uygun olarak okulun fiziki kapasitesi ve donatımı, öğrenci sayısı göz",
-        "önünde bulundurularak en fazla uygulama faaliyeti/temrini yaptıracak şekilde meslek alan zümre öğretmenler kurulu",
-        "tarafından seçilir. Meslek alan zümre öğretmenleri tarafından aşağıda yer alan temrinlerden farklı temrinlerin",
-        "uygulanmasına karar verilebilir.",
-        "Nokta Çizgi",
-        "Nokta ile sık",
-        "seyrek, boş",
-        "dolu, büyük",
-        "küçük kavramlarını kullanarak serbest yüzey düzenlemelerini yapma Sık",
-        "seyrek, kalın"
-      ]
-    },
-    "ATOLYE 9 DBF.pdf": {
-      "metadata": {
-        "processed_at": "2025-07-12T10:42:41.226715",
-        "source_file": "ATOLYE 9 DBF.pdf",
-        "file_path": "./ATOLYE 9 DBF.pdf",
+        "processed_at": "2025-07-12T14:07:49.540812",
+        "source_file": "ATÖLYE_DBF_10.pdf",
+        "file_path": "./ATÖLYE_DBF_10.pdf",
         "status": "success"
       },
       "ders_bilgileri": {
         "ders_adi": "ATÖLYE",
-        "ders_sinifi": 9,
-        "haftalik_ders_saati": 7,
-        "dersin_amaci": "Bu derste öğrenciye; iş sağlığı ve güvenliği tedbirlerini alarak temel elektrik-elektronik devre elemanlarının ve elektriksel büyüklüklerin ölçümünü, temel mekanik iş ve işlemlerini yapma ile ilgili bilgi ve becerilerin kazandırılması amaçlanmaktadır.",
+        "ders_sinifi": 10,
+        "haftalik_ders_saati": 9,
+        "dersin_amaci": "1. Doğal afetlerde hareket planına uygun kurtarma ekiplerini kurup iş sağlığı ve güvenliği tedbirlerini alarak enkaz / göçük değerlendirmesi yapar. 2. İş sağlığı ve güvenliği tedbirlerini alarak enkaz, göçük ve çığ düşmelerinde temel tekniklerle arama uygulamaları yapar. 3. İş sağlığı ve güvenliği tedbirlerini alarak termal, görüntülü ve sismik dinleme cihazlarını kullanıp arama yapar. 4. İş sağlığı ve güvenliği tedbirlerini alarak enkaz / göçükte yıkıntıyı destekleyip yol açma işlemlerini yapar. 5. İş sağlığı ve güvenliği tedbirlerini alarak su baskınında uygun yöntemlerle su ve canlı tahliye eder. 6. İş sağlığı ve güvenliği tedbirlerini alarak müdahale şekline uygun şekilde araçta kesme ve açma işlemlerini yapar. 7. İş sağlığı ve güvenliği tedbirlerini alarak olayın durumuna uygun araç gereçler ile yüksekten kurtarma uygulamaları yapar. 8. Asansör kazalarında iş sağlığı ve güvenliği tedbirlerini alarak enerjiyi kesip uygun tekniklerle kurtarma uygulamaları yapar. 9. İş sağlığı ve güvenliği tedbirlerini alarak kuyudan canlı kurtarma uygulamaları yapar. 10. İş sağlığı ve güvenliği tedbirlerini alarak olay yerinin ve yaralının durumuna göre kazazedeye gerekli ilk yardım uygulamalarını yapar.",
         "dersin_genel_kazanimlari": [],
         "egitim_ortam_donanimi": [
-          "Teknik Resim Sınıfı",
-          "Elektronik",
-          "Mekanik Atölyeleri",
-          "Çizim Masası",
-          "Takımları",
-          "Tesviyeci Mengenesi",
-          "Eğe Takımları",
-          "Gönye",
-          "Kumpas Mikrometre",
-          "El Testeresi",
-          "Çizecek",
-          "Marka Boyası",
-          "Pleyt",
-          "Çekiç",
-          "Nokta",
-          "Numaratör",
-          "Matkap",
-          "Klavuz",
-          "Pafta Takımları",
-          "Torna Tezgahı",
-          "Torna Kesici Takımları",
-          "Freze Tezgahı",
-          "Freze Kesici Takımları",
-          "Freze Mengenesi",
-          "Elektronik Çizim Programı",
-          "El Aletleri",
-          "Kablo Bağlantı Araçları",
-          "Çeşitli Çapta Iletkenler",
-          "Ölçü Letleri",
-          "Lehim Takımı",
-          "Mini Cnc"
+          "Simülasyon",
+          "Uygulama Sahası",
+          "Kule",
+          "Asansör",
+          "Kuyu",
+          "Uygulama Havuzu",
+          "Laboratuvar",
+          "Kişisel Koruyucu Donanım",
+          "Arama Kurtarma Araç",
+          "Gereç",
+          "Aletleri",
+          "Haberleşme Cihazları",
+          "Atlama Yatakları",
+          "Kurtarma Tüneli",
+          "Liberatör",
+          "Tripod",
+          "Itfaiye Araç",
+          "Gereçleri",
+          "Uygulamada Kullanılacak Muhtelif Araçlar",
+          "Ilkyardım Malzemeleri",
+          "Bilgisayar",
+          "Etkileşimli Tahta Vb. Gereklidir"
         ],
         "olcme_degerlendirme": [
-          "Kontrol Listesi",
-          "Derecelendirme Ölçeği",
           "Gözlem",
           "Öz Değerlendirme",
-          "Akran Değerlendirme"
+          "Akran Değerlendirme",
+          "Derecelendirme Ölçeği"
         ]
       },
       "ogrenme_birimleri_ozeti": [],
@@ -521,285 +59,37 @@
         "önünde bulundurularak en fazla uygulama faaliyeti/temrini yaptıracak şekilde meslek alan zümre öğretmenler kurulu",
         "tarafından seçilir. Meslek alan zümre öğretmenleri tarafından aşağıda yer alan temrinlerden farklı temrinlerin",
         "uygulanmasına karar verilebilir.",
-        "Temel Talaşlı İmalat",
-        "Sürekli kalın, sürekli ince, kesik, noktalı kesik çizgi çizmek.",
-        "İstiklal Marşı'nın ilk iki kıtasının eğik yazı ile yazmak.",
-        "Doğru çizmek, paralel doğrular çizmek.",
-        "Bir doğru parçasına üzerindeki bir noktadan dikme çıkmak.",
-        "Doğrunun iki eşit parçaya bölünmesi"
+        "Basit Arama",
+        "Enkaz alanında fiziksel arama yapma",
+        "Cihaz İle Arama",
+        "Termal kamera kullanarak enkazda kazazede bulma",
+        "Görüntülü arama cihazı ile enkazda arama yapma",
+        "Sismik dinleme cihazı ile enkazda arama yapma"
       ]
     },
-    "GIDA HİJYENİ VE SANİTASYON DBF 9.pdf": {
+    "DOĞAL AFETLERE HAZIRLIK...pdf": {
       "metadata": {
-        "processed_at": "2025-07-12T10:42:42.113507",
-        "source_file": "GIDA HİJYENİ VE SANİTASYON DBF 9.pdf",
-        "file_path": "./GIDA HİJYENİ VE SANİTASYON DBF 9.pdf",
+        "processed_at": "2025-07-12T14:07:51.428716",
+        "source_file": "DOĞAL AFETLERE HAZIRLIK...pdf",
+        "file_path": "./DOĞAL AFETLERE HAZIRLIK...pdf",
         "status": "success"
       },
       "ders_bilgileri": {
-        "ders_adi": "GIDA HİJYENİ VE SANİTASYON",
-        "ders_sinifi": 9,
+        "ders_adi": "DOĞAL AFETLERE HAZIRLIK",
+        "ders_sinifi": 11,
         "haftalik_ders_saati": 2,
-        "dersin_amaci": "Bu derste öğrenciye; iş sağlığı ve güvenliği ile çevre korumaya ilişkin önlemleri uygulayarak kalite ve gıda güvenilirliği gereklilikleri çerçevesinde , ilgili yönetmelik ve tebliğlere uygun olarak, gıda hijyeni, kişisel hijyen, su, hava ve işletme hijyeninin sağlanması, işletmenin, araç, gereç ve ekipmanın temizlik ve dezenfeksiyonunun yapılması, , atıkların uzaklaştırılması, haşerelerle mücadele ve kalite yönetim sistemleri ile ilgili bilgi ve becerilerin kazandırılması amaçlanmaktadır.",
+        "dersin_amaci": "1. Doğal afet hareket planı yapar. 2. Doğal afet seyyar kurtarma konteyneri hazırlar. 3. Doğal afet tatbikatı yapar. 4. Depreme hazırlık yapar.",
         "dersin_genel_kazanimlari": [],
         "egitim_ortam_donanimi": [
-          "Gıda Teknolojisi Laboratuvarı",
-          "Etkileşimli Tahta / Projeksiyon",
           "Bilgisayar",
-          "Yazıcı/Tarayıcı",
-          "Işletim Sistemi Kurulum Diski"
+          "Televizyon",
+          "Projeksiyon Vb. Donanımlar",
+          "Alanın Gerektirdiği Araç",
+          "Gereç",
+          "Malzeme",
+          "Ekipmanlar"
         ],
-        "olcme_degerlendirme": [
-          "Öz Değerlendirme",
-          "Akran Değerlendirme",
-          "Derecelendirme Ölçeği",
-          "Gözlem"
-        ]
-      },
-      "ogrenme_birimleri_ozeti": [
-        {
-          "birim_adi": "Gıda Endüstrisinde Hijyen ve Sanitasyon",
-          "kazanim_sayisi": "3",
-          "ders_saati_orani": "20"
-        },
-        {
-          "birim_adi": "Temizlik ve Dezenfeksiyon Malzemeleri",
-          "kazanim_sayisi": "2",
-          "ders_saati_orani": "18"
-        },
-        {
-          "birim_adi": "Atıkların Uzaklaştırılması ve Haşerelerle Mücadele",
-          "kazanim_sayisi": "2",
-          "ders_saati_orani": "12"
-        },
-        {
-          "birim_adi": "Su ve Hava Hijyeni",
-          "kazanim_sayisi": "2",
-          "ders_saati_orani": "8"
-        },
-        {
-          "birim_adi": "Gıda Endüstrisinde Kalite Yönetim Sistemleri",
-          "kazanim_sayisi": "2",
-          "ders_saati_orani": "14"
-        }
-      ],
-      "ogrenme_birimleri_detayi": [
-        {
-          "birim_adi": "5. Gıda Endüstrisinde kalite yönetim sistemlerini, ulusal ve uluslararası kalite",
-          "konular": [],
-          "kazanimlar": []
-        }
-      ],
-      "uygulama_faaliyetleri": [
-        "Uygulama faaliyeti/temrinler; ders kazanımına uygun olarak okulun fiziki kapasitesi ve donatımı, öğrenci",
-        "sayısı göz önünde bulundurularak en fazla uygulama faaliyeti/temrini yaptıracak şekilde meslek alan zümre",
-        "öğretmenler kurulu tarafından seçilir. Meslek alan zümre öğretmenleri tarafından aşağıda yer alan",
-        "temrinlerden farklı temrinlerin uygulanmasına karar verilebilir.",
-        "Gıda Endüstrisinde Hijyen ve Sanitasyon",
-        "Gıda İşletmesine uygun bir işletme yerleşim planı hazırlama",
-        "Hijyenik el yıkama uygulaması yapma",
-        "İşletmelerde kullanılabilecek çeşitli alanlara yönelik temizlik formu hazırlama",
-        "Temizlik ve Dezenfeksiyon Malzemeleri",
-        "Temizlik malzemelerini kullanım alanına uygun olarak gruplandırma"
-      ]
-    },
-    "9.sınıf_DBF_temel fotoğraf.pdf": {
-      "metadata": {
-        "processed_at": "2025-07-12T10:42:43.054432",
-        "source_file": "9.sınıf_DBF_temel fotoğraf.pdf",
-        "file_path": "./9.sınıf_DBF_temel fotoğraf.pdf",
-        "status": "success"
-      },
-      "ders_bilgileri": {
-        "ders_adi": "TEMEL FOTOĞRAF",
-        "ders_sinifi": 9,
-        "haftalik_ders_saati": 3,
-        "dersin_amaci": "Bu derste öğrenciye; iş sağlığı ve güvenliği tedbirleri doğrultusunda temel fotoğraf ile ilgili bilgi ve becerilerin kazandırılması amaçlanmaktadır.",
-        "dersin_genel_kazanimlari": [],
-        "egitim_ortam_donanimi": [
-          "Fotoğraf Stüdyosu",
-          "Atölye",
-          "Çekim Için Uygun Dış Mekânlar",
-          "Stüdyo Ekipmanları",
-          "Fotoğraf Makinesi",
-          "Objektifler",
-          "Yardımcı Çekim Ekipmanları",
-          "Bilgisayar",
-          "Projeksiyon Cihazı Vb"
-        ],
-        "olcme_degerlendirme": [
-          "Portfolyo",
-          "Dereceli Puanlama Anahtarı",
-          "Gözlem"
-        ]
-      },
-      "ogrenme_birimleri_ozeti": [
-        {
-          "birim_adi": "Çekim Ekipmanlarının Hazırlanması",
-          "kazanim_sayisi": "3",
-          "ders_saati_orani": "21"
-        },
-        {
-          "birim_adi": "Fotoğraf Makinesinde Temel Ayarlar",
-          "kazanim_sayisi": "5",
-          "ders_saati_orani": "33"
-        },
-        {
-          "birim_adi": "Temel Işık ve Kompozisyon",
-          "kazanim_sayisi": "2",
-          "ders_saati_orani": "18"
-        },
-        {
-          "birim_adi": "Temel Fotoğraf Çekimi",
-          "kazanim_sayisi": "5",
-          "ders_saati_orani": "36"
-        }
-      ],
-      "ogrenme_birimleri_detayi": [],
-      "uygulama_faaliyetleri": [
-        "Uygulama faaliyeti/temrinler; ders kazanımına uygun olarak okulun fiziki kapasitesi ve donatımı, öğrenci sayısı göz",
-        "önünde bulundurularak en fazla uygulama faaliyeti/temrini yaptıracak şekilde meslek alan zümre öğretmenler kurulu",
-        "tarafından seçilir. Meslek alan zümre öğretmenleri tarafından aşağıda yer alan temrinlerden farklı temrinlerin",
-        "uygulanmasına karar verilebilir.",
-        "Çekim Ekipmanlarının Hazırlanması",
-        " Fotoğraf makinesinin çalışma mantığına göre bölümlerini açıklar.  Odak uzaklıklarına göre objektif çeşitlerini ve özelliklerini açıklar.  Çekimde kullanılacak uygun objektif değişimini yapar.  Çekimde kullanılması gereken yardımcı ekipmanları hazır hâle getirir.",
-        "Fotoğraf Makinesinde Temel Ayarlar",
-        " Diyafram ile ışık miktarını ve net alan derinliğini ayarlayarak fotoğraf çeker ve doğruluğunu kontrol eder.  Örtücü ile poz süresini ayarlayarak hareketi donduran ve hareket izlenimi veren fotoğraflar çeker ve doğruluğunu kontrol eder.  ASA/ISO ile ışık duyarlılığı ayarı yaparak fotoğraflar çeker ve doğruluğunu kontrol eder.  Görüntü kalitesine uygun çözünürlük değerini seçer.  Konunun hareketine uygun AF (otomatik netleme) seçeneğini belirleyerek fotoğraflar çeker.  Konunun hareket durumuna göre elle (manuel) netleme yaparak fotoğraflar çeker.  Renk ısısına göre beyaz dengesini ayarlayarak fotoğraf çeker ve kontrolünü sağlar.",
-        "Temel Işık ve Kompozisyon",
-        " Işık kaynağı ve aydınlatma yönlerini ayarlayarak farklı aydınlatma ortamlarında fotoğraflar çeker.  Çekilmiş fotoğrafların aydınlatma yönlerini bulur.  Kompozisyon kurallarına uygun kadraj oluşturarak fotoğraf çeker.  Çekilen fotoğrafları kompozisyon kuralları açısından yorumlar."
-      ]
-    },
-    "HAYVANCILIĞA GİRİŞ 9.pdf": {
-      "metadata": {
-        "processed_at": "2025-07-12T10:42:44.231692",
-        "source_file": "HAYVANCILIĞA GİRİŞ 9.pdf",
-        "file_path": "./HAYVANCILIĞA GİRİŞ 9.pdf",
-        "status": "success"
-      },
-      "ders_bilgileri": {
-        "ders_adi": "HAYVANCILIĞA GİRİŞ",
-        "ders_sinifi": 9,
-        "haftalik_ders_saati": 3,
-        "dersin_amaci": "Bu derste öğrenciye; iş sağlığı ve güvenliği tedbirlerini alarak işletme faaliyetlerini planlama, barınak tiplerini seçme, büyükbaş, küçükbaş ve kanatlı hayvanların seçimini yapma, barınak kontrolü yapma, hayvanların beslenmesinde kullanılan yemlerin tespit ve teminine yönelik işlemler ile ilgili bilgi ve becerilerin kazandırılması amaçlanmaktadır.",
-        "dersin_genel_kazanimlari": [],
-        "egitim_ortam_donanimi": [
-          "Sınıf",
-          "Açık Alan",
-          "Hayvancılık Işletmeleri",
-          "(Ahır",
-          "Ağıl",
-          "Kümes",
-          "Yem Deposu)",
-          "Etkileşimli Tahta / Projeksiyon Cihazı",
-          "Bilgisayar",
-          "Yazıcı / Tarayıcı",
-          "Iş Kıyafeti",
-          "Çizme",
-          "Eldiven"
-        ],
-        "olcme_degerlendirme": [
-          "Öz Değerlendirme",
-          "Akran Değerlendirme",
-          "Derecelendirme Ölçeği",
-          "Gözlem"
-        ]
-      },
-      "ogrenme_birimleri_ozeti": [],
-      "ogrenme_birimleri_detayi": [],
-      "uygulama_faaliyetleri": [
-        "Uygulama faaliyeti/temrinler; ders kazanımına uygun olarak okulun fiziki kapasitesi ve donatımı, öğrenci sayısı göz",
-        "önünde bulundurularak en fazla uygulama faaliyeti/temrini yaptıracak şekilde meslek alan zümre öğretmenler kurulu",
-        "tarafından seçilir. Meslek alan zümre öğretmenleri tarafından aşağıda yer alan temrinlerden farklı temrinlerin",
-        "uygulanmasına karar verilebilir."
-      ]
-    },
-    "GIDA MİKROBİYOLOJİSİ DBF 9.pdf": {
-      "metadata": {
-        "processed_at": "2025-07-12T10:42:44.863209",
-        "source_file": "GIDA MİKROBİYOLOJİSİ DBF 9.pdf",
-        "file_path": "./GIDA MİKROBİYOLOJİSİ DBF 9.pdf",
-        "status": "success"
-      },
-      "ders_bilgileri": {
-        "ders_adi": "GIDA MİKROBİYOLOJİSİ",
-        "ders_sinifi": 9,
-        "haftalik_ders_saati": 4,
-        "dersin_amaci": "Bu derste öğrenciye; iş sağlığı ve güvenliği ile çevre korumaya ilişkin önlemleri uygulayarak, mikrobiyolojik yöntemlere uygun mikroorganizmaları gözlemlenmesi, gıdalarda mikroorganizma gelişiminin kontrol altında tutulması ve gıda zehirlenmelerinin engellenmesi ile ilgili bilgi ve becerilerin kazandırılması amaçlanmaktadır.",
-        "dersin_genel_kazanimlari": [],
-        "egitim_ortam_donanimi": [
-          "Gıda Teknolojisi Laboratuvarı",
-          "Etkileşimli Tahta / Projeksiyon",
-          "Bilgisayar",
-          "Yazıcı/Tarayıcı",
-          "Işletim Sistemi Kurulum Diski"
-        ],
-        "olcme_degerlendirme": [
-          "Öz Değerlendirme",
-          "Akran Değerlendirme",
-          "Derecelendirme Ölçeği",
-          "Gözlem"
-        ]
-      },
-      "ogrenme_birimleri_ozeti": [
-        {
-          "birim_adi": "Temel Mikrobiyoloji",
-          "kazanim_sayisi": "4",
-          "ders_saati_orani": "74"
-        },
-        {
-          "birim_adi": "Gıda-Mikroorganizma İlişkisi",
-          "kazanim_sayisi": "3",
-          "ders_saati_orani": "70"
-        }
-      ],
-      "ogrenme_birimleri_detayi": [],
-      "uygulama_faaliyetleri": [
-        "Uygulama faaliyeti/temrinler; ders kazanımına uygun olarak okulun fiziki kapasitesi ve donatımı, öğrenci",
-        "sayısı göz önünde bulundurularak en fazla uygulama faaliyeti/temrini yaptıracak şekilde meslek alan",
-        "zümre öğretmenler kurulu tarafından seçilir. Meslek alan zümre öğretmenleri tarafından aşağıda yer alan",
-        "temrinlerden farklı temrinlerin uygulanmasına karar verilebilir.",
-        "Temel Mikrobiyoloji",
-        "Hazırlanmış farklı preparatlarda bakterileri mikroskopta ayırt ederek hücre yapılarını çizme",
-        "Hazırlanmış farklı preparatlarda mayaları mikroskopta ayırt ederek hücre yapılarını çizme",
-        "Hazırlanmış farklı preparatlarda bakterileri mikroskopta ayırt ederek hücre yapılarını çizme",
-        "Hazır preparatla ve mikroskopta alg ve protozooları inceleme",
-        "Mikroorganizma İlişkisi"
-      ]
-    },
-    "ANATOMİ VE FİZYOLOJİ LABORATUVARI 9.pdf": {
-      "metadata": {
-        "processed_at": "2025-07-12T10:42:46.320522",
-        "source_file": "ANATOMİ VE FİZYOLOJİ LABORATUVARI 9.pdf",
-        "file_path": "./ANATOMİ VE FİZYOLOJİ LABORATUVARI 9.pdf",
-        "status": "success"
-      },
-      "ders_bilgileri": {
-        "ders_adi": "ANATOMİ VE FİZYOLOJİ LABORATUVARI",
-        "ders_sinifi": 9,
-        "haftalik_ders_saati": 6,
-        "dersin_amaci": "Bu derste öğrenciye; iş sağlığı ve güvenliği tedbirlerini alarak evcil hayvanlarda hareket sistemi, deri ve mukoza, sindirim sistemi, solunum ve dolaşım sistemleri, boşaltım ve genital sistemleri ile sinir sistemine ilişkin kontroller yapmaya yönelik bilgi ve becerilerin kazandırılması amaçlanmaktadır.",
-        "dersin_genel_kazanimlari": [],
-        "egitim_ortam_donanimi": [
-          "Sınıf",
-          "Anatomi",
-          "Fizyoloji Laboratuvarı",
-          "Mezbahaneler",
-          "Hayvancılık Işletmeleri",
-          "Akıllı Tahta/Projeksiyon Cihazı",
-          "Bilgisayar",
-          "Yazıcı/Tarayıcı",
-          "Hayvan Maket",
-          "Modelleri",
-          "Canlı Hayvan",
-          "Çeşitli Türlerde Hayvan Kemikleri",
-          "Organları"
-        ],
-        "olcme_degerlendirme": [
-          "Öz Değerlendirme",
-          "Akran Değerlendirme",
-          "Derecelendirme Ölçeği",
-          "Gözlem"
-        ]
+        "olcme_degerlendirme": []
       },
       "ogrenme_birimleri_ozeti": [],
       "ogrenme_birimleri_detayi": [],
@@ -808,442 +98,73 @@
         "önünde bulundurularak en fazla uygulama faaliyeti/temrini yaptıracak şekilde meslek alan zümre öğretmenler kurulu",
         "tarafından seçilir. Meslek alan zümre öğretmenleri tarafından aşağıda yer alan temrinlerden farklı temrinlerin",
         "uygulanmasına karar verilebilir.",
-        "Hayvanlarda Hareket Sistem",
-        "Kemiğin yapısını incelemek",
-        "İskeleti oluşturan kemikleri incelemek",
-        "İskelet maketi üzerinde iskeleti oluşturan kemikleri sıralamak",
-        "İskelet kemiklerinin hayvan türlerine göre ayrımını yapmak",
-        "Eklemi oluşturan anatomik yapıyı maket ya da hayvan üzerinde incelemek"
+        "Doğal Afet Hareket Planı",
+        "Doğal afetlerde riskli ve emniyetli bölgeleri haritadan işaretlemek",
+        "Doğal afetlerde toplanma bölgelerini harita üzerinde işaretlemek",
+        "Afetlerde Alternatif ulaşım yollarını haritadan işaretlemek",
+        "Mevcut su ve doğalgaz hatlarının ve kontrol vanalarının yerlerini şehir yerleşim planı üzerinde işaretlemek",
+        "Mevcut elektrik hatlarının yerlerini şehir yerleşim planı üzerinde işaretlemek"
       ]
     },
-    "Bilişim Teknolojileri_Programlama Temelleri 9.pdf": {
+    "SOSYAL MEDYA HESAP İŞLEMLERİ DBF.docx": {
       "metadata": {
-        "processed_at": "2025-07-12T10:42:48.059175",
-        "source_file": "Bilişim Teknolojileri_Programlama Temelleri 9.pdf",
-        "file_path": "./Bilişim Teknolojileri_Programlama Temelleri 9.pdf",
+        "processed_at": "2025-07-12T14:07:51.470751",
+        "source_file": "SOSYAL MEDYA HESAP İŞLEMLERİ DBF.docx",
+        "file_path": "./SOSYAL MEDYA HESAP İŞLEMLERİ DBF.docx",
         "status": "success"
       },
       "ders_bilgileri": {
-        "ders_adi": "PROGRAMLAMA TEMELLERİ",
-        "ders_sinifi": 9,
-        "haftalik_ders_saati": 4,
-        "dersin_amaci": "Bu derste öğrenciye; temel algoritma, programlama işlemlerini yapma ile ilgili bilgi ve becerilerin kazandırılması amaçlanmaktadır.",
+        "ders_adi": "SOSYAL MEDYA HESAP İŞLEMLERİ",
+        "ders_sinifi": 11,
+        "haftalik_ders_saati": 2,
+        "dersin_amaci": "Kişisel verilerin koruması kanunu, Patent ve marka tescili hakkında ve Dijital Marka Yönetimi ve dijital dönüşüm gerekliliğini öğrenir. Sosyal medya platformlarında kullanılan araçların kullanımı öğrenir. Sosyal medya platformları için içerik üretmeyi öğrenir. Sosyal medya platformlarına video oluşturmayı öğrenir. Sosyal medya stratejileri geliştirmeyi öğrenir.",
         "dersin_genel_kazanimlari": [],
-        "egitim_ortam_donanimi": [
-          "Bilişim Teknolojileri Laboratuvarı",
-          "Akıllı Tahta/Projeksiyon",
-          "Bilgisayar",
-          "Yazıcı/Tarayıcı"
-        ],
-        "olcme_degerlendirme": [
-          "Öz Değerlendirme",
-          "Akran Değerlendirme"
-        ]
-      },
-      "ogrenme_birimleri_ozeti": [],
-      "ogrenme_birimleri_detayi": [],
-      "uygulama_faaliyetleri": [
-        "Uygulama faaliyeti/temrinler; ders kazanımına uygun olarak okulun fiziki kapasitesi ve donatımı, öğrenci sayısı göz",
-        "önünde bulundurularak en fazla uygulama faaliyeti/temrini yaptıracak şekilde meslek alan zümre öğretmenler kurulu",
-        "tarafından seçilir. Meslek alan zümre öğretmenleri tarafından aşağıda yer alan temrinlerden farklı temrinlerin",
-        "uygulanmasına karar verilebilir."
-      ]
-    },
-    "9.sınıf_DBF_temel tasarım.pdf": {
-      "metadata": {
-        "processed_at": "2025-07-12T10:42:49.009253",
-        "source_file": "9.sınıf_DBF_temel tasarım.pdf",
-        "file_path": "./9.sınıf_DBF_temel tasarım.pdf",
-        "status": "success"
-      },
-      "ders_bilgileri": {
-        "ders_adi": "TEMEL TASARIM",
-        "ders_sinifi": 9,
-        "haftalik_ders_saati": 6,
-        "dersin_amaci": "Bu derste öğrenciye, iş sağlığı ve güvenliği tedbirlerini alarak çizim araç gereçleriyle tasarımda kullanacağı temel elemanlar ve tasarımda uygulayacağı ilkeler ile ilgili bilgi ve becerilerin kazandırılması amaçlanmaktadır.",
-        "dersin_genel_kazanimlari": [],
-        "egitim_ortam_donanimi": [
-          "Grafik Atölyesi",
-          "Etkileşimli Tahta",
-          "Projeksiyon",
-          "Çizim Masası"
-        ],
-        "olcme_degerlendirme": [
-          "Portfolyo",
-          "Dereceli Puanlama Anahtarı",
-          "Gözlem"
-        ]
-      },
-      "ogrenme_birimleri_ozeti": [
-        {
-          "birim_adi": "Nokta-Çizgi",
-          "kazanim_sayisi": "4",
-          "ders_saati_orani": "42"
-        },
-        {
-          "birim_adi": "Tasarı İlkeleri",
-          "kazanim_sayisi": "2",
-          "ders_saati_orani": "36"
-        },
-        {
-          "birim_adi": "Açık-Koyu",
-          "kazanim_sayisi": "2",
-          "ders_saati_orani": "24"
-        },
-        {
-          "birim_adi": "Renk",
-          "kazanim_sayisi": "4",
-          "ders_saati_orani": "54"
-        },
-        {
-          "birim_adi": "Doku ve Strüktür",
-          "kazanim_sayisi": "3",
-          "ders_saati_orani": "60"
-        }
-      ],
-      "ogrenme_birimleri_detayi": [],
-      "uygulama_faaliyetleri": [
-        "Uygulama faaliyetleri / temrinler; ders kazanımına uygun olarak okulun fiziki kapasitesi ve donatımı, öğrenci sayısı",
-        "göz önünde bulundurularak en fazla uygulama faaliyeti / temrini yaptıracak şekilde meslek alan zümre öğretmenler",
-        "kurulu tarafından seçilir. Meslek alan zümre öğretmenleri tarafından aşağıda yer alan temrinlerden farklı temrinlerin",
-        "uygulanmasına karar verilebilir.",
-        " Nokta ile sık",
-        "seyrek, boş",
-        "dolu, büyük",
-        "küçük kavramlarını kullanarak serbest yüzey düzenlemelerini yapma.  Sık",
-        "seyrek, kalın",
-        "ince, eğri, kırık kavramlarını kullanarak çizgi ile serbest yüzey düzenlemeleri yapma.  Nokta"
-      ]
-    },
-    "1_TEKNİK_RESİM_DBF_9.pdf": {
-      "metadata": {
-        "processed_at": "2025-07-12T10:42:49.862694",
-        "source_file": "1_TEKNİK_RESİM_DBF_9.pdf",
-        "file_path": "./1_TEKNİK_RESİM_DBF_9.pdf",
-        "status": "success"
-      },
-      "ders_bilgileri": {
-        "ders_adi": "TEKNİK RESİM",
-        "ders_sinifi": 9,
-        "haftalik_ders_saati": null,
-        "dersin_amaci": "Bu ders ile öğrenciye geometrik çizimler yapma, görünüş çıkarma ve ölçülendirme / yüzey sembollerini kullanma, yapım ve perspektif resim çizme ile ilgili bilgi ve becerilerin kazandırılması amaçlanmaktadır.",
-        "dersin_genel_kazanimlari": [],
-        "egitim_ortam_donanimi": [
-          "Teknik Resim Atölyesi",
-          "Işletme Ortamı",
-          "Akıllı Tahta/Projeksiyon",
-          "Çizim Masası",
-          "Çizim Seti Ile Iş Ortamı"
-        ],
-        "olcme_degerlendirme": [
-          "Öz Değerlendirme",
-          "Akran Değerlendirme"
-        ]
-      },
-      "ogrenme_birimleri_ozeti": [
-        {
-          "birim_adi": "Geometrik Çizimler",
-          "kazanim_sayisi": "3",
-          "ders_saati_orani": "27"
-        },
-        {
-          "birim_adi": "Görünüş Çıkarma",
-          "kazanim_sayisi": "2",
-          "ders_saati_orani": "27"
-        },
-        {
-          "birim_adi": "Ölçülendirme ve Yüzey İşlemleri",
-          "kazanim_sayisi": "3",
-          "ders_saati_orani": "27"
-        },
-        {
-          "birim_adi": "Kroki, Perspektif ve Yapım Resmi",
-          "kazanim_sayisi": "3",
-          "ders_saati_orani": "27"
-        }
-      ],
-      "ogrenme_birimleri_detayi": [],
-      "uygulama_faaliyetleri": [
-        "Uygulama faaliyeti/temrinler; ders kazanımına uygun olarak okulun fiziki kapasitesi ve donatımı,",
-        "öğrenci sayısı göz önünde bulundurularak en fazla uygulama faaliyeti/temrini yaptıracak şekilde",
-        "meslek alan zümre öğretmenler kurulu tarafından seçilir. Meslek alan zümre öğretmenleri tarafından",
-        "aşağıda yer alan temrinlerden farklı temrinlerin uygulanmasına karar verilebilir.",
-        "Geometrik Çizimler",
-        "Teknik resim kurallarına ve TS EN ISO standartlarına uygun olarak eğik ve dik standart yazı yazma",
-        "Teknik resim kurallarına uygun olarak serbest elle ve çizim takımlarıyla çizgi çalışmaları yapma",
-        "Teknik resim kurallarına uygun olarak geometrik şekiller çizme",
-        "Görünüş Çıkarma",
-        "Teknik resim kurallarına uygun olarak serbest elle ve çizim takımlarıyla çeşitli iş parçalarına ait görünüşleri çizme"
-      ]
-    },
-    "Temel teknikler atölyesi 9 dbf.pdf": {
-      "metadata": {
-        "processed_at": "2025-07-12T10:42:51.757034",
-        "source_file": "Temel teknikler atölyesi 9 dbf.pdf",
-        "file_path": "./Temel teknikler atölyesi 9 dbf.pdf",
-        "status": "success"
-      },
-      "ders_bilgileri": {
-        "ders_adi": "TEMEL TEKNİKLER ATÖLYESİ",
-        "ders_sinifi": 9,
-        "haftalik_ders_saati": 9,
-        "dersin_amaci": "9 Ders Saati",
-        "dersin_genel_kazanimlari": [],
-        "egitim_ortam_donanimi": [
-          "Dekoratif El Sanatları Atölye Ortamı",
-          "Akıllı Tahta/Projeksiyon",
-          "Bilgisayar",
-          "Yazıcı/Tarayıcı",
-          "Dekoratif El Sanatları",
-          "Ev Tekstili Ürünleri Dikimi Için Uygun Aydınlık",
-          "Geniş Bir Atölye Ortamı",
-          "Çalışma Masası",
-          "Sandalye",
-          "Yardımcı Araç- Gereçler",
-          "Kaynak Kitaplar",
-          "Kumaş Örnekleri",
-          "Süsleme Örnekleri",
-          "Gereçleri",
-          "Çeşitli Ürün Katalogları",
-          "Örgü Ipleri. Tığ",
-          "Ahşap Boya Malzemeleri",
-          "Fırça Vernik",
-          "Ahşap Kutular",
-          "Hazır Gereçler",
-          "Geri Dönüşüm Malzemeleri Vb…"
-        ],
-        "olcme_degerlendirme": [
-          "Öz Değerlendirme",
-          "Akran Değerlendirme",
-          "Derecelendirme Ölçeği",
-          "Gözlem"
-        ]
-      },
-      "ogrenme_birimleri_ozeti": [
-        {
-          "birim_adi": "Model Tasarlama ve Desen Çizme",
-          "kazanim_sayisi": "3",
-          "ders_saati_orani": "32"
-        }
-      ],
-      "ogrenme_birimleri_detayi": [
-        {
-          "birim_adi": "Bu derste öğrenciye kendini ve yeteneklerini tanıması, bilgiyi neden, nereden, nasıl ve niçin alabileceğini bilmesi,",
-          "konular": [],
-          "kazanimlar": []
-        }
-      ],
-      "uygulama_faaliyetleri": [
-        "Uygulama faaliyeti/temrinler; ders kazanımına uygun olarak okulun fiziki kapasitesi ve donatımı, öğrenci sayısı göz önünde",
-        "bulundurularak en fazla uygulama faaliyeti/temrini yaptıracak şekilde meslek alan zümre öğretmenler kurulu tarafından",
-        "seçilir. Meslek alan zümre öğretmenleri tarafından aşağıda yer alan temrinlerden farklı temrinlerin uygulanmasına karar",
-        "verilebilir.",
-        "Model Tasarlama ve Desen Çizme",
-        "Tasarım eğitimine dair basamaklarını uygulamak",
-        "Kompozisyon kalıp hazırlama ve modernizasyon aşamaları uygulamak",
-        "Boyama teknikleri uygulamak.",
-        "Makineyi Hazırlama ve Basit Arızalar",
-        "Makineye üst ipliğini takmak."
-      ]
-    },
-    "9. sınıf anne çocuk sağlığı.pdf": {
-      "metadata": {
-        "processed_at": "2025-07-12T10:42:52.589562",
-        "source_file": "9. sınıf anne çocuk sağlığı.pdf",
-        "file_path": "./9. sınıf anne çocuk sağlığı.pdf",
-        "status": "success"
-      },
-      "ders_bilgileri": {
-        "ders_adi": "ANNE-ÇOCUK SAĞLIĞI",
-        "ders_sinifi": 9,
-        "haftalik_ders_saati": 3,
-        "dersin_amaci": "Bu derste öğrenciye; doğum öncesi, doğum, doğum sonrası gelişim dönemleri, çocukta sık görülen şikâyetler ve hastalıklar, lohusalık ve emziklilik dönemi özellikleri ile ilgili bilgi ve becerilerin kazandırılması amaçlanmaktadır.",
-        "dersin_genel_kazanimlari": [],
-        "egitim_ortam_donanimi": [
-          "Sınıf",
-          "Etkileşimli Tahta/Bilgisayar",
-          "Kadın/Erkek Üreme Sistemi Maketi",
-          "Gebelik Maketi",
-          "Et Bebek",
-          "Enjektör",
-          "Aşı Kartı",
-          "Afiş",
-          "Broşür"
-        ],
-        "olcme_degerlendirme": [
-          "Öz Değerlendirme"
-        ]
-      },
-      "ogrenme_birimleri_ozeti": [],
-      "ogrenme_birimleri_detayi": [],
-      "uygulama_faaliyetleri": []
-    },
-    "HABER TOPLAMA VE YAZMA DBF-28.06.2020.pdf": {
-      "metadata": {
-        "processed_at": "2025-07-12T10:42:53.470584",
-        "source_file": "HABER TOPLAMA VE YAZMA DBF-28.06.2020.pdf",
-        "file_path": "./HABER TOPLAMA VE YAZMA DBF-28.06.2020.pdf",
-        "status": "success"
-      },
-      "ders_bilgileri": {
-        "ders_adi": "HABER TOPLAMA VE YAZMA",
-        "ders_sinifi": 9,
-        "haftalik_ders_saati": 4,
-        "dersin_amaci": "Bu derste öğrenciye; iş sağlığı ve güvenliği tedbirleri doğrultusunda habertoplamaveyazmaileilgilitemelbilgivebecerilerinkazandırılmasısamaçlanmakt adır.",
-        "dersin_genel_kazanimlari": [],
-        "egitim_ortam_donanimi": [
-          "Bilgisayaratölyesi",
-          "Haber Atölyesi",
-          "Derslik",
-          "Etkileşimli Tahta",
-          "Projeksiyon",
-          "Bilgisayar",
-          "Yazıcı",
-          "Tarayıcı",
-          "Internet",
-          "Ses Kayıt Cihazı",
-          "Fotoğraf Makinesi",
-          "Ekipmanları",
-          "Basılı",
-          "Dijital Materyaller"
-        ],
+        "egitim_ortam_donanimi": [],
         "olcme_degerlendirme": []
       },
       "ogrenme_birimleri_ozeti": [],
       "ogrenme_birimleri_detayi": [],
       "uygulama_faaliyetleri": []
     },
-    "ELEKTROTEKNIK 9DBF.pdf": {
+    "TİCARET HİZMETLERİ DBF.docx": {
       "metadata": {
-        "processed_at": "2025-07-12T10:42:54.469868",
-        "source_file": "ELEKTROTEKNIK 9DBF.pdf",
-        "file_path": "./ELEKTROTEKNIK 9DBF.pdf",
+        "processed_at": "2025-07-12T14:07:51.536040",
+        "source_file": "TİCARET HİZMETLERİ DBF.docx",
+        "file_path": "./TİCARET HİZMETLERİ DBF.docx",
         "status": "success"
       },
       "ders_bilgileri": {
-        "ders_adi": "ELEKTROTEKNİK",
-        "ders_sinifi": 9,
+        "ders_adi": "TİCARET HİZMETLERİ",
+        "ders_sinifi": 11,
         "haftalik_ders_saati": 2,
-        "dersin_amaci": "Bu derste öğrenciye; iş sağlığı ve güvenliği tedbirlerini alarak temel elektrik devre elemanlarının, elektriksel büyüklüklerin, seri ve paralel devrelerin ölçümünü ve hesaplamalarını, pasif ve yarı iletken devre elemanlarının seçimini yapma ile ilgili bilgi ve becerilerin kazandırılması amaçlanmaktadır.",
+        "dersin_amaci": "Bildirge verilen kurumların prosedürlerini öğrenir. Ticari belgeleri açıklar. Kıymetli evrak ve türlerini açıklar. Serbest meslek kazanç defterine işlemler yapar.",
         "dersin_genel_kazanimlari": [],
-        "egitim_ortam_donanimi": [
-          "Herhangi Bir Sınıf Veya Laboratuvar",
-          "Akıllı Tahta/Projeksiyon",
-          "Bilgisayar",
-          "Ölçü Aletleri",
-          "Çeşitli Pasif",
-          "Yarı Iletken Devre Elemanları",
-          "Bu Elemanlara Ait Kataloglar"
-        ],
-        "olcme_degerlendirme": [
-          "Öz Değerlendirme",
-          "Akran Değerlendirme",
-          "Derecelendirme Ölçeği",
-          "Gözlem"
-        ]
+        "egitim_ortam_donanimi": [],
+        "olcme_degerlendirme": []
       },
       "ogrenme_birimleri_ozeti": [],
       "ogrenme_birimleri_detayi": [],
-      "uygulama_faaliyetleri": [
-        "Uygulama faaliyeti/temrinler; ders kazanımına uygun olarak okulun fiziki kapasitesi ve donatımı, öğrenci sayısı göz",
-        "önünde bulundurularak en fazla uygulama faaliyeti/temrini yaptıracak şekilde meslek alan zümre öğretmenler kurulu",
-        "tarafından seçilir. Meslek alan zümre öğretmenleri tarafından aşağıda yer alan temrinlerden farklı temrinlerin",
-        "uygulanmasına karar verilebilir.",
-        "Doğru Akım Devresi",
-        "Multimetre prob bağlantıları ve kademe seçimi",
-        "Ohm ve kirşof kanunları ile alakalı hesaplamalar yapmak"
-      ]
+      "uygulama_faaliyetleri": []
     },
-    "GELENEKSEL TÜRK SANATLARI DESEN_DBF.pdf": {
+    "İŞLETME DBF.docx": {
       "metadata": {
-        "processed_at": "2025-07-12T10:42:55.351371",
-        "source_file": "GELENEKSEL TÜRK SANATLARI DESEN_DBF.pdf",
-        "file_path": "./GELENEKSEL TÜRK SANATLARI DESEN_DBF.pdf",
+        "processed_at": "2025-07-12T14:07:51.581787",
+        "source_file": "İŞLETME DBF.docx",
+        "file_path": "./İŞLETME DBF.docx",
         "status": "success"
       },
       "ders_bilgileri": {
-        "ders_adi": "GELENEKSEL TÜRK SANATLARI DESEN",
-        "ders_sinifi": 9,
-        "haftalik_ders_saati": 3,
-        "dersin_amaci": "Bu derste öğrenciye; Geleneksel Türk sanatlarında kullanılan malzemeleri hazırlama, motiflerle uygulama yapma, desen ve kompozisyon uygulamaları yapma ile ilgili bilgi ve becerilerin kazandırılması amaçlanmaktadır.",
+        "ders_adi": "İŞLETME",
+        "ders_sinifi": 11,
+        "haftalik_ders_saati": 2,
+        "dersin_amaci": "İşletme ile ilgili kavramları açıklar. İşletmenin amacı ve diğer bilimlerle ilişkisini açıklar. İşletme türlerini açıklar. İşletmenin kuruluş yeri seçimini etkileyen faktörleri açıklar. İşletmenin fonksiyonlarını açıklar. İşletmenin sorumluluklarını açıklar.",
         "dersin_genel_kazanimlari": [],
-        "egitim_ortam_donanimi": [
-          "Aydınlık",
-          "Temiz Bir Atölye",
-          "Sanat",
-          "Tasarım Alanı Standart Donanımları",
-          "Sanatın Gerektirdiği Ekipmanlar"
-        ],
-        "olcme_degerlendirme": [
-          "Öz Değerlendirme"
-        ]
+        "egitim_ortam_donanimi": [],
+        "olcme_degerlendirme": []
       },
       "ogrenme_birimleri_ozeti": [],
       "ogrenme_birimleri_detayi": [],
-      "uygulama_faaliyetleri": [
-        "Geleneksel Türk Sanatlarında Kullanılan Malzemeler",
-        "Boya kullanarak kağıt renklendirme yapma",
-        "Bitkilerle kağıt renklendirme çalışması yapma",
-        "Kağıda sürülecek muhallebiyi hazırlama",
-        "Murakka için kağıdın yönünü belirleme",
-        "Klasik üslupta murakka yapma",
-        "Murakka yapılmış kağıtları renklendirme",
-        "Klasik altın ezme",
-        "Ezilmiş altını desende kullanma",
-        "Desen üzerine sürülen altını parlatma"
-      ]
-    },
-    "9. animasyon_atolyesi_dbf.pdf": {
-      "metadata": {
-        "processed_at": "2025-07-12T10:42:55.986710",
-        "source_file": "9. animasyon_atolyesi_dbf.pdf",
-        "file_path": "./9. animasyon_atolyesi_dbf.pdf",
-        "status": "success"
-      },
-      "ders_bilgileri": {
-        "ders_adi": "ANİMASYON ATÖLYESİ",
-        "ders_sinifi": 9,
-        "haftalik_ders_saati": 4,
-        "dersin_amaci": "Bu derste öğrenciye; iş sağlığı ve güvenliği tedbirlerini alarak animasyonun tarihi ve gelişimi, geçmişten günümüze film örnekleri, optik oyuncak ve animasyon denemeleri, nesne animasyonu ile ilgili bilgi ve becerilerin kazandırılması amaçlanmaktadır.",
-        "dersin_genel_kazanimlari": [],
-        "egitim_ortam_donanimi": [
-          "Animasyon Atölyesi",
-          "Etkileşimli Tahta",
-          "Projeksiyon",
-          "Çizim Masası",
-          "Bilgisayar",
-          "Fotoğraf Makinesi",
-          "Tripod"
-        ],
-        "olcme_degerlendirme": [
-          "Portfolyo",
-          "Dereceli Puanlama Anahtarı",
-          "Gözlem"
-        ]
-      },
-      "ogrenme_birimleri_ozeti": [
-        {
-          "birim_adi": "Animasyonun Gelişimi",
-          "kazanim_sayisi": "2",
-          "ders_saati_orani": "72"
-        },
-        {
-          "birim_adi": "Animasyon Uygulamaları",
-          "kazanim_sayisi": "2",
-          "ders_saati_orani": "72"
-        }
-      ],
-      "ogrenme_birimleri_detayi": [],
-      "uygulama_faaliyetleri": [
-        "Uygulama faaliyetleri / temrinler; ders kazanımına uygun olarak okulun fiziki kapasitesi ve donatımı, öğrenci sayısı göz önünde bulundurularak en fazla uygulama faaliyeti / temrini yaptıracak şekilde meslek alan zümre öğretmenler kurulu tarafından seçilir. Meslek alan zümre öğretmenleri tarafından aşağıda yer alan temrinlerden farklı temrinlerin uygulanmasına karar verilebilir.",
-        "Animasyonun Gelişimi",
-        " Animasyon tarihini ve animasyonun temel prensiplerini inceleme.  Basit animasyon oyuncakları hazırlama.",
-        "Animasyon Uygulamaları",
-        " Dünyada ve Türkiye’de animasyon örneklerini izleyerek karşılaştırma.  Stop",
-        "motion animasyon uygulaması yapma.",
-        "DERSİN UYGULANMASINA İLİŞKİN AÇIKLAMALAR",
-        " İş sağlığı ve güvenliği tedbirlerini alarak ergonomik bir çalışma ortamı sağlanmalıdır.  Animasyon atölyesi standart donanımları sağlanmalı ve yapılacak uygulama faaliyetine ait araç gereç, donanım ve şartlar oluşturulmalıdır.  Anlatımdan ve örnek çizimlerden sonra, dersin öğrenme kazanımlarının pekiştirilmesi amacıyla öğrenciye birden fazla uygulama faaliyeti yaptırılmalıdır.  Ölçme araçları, öğretmenler tarafından geliştirilmeli ve öğrenci başarısı bu ölçme araçları ile değerlendirilmelidir.  Çalışma ile ilgili uygun araç gereçler çalışma öncesinde hazırda tutulmalı, kullanılacak malzemenin tasarruflu kullanılması sağlanmalıdır.  Tasarım yapabilmek için konuya uygun farklı bilgisayar programlarının incelenmesi sağlanmalıdır.  Özgün tasarımlar yapabilmek için öğrencide özgüven oluşturulmalıdır."
-      ]
+      "uygulama_faaliyetleri": []
     }
   }
 }

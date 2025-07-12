@@ -2,3 +2,4 @@ Flask
 Flask-Cors
 camelot-py[cv]
 pandas
+python-docx

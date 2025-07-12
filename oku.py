@@ -1,10 +1,45 @@
 import pdfplumber
+import docx
 import pandas as pd
 import re
 import os
 import glob
 import json
 from datetime import datetime
+
+def get_tables_from_file(file_path):
+    """
+    PDF veya DOCX dosyasından tablo listesini döndürür.
+    PDF için: pdfplumber, DOCX için: python-docx kullanır.
+    """
+    if file_path.lower().endswith('.pdf'):
+        try:
+            import pdfplumber
+            with pdfplumber.open(file_path) as pdf:
+                tables = []
+                for page in pdf.pages:
+                    tables.extend(page.extract_tables())
+                return tables
+        except Exception as e:
+            print(f"PDF tablo okuma hatası: {e}")
+            return []
+    elif file_path.lower().endswith('.docx'):
+        try:
+            import docx
+            doc = docx.Document(file_path)
+            tables = []
+            for table in doc.tables:
+                table_data = []
+                for row in table.rows:
+                    table_data.append([cell.text for cell in row.cells])
+                tables.append(table_data)
+            return tables
+        except Exception as e:
+            print(f"DOCX tablo okuma hatası: {e}")
+            return []
+    else:
+        print("Desteklenmeyen dosya formatı.")
+        return []
 
 def clean_text(text):
     """
@@ -17,223 +52,190 @@ def clean_text(text):
     text = re.sub(r'\s+', ' ', text.strip())
     return text
 
-def extract_ders_adi(pdf_path):
+def extract_ders_adi(file_path):
     """
-    PDF'den ders adını çıkar
+    PDF veya DOCX dosyasından ders adını çıkar
     """
     try:
-        with pdfplumber.open(pdf_path) as pdf:
-            page = pdf.pages[0]  # İlk sayfa
-            tables = page.extract_tables()
-            
-            for table in tables:
-                for i, row in enumerate(table):
-                    for j, cell in enumerate(row):
-                        if cell and isinstance(cell, str) and 'DERSİN ADI' in cell.upper():
-                            # İçerik aynı hücrede ise
-                            if ':' in cell:
-                                content = cell.split(':', 1)[1].strip()
-                                if content:
-                                    return clean_text(content)
-                            
-                            # Üst satırda ise (bazı PDF'lerde kurs adı üst satırda olabilir)
-                            if i > 0:
-                                prev_row = table[i - 1]
-                                for k in range(len(prev_row)):
-                                    if prev_row[k] and str(prev_row[k]).strip():
-                                        content = str(prev_row[k]).strip()
-                                        if content and content != 'None' and len(content) > 3:
-                                            # DERSİN ADI, DERSİN SINIFI gibi başlıkları geç
-                                            if not any(keyword in content.upper() for keyword in ['DERSİN', 'ÖĞRENME', 'EĞİTİM', 'ÖLÇME', 'SINIF']):
-                                                return clean_text(content)
-                            
-                            # Satırın tüm hücrelerinde ara (çünkü veri farklı sütunda olabilir)
-                            for k in range(len(row)):
-                                if k != j and row[k]:  # Aynı hücreyi tekrar kontrol etme
-                                    content = str(row[k]).strip()
+        tables = get_tables_from_file(file_path)
+        for table in tables:
+            for i, row in enumerate(table):
+                for j, cell in enumerate(row):
+                    if cell and isinstance(cell, str) and 'DERSİN ADI' in cell.upper():
+                        # İçerik aynı hücrede ise
+                        if ':' in cell:
+                            content = cell.split(':', 1)[1].strip()
+                            if content:
+                                return clean_text(content)
+                        # Üst satırda ise (bazı dosyalarda kurs adı üst satırda olabilir)
+                        if i > 0:
+                            prev_row = table[i - 1]
+                            for k in range(len(prev_row)):
+                                if prev_row[k] and str(prev_row[k]).strip():
+                                    content = str(prev_row[k]).strip()
                                     if content and content != 'None' and len(content) > 3:
-                                        # DERSİN ADI, DERSİN SINIFI gibi başlıkları geç
-                                        if not any(keyword in content.upper() for keyword in ['DERSİN', 'ÖĞRENME', 'EĞİTİM', 'ÖLÇME']):
+                                        if not any(keyword in content.upper() for keyword in ['DERSİN', 'ÖĞRENME', 'EĞİTİM', 'ÖLÇME', 'SINIF']):
                                             return clean_text(content)
-                            
-                            # Alt satırda ise
-                            if i + 1 < len(table):
-                                next_row = table[i + 1]
-                                for next_cell in next_row:
-                                    if next_cell:
-                                        content = str(next_cell).strip()
-                                        if content and not any(keyword in content.upper() for keyword in ['DERSİN', 'ÖĞRENME', 'EĞİTİM', 'ÖLÇME']):
-                                            return clean_text(content)
-        
+                        # Satırın tüm hücrelerinde ara (çünkü veri farklı sütunda olabilir)
+                        for k in range(len(row)):
+                            if k != j and row[k]:
+                                content = str(row[k]).strip()
+                                if content and content != 'None' and len(content) > 3:
+                                    if not any(keyword in content.upper() for keyword in ['DERSİN', 'ÖĞRENME', 'EĞİTİM', 'ÖLÇME']):
+                                        return clean_text(content)
+                        # Alt satırda ise
+                        if i + 1 < len(table):
+                            next_row = table[i + 1]
+                            for next_cell in next_row:
+                                if next_cell:
+                                    content = str(next_cell).strip()
+                                    if content and not any(keyword in content.upper() for keyword in ['DERSİN', 'ÖĞRENME', 'EĞİTİM', 'ÖLÇME']):
+                                        return clean_text(content)
         return None
-        
     except Exception as e:
         print(f"Error extracting ders adı: {str(e)}")
         return None
 
-def extract_ders_sinifi(pdf_path):
+def extract_ders_sinifi(file_path):
     """
-    PDF'den ders sınıfını çıkar ve sayıya çevir
+    PDF veya DOCX dosyasından ders sınıfını çıkar ve sayıya çevir
     """
     try:
-        with pdfplumber.open(pdf_path) as pdf:
-            page = pdf.pages[0]
-            tables = page.extract_tables()
-            
-            for table in tables:
-                for i, row in enumerate(table):
-                    for j, cell in enumerate(row):
-                        if cell and isinstance(cell, str) and 'DERSİN SINIFI' in cell.upper():
-                            # İçerik aynı hücrede ise
-                            if ':' in cell:
-                                content = cell.split(':', 1)[1].strip()
-                            else:
-                                # Üst satırda ise (bazı PDF'lerde değer üst satırda olabilir)
-                                content = None
-                                if i > 0:
-                                    prev_row = table[i - 1]
-                                    for k in range(len(prev_row)):
-                                        if prev_row[k] and str(prev_row[k]).strip():
-                                            cell_content = str(prev_row[k]).strip()
-                                            # Sınıf bilgisi için sadece sayı içeren kısa metinleri kabul et
-                                            if (cell_content and 'DERSİN' not in cell_content.upper() and
-                                                len(cell_content) < 50 and re.search(r'\d', cell_content)):
-                                                content = cell_content
-                                                break
-                                
-                                # Satırın tüm hücrelerinde ara
-                                if not content:
-                                    for k in range(len(row)):
-                                        if k != j and row[k]:
-                                            cell_content = str(row[k]).strip()
-                                            if cell_content and 'DERSİN' not in cell_content.upper():
-                                                content = cell_content
-                                                break
-                                
-                                if not content:
-                                    continue
-                            
-                            if content:
-                                # Sayıyı çıkar (örn: "9. Sınıf" -> 9)
-                                match = re.search(r'(\d+)', content)
-                                if match:
-                                    return int(match.group(1))
-        
+        tables = get_tables_from_file(file_path)
+        for table in tables:
+            for i, row in enumerate(table):
+                for j, cell in enumerate(row):
+                    if cell and isinstance(cell, str) and 'DERSİN SINIFI' in cell.upper():
+                        # İçerik aynı hücrede ise
+                        if ':' in cell:
+                            content = cell.split(':', 1)[1].strip()
+                        else:
+                            # Üst satırda ise (bazı dosyalarda değer üst satırda olabilir)
+                            content = None
+                            if i > 0:
+                                prev_row = table[i - 1]
+                                for k in range(len(prev_row)):
+                                    if prev_row[k] and str(prev_row[k]).strip():
+                                        cell_content = str(prev_row[k]).strip()
+                                        if (cell_content and 'DERSİN' not in cell_content.upper() and
+                                            len(cell_content) < 50 and re.search(r'\d', cell_content)):
+                                            content = cell_content
+                                            break
+                            # Satırın tüm hücrelerinde ara
+                            if not content:
+                                for k in range(len(row)):
+                                    if k != j and row[k]:
+                                        cell_content = str(row[k]).strip()
+                                        if cell_content and 'DERSİN' not in cell_content.upper():
+                                            content = cell_content
+                                            break
+                            if not content:
+                                continue
+                        if content:
+                            match = re.search(r'(\d+)', content)
+                            if match:
+                                return int(match.group(1))
         return None
-        
     except Exception as e:
         print(f"Error extracting ders sınıfı: {str(e)}")
         return None
 
-def extract_ders_saati(pdf_path):
+def extract_ders_saati(file_path):
     """
-    PDF'den haftalık ders saatini çıkar
+    PDF veya DOCX dosyasından haftalık ders saatini çıkar
     """
     try:
-        with pdfplumber.open(pdf_path) as pdf:
-            page = pdf.pages[0]
-            tables = page.extract_tables()
-            
-            for table in tables:
-                for i, row in enumerate(table):
-                    for j, cell in enumerate(row):
-                        if cell and isinstance(cell, str) and ('SÜRESİ' in cell.upper() or 'HAFTALIK' in cell.upper()):
-                            # İçerik aynı hücrede ise
-                            if ':' in cell:
-                                content = cell.split(':', 1)[1].strip()
-                            else:
-                                # Üst satırda ise (bazı PDF'lerde değer üst satırda olabilir)
-                                content = None
-                                if i > 0:
-                                    prev_row = table[i - 1]
-                                    for k in range(len(prev_row)):
-                                        if prev_row[k] and str(prev_row[k]).strip():
-                                            cell_content = str(prev_row[k]).strip()
-                                            # Ders saati için HAFTALIK veya SAATİ içeren metinleri kabul et
-                                            if (cell_content and 'DERSİN' not in cell_content.upper() and
-                                                ('HAFTALIK' in cell_content.upper() or 'SAATİ' in cell_content.upper())):
-                                                content = cell_content
-                                                break
-                                
-                                # Satırın tüm hücrelerinde ara
-                                if not content:
-                                    for k in range(len(row)):
-                                        if k != j and row[k]:
-                                            cell_content = str(row[k]).strip()
-                                            if cell_content and 'DERSİN' not in cell_content.upper():
-                                                content = cell_content
-                                                break
-                                
-                                if not content:
-                                    continue
-                            
-                            if content:
-                                # Sayıyı çıkar (örn: "Haftalık 6 Ders Saati" -> 6)
-                                match = re.search(r'(\d+)', content)
-                                if match:
-                                    return int(match.group(1))
-        
+        tables = get_tables_from_file(file_path)
+        for table in tables:
+            for i, row in enumerate(table):
+                for j, cell in enumerate(row):
+                    if cell and isinstance(cell, str) and ('SÜRESİ' in cell.upper() or 'HAFTALIK' in cell.upper()):
+                        # İçerik aynı hücrede ise
+                        if ':' in cell:
+                            content = cell.split(':', 1)[1].strip()
+                        else:
+                            # Üst satırda ise (bazı dosyalarda değer üst satırda olabilir)
+                            content = None
+                            if i > 0:
+                                prev_row = table[i - 1]
+                                for k in range(len(prev_row)):
+                                    if prev_row[k] and str(prev_row[k]).strip():
+                                        cell_content = str(prev_row[k]).strip()
+                                        if (cell_content and 'DERSİN' not in cell_content.upper() and
+                                            ('HAFTALIK' in cell_content.upper() or 'SAATİ' in cell_content.upper())):
+                                            content = cell_content
+                                            break
+                            # Satırın tüm hücrelerinde ara
+                            if not content:
+                                for k in range(len(row)):
+                                    if k != j and row[k]:
+                                        cell_content = str(row[k]).strip()
+                                        if cell_content and 'DERSİN' not in cell_content.upper():
+                                            content = cell_content
+                                            break
+                            if not content:
+                                continue
+                        if content:
+                            match = re.search(r'(\d+)', content)
+                            if match:
+                                return int(match.group(1))
         return None
-        
     except Exception as e:
         print(f"Error extracting ders saati: {str(e)}")
         return None
 
-def extract_dersin_amaci(pdf_path):
+def extract_dersin_amaci(file_path):
     """
-    PDF'den dersin amacını çıkar
+    PDF veya DOCX dosyasından dersin amacını çıkar
     """
     try:
-        with pdfplumber.open(pdf_path) as pdf:
-            for page in pdf.pages:
-                tables = page.extract_tables()
-                
-                for table in tables:
-                    for i, row in enumerate(table):
-                        for j, cell in enumerate(row):
-                            if cell and isinstance(cell, str) and 'DERSİN AMACI' in cell.upper():
-                                content = ""
-                                
-                                if ':' in cell:
-                                    content = cell.split(':', 1)[1].strip()
-                                
-                                # Üst satırda ise (bazı PDF'lerde değer üst satırda olabilir)
-                                if not content and i > 0:
-                                    prev_row = table[i - 1]
-                                    for k in range(len(prev_row)):
-                                        if prev_row[k] and str(prev_row[k]).strip():
-                                            cell_content = str(prev_row[k]).strip()
-                                            # Dersin amacı için ders saati bilgilerini filtrele
-                                            if (cell_content and len(cell_content) > 10 and 
-                                                'DERSİN' not in cell_content.upper() and
-                                                'HAFTALIK' not in cell_content.upper() and
-                                                'DERS SAATİ' not in cell_content.upper() and
-                                                'SAATİ' not in cell_content.upper()):
-                                                content = cell_content
-                                                break
-                                
-                                # Satırın tüm hücrelerinde ara
-                                if not content:
-                                    for k in range(len(row)):
-                                        if k != j and row[k]:
-                                            cell_content = str(row[k]).strip()
-                                            if cell_content and len(cell_content) > 10 and 'DERSİN' not in cell_content.upper():
-                                                content = cell_content
-                                                break
-                                
-                                # Alt satırda ise
-                                if not content and i + 1 < len(table):
-                                    next_row = table[i + 1]
-                                    for next_cell in next_row:
-                                        if next_cell and str(next_cell).strip():
-                                            content = str(next_cell).strip()
-                                            break
-                                
-                                if content and len(content) > 10:
-                                    return clean_text(content)
-        
+        tables = get_tables_from_file(file_path)
+        for table in tables:
+            for i, row in enumerate(table):
+                for j, cell in enumerate(row):
+                    if cell and isinstance(cell, str) and 'DERSİN AMACI' in cell.upper():
+                        # Başlıktan sonraki satırlarda ilk anlamlı metni bul
+                        for down in range(i + 1, len(table)):
+                            next_row = table[down]
+                            for next_cell in next_row:
+                                if next_cell:
+                                    content = str(next_cell).strip()
+                                    # En az 10 karakter, başlık değil ve "DERSİN" gibi kelimeler içermiyor
+                                    if (content and len(content) > 10 and
+                                        not any(kw in content.upper() for kw in ['DERSİN', 'SÜRESİ', 'SINIFI', 'ADI', 'KAZANIM', 'ORTAM', 'DONANIM', 'ÖLÇME'])):
+                                        return clean_text(content)
+                        # Eğer alt satırlarda bulunamazsa, eski mantıkla devam et
+                        content = ""
+                        if ':' in cell:
+                            content = cell.split(':', 1)[1].strip()
+                        if not content and i > 0:
+                            prev_row = table[i - 1]
+                            for k in range(len(prev_row)):
+                                if prev_row[k] and str(prev_row[k]).strip():
+                                    cell_content = str(prev_row[k]).strip()
+                                    if (cell_content and len(cell_content) > 10 and
+                                        'DERSİN' not in cell_content.upper() and
+                                        'HAFTALIK' not in cell_content.upper() and
+                                        'DERS SAATİ' not in cell_content.upper() and
+                                        'SAATİ' not in cell_content.upper()):
+                                        content = cell_content
+                                        break
+                        if not content:
+                            for k in range(len(row)):
+                                if k != j and row[k]:
+                                    cell_content = str(row[k]).strip()
+                                    if cell_content and len(cell_content) > 10 and 'DERSİN' not in cell_content.upper():
+                                        content = cell_content
+                                        break
+                        if not content and i + 1 < len(table):
+                            next_row = table[i + 1]
+                            for next_cell in next_row:
+                                if next_cell and str(next_cell).strip():
+                                    content = str(next_cell).strip()
+                                    break
+                        if content and len(content) > 10:
+                            return clean_text(content)
         return None
-        
     except Exception as e:
         print(f"Error extracting dersin amacı: {str(e)}")
         return None
@@ -652,24 +654,25 @@ def analyze_measurement_content(content):
     
     return olcme_yontemleri
 
-def oku(pdf_path):
+def oku(file_path):
     """
-    PDF'den tüm ders bilgilerini çıkar ve JSON formatında döndür
+    PDF veya DOCX dosyasından tüm ders bilgilerini çıkar ve JSON formatında döndür
     """
     try:
-        filename = os.path.basename(pdf_path)
+        filename = os.path.basename(file_path)
         
         # Temel bilgileri çıkar
-        ders_adi = extract_ders_adi(pdf_path)
-        ders_sinifi = extract_ders_sinifi(pdf_path) 
-        ders_saati = extract_ders_saati(pdf_path)
-        dersin_amaci = extract_dersin_amaci(pdf_path)
-        genel_kazanimlar = extract_genel_kazanimlar(pdf_path)
-        ortam_donanimi = extract_ortam_donanimi(pdf_path)
-        olcme_degerlendirme = extract_olcme_degerlendirme(pdf_path)
-        kazanim_tablosu = extract_kazanim_tablosu(pdf_path)
-        ogrenme_birimleri = extract_ogrenme_birimleri(pdf_path)
-        uygulama_faaliyetleri = extract_uygulama_faaliyetleri(pdf_path)
+        ders_adi = extract_ders_adi(file_path)
+        ders_sinifi = extract_ders_sinifi(file_path)
+        ders_saati = extract_ders_saati(file_path)
+        dersin_amaci = extract_dersin_amaci(file_path)
+        # Diğer fonksiyonlar henüz güncellenmediği için eski parametreyle devam ediyor
+        genel_kazanimlar = extract_genel_kazanimlar(file_path)
+        ortam_donanimi = extract_ortam_donanimi(file_path)
+        olcme_degerlendirme = extract_olcme_degerlendirme(file_path)
+        kazanim_tablosu = extract_kazanim_tablosu(file_path)
+        ogrenme_birimleri = extract_ogrenme_birimleri(file_path)
+        uygulama_faaliyetleri = extract_uygulama_faaliyetleri(file_path)
         
         # İstatistikleri hesapla
         def kelime_sayisi(text):
@@ -701,7 +704,7 @@ def oku(pdf_path):
             "metadata": {
                 "processed_at": datetime.now().isoformat(),
                 "source_file": filename,
-                "file_path": pdf_path,
+                "file_path": file_path,
                 "status": "success" if any([ders_adi, ders_sinifi, ders_saati, dersin_amaci]) else "partial"
             },
             "ders_bilgileri": {
@@ -721,12 +724,12 @@ def oku(pdf_path):
         return result
         
     except Exception as e:
-        print(f"Error processing PDF: {str(e)}")
+        print(f"Error processing file: {str(e)}")
         return {
             "metadata": {
                 "processed_at": datetime.now().isoformat(),
-                "source_file": os.path.basename(pdf_path),
-                "file_path": pdf_path,
+                "source_file": os.path.basename(file_path),
+                "file_path": file_path,
                 "status": "error",
                 "error": str(e)
             },
@@ -738,21 +741,23 @@ def oku(pdf_path):
 
 def process_directory(directory_path, output_json="oku_sonuc.json"):
     """
-    Dizindeki tüm PDF'leri işle ve sonuçları JSON'a kaydet
+    Dizindeki tüm PDF ve DOCX dosyalarını işle ve sonuçları JSON'a kaydet
     """
     results = {}
-    
+
     pdf_pattern = os.path.join(directory_path, "*.pdf")
+    docx_pattern = os.path.join(directory_path, "*.docx")
     pdf_files = glob.glob(pdf_pattern)
-    
-    print(f"Found {len(pdf_files)} PDF files in {directory_path}")
-    
-    for pdf_file in pdf_files:
-        filename = os.path.basename(pdf_file)
-        result = oku(pdf_file)
+    docx_files = glob.glob(docx_pattern)
+    all_files = pdf_files + docx_files
+
+    print(f"Found {len(pdf_files)} PDF and {len(docx_files)} DOCX files in {directory_path}")
+
+    for file_path in all_files:
+        filename = os.path.basename(file_path)
+        result = oku(file_path)
         results[filename] = result
-        
-    
+
     # JSON'a kaydet
     output_data = {
         "metadata": {
@@ -765,14 +770,14 @@ def process_directory(directory_path, output_json="oku_sonuc.json"):
         },
         "results": results
     }
-    
+
     try:
         with open(output_json, 'w', encoding='utf-8') as f:
             json.dump(output_data, f, ensure_ascii=False, indent=2)
         print(f"\n✓ Results saved to: {output_json}")
     except Exception as e:
         print(f"✗ Error saving JSON file: {str(e)}")
-    
+
     return results
 
 def main():
