@@ -240,106 +240,171 @@ def extract_dersin_amaci(file_path):
         print(f"Error extracting dersin amacı: {str(e)}")
         return None
 
-def extract_genel_kazanimlar(pdf_path):
+def extract_genel_kazanimlar(file_path):
     """
-    PDF'den dersin genel kazanımlarını çıkar
+    PDF veya DOCX dosyasından dersin genel kazanımlarını çıkar
     """
     try:
-        with pdfplumber.open(pdf_path) as pdf:
-            page = pdf.pages[0]
-            tables = page.extract_tables()
+        if file_path.lower().endswith('.docx'):
+            # DOCX dosyası için
+            import docx
+            doc = docx.Document(file_path)
             
             kazanimlar = []
             
-            for table in tables:
-                for i, row in enumerate(table):
-                    for j, cell in enumerate(row):
-                        if cell and isinstance(cell, str) and ('DERSİN ÖĞRENME KAZANIMLARI' in cell.upper()):
+            for table in doc.tables:
+                for row_idx, row in enumerate(table.rows):
+                    for cell_idx, cell in enumerate(row.cells):
+                        cell_text = cell.text.strip()
+                        if 'DERSİN KAZANIMLARI' in cell_text.upper():
+                            # Eğer başlık hücresiyse, sağındaki veya alt hücreyi kontrol et
+                            content_cell = None
                             
-                            # İçerik aynı hücrede ise
-                            if ':' in cell:
-                                content = cell.split(':', 1)[1].strip()
-                            else:
-                                # Yan hücredeki içeriği al
-                                if j + 1 < len(row) and row[j + 1]:
-                                    content = str(row[j + 1]).strip()
-                                    print(f"Content from next cell: {content[:100]}...")
+                            # Sağdaki hücreyi kontrol et
+                            if cell_idx + 1 < len(row.cells):
+                                content_cell = row.cells[cell_idx + 1].text.strip()
+                            
+                            # Eğer sağda yoksa, aynı hücrenin içeriğini kontrol et
+                            if not content_cell or 'DERSİN KAZANIMLARI' in content_cell.upper():
+                                content_cell = cell_text
+                            
+                            if content_cell:
+                                # Kazanımları satır satır ayır
+                                lines = content_cell.split('\n')
+                                for line in lines:
+                                    line = line.strip()
+                                    if line and len(line) > 10 and not any(keyword in line.upper() for keyword in ['DERSİN', 'KAZANIM']):
+                                        # Numbering'i kaldır
+                                        cleaned_line = re.sub(r'^\d+\.\s*', '', line)
+                                        if cleaned_line and len(cleaned_line) > 10:
+                                            kazanimlar.append(clean_text(cleaned_line))
+            
+            return kazanimlar[:10]
+            
+        else:
+            # PDF dosyası için (eski kod)
+            with pdfplumber.open(file_path) as pdf:
+                page = pdf.pages[0]
+                tables = page.extract_tables()
+                
+                kazanimlar = []
+                
+                for table in tables:
+                    for i, row in enumerate(table):
+                        for j, cell in enumerate(row):
+                            if cell and isinstance(cell, str) and ('DERSİN ÖĞRENME KAZANIMLARI' in cell.upper()):
+                                
+                                # İçerik aynı hücrede ise
+                                if ':' in cell:
+                                    content = cell.split(':', 1)[1].strip()
                                 else:
-                                    # Alt satırdaki içeriği al
-                                    if i + 1 < len(table) and len(table[i + 1]) > j:
-                                        content = str(table[i + 1][j]).strip() if table[i + 1][j] else ""
-                                        print(f"Content from next row: {content[:100]}...")
+                                    # Yan hücredeki içeriği al
+                                    if j + 1 < len(row) and row[j + 1]:
+                                        content = str(row[j + 1]).strip()
                                     else:
-                                        continue
-                            
-                            if content and len(content) > 10:
-                                # Madde işaretleriyle ayrılmış kazanımları ayır
-                                if '•' in content or content.startswith(('1.', '2.', '3.')):
-                                    kazanim_items = re.split(r'[•\-]\s*|\d+\.\s*', content)
-                                    for item in kazanim_items:
-                                        clean_item = clean_text(item)
+                                        # Alt satırdaki içeriği al
+                                        if i + 1 < len(table) and len(table[i + 1]) > j:
+                                            content = str(table[i + 1][j]).strip() if table[i + 1][j] else ""
+                                        else:
+                                            continue
+                                
+                                if content and len(content) > 10:
+                                    # Madde işaretleriyle ayrılmış kazanımları ayır
+                                    if '•' in content or content.startswith(('1.', '2.', '3.')):
+                                        kazanim_items = re.split(r'[•\-]\s*|\d+\.\s*', content)
+                                        for item in kazanim_items:
+                                            clean_item = clean_text(item)
+                                            if clean_item and len(clean_item) > 10:
+                                                kazanimlar.append(clean_item)
+                                    else:
+                                        clean_item = clean_text(content)
                                         if clean_item and len(clean_item) > 10:
                                             kazanimlar.append(clean_item)
-                                else:
-                                    clean_item = clean_text(content)
-                                    if clean_item and len(clean_item) > 10:
-                                        kazanimlar.append(clean_item)
-                            
-                            return kazanimlar[:10]  # İlk eşleşmede dön
-        
-        return kazanimlar
+                                
+                                return kazanimlar[:10]  # İlk eşleşmede dön
+                
+                return kazanimlar
         
     except Exception as e:
         print(f"Error extracting genel kazanımlar: {str(e)}")
         return []
 
-def extract_ortam_donanimi(pdf_path):
+def extract_ortam_donanimi(file_path):
     """
-    PDF'den eğitim-öğretim ortam ve donanımını çıkar
+    PDF veya DOCX dosyasından eğitim-öğretim ortam ve donanımını çıkar
     Ortam: X ve Y ortamı. Donanım: A, B ve C araçları formatında parse eder
     """
     try:
-        with pdfplumber.open(pdf_path) as pdf:
-            page = pdf.pages[0]  # İlk sayfa
-            tables = page.extract_tables()
+        if file_path.lower().endswith('.docx'):
+            # DOCX dosyası için
+            import docx
+            doc = docx.Document(file_path)
             
             ortam_donanimi = []
             
-            for table_idx, table in enumerate(tables):
-                
-                # Önce Row 6, Col 2'yi kontrol et (çünkü önceden çalışıyordu)
-                if len(table) > 5 and len(table[5]) > 1:
-                    cell_content = table[5][1] if table[5][1] else ""
-                    
-                    if cell_content and 'Ortam:' in cell_content:
-                        
-                        # Metni tek satır haline getir
-                        cleaned_content = re.sub(r'\s+', ' ', cell_content.strip())
-                        
-                        # Özel düzeltme - eğer gerekliyse
-                        if 'tahta/projeksiyon, çizim masası, çizim seti ile iş ortamı Donanım: Akıllı' in cleaned_content:
-                            fixed_content = cleaned_content.replace(
-                                'tahta/projeksiyon, çizim masası, çizim seti ile iş ortamı Donanım: Akıllı',
-                                'Donanım: Akıllı tahta/projeksiyon, çizim masası, çizim seti ile iş ortamı'
-                            )
-                            print(f"Fixed content: {fixed_content}")
-                            return parse_ortam_donanimi_content(fixed_content)
-                        else:
-                            return parse_ortam_donanimi_content(cleaned_content)
-                
-                # Tüm tabloyu tara
-                for i, row in enumerate(table):
-                    for j, cell in enumerate(row):
-                        if cell and isinstance(cell, str) and ('Ortam:' in cell or 'EĞİTİM-ÖĞRETİM ORTAM' in cell.upper()):
-                            content = cell
+            for table in doc.tables:
+                for row_idx, row in enumerate(table.rows):
+                    for cell_idx, cell in enumerate(row.cells):
+                        cell_text = cell.text.strip()
+                        if 'EĞİTİM-ÖĞRETİM ORTAM' in cell_text.upper() or 'ORTAM VE DONANIMI' in cell_text.upper():
+                            # Eğer başlık hücresiyse, sağındaki hücreyi kontrol et
+                            content_cell = None
                             
-                            # Metni tek satır haline getir
-                            cleaned_content = re.sub(r'\s+', ' ', content.strip())
+                            # Sağdaki hücreyi kontrol et
+                            if cell_idx + 1 < len(row.cells):
+                                content_cell = row.cells[cell_idx + 1].text.strip()
                             
-                            if len(cleaned_content) > 10:
-                                return parse_ortam_donanimi_content(cleaned_content)
+                            # Eğer sağda yoksa, aynı hücrenin içeriğini kontrol et
+                            if not content_cell or ('EĞİTİM-ÖĞRETİM ORTAM' in content_cell.upper() or 'ORTAM VE DONANIMI' in content_cell.upper()):
+                                content_cell = cell_text
+                            
+                            if content_cell:
+                                return parse_ortam_donanimi_content(content_cell)
             
             return ortam_donanimi
+            
+        else:
+            # PDF dosyası için (eski kod)
+            with pdfplumber.open(file_path) as pdf:
+                page = pdf.pages[0]  # İlk sayfa
+                tables = page.extract_tables()
+                
+                ortam_donanimi = []
+                
+                for table_idx, table in enumerate(tables):
+                    
+                    # Önce Row 6, Col 2'yi kontrol et (çünkü önceden çalışıyordu)
+                    if len(table) > 5 and len(table[5]) > 1:
+                        cell_content = table[5][1] if table[5][1] else ""
+                        
+                        if cell_content and 'Ortam:' in cell_content:
+                            
+                            # Metni tek satır haline getir
+                            cleaned_content = re.sub(r'\s+', ' ', cell_content.strip())
+                            
+                            # Özel düzeltme - eğer gerekliyse
+                            if 'tahta/projeksiyon, çizim masası, çizim seti ile iş ortamı Donanım: Akıllı' in cleaned_content:
+                                fixed_content = cleaned_content.replace(
+                                    'tahta/projeksiyon, çizim masası, çizim seti ile iş ortamı Donanım: Akıllı',
+                                    'Donanım: Akıllı tahta/projeksiyon, çizim masası, çizim seti ile iş ortamı'
+                                )
+                                return parse_ortam_donanimi_content(fixed_content)
+                            else:
+                                return parse_ortam_donanimi_content(cleaned_content)
+                    
+                    # Tüm tabloyu tara
+                    for i, row in enumerate(table):
+                        for j, cell in enumerate(row):
+                            if cell and isinstance(cell, str) and ('Ortam:' in cell or 'EĞİTİM-ÖĞRETİM ORTAM' in cell.upper()):
+                                content = cell
+                                
+                                # Metni tek satır haline getir
+                                cleaned_content = re.sub(r'\s+', ' ', content.strip())
+                                
+                                if len(cleaned_content) > 10:
+                                    return parse_ortam_donanimi_content(cleaned_content)
+                
+                return ortam_donanimi
         
     except Exception as e:
         print(f"Error extracting ortam donanımı: {str(e)}")
@@ -402,74 +467,167 @@ def parse_ortam_donanimi_content(content):
     
     return ortam_donanimi
 
-def extract_kazanim_tablosu(pdf_path):
+def extract_kazanim_tablosu(file_path):
     """
-    PDF'den kazanım sayısı ve süre tablosunu çıkar
+    PDF veya DOCX dosyasından kazanım sayısı ve süre tablosunu çıkar
     """
     try:
-        with pdfplumber.open(pdf_path) as pdf:
-            page = pdf.pages[0]
-            tables = page.extract_tables()
+        if file_path.lower().endswith('.docx'):
+            # DOCX dosyası için
+            import docx
+            doc = docx.Document(file_path)
             
             kazanim_tablosu = []
             
-            for table in tables:
-                # "KAZANIM SAYISI VE SÜRE TABLOSU" başlığını bul
-                found_table = False
-                table_start_row = None
+            for table in doc.tables:
+                # Kazanım tablosu başlığını bul
+                found_header = False
+                data_start_row = None
                 
-                for i, row in enumerate(table):
-                    row_text = ' '.join([str(cell) if cell else '' for cell in row]).upper()
-                    if 'KAZANIM SAYISI' in row_text and ('SÜRE' in row_text or 'TABLOSU' in row_text):
-                        found_table = True
-                        table_start_row = i
+                for row_idx, row in enumerate(table.rows):
+                    row_cells = [cell.text.strip() for cell in row.cells]
+                    row_text = ' '.join(row_cells).upper()
+                    
+                    # Header row'u bul: "ÖĞRENME BİRİMİ/ÜNİTE", "KAZANIM SAYISI", "DERS SAATİ"
+                    if ('ÖĞRENME BİRİMİ' in row_text or 'ÜNİTE' in row_text) and 'KAZANIM SAYISI' in row_text and ('DERS SAATİ' in row_text or 'SAAT' in row_text):
+                        found_header = True
+                        data_start_row = row_idx + 1
                         break
                 
-                if found_table and table_start_row is not None:
-                    # Tablo başlık satırlarını bul
-                    header_found = False
-                    for i in range(table_start_row, len(table)):
-                        row = table[i]
-                        row_text = ' '.join([str(cell) if cell else '' for cell in row]).upper()
+                # Eğer header bulunduysa, veri satırlarını işle
+                if found_header and data_start_row is not None:
+                    for row_idx in range(data_start_row, len(table.rows)):
+                        row = table.rows[row_idx]
+                        row_cells = [cell.text.strip() for cell in row.cells]
                         
-                        # Sütun başlıklarını bul
-                        if any(keyword in row_text for keyword in ['ÖĞRENME BİRİMİ', 'KAZANIM', 'SÜRE', 'DERS SAATİ']):
-                            header_found = True
-                            # Veri satırlarını oku
-                            for k in range(i + 1, len(table)):
-                                data_row = table[k]
+                        # Boş satırları atla
+                        if all(cell == '' for cell in row_cells):
+                            continue
+                        
+                        # TOPLAM satırını atla
+                        row_text = ' '.join(row_cells).upper()
+                        if 'TOPLAM' in row_text:
+                            continue
+                        
+                        # En az 4 sütun olmalı: [başlık], [birim adı], [kazanım sayısı], [ders saati], [oran]
+                        if len(row_cells) >= 4:
+                            # İkinci sütun birim adı olmalı
+                            birim_adi = clean_text(row_cells[1]) if row_cells[1] else ""
+                            kazanim_sayisi = clean_text(row_cells[2]) if row_cells[2] else ""
+                            ders_saati = clean_text(row_cells[3]) if row_cells[3] else ""
+                            
+                            # Geçerli veri kontrolü
+                            if (birim_adi and len(birim_adi) > 3 and 
+                                kazanim_sayisi.isdigit() and 
+                                ders_saati.replace(',', '.').replace('.', '').isdigit()):
                                 
-                                # Boş satırları atla
-                                row_values = [str(cell).strip() if cell else '' for cell in data_row]
-                                if all(val in ['', 'None'] for val in row_values):
-                                    continue
-                                
-                                # TOPLAM satırını atla
-                                row_text_data = ' '.join(row_values).upper()
-                                if 'TOPLAM' in row_text_data:
-                                    continue
-                                
-                                # Geçerli veri olan satırları al
-                                valid_data = [val for val in row_values if val not in ['', 'None']]
-                                
-                                if len(valid_data) >= 2:
-                                    birim_adi = clean_text(valid_data[0])
-                                    kazanim_sayisi = clean_text(valid_data[1]) if len(valid_data) > 1 else ""
-                                    ders_saati = clean_text(valid_data[2]) if len(valid_data) > 2 else ""
+                                kazanim_tablosu.append({
+                                    "birim_adi": birim_adi,
+                                    "kazanim_sayisi": kazanim_sayisi,
+                                    "ders_saati_orani": ders_saati
+                                })
+                    
+                    # Eğer veri bulunmuşsa bu tablodan çık
+                    if kazanim_tablosu:
+                        break
+            
+            return kazanim_tablosu
+            
+        else:
+            # PDF dosyası için (eski kod)
+            with pdfplumber.open(file_path) as pdf:
+                kazanim_tablosu = []
+                
+                # Özel olarak Page 2'deki first table'ı kontrol et (sayısal veriler içeren)
+                if len(pdf.pages) > 1:
+                    page = pdf.pages[1]  # Page 2
+                    tables = page.extract_tables()
+                    
+                    if tables:
+                        table = tables[0]  # İlk tablo (sayısal veriler)
+                        
+                        for row_idx, row in enumerate(table):
+                            if row and len(row) >= 4:
+                                # İlk sütun boş veya None değilse ve ikinci sütunda öğrenme birimi varsa
+                                if row[1] and str(row[1]).strip() and str(row[1]).strip() != 'None':
+                                    birim_adi = clean_text(str(row[1]))
+                                    kazanim_sayisi = clean_text(str(row[2])) if row[2] else ""
+                                    ders_saati = clean_text(str(row[3])) if row[3] else ""
                                     
-                                    # Birim adının geçerli olduğunu kontrol et
-                                    if birim_adi and len(birim_adi) > 3 and not birim_adi.isdigit():
+                                    # TOPLAM satırını atla ve geçerli öğrenme birimi kontrolü
+                                    if ('TOPLAM' not in birim_adi.upper() and 
+                                        len(birim_adi) > 3 and
+                                        kazanim_sayisi.isdigit() and 
+                                        ders_saati.replace(',', '.').replace('.', '').isdigit()):
+                                        
                                         kazanim_tablosu.append({
                                             "birim_adi": birim_adi,
                                             "kazanim_sayisi": kazanim_sayisi,
                                             "ders_saati_orani": ders_saati
                                         })
-                            break
-                    
-                    if header_found:
-                        break
-            
-            return kazanim_tablosu
+                
+                # Eğer Page 2'de bulamazsa, eski yöntemi dene (metin tabanlı arama)
+                if not kazanim_tablosu:
+                    for page_num, page in enumerate(pdf.pages):
+                        tables = page.extract_tables()
+                        
+                        for table in tables:
+                            # "KAZANIM SAYISI VE SÜRE TABLOSU" başlığını bul
+                            found_table = False
+                            table_start_row = None
+                            
+                            for i, row in enumerate(table):
+                                row_text = ' '.join([str(cell) if cell else '' for cell in row]).upper()
+                                if 'KAZANIM SAYISI' in row_text and ('SÜRE' in row_text or 'TABLOSU' in row_text):
+                                    found_table = True
+                                    table_start_row = i
+                                    break
+                            
+                            if found_table and table_start_row is not None:
+                                # Tablo başlık satırlarını bul
+                                header_found = False
+                                for i in range(table_start_row, len(table)):
+                                    row = table[i]
+                                    row_text = ' '.join([str(cell) if cell else '' for cell in row]).upper()
+                                    
+                                    # Sütun başlıklarını bul
+                                    if any(keyword in row_text for keyword in ['ÖĞRENME BİRİMİ', 'KAZANIM', 'SÜRE', 'DERS SAATİ']):
+                                        header_found = True
+                                        # Veri satırlarını oku
+                                        for k in range(i + 1, len(table)):
+                                            data_row = table[k]
+                                            
+                                            # Boş satırları atla
+                                            row_values = [str(cell).strip() if cell else '' for cell in data_row]
+                                            if all(val in ['', 'None'] for val in row_values):
+                                                continue
+                                            
+                                            # TOPLAM satırını atla
+                                            row_text_data = ' '.join(row_values).upper()
+                                            if 'TOPLAM' in row_text_data:
+                                                continue
+                                            
+                                            # Geçerli veri olan satırları al
+                                            valid_data = [val for val in row_values if val not in ['', 'None']]
+                                            
+                                            if len(valid_data) >= 2:
+                                                birim_adi = clean_text(valid_data[0])
+                                                kazanim_sayisi = clean_text(valid_data[1]) if len(valid_data) > 1 else ""
+                                                ders_saati = clean_text(valid_data[2]) if len(valid_data) > 2 else ""
+                                                
+                                                # Birim adının geçerli olduğunu kontrol et
+                                                if birim_adi and len(birim_adi) > 3 and not birim_adi.isdigit():
+                                                    kazanim_tablosu.append({
+                                                        "birim_adi": birim_adi,
+                                                        "kazanim_sayisi": kazanim_sayisi,
+                                                        "ders_saati_orani": ders_saati
+                                                    })
+                                        break
+                                
+                                if header_found:
+                                    return kazanim_tablosu
+                
+                return kazanim_tablosu
         
     except Exception as e:
         print(f"Error extracting kazanım tablosu: {str(e)}")
@@ -566,65 +724,96 @@ def extract_uygulama_faaliyetleri(pdf_path):
         print(f"Error extracting uygulama faaliyetleri: {str(e)}")
         return []
 
-def extract_olcme_degerlendirme(pdf_path):
+def extract_olcme_degerlendirme(file_path):
     """
-    PDF'den ölçme ve değerlendirme yöntemlerini çıkar
+    PDF veya DOCX dosyasından ölçme ve değerlendirme yöntemlerini çıkar
     Basit regex ile ölçme araçlarını tespit eder
     """
     try:
-        with pdfplumber.open(pdf_path) as pdf:
+        if file_path.lower().endswith('.docx'):
+            # DOCX dosyası için
+            import docx
+            doc = docx.Document(file_path)
+            
             olcme_yontemleri = []
             
-            # Önce tablolarda ara (mevcut kod)
-            page = pdf.pages[0]
-            all_tables = page.extract_tables()
-            
-            for table in all_tables:
-                for i, row in enumerate(table):
-                    for j, cell in enumerate(row):
-                        if cell and isinstance(cell, str) and 'ÖLÇME VE DEĞERLENDİRME' in cell.upper():
-                            # İçerik aynı hücrede ise
-                            if ':' in cell:
-                                content = cell.split(':', 1)[1].strip()
-                            else:
-                                # Yan hücrede ise
-                                if j + 1 < len(row) and row[j + 1]:
-                                    content = str(row[j + 1]).strip()
-                                else:
-                                    # Alt satırda ise
-                                    if i + 1 < len(table) and len(table[i + 1]) > 0:
-                                        next_row = table[i + 1]
-                                        content = str(next_row[0]).strip() if next_row[0] else ""
-                                    else:
-                                        continue
+            for table in doc.tables:
+                for row_idx, row in enumerate(table.rows):
+                    for cell_idx, cell in enumerate(row.cells):
+                        cell_text = cell.text.strip()
+                        if 'ÖLÇME VE DEĞERLENDİRME' in cell_text.upper():
+                            # Eğer başlık hücresiyse, sağındaki hücreyi kontrol et
+                            content_cell = None
                             
-                            if content and content != 'None':
-                                olcme_yontemleri.extend(analyze_measurement_content(content))
+                            # Sağdaki hücreyi kontrol et
+                            if cell_idx + 1 < len(row.cells):
+                                content_cell = row.cells[cell_idx + 1].text.strip()
+                            
+                            # Eğer sağda yoksa, aynı hücrenin içeriğini kontrol et
+                            if not content_cell or 'ÖLÇME VE DEĞERLENDİRME' in content_cell.upper():
+                                content_cell = cell_text
+                            
+                            if content_cell:
+                                olcme_yontemleri.extend(analyze_measurement_content(content_cell))
             
-            # Eğer tablolarda bulamadıysa, düz metinde ara (yeni eklenen)
-            if not olcme_yontemleri:
-                for page in pdf.pages:
-                    text = page.extract_text()
-                    if text:
-                        lines = text.split('\n')
-                        for i, line in enumerate(lines):
-                            # Çok satırlı "ÖLÇME VE DEĞERLENDİRME" başlığını kontrol et
-                            if ('ÖLÇME' in line.upper() and 'VE' in line.upper()) or 'DEĞERLENDİRME' in line.upper():
-                                # Bu satır ve sonraki birkaç satırı birleştir
-                                context_lines = []
-                                for j in range(max(0, i-1), min(len(lines), i+5)):
-                                    context_lines.append(lines[j])
+            # Dublicate'leri temizle
+            return list(set(olcme_yontemleri))
+            
+        else:
+            # PDF dosyası için (eski kod)
+            with pdfplumber.open(file_path) as pdf:
+                olcme_yontemleri = []
+                
+                # Önce tablolarda ara (mevcut kod)
+                page = pdf.pages[0]
+                all_tables = page.extract_tables()
+                
+                for table in all_tables:
+                    for i, row in enumerate(table):
+                        for j, cell in enumerate(row):
+                            if cell and isinstance(cell, str) and 'ÖLÇME VE DEĞERLENDİRME' in cell.upper():
+                                # İçerik aynı hücrede ise
+                                if ':' in cell:
+                                    content = cell.split(':', 1)[1].strip()
+                                else:
+                                    # Yan hücrede ise
+                                    if j + 1 < len(row) and row[j + 1]:
+                                        content = str(row[j + 1]).strip()
+                                    else:
+                                        # Alt satırda ise
+                                        if i + 1 < len(table) and len(table[i + 1]) > 0:
+                                            next_row = table[i + 1]
+                                            content = str(next_row[0]).strip() if next_row[0] else ""
+                                        else:
+                                            continue
                                 
-                                full_context = ' '.join(context_lines)
-                                if 'ÖLÇME' in full_context.upper() and 'DEĞERLENDİRME' in full_context.upper():
-                                    olcme_yontemleri.extend(analyze_measurement_content(full_context))
-                                    if olcme_yontemleri:  # Bulunca çık
-                                        break
-                        if olcme_yontemleri:  # Bulunca çık
-                            break
-        
-        # Dublicate'leri temizle
-        return list(set(olcme_yontemleri))
+                                if content and content != 'None':
+                                    olcme_yontemleri.extend(analyze_measurement_content(content))
+                
+                # Eğer tablolarda bulamadıysa, düz metinde ara (yeni eklenen)
+                if not olcme_yontemleri:
+                    for page in pdf.pages:
+                        text = page.extract_text()
+                        if text:
+                            lines = text.split('\n')
+                            for i, line in enumerate(lines):
+                                # Çok satırlı "ÖLÇME VE DEĞERLENDİRME" başlığını kontrol et
+                                if ('ÖLÇME' in line.upper() and 'VE' in line.upper()) or 'DEĞERLENDİRME' in line.upper():
+                                    # Bu satır ve sonraki birkaç satırı birleştir
+                                    context_lines = []
+                                    for j in range(max(0, i-1), min(len(lines), i+5)):
+                                        context_lines.append(lines[j])
+                                    
+                                    full_context = ' '.join(context_lines)
+                                    if 'ÖLÇME' in full_context.upper() and 'DEĞERLENDİRME' in full_context.upper():
+                                        olcme_yontemleri.extend(analyze_measurement_content(full_context))
+                                        if olcme_yontemleri:  # Bulunca çık
+                                            break
+                            if olcme_yontemleri:  # Bulunca çık
+                                break
+            
+            # Dublicate'leri temizle
+            return list(set(olcme_yontemleri))
         
     except Exception as e:
         print(f"Error extracting ölçme değerlendirme: {str(e)}")

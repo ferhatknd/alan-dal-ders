@@ -1,16 +1,16 @@
 {
   "metadata": {
-    "processed_at": "2025-07-12T14:07:51.581799",
+    "processed_at": "2025-07-12T14:56:13.425009",
     "source_directory": "/Users/ferhat/Library/Mobile Documents/com~apple~CloudDocs/Projeler/ProjectDogru/repos/alan-dal-ders",
-    "total_files": 5,
-    "successful_files": 5,
+    "total_files": 4,
+    "successful_files": 4,
     "partial_files": 0,
     "failed_files": 0
   },
   "results": {
     "ATÖLYE_DBF_10.pdf": {
       "metadata": {
-        "processed_at": "2025-07-12T14:07:49.540812",
+        "processed_at": "2025-07-12T14:56:13.159895",
         "source_file": "ATÖLYE_DBF_10.pdf",
         "file_path": "./ATÖLYE_DBF_10.pdf",
         "status": "success"
@@ -46,13 +46,34 @@
           "Etkileşimli Tahta Vb. Gereklidir"
         ],
         "olcme_degerlendirme": [
-          "Gözlem",
-          "Öz Değerlendirme",
+          "Derecelendirme Ölçeği",
           "Akran Değerlendirme",
-          "Derecelendirme Ölçeği"
+          "Öz Değerlendirme",
+          "Gözlem"
         ]
       },
-      "ogrenme_birimleri_ozeti": [],
+      "ogrenme_birimleri_ozeti": [
+        {
+          "birim_adi": "Yüksekten Kurtarma",
+          "kazanim_sayisi": "7",
+          "ders_saati_orani": "52"
+        },
+        {
+          "birim_adi": "Asansörden Kurtarma",
+          "kazanim_sayisi": "4",
+          "ders_saati_orani": "30"
+        },
+        {
+          "birim_adi": "Kuyudan Kurtarma",
+          "kazanim_sayisi": "2",
+          "ders_saati_orani": "30"
+        },
+        {
+          "birim_adi": "İlkyardım",
+          "kazanim_sayisi": "11",
+          "ders_saati_orani": "68"
+        }
+      ],
       "ogrenme_birimleri_detayi": [],
       "uygulama_faaliyetleri": [
         "Uygulama faaliyeti/temrinler; ders kazanımına uygun olarak okulun fiziki kapasitesi ve donatımı, öğrenci sayısı göz",
@@ -67,48 +88,9 @@
         "Sismik dinleme cihazı ile enkazda arama yapma"
       ]
     },
-    "DOĞAL AFETLERE HAZIRLIK...pdf": {
-      "metadata": {
-        "processed_at": "2025-07-12T14:07:51.428716",
-        "source_file": "DOĞAL AFETLERE HAZIRLIK...pdf",
-        "file_path": "./DOĞAL AFETLERE HAZIRLIK...pdf",
-        "status": "success"
-      },
-      "ders_bilgileri": {
-        "ders_adi": "DOĞAL AFETLERE HAZIRLIK",
-        "ders_sinifi": 11,
-        "haftalik_ders_saati": 2,
-        "dersin_amaci": "1. Doğal afet hareket planı yapar. 2. Doğal afet seyyar kurtarma konteyneri hazırlar. 3. Doğal afet tatbikatı yapar. 4. Depreme hazırlık yapar.",
-        "dersin_genel_kazanimlari": [],
-        "egitim_ortam_donanimi": [
-          "Bilgisayar",
-          "Televizyon",
-          "Projeksiyon Vb. Donanımlar",
-          "Alanın Gerektirdiği Araç",
-          "Gereç",
-          "Malzeme",
-          "Ekipmanlar"
-        ],
-        "olcme_degerlendirme": []
-      },
-      "ogrenme_birimleri_ozeti": [],
-      "ogrenme_birimleri_detayi": [],
-      "uygulama_faaliyetleri": [
-        "Uygulama faaliyeti/temrinler; ders kazanımına uygun olarak okulun fiziki kapasitesi ve donatımı, öğrenci sayısı göz",
-        "önünde bulundurularak en fazla uygulama faaliyeti/temrini yaptıracak şekilde meslek alan zümre öğretmenler kurulu",
-        "tarafından seçilir. Meslek alan zümre öğretmenleri tarafından aşağıda yer alan temrinlerden farklı temrinlerin",
-        "uygulanmasına karar verilebilir.",
-        "Doğal Afet Hareket Planı",
-        "Doğal afetlerde riskli ve emniyetli bölgeleri haritadan işaretlemek",
-        "Doğal afetlerde toplanma bölgelerini harita üzerinde işaretlemek",
-        "Afetlerde Alternatif ulaşım yollarını haritadan işaretlemek",
-        "Mevcut su ve doğalgaz hatlarının ve kontrol vanalarının yerlerini şehir yerleşim planı üzerinde işaretlemek",
-        "Mevcut elektrik hatlarının yerlerini şehir yerleşim planı üzerinde işaretlemek"
-      ]
-    },
     "SOSYAL MEDYA HESAP İŞLEMLERİ DBF.docx": {
       "metadata": {
-        "processed_at": "2025-07-12T14:07:51.470751",
+        "processed_at": "2025-07-12T14:56:13.229220",
         "source_file": "SOSYAL MEDYA HESAP İŞLEMLERİ DBF.docx",
         "file_path": "./SOSYAL MEDYA HESAP İŞLEMLERİ DBF.docx",
         "status": "success"
@@ -118,17 +100,65 @@
         "ders_sinifi": 11,
         "haftalik_ders_saati": 2,
         "dersin_amaci": "Kişisel verilerin koruması kanunu, Patent ve marka tescili hakkında ve Dijital Marka Yönetimi ve dijital dönüşüm gerekliliğini öğrenir. Sosyal medya platformlarında kullanılan araçların kullanımı öğrenir. Sosyal medya platformları için içerik üretmeyi öğrenir. Sosyal medya platformlarına video oluşturmayı öğrenir. Sosyal medya stratejileri geliştirmeyi öğrenir.",
-        "dersin_genel_kazanimlari": [],
-        "egitim_ortam_donanimi": [],
-        "olcme_degerlendirme": []
+        "dersin_genel_kazanimlari": [
+          "Kişisel verilerin koruması kanunu, Patent ve marka tescili hakkında ve Dijital Marka Yönetimi ve dijital dönüşüm gerekliliğini öğrenir.",
+          "Sosyal medya platformlarında kullanılan araçların kullanımı öğrenir.",
+          "Sosyal medya platformları için içerik üretmeyi öğrenir.",
+          "Sosyal medya platformlarına video oluşturmayı öğrenir.",
+          "Sosyal medya stratejileri geliştirmeyi öğrenir."
+        ],
+        "egitim_ortam_donanimi": [
+          "Büro Yönetimi",
+          "Yönetici Asistanlığı Laboratuvarı/Atölyesi",
+          "Etkileşimli Tahta/Projeksiyon",
+          "Bilgisayar",
+          "Klavye",
+          "Metin Kitapları",
+          "Yazıcı/Tarayıcı",
+          "Görsel"
+        ],
+        "olcme_degerlendirme": [
+          "Akran Değerlendirme",
+          "Eşleştirme",
+          "Öz Değerlendirme",
+          "Doğru Yanlış",
+          "Açık Uçlu",
+          "Çoktan Seçmeli"
+        ]
       },
-      "ogrenme_birimleri_ozeti": [],
+      "ogrenme_birimleri_ozeti": [
+        {
+          "birim_adi": "Dijital Marka Yönetimi Ve Dijital Dönüşüm Gerekliliği",
+          "kazanim_sayisi": "4",
+          "ders_saati_orani": "4"
+        },
+        {
+          "birim_adi": "Sosyal Medya Araçları",
+          "kazanim_sayisi": "3",
+          "ders_saati_orani": "10"
+        },
+        {
+          "birim_adi": "Sosyal Medya Platformları İçin İçerik Üretme",
+          "kazanim_sayisi": "4",
+          "ders_saati_orani": "40"
+        },
+        {
+          "birim_adi": "Sosyal Medya Platformlarına Video Oluşturma",
+          "kazanim_sayisi": "5",
+          "ders_saati_orani": "8"
+        },
+        {
+          "birim_adi": "Sosyal Medya Stratejileri Geliştirme",
+          "kazanim_sayisi": "4",
+          "ders_saati_orani": "10"
+        }
+      ],
       "ogrenme_birimleri_detayi": [],
       "uygulama_faaliyetleri": []
     },
     "TİCARET HİZMETLERİ DBF.docx": {
       "metadata": {
-        "processed_at": "2025-07-12T14:07:51.536040",
+        "processed_at": "2025-07-12T14:56:13.340746",
         "source_file": "TİCARET HİZMETLERİ DBF.docx",
         "file_path": "./TİCARET HİZMETLERİ DBF.docx",
         "status": "success"
@@ -139,16 +169,48 @@
         "haftalik_ders_saati": 2,
         "dersin_amaci": "Bildirge verilen kurumların prosedürlerini öğrenir. Ticari belgeleri açıklar. Kıymetli evrak ve türlerini açıklar. Serbest meslek kazanç defterine işlemler yapar.",
         "dersin_genel_kazanimlari": [],
-        "egitim_ortam_donanimi": [],
-        "olcme_degerlendirme": []
+        "egitim_ortam_donanimi": [
+          "Etkileşimli Tahta/Projeksiyon",
+          "Bilgisayar",
+          "Yazıcı/Tarayıcı"
+        ],
+        "olcme_degerlendirme": [
+          "Akran Değerlendirme",
+          "Eşleştirme",
+          "Öz Değerlendirme",
+          "Doğru Yanlış",
+          "Açık Uçlu",
+          "Çoktan Seçmeli"
+        ]
       },
-      "ogrenme_birimleri_ozeti": [],
+      "ogrenme_birimleri_ozeti": [
+        {
+          "birim_adi": "Bildirge verilen kurumlar",
+          "kazanim_sayisi": "4",
+          "ders_saati_orani": "22"
+        },
+        {
+          "birim_adi": "Ticari belgeler",
+          "kazanim_sayisi": "5",
+          "ders_saati_orani": "26"
+        },
+        {
+          "birim_adi": "Kıymetli evrak ve türleri",
+          "kazanim_sayisi": "3",
+          "ders_saati_orani": "6"
+        },
+        {
+          "birim_adi": "Serbest meslek kazanç defteri",
+          "kazanim_sayisi": "3",
+          "ders_saati_orani": "18"
+        }
+      ],
       "ogrenme_birimleri_detayi": [],
       "uygulama_faaliyetleri": []
     },
     "İŞLETME DBF.docx": {
       "metadata": {
-        "processed_at": "2025-07-12T14:07:51.581787",
+        "processed_at": "2025-07-12T14:56:13.424999",
         "source_file": "İŞLETME DBF.docx",
         "file_path": "./İŞLETME DBF.docx",
         "status": "success"
@@ -158,11 +220,62 @@
         "ders_sinifi": 11,
         "haftalik_ders_saati": 2,
         "dersin_amaci": "İşletme ile ilgili kavramları açıklar. İşletmenin amacı ve diğer bilimlerle ilişkisini açıklar. İşletme türlerini açıklar. İşletmenin kuruluş yeri seçimini etkileyen faktörleri açıklar. İşletmenin fonksiyonlarını açıklar. İşletmenin sorumluluklarını açıklar.",
-        "dersin_genel_kazanimlari": [],
-        "egitim_ortam_donanimi": [],
-        "olcme_degerlendirme": []
+        "dersin_genel_kazanimlari": [
+          "İşletme ile ilgili kavramları açıklar.",
+          "İşletmenin amacı ve diğer bilimlerle ilişkisini açıklar.",
+          "İşletme türlerini açıklar.",
+          "İşletmenin kuruluş yeri seçimini etkileyen faktörleri açıklar.",
+          "İşletmenin fonksiyonlarını açıklar.",
+          "İşletmenin sorumluluklarını açıklar."
+        ],
+        "egitim_ortam_donanimi": [
+          "Büro Yönetimi",
+          "Yönetici Asistanlığı Laboratuvarı/Atölyesi",
+          "Etkileşimli Tahta/Projeksiyon",
+          "Bilgisayar",
+          "Yazıcı/Tarayıcı"
+        ],
+        "olcme_degerlendirme": [
+          "Akran Değerlendirme",
+          "Eşleştirme",
+          "Öz Değerlendirme",
+          "Doğru Yanlış",
+          "Açık Uçlu",
+          "Çoktan Seçmeli"
+        ]
       },
-      "ogrenme_birimleri_ozeti": [],
+      "ogrenme_birimleri_ozeti": [
+        {
+          "birim_adi": "İŞLETME İLE İLGİLİ KAVRAMLAR",
+          "kazanim_sayisi": "1",
+          "ders_saati_orani": "12"
+        },
+        {
+          "birim_adi": "İŞLETMENİN AMACI VE DİĞER BİLİMLERLE İLİŞKİSİ",
+          "kazanim_sayisi": "2",
+          "ders_saati_orani": "10"
+        },
+        {
+          "birim_adi": "İŞLETME TÜRLERİ",
+          "kazanim_sayisi": "4",
+          "ders_saati_orani": "12"
+        },
+        {
+          "birim_adi": "İŞLETMENİN KURULUŞ YERİ SEÇİMİNİ ETKİLEYEN FAKTÖRLER",
+          "kazanim_sayisi": "2",
+          "ders_saati_orani": "8"
+        },
+        {
+          "birim_adi": "İŞLETMENİN FONKSİYONLARI",
+          "kazanim_sayisi": "6",
+          "ders_saati_orani": "18"
+        },
+        {
+          "birim_adi": "İŞLETMENİN SORUMLULUKLARI",
+          "kazanim_sayisi": "4",
+          "ders_saati_orani": "12"
+        }
+      ],
       "ogrenme_birimleri_detayi": [],
       "uygulama_faaliyetleri": []
     }
