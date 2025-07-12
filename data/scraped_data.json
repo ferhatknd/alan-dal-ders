@@ -2759,7 +2759,7 @@
           "link": "https://meslek.meb.gov.tr/upload/dbf10/gida.rar",
           "guncelleme_tarihi": "10.07.2025",
           "ayristirilan_veri": {
-            "icerik": "Bu bir arşiv dosyasıdır (gida.rar), otomatik ayrıştırma desteklenmiyor."
+            "hata": "PDF indirilemedi: HTTPSConnectionPool(host='meslek.meb.gov.tr', port=443): Max retries exceeded with url: /upload/dbf10/gida.rar (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1028)')))"
           }
         },
         "11": {

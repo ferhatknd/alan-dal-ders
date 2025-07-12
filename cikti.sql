@@ -6,7 +6,9 @@ DROP TABLE IF EXISTS temel_plan_alan;
 CREATE TABLE temel_plan_alan (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     alan_adi TEXT NOT NULL UNIQUE,
-    cop_url TEXT
+    meb_alan_id TEXT,
+    cop_url TEXT,
+    dbf_urls TEXT -- JSON format: {"9": "url1", "10": "url2", "11": "url3", "12": "url4"}
 );
 
 DROP TABLE IF EXISTS temel_plan_dal;
@@ -24,7 +26,9 @@ CREATE TABLE temel_plan_ders (
     sinif INTEGER NOT NULL,
     ders_saati INTEGER NOT NULL,
     amac TEXT,
-    dbf_url TEXT
+    dm_url TEXT, -- Ders Materyali URL'si
+    dbf_url TEXT, -- DBF PDF URL'si (yerel path)
+    bom_url TEXT -- Bireysel Öğrenme Materyali URL'si
 );
 
 DROP TABLE IF EXISTS temel_plan_ders_dal;

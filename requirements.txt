@@ -3,3 +3,6 @@ Flask-Cors
 camelot-py[cv]
 pandas
 python-docx
+selenium
+webdriver-manager
+tqdm

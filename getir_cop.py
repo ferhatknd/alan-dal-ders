@@ -29,21 +29,20 @@ def getir_cop(siniflar=["9", "10", "11", "12"]):
 
                 cop_link = requests.compat.urljoin(response.url, link_tag['href'])
                 
-                ul_tag = link_tag.find('ul', class_='list-group')
-                if not ul_tag: continue
+                # COP yapısı farklı - img tagının alt attribute'ından alan adını al
+                img_tag = link_tag.find('img', alt=True)
+                if not img_tag:
+                    continue
 
-                alan_adi = ""
+                alan_adi = img_tag.get('alt', '').strip()
+                
+                # Güncelleme yılını ribbon'dan al
                 guncelleme_yili = ""
-
-                b_tag = ul_tag.find('b')
-                if b_tag:
-                    alan_adi = b_tag.get_text(strip=True)
-
-                for item in ul_tag.find_all('li'):
-                    if item.find('i', class_='fa-calendar'):
-                        tarih_str = item.get_text(strip=True)
-                        guncelleme_yili = tarih_str.split('-')[0].strip() if '-' in tarih_str else tarih_str.strip()
-                        break
+                ribbon = column.find('div', class_='ribbon')
+                if ribbon:
+                    span_tag = ribbon.find('span')
+                    if span_tag:
+                        guncelleme_yili = span_tag.get_text(strip=True)
 
                 if alan_adi and cop_link:
                     class_cop_data[alan_adi] = {
