@@ -1,0 +1,164 @@
+/* PDF Processor Terminal Stilleri */
+.pdf-processor-terminal {
+  background-color: #1a1a1a;
+  color: #ffffff;
+  font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+  font-size: 14px;
+  line-height: 1.4;
+  overflow-y: auto;
+  height: 400px;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #333;
+}
+
+.pdf-processor-terminal::-webkit-scrollbar {
+  width: 8px;
+}
+
+.pdf-processor-terminal::-webkit-scrollbar-track {
+  background: #2a2a2a;
+  border-radius: 4px;
+}
+
+.pdf-processor-terminal::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 4px;
+}
+
+.pdf-processor-terminal::-webkit-scrollbar-thumb:hover {
+  background: #777;
+}
+
+/* İstatistik kutuları için stil */
+.stats-box {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 20px;
+  border-radius: 12px;
+  margin: 16px 0;
+  font-family: 'Source Code Pro', monospace;
+}
+
+.stats-separator {
+  border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+  margin: 12px 0;
+}
+
+.stats-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stats-label {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.stats-value {
+  font-weight: 700;
+  color: #ffffff;
+}
+
+/* Terminal çıktı türleri */
+.terminal-status {
+  color: #fbbf24;
+}
+
+.terminal-error {
+  color: #ef4444;
+}
+
+.terminal-success {
+  color: #10b981;
+}
+
+.terminal-output {
+  color: #e5e7eb;
+}
+
+.terminal-timestamp {
+  color: #6b7280;
+  font-size: 12px;
+}
+
+/* Animasyonlar */
+.pulse-animation {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Modal overlay */
+.modal-overlay {
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+/* Process button states */
+.process-btn {
+  transition: all 0.2s ease;
+  transform: scale(1);
+}
+
+.process-btn:hover {
+  transform: scale(1.05);
+}
+
+.process-btn:active {
+  transform: scale(0.95);
+}
+
+.process-btn:disabled {
+  transform: scale(1);
+  opacity: 0.6;
+}
+
+/* PDF card hover effects */
+.pdf-card {
+  transition: all 0.2s ease;
+}
+
+.pdf-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Loading spinner */
+.loading-spinner {
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #3498db;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
