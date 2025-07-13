@@ -108,8 +108,9 @@ def find_lessons_in_cop_pdf(pdf, alan_adi: str) -> Dict[str, List[str]]:
                         
                         # Dersleri ekle (mevcut derslerle birleştir)
                         existing_dersler = dal_ders_mapping[dal_adi_clean]
-                        combined_dersler = list(set(existing_dersler + dersler))
-                        dal_ders_mapping[dal_adi_clean] = combined_dersler
+                        dal_ders_mapping[dal_adi_clean] = merge_lesson_dicts(
+                            existing_dersler, dersler
+                        )
     
     except Exception as e:
         print(f"Ders çıkarma hatası: {e}")
@@ -157,10 +158,178 @@ def find_dal_name_from_schedule_section(lines: List[str], schedule_line_index: i
     return None
 
 
-def extract_lessons_from_schedule_table(page, pdf, page_num: int) -> List[str]:
+# --------------------------------------------------------
+# Yedek Metin-Satır Analizi
+# --------------------------------------------------------
+def parse_lessons_from_text_lines(lines: List[str], start_index: int) -> List[str]:
     """
-    Sayfa tablolarından sadece MESLEK DERSLERİ bölümündeki dersleri çıkar
+    'MESLEK DERSLERİ' başlığından itibaren satırlardan ders adlarını çıkarır.
+    Tablo çıkarılamadığında kullanılır.
     """
+    dersler: List[str] = []
+    stop_keywords = (
+        "TOPLAM",
+        "SEÇMELİ",
+        "AKADEMİK",
+        "REHBER",
+        "DERS SAATİ",
+        "KATEGORİLERİ",
+    )
+
+    for idx in range(start_index + 1, len(lines)):
+        raw = clean_text(lines[idx]).strip()
+        if not raw:
+            continue
+
+        upper = raw.upper()
+        # Durdurucu anahtar kelimelerden biri geldiyse bölümü bitir
+        if any(kw in upper for kw in stop_keywords):
+            break
+
+        # Sadece rakamlardan oluşan satırları / kısa ifadeleri atla
+        if raw.isdigit() or len(raw) < 3:
+            continue
+
+        # Satırda çift boşluk / tab ile ayrılan sütunlar olabilir; ilk parça genelde ders adı
+        ders_adi = re.split(r"\s{2,}|\t", raw)[0]
+        ders_adi_clean = clean_text(ders_adi)
+
+        # Dipnot atıflarını ve tablo artıkları temizle ─  (*), (**), (***),  --2-, --5- vb.
+        ders_adi_clean = re.sub(r"\(\*+\)", "", ders_adi_clean)          # parantez içi yıldız
+        ders_adi_clean = re.sub(r"-+\s*\d+\s*-", "", ders_adi_clean)    # -- 2 --, --2-, -3-
+        ders_adi_clean = re.sub(r"\s{2,}", " ", ders_adi_clean).strip()
+
+        if ders_adi_clean and len(ders_adi_clean) > 3:
+            dersler.append(normalize_to_title_case_tr(ders_adi_clean))
+
+    return list(set(dersler))
+
+
+def extract_lessons_from_schedule_table(page, pdf, page_num: int) -> List[Dict[str, Any]]:
+    """
+    Sayfa tablolarından MESLEK DERSLERİ bölümündeki dersleri çıkarır ve
+    her ders için 9-10-11-12 sınıf saatlerini döndürür.
+    Örnek çıktı:
+    [
+        {
+            "adi": "Klavye Teknikleri",
+            "saatler": {"9": 4, "10": 0, "11": 0, "12": 0}
+        },
+        ...
+    ]
+    """
+    lessons: List[Dict[str, Any]] = []
+
+    try:
+        tables = page.extract_tables()
+        for table_idx, table in enumerate(tables):
+            if not table:
+                continue
+
+            # MESLEK DERSLERİ bölümünün satırını bul
+            meslek_row = find_meslek_dersleri_section(table)
+            if meslek_row is None:
+                continue
+
+            # Ders adı sütununu bul
+            ders_adi_col = find_ders_adi_column(table)
+            if ders_adi_col is None:
+                continue
+
+            # Header satırı ve sınıf sütunlarını tespit et
+            header_idx = meslek_row + 1 if meslek_row + 1 < len(table) else meslek_row
+            header_row = table[header_idx]
+            grade_cols = find_grade_columns(header_row)
+
+            # Header satırında sınıf sütunları bulunamadıysa varsayılan olarak
+            # ders adı sütunundan sonraki 4 sütunu 9-10-11-12 olarak ata
+            if not grade_cols:
+                grade_cols = {str(9 + i): ders_adi_col + 1 + i for i in range(4)}
+
+            # Ders satırlarını işle
+            for row_idx in range(header_idx + 1, len(table)):
+                row = table[row_idx]
+
+                # Başka bir bölüm başladıysa dur
+                if any(
+                    cell and isinstance(cell, str) and
+                    ("ALAN" in cell.upper() or "BÖLÜM" in cell.upper())
+                    for cell in row
+                ):
+                    break
+
+                if ders_adi_col >= len(row):
+                    continue
+
+                ders_adi_raw = row[ders_adi_col] or ""
+                ders_clean = clean_text(str(ders_adi_raw))
+                ders_clean = re.sub(r"\(\*+\)", "", ders_clean)
+                ders_clean = re.sub(r"-+\s*\d+\s*-", "", ders_clean)
+                ders_clean = re.sub(r"\s{2,}", " ", ders_clean).strip()
+
+                # Geçerli ders adı kontrolü
+                if not (
+                    ders_clean
+                    and len(ders_clean) > 3
+                    and not ders_clean.isdigit()
+                    and not ders_clean.upper().startswith(("TOPLAM", "HAFTALIK", "GENEL"))
+                ):
+                    continue
+
+                # Saatleri oku
+                saatler = {"9": 0, "10": 0, "11": 0, "12": 0}
+                for grade, col_idx in grade_cols.items():
+                    if col_idx < len(row):
+                        val_text = str(row[col_idx]).strip() if row[col_idx] else ""
+                        match = re.search(r"\d+", val_text)
+                        if match:
+                            saatler[grade] = int(match.group())
+
+                # Eğer tablo sütunlarında saat bulunamadıysa, ders adının sonundaki rakamları yakala (örn: "Klavye Teknikleri 4--")
+                if all(v == 0 for v in saatler.values()):
+                    tail = re.search(r"(\d{1,2})(?:\s*-*)?\s*$", ders_clean)
+                    if tail:
+                        saatler["9"] = int(tail.group(1))
+                        # Rakam ve olası tireleri ders adından temizle
+                        ders_clean = re.sub(r"(\d{1,2})(?:\s*-*)?\s*$", "", ders_clean).strip()
+
+                lessons.append(
+                    {
+                        "adi": normalize_to_title_case_tr(ders_clean),
+                        "saatler": saatler,
+                    }
+                )
+
+    except Exception as e:
+        print(f"Tablo ders çıkarma hatası (sayfa {page_num}): {e}")
+
+    # Tabloda sonuç yoksa fallback: satır-bazlı analiz
+    if not lessons:
+        page_text = page.extract_text() or ""
+        text_lines = page_text.split("\n")
+        for idx, l in enumerate(text_lines):
+            l_upper = l.upper()
+            if (
+                "MESLEK DERSLERİ" in l_upper
+                or "MESLEK ALAN DERSLERİ" in l_upper
+                or (
+                    l_upper.strip() == "MESLEK"
+                    and idx + 1 < len(text_lines)
+                    and "DERSLERİ" in text_lines[idx + 1].upper()
+                )
+            ):
+                basic_names = parse_lessons_from_text_lines(text_lines, idx)
+                for name in basic_names:
+                    lessons.append(
+                        {
+                            "adi": name,
+                            "saatler": {"9": 0, "10": 0, "11": 0, "12": 0},
+                        }
+                    )
+                break
+
+    # Tekrarları birleştir
+    return merge_lesson_dicts([], lessons)
     dersler = []
     
     try:
@@ -190,6 +359,11 @@ def extract_lessons_from_schedule_table(page, pdf, page_num: int) -> List[str]:
                     
                     if ders_adi and isinstance(ders_adi, str):
                         ders_clean = clean_text(ders_adi).strip()
+
+                        # Dipnot & artık temizliği (tablo satırı)
+                        ders_clean = re.sub(r"\(\*+\)", "", ders_clean)          # dipnot (*)
+                        ders_clean = re.sub(r"-+\s*\d+\s*-", "", ders_clean)    # --2-, -3-
+                        ders_clean = re.sub(r"\s{2,}", " ", ders_clean).strip()
                         
                         # Geçerli ders adı kontrolü
                         if (len(ders_clean) > 3 and 
@@ -205,7 +379,27 @@ def extract_lessons_from_schedule_table(page, pdf, page_num: int) -> List[str]:
     
     except Exception as e:
         print(f"Tablo ders çıkarma hatası (sayfa {page_num}): {e}")
-    
+
+    # Tablo bulunamadıysa veya boş döndüyse satır-tabanlı yedek analiz
+    if not dersler:
+        page_text = page.extract_text() or ""
+        text_lines = page_text.split("\n")
+        for idx, l in enumerate(text_lines):
+            l_upper = l.upper()
+            # Başlık satırı tek satırda veya iki satır ardışık olabilir
+            if (
+                "MESLEK DERSLERİ" in l_upper
+                or "MESLEK ALAN DERSLERİ" in l_upper
+                or (
+                    l_upper.strip() == "MESLEK"
+                    and idx + 1 < len(text_lines)
+                    and "DERSLERİ" in text_lines[idx + 1].upper()
+                )
+            ):
+                # İki satırlı başlık durumunda start_index'i ilk satıra ayarla
+                dersler.extend(parse_lessons_from_text_lines(text_lines, idx))
+                break
+
     return list(set(dersler))
 
 
@@ -235,6 +429,51 @@ def find_ders_adi_column(table: List[List[str]]) -> Optional[int]:
                     return col_idx
     
     return None
+
+
+def find_grade_columns(header_row: List[str]) -> Dict[str, int]:
+    """
+    Header satırından '9', '10', '11', '12' sınıf sütunlarının indekslerini döndürür.
+    Küçük varyasyonlar (9.SINIF, 10 SINIF vb.) da desteklenir.
+    Returns: {"9": idx9, "10": idx10, ...}
+    """
+    grade_cols: Dict[str, int] = {}
+    for idx, cell in enumerate(header_row):
+        if not cell:
+            continue
+        text = str(cell).strip().upper()
+        if text.startswith("9"):
+            grade_cols["9"] = idx
+        elif text.startswith("10"):
+            grade_cols["10"] = idx
+        elif text.startswith("11"):
+            grade_cols["11"] = idx
+        elif text.startswith("12"):
+            grade_cols["12"] = idx
+    return grade_cols
+
+
+def merge_lesson_dicts(list1: List[Dict[str, Any]], list2: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """
+    İki ders listesinde (adi + saatler) tekrarları birleştirir.
+    Saatler birleşiminde 0 olmayan değer önceliklidir.
+    """
+    merged: Dict[str, Dict[str, Any]] = {}
+    for lesson in list1 + list2:
+        key = lesson.get("adi")
+        if not key:
+            continue
+        if key in merged:
+            # Saatleri birleştir
+            for grade, val in lesson.get("saatler", {}).items():
+                if val and merged[key]["saatler"].get(grade, 0) == 0:
+                    merged[key]["saatler"][grade] = val
+        else:
+            merged[key] = {
+                "adi": key,
+                "saatler": {g: int(v) for g, v in lesson.get("saatler", {}).items()}
+            }
+    return list(merged.values())
 
 
 def extract_alan_and_dallar_from_cop_pdf(pdf_url: str) -> tuple[Optional[str], List[str]]:
@@ -352,7 +591,7 @@ def oku_cop_pdf(pdf_url: str) -> Dict[str, Any]:
             dal_ders_listesi.append(dal_info)
         
         # Toplam ders sayısını hesapla
-        toplam_ders_sayisi = sum(len(set(info['dersler'])) for info in dal_ders_listesi)
+        toplam_ders_sayisi = sum(len(info['dersler']) for info in dal_ders_listesi)
         
         # Sonuç yapısını oluştur
         result = {
