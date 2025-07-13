@@ -40,6 +40,33 @@ def get_areas_from_db_for_dm():
         print(f"Veritabanı okuma hatası: {e}")
         return {}
 
+def get_ders_ids_from_db():
+    """
+    Veritabanından ders ID'lerini ve adlarını çeker (DM ders organizasyonu için)
+    Returns: dict {ders_adi: ders_id}
+    """
+    db_path = "data/temel_plan.db"
+    if not os.path.exists(db_path):
+        print(f"Veritabanı bulunamadı: {db_path}")
+        return {}
+    
+    try:
+        with sqlite3.connect(db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT id, ders_adi FROM temel_plan_ders ORDER BY ders_adi")
+            results = cursor.fetchall()
+            
+        # {ders_adi: id} şeklinde mapping oluştur
+        ders_dict = {}
+        for ders_id, ders_adi in results:
+            if ders_adi:
+                ders_dict[ders_adi.strip()] = ders_id
+                
+        return ders_dict
+    except Exception as e:
+        print(f"Veritabanı ders bilgileri çekme hatası: {e}")
+        return {}
+
 def normalize_dm_area_name(html_area_name):
     """
     HTML'den gelen alan adını utils.py standardına göre normalize eder.

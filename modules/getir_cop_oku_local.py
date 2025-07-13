@@ -34,10 +34,26 @@ def clean_text(text: str) -> str:
 
 def find_alan_name_in_text(text: str) -> Optional[str]:
     """
-    PDF metninin ilk satırlarında 'ALAN ADI' bilgisini arar.
+    PDF metninin ilk satırlarında alan adını arar.
+    Geliştirilmiş algoritma ile daha doğru alan adı tespiti.
     """
     lines = text.split("\n")
-    for i, line in enumerate(lines[:50]):  # ilk 50 satır yeterli
+    
+    # Önce direkt "ALANI" ile biten satırları ara
+    for line in lines[:100]:  # İlk 100 satırda ara
+        line_clean = clean_text(line).strip()
+        line_upper = line_clean.upper()
+        
+        # Pattern 1: "XXXX TEKNOLOJİSİ ALANI", "XXXX HİZMETLERİ ALANI" vb.
+        if line_upper.endswith(" ALANI") and len(line_clean) > 10:
+            alan_adi = line_upper.replace(" ALANI", "").strip()
+            # Gereksiz kelimeler içermiyorsa ve rakam ile başlamıyorsa
+            if (not any(bad in alan_adi for bad in ["ÇERÇEVE", "ÖĞRETİM", "PROGRAM", "AMAÇLAR", "5."]) 
+                and not alan_adi[0].isdigit()):
+                return normalize_to_title_case_tr(alan_adi)
+    
+    # Pattern 2: "ALAN ADI" sonrası
+    for i, line in enumerate(lines[:50]):
         line_clean = clean_text(line).strip()
         line_upper = line_clean.upper()
 
@@ -46,6 +62,7 @@ def find_alan_name_in_text(text: str) -> Optional[str]:
                 next_line = clean_text(lines[j]).strip()
                 if len(next_line) > 5 and not next_line.upper().startswith("T.C."):
                     return normalize_to_title_case_tr(next_line)
+    
     return None
 
 
@@ -127,37 +144,92 @@ def extract_lessons_from_schedule_table(page, pdf, page_num: int) -> List[str]:
     dersler = []
     try:
         tables = page.extract_tables()
-        for table in tables:
-            if not table:
+        for table_idx, table in enumerate(tables):
+            if not table or len(table) < 3:
                 continue
-            meslek_row = find_meslek_dersleri_section(table)
-            if meslek_row is None:
+            
+            print(f"📊 Sayfa {page_num+1}, Tablo {table_idx+1}: {len(table)} satır analiz ediliyor...")
+            
+            # Ana ders tablosunu bul (en az 10 satır olmalı)
+            if len(table) < 10:
                 continue
-            ders_adi_col = find_ders_adi_column(table)
-            if ders_adi_col is None:
-                continue
-
-            for row_idx in range(meslek_row + 1, len(table)):
-                row = table[row_idx]
-                if row_idx < len(row) and ders_adi_col < len(row):
-                    ders_adi = row[ders_adi_col]
-                    if ders_adi and isinstance(ders_adi, str):
-                        ders_clean = clean_text(ders_adi).strip()
-                        if (
-                            len(ders_clean) > 3
-                            and not ders_clean.upper().startswith(("TOPLAM", "HAFTALIK", "GENEL"))
-                            and not ders_clean.isdigit()
-                        ):
-                            dersler.append(normalize_to_title_case_tr(ders_clean))
-                if any(
-                    cell
-                    and isinstance(cell, str)
-                    and ("ALAN" in str(cell).upper() or "BÖLÜM" in str(cell).upper())
-                    for cell in row
-                ):
+                
+            # Tabloda ders kategori sütununu bul  
+            ders_col = None
+            header_row = None
+            
+            # Header satırını bul
+            for row_idx, row in enumerate(table[:3]):
+                for col_idx, cell in enumerate(row):
+                    if cell and isinstance(cell, str):
+                        cell_upper = str(cell).upper()
+                        if "DERS" in cell_upper and ("KATEGORILER" in cell_upper or "DERSLER" in cell_upper):
+                            ders_col = col_idx if "DERSLER" in cell_upper else col_idx + 1
+                            header_row = row_idx
+                            break
+                if ders_col is not None:
                     break
+            
+            if ders_col is None:
+                print(f"   ❌ Ders sütunu bulunamadı")
+                continue
+                
+            print(f"   ✅ Ders sütunu bulundu: {ders_col}")
+            
+            # Meslek dersleri bölümünü bul
+            meslek_started = False
+            for row_idx in range(header_row + 1, len(table)):
+                row = table[row_idx]
+                
+                if ders_col >= len(row):
+                    continue
+                    
+                kategori_cell = row[0] if len(row) > 0 else ""
+                ders_cell = row[ders_col] if ders_col < len(row) else ""
+                
+                # Kategori kontrolü
+                if kategori_cell and isinstance(kategori_cell, str):
+                    kategori_upper = str(kategori_cell).upper().replace('\n', ' ')  # Newline'ları temizle
+                    # Meslek dersleri bölümü başlangıcı - tam kelime kontrolü
+                    if ("MESLEK" in kategori_upper and "DERS" in kategori_upper) or "MESLEKI" in kategori_upper:
+                        meslek_started = True
+                        print(f"   🎯 Meslek dersleri başladı: satır {row_idx+1} - {kategori_upper}")
+                        # Bu satırdaki dersi de işle, continue yapma
+                    elif any(stop_word in kategori_upper for stop_word in ["SEÇMELİ MESLEK", "MESLEK DERS SAATİ TOPLAMI", "TOPLAM DERS SAATİ", "REHBERLİK"]):
+                        if meslek_started:
+                            print(f"   🛑 Meslek dersleri bitti: {kategori_upper}")
+                            break
+                
+                
+                # Ders adını çıkar
+                if meslek_started and ders_cell and isinstance(ders_cell, str):
+                    ders_clean = clean_text(str(ders_cell)).strip()
+                    
+                    # Temizleme
+                    ders_clean = re.sub(r"\(\*+\)", "", ders_clean)  # (*) dipnotlar
+                    ders_clean = re.sub(r"\s{2,}", " ", ders_clean)  # Çoklu boşluk
+                    ders_clean = ders_clean.strip()
+                    
+                    # Geçerlilik kontrolü - daha sıkı filtre
+                    if (len(ders_clean) > 3 
+                        and not ders_clean.isdigit() 
+                        and not any(bad in ders_clean.upper() for bad in [
+                            "TOPLAM", "HAFTALIK", "GENEL", "KATEGORI", "TÜRK DİLİ", "DİN KÜLTÜRÜ", 
+                            "TARİH", "COĞRAFYA", "MATEMATİK", "FİZİK", "KİMYA", "BİYOLOJİ", 
+                            "FELSEFE", "YABANCI DİL", "BEDEN EĞİTİMİ", "SAĞLIK BİLGİSİ"
+                        ])):
+                        
+                        ders_normalized = normalize_to_title_case_tr(ders_clean)
+                        dersler.append(ders_normalized)
+                        print(f"   📚 Ders bulundu: {ders_normalized}")
+            
+            if dersler:
+                print(f"   ✅ Toplam {len(dersler)} ders bulundu")
+                break  # İlk başarılı tabloyu kullan
+                
     except Exception as e:
-        print(f"Tablodan ders çıkarma hatası (sayfa {page_num}): {e}")
+        print(f"❌ Tablo ders çıkarma hatası (sayfa {page_num+1}): {e}")
+    
     return list(set(dersler))
 
 

@@ -4,7 +4,7 @@ import re
 import os
 import json
 from typing import Dict, List, Any, Optional
-from .utils import normalize_to_title_case_tr
+from .utils import normalize_to_title_case_tr, download_and_cache_pdf, get_temp_pdf_path
 
 
 def clean_text(text: str) -> str:
@@ -330,6 +330,7 @@ def extract_lessons_from_schedule_table(page, pdf, page_num: int) -> List[Dict[s
 
     # Tekrarları birleştir
     return merge_lesson_dicts([], lessons)
+
     dersler = []
     
     try:
@@ -514,23 +515,38 @@ def extract_alan_and_dallar_from_cop_pdf(pdf_url: str) -> tuple[Optional[str], L
         return None, []
 
 
-def extract_alan_dal_ders_from_cop_pdf(pdf_url: str) -> tuple[Optional[str], List[str], Dict[str, List[str]]]:
+def extract_alan_dal_ders_from_cop_pdf(pdf_url: str, cache: bool = True) -> tuple[Optional[str], List[str], Dict[str, List[str]]]:
     """
     COP PDF'sinden alan, dal ve ders bilgilerini çıkar
+    
+    Args:
+        pdf_url: PDF URL'si  
+        cache: True ise PDF'yi kalıcı olarak cache'le, False ise geçici kullan
     """
     try:
-        response = requests.get(pdf_url)
-        response.raise_for_status()
+        # Önce alan adını tahmin et (cache için)
+        estimated_alan = pdf_url.split('/')[-1].replace('.pdf', '').replace('_cop', '')
         
-        temp_pdf_path = "temp_cop.pdf"
-        with open(temp_pdf_path, 'wb') as f:
-            f.write(response.content)
+        # PDF'yi indir (cache veya geçici)
+        if cache:
+            pdf_path = download_and_cache_pdf(pdf_url, 'cop', estimated_alan, 'cop_program')
+            temp_file = False
+        else:
+            pdf_path = get_temp_pdf_path(pdf_url)
+            response = requests.get(pdf_url)
+            response.raise_for_status()
+            with open(pdf_path, 'wb') as f:
+                f.write(response.content)
+            temp_file = True
+        
+        if not pdf_path:
+            return None, [], {}
         
         alan_adi = None
         dallar = []
         dal_ders_mapping = {}
         
-        with pdfplumber.open(temp_pdf_path) as pdf:
+        with pdfplumber.open(pdf_path) as pdf:
             full_text = ""
             for page in pdf.pages:
                 page_text = page.extract_text()
@@ -547,10 +563,12 @@ def extract_alan_dal_ders_from_cop_pdf(pdf_url: str) -> tuple[Optional[str], Lis
             # Dal-ders eşleştirmesini bul
             dal_ders_mapping = find_lessons_in_cop_pdf(pdf, alan_adi)
         
-        try:
-            os.remove(temp_pdf_path)
-        except:
-            pass
+        # Geçici dosyayı temizle
+        if temp_file:
+            try:
+                os.remove(pdf_path)
+            except:
+                pass
         
         return alan_adi, dallar, dal_ders_mapping
         
@@ -879,6 +897,18 @@ def getir_cop(siniflar=["9", "10", "11", "12"]):
                     alan_adi = img_tag.get('alt', '').strip()
                     if not alan_adi:
                         continue
+
+                    # Hatalı "alan adı" olarak algılanan metinleri filtrele
+                    invalid_keywords = [
+                        "ÇERÇEVE ÖĞRETİM PROGRAMI",
+                        "ÖĞRETİM PROGRAMININ AMAÇLARI",
+                        "LOGO",
+                        "MEB"
+                    ]
+                    # Çok uzun veya anlamsız metinleri de filtrele (örn: ... içerenler)
+                    if any(keyword in alan_adi.upper() for keyword in invalid_keywords) or "..." in alan_adi or len(alan_adi) > 100:
+                        continue # Bu geçerli bir alan adı değil, atla.
+
                     
                     # ÇÖP PDF linkini al
                     href = link_tag.get('href', '').strip()

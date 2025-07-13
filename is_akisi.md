@@ -12,7 +12,9 @@ Bu sistem, Türkiye Cumhuriyeti Milli Eğitim Bakanlığı'nın mesleki ve tekni
 - **Alan-Dal Modülü**: `modules/getir_dal.py` - MEB API'dan alan/dal verilerini çeker
 - **ÇÖP Modülü**: `modules/getir_cop_oku.py` - Çerçeve Öğretim Programı verilerini işler
 - **ÇÖP Okuma Modülü**: `modules/getir_cop_oku.py` - COP PDF'lerini okur ve analiz eder
-- **Normalizasyon Modülü**: `modules/utils.py` - Türkçe karakter/metin standardizasyonu
+- **Yerel Test Modülü**: `modules/getir_cop_oku_local.py` - Yerel PDF test aracı ⭐ **YENİ**
+- **Debug Araçları**: `debug_*.py` dosyaları - PDF analiz ve hata ayıklama ⭐ **YENİ**
+- **Normalizasyon Modülü**: `modules/utils.py` - Türkçe karakter/metin standardizasyonu ve PDF cache yönetimi ⭐ **GÜNCELLENDİ**
 
 ### Veritabanı Yapısı
 
@@ -112,7 +114,7 @@ temel_plan_alan (Alanlar)
 
 3. **PDF İndirme ve Organizasyon**
    - `download_and_save_cop_pdf()` fonksiyonu
-   - `data/cop/{ID:02d} - {alan_adi}/` formatında klasör yapısı
+   - `data/cop/{ID:02d}_-_{alan_adi}/` formatında ID bazlı klasör yapısı ⭐ **YENİ**
    - Dosya adı: `cop_{sinif}_sinif_{guncelleme_yili}.pdf`
    - Mevcut dosya kontrolü (gereksiz indirme önleme)
 
@@ -157,12 +159,66 @@ temel_plan_alan (Alanlar)
 
 ---
 
+## 🧪 Adım 2.5: Yerel PDF Test ve Debug Süreci ⭐ **YENİ**
+
+**Dosyalar**: 
+- `modules/getir_cop_oku_local.py` - Yerel test modülü
+- `debug_gida_table.py` - Tablo analiz aracı
+- `debug_meslek_dersleri.py` - Kategori algılama test aracı
+
+**Amaç**: İndirilen PDF'lerin işlenmesi öncesi yerel test ve hata ayıklama.
+
+**İşlem Akışı**:
+
+1. **Yerel PDF Hazırlama**
+   - PDF dosyalarını proje kök dizinine kopyalama
+   - Test için sample dosyalar (örn: `gida.pdf`, `elektrik.pdf`)
+
+2. **Standalone Test**
+   ```bash
+   # Tüm PDF'leri test et
+   python modules/getir_cop_oku_local.py
+   
+   # Tek PDF'yi test et
+   python -c "from modules.getir_cop_oku_local import oku_cop_pdf_file; print(oku_cop_pdf_file('gida.pdf'))"
+   ```
+
+3. **Detaylı Debug Analizi**
+   ```bash
+   # Tablo yapısını analiz et
+   python debug_gida_table.py
+   
+   # MESLEK DERSLERİ kategorisini test et
+   python debug_meslek_dersleri.py
+   ```
+
+4. **Sonuç Değerlendirmesi**
+   - Alan adı tespiti doğruluğu
+   - Dal listesi çıkarma başarısı
+   - Ders-dal eşleştirme kalitesi
+   - Meslek dersleri kategori algılama
+
+5. **Algoritma İyileştirmesi**
+   - Pattern matching kuralları güncelleme
+   - Tablo ayrıştırma logic düzeltme
+   - Metin temizleme regex'leri optimize etme
+
+**Avantajları**:
+- Hızlı iterasyon: Network'e bağımlı olmayan test
+- Isolated debugging: Tek PDF odaklı analiz
+- Pattern development: Yeni PDF türleri için kural geliştirme
+- Quality assurance: Üretim öncesi algoritma doğrulama
+
+---
+
 ## Veri Akışı Şeması
 
 ```
 MEB API'lar → getir_dal.py → Veritabanı (Alan/Dal)
      ↓
 MEB ÇÖP Sistemi → getir_cop_oku.py → PDF İndirme
+     ↓
+📥 Local PDF Test → getir_cop_oku_local.py + debug_*.py → Test & Debug ⭐ YENİ
      ↓
 PDF Dosyaları → getir_cop_oku.py → Ders Çıkarma
      ↓
@@ -205,14 +261,60 @@ Veritabanı (Ders/İlişkiler) ← save_cop_results_to_db()
 
 ## Gelecek Adımlar
 
-3. **DBF (Ders Bilgi Formu) İşleme**
-4. **DM (Ders Materyali) İşleme**
-5. **BOM (Bireysel Öğrenme Materyali) İşleme**
+3. **DBF (Ders Bilgi Formu) İşleme** - ✅ ID bazlı klasör sistemi mevcut
+4. **DM (Ders Materyali) İşleme** - ⭐ **YENİ**: Ders ID bazlı organizasyon eklendi
+5. **BOM (Bireysel Öğrenme Materyali) İşleme** - ⭐ **YENİ**: Ders ID bazlı organizasyon eklendi
 6. **Web Arayüzü Geliştirme**
 7. **API Endpoints**
 8. **Raporlama Sistemi**
 
+## 🗂️ Dosya Organizasyon Sistemi Özeti ⭐ **YENİ**
+
+### Alan Seviyesi Organizasyonu
+Tüm modüller alan ID bazlı klasör sistemi kullanır:
+```
+{ID:02d}_-_{Alan_Adi}/
+```
+
+### Ders Seviyesi Organizasyonu (DM & BÖM için)
+DM ve BÖM modülleri ders ID bazlı alt organizasyon kullanır:
+```
+{alan_klasoru}/
+├── sinif_{sinif}/                    # DM için
+│   └── {ders_id:03d}_-_{ders_adi}.pdf
+└── {ders_id:03d}_-_{ders_adi}/       # BÖM için
+    └── {modul}.pdf
+```
+
+### Veritabanı ID Eşleştirmesi
+- **Alan ID**: `temel_plan_alan.id` → Klasör adı prefix
+- **Ders ID**: `temel_plan_ders.id` → DM/BÖM dosya organizasyonu
+- **Otomatik eşleştirme**: HTML adları ↔ Veritabanı kayıtları
+- **Fallback sistemi**: ID bulunamazsa eski format kullanılır
+
+## Test ve Kalite Güvence Süreci ⭐ **YENİ**
+
+### PDF Algoritma Test Döngüsü
+```
+1. PDF Sample → Local Test (getir_cop_oku_local.py)
+2. Debug Analysis (debug_*.py) → Pattern Issues
+3. Algorithm Fix → Code Update
+4. Re-test → Validation
+5. Production Deploy → getir_cop_oku.py
+```
+
+### Quality Metrics
+- **Alan Adı Doğruluğu**: >95% 
+- **Dal Listesi Tamlığı**: >90%
+- **Ders-Dal Eşleştirme**: >85%
+- **Meslek Kategorisi Algılama**: >90%
+
+### Debug Araçları Kullanımı
+- `debug_gida_table.py`: Spesifik PDF'in tablo yapısını inceleme
+- `debug_meslek_dersleri.py`: Kategori algılama algoritmasını test etme
+- `modules/getir_cop_oku_local.py`: Batch test için ana araç
+
 ---
 
 **Son Güncelleme**: 2025-01-13
-**Versiyon**: 2.0 (ÇÖP Okuma Entegrasyonu)
+**Versiyon**: 2.1 (Yerel Test ve Debug Araçları Entegrasyonu)

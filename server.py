@@ -18,6 +18,7 @@ from modules.oku import oku, oku_cop_pdf
 
 # Yeni modülleri import et
 from modules.getir_dbf import getir_dbf, download_and_extract_dbf_with_progress, retry_extract_all_files_with_progress, retry_extract_file
+from modules.getir_cop_oku import oku_cop_pdf as new_oku_cop_pdf, save_cop_results_to_db as new_save_cop_results_to_db
 from modules.getir_cop_oku import getir_cop
 from modules.getir_dm import getir_dm
 from modules.getir_bom import getir_bom
@@ -400,12 +401,26 @@ def api_process_cop_pdfs():
                             yield f"data: {json.dumps({'type': 'error', 'message': f'{alan_adi}: ÇÖP PDF indirilemedi'})}\\n\\n"
                             continue
                         
-                        # İndirilen dosyayı oku.py ile işle
-                        with redirect_stdout(io.StringIO()):
-                            parsed_data = oku(local_pdf_path)
+                        # YENİ SİSTEM: getir_cop_oku.py ile işle
+                        # PDF'yi yeni sistem ile analiz et
+                        cop_result = new_oku_cop_pdf(cop_url)
                         
-                        # İlk ÇÖP'ten ders bilgilerini kaydet
-                        saved_count = save_cop_parsed_data_to_db(cursor, parsed_data, alan_adi, sinif, cop_url)
+                        # Debug: PDF okuma sonucunu kontrol et
+                        if cop_result:
+                            yield f"data: {json.dumps({'type': 'info', 'message': f'{alan_adi}: PDF okuma durumu - {cop_result.get(\"metadata\", {}).get(\"status\", \"unknown\")}'})}\\n\\n"
+                            
+                            alan_bilgileri = cop_result.get('alan_bilgileri', {})
+                            dal_ders_listesi = alan_bilgileri.get('dal_ders_listesi', [])
+                            
+                            yield f"data: {json.dumps({'type': 'info', 'message': f'{alan_adi}: {len(dal_ders_listesi)} dal bulundu'})}\\n\\n"
+                        
+                        # Veritabanına kaydet
+                        if cop_result and cop_result.get('metadata', {}).get('status') == 'success':
+                            saved = new_save_cop_results_to_db(cop_result, db_path)
+                            saved_count = 1 if saved else 0
+                        else:
+                            saved_count = 0
+                            yield f"data: {json.dumps({'type': 'warning', 'message': f'{alan_adi}: PDF işlenemedi veya veri çıkarılamadı'})}\\n\\n"
                         total_saved += saved_count
                         
                         # Diğer ÇÖP'leri indir ve URL olarak ekle

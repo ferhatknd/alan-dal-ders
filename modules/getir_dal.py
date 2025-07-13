@@ -300,13 +300,20 @@ def getir_dal_with_db_integration():
     processed_provinces = 0
     
     for province_id, province_name in provinces.items():
+        processed_provinces += 1
         new_areas_in_province = 0
         new_branches_in_province = 0
+        
+        # İl başlangıç mesajı
+        yield {
+            'type': 'province_start',
+            'province_name': province_name.upper(),
+            'province_progress': f"({processed_provinces}/{total_provinces})"
+        }
         
         areas = get_areas_for_province(str(province_id))
         
         if not areas:
-            processed_provinces += 1
             # Alan bulunamasa bile ilerleme logunu göster
             yield {
                 'type': 'progress',
@@ -320,7 +327,19 @@ def getir_dal_with_db_integration():
             time.sleep(1.5) # Sunucuyu yormamak için bekleme
             continue # Sonraki ile geç
         
+        total_areas_in_province = len(areas)
+        processed_areas_in_province = 0
+        
         for area_value, area_name in areas.items():
+            processed_areas_in_province += 1
+            
+            # Alan işleme mesajı
+            yield {
+                'type': 'area_processing',
+                'area_name': area_name,
+                'area_progress': f"({processed_areas_in_province}/{total_areas_in_province})"
+            }
+            
             if area_name not in unique_areas_with_branches:
                 branches = get_branches_for_area(str(province_id), area_value)
                 
@@ -328,6 +347,13 @@ def getir_dal_with_db_integration():
                     unique_areas_with_branches[area_name] = branches
                     new_areas_in_province += 1
                     new_branches_in_province += len(branches)
+                    
+                    # Dal işleme mesajı
+                    yield {
+                        'type': 'branches_processing',
+                        'branches_count': len(branches),
+                        'total_branches': new_branches_in_province
+                    }
                     
                     # Veritabanına kaydet
                     area_id = save_area_and_branches_to_db(area_name, branches, db_path)
@@ -343,7 +369,6 @@ def getir_dal_with_db_integration():
                 
                 time.sleep(0.3)
         
-        processed_provinces += 1
         total_areas_found += new_areas_in_province
         total_branches_found += new_branches_in_province
 
@@ -392,10 +417,16 @@ def main():
         elif message['type'] == 'done':
             print(f"🎉 {message['message']}")
             break
+        elif message['type'] == 'province_start':
+            print(f"\n🏛️  İl: {message['province_name']} {message['province_progress']}")
+        elif message['type'] == 'area_processing':
+            print(f"  📋 Alan: {message['area_name']} {message['area_progress']}")
+        elif message['type'] == 'branches_processing':
+            print(f"    🌿 {message['branches_count']} dal bulundu (Toplam: {message['total_branches']})")
         elif message['type'] == 'progress':
-            print(f"Bakılan il: {message['province_name']} {message['province_progress']}")
-            print(f"Alan: {message['new_areas']}/{message['total_areas']}")
-            print(f"Dal: {message['new_branches']}/{message['total_branches']}\n")
+            print(f"✅ {message['province_name']} tamamlandı!")
+            print(f"   Yeni Alan: {message['new_areas']} (Toplam: {message['total_areas']})")
+            print(f"   Yeni Dal: {message['new_branches']} (Toplam: {message['total_branches']})\n")
         else:
             print(f"ℹ️  {message['message']}")
 

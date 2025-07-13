@@ -24,16 +24,22 @@ Alan (Area) → Dal (Field) → Ders (Course) → Öğrenme Birimi (Learning Uni
 - **`modules/oku.py`** - PDF parsing ve içerik analizi (ÇÖP, DBF, DM dosyaları için)
 - **`modules/getir_dbf.py`** - Ders Bilgi Formları (DBF) verilerini çeker, RAR/ZIP dosyalarını indirir ve açar
 - **`modules/getir_cop_oku.py`** - ⚠️ **ÖNEMLI**: Eskiden `getir_cop.py` idi, şimdi `getir_cop_oku.py` - Çerçeve Öğretim Programları (ÇÖP) verilerini çeker
+- **`modules/getir_cop_oku_local.py`** - ⭐ **YENİ**: Yerel PDF dosyalarını test etmek için standalone ÇÖP okuma modülü
 - **`modules/getir_dm.py`** - Ders Materyalleri (DM) verilerini çeker
 - **`modules/getir_bom.py`** - Bireysel Öğrenme Materyalleri (BÖM) verilerini çeker
 - **`modules/getir_dal.py`** - Alan-Dal ilişkilerini çeker
-- **`modules/utils.py`** - Yardımcı fonksiyonlar ve Türkçe karakter normalizasyonu
+- **`modules/utils.py`** - Yardımcı fonksiyonlar, Türkçe karakter normalizasyonu ve **PDF cache yönetimi**
 
 ### 🌐 Ana Dosyalar
 - **`server.py`** - Ana Flask sunucusu, tüm API endpoint'leri ve veritabanı işlemleri
 - **`src/App.js`** - Ana React komponenti, aşamalı iş akışı UI
 - **`data/temel_plan.db`** - SQLite veritabanı dosyası
 - **`data/schema.sql`** - Veritabanı schema dosyası
+
+### 🐛 Debug ve Test Araçları
+- **`debug_gida_table.py`** - PDF tablo yapısını detaylı analiz eden debug script
+- **`debug_meslek_dersleri.py`** - MESLEK DERSLERİ kategori algılama test aracı
+- **`*.pdf`** (kök dizin) - Test için kullanılan sample PDF dosyaları
 
 ## 🗄️ Veritabanı Yapısı (SQLite)
 
@@ -131,12 +137,17 @@ temel_plan_ders_dal
 **Dosya Organizasyonu:**
 ```
 data/dbf/
-├── Alan_Adi/
+├── {ID:02d}_-_{Alan_Adi}/
 │   ├── alan.rar (orijinal)
 │   ├── alan/ (açılmış)
 │   │   ├── 9.SINIF/
 │   │   ├── 10.SINIF/
 │   │   └── 11.SINIF/
+
+Örnek:
+├── 01_-_Adalet/
+├── 03_-_Bilişim_Teknolojileri/
+└── 04_-_Biyomedikal_Cihaz_Teknolojileri/
 ```
 
 **Kritik Özellikler:**
@@ -170,6 +181,23 @@ data/dbf/
 }
 ```
 
+**Dosya Organizasyonu:** ⭐ **YENİ ID Sistemi**
+```
+data/dm/
+├── {ID:02d}_-_{Alan_Adi}/
+│   ├── sinif_9/
+│   │   └── {ders_id:03d}_-_{Ders_Adi}.pdf
+│   ├── sinif_10/
+│   └── dm_metadata.json
+
+Örnek:
+├── 03_-_Bilişim_Teknolojileri/
+│   ├── sinif_9/
+│   │   ├── 001_-_Programlama_Temelleri.pdf
+│   │   └── 002_-_Bilgisayar_Donanım.pdf
+│   └── dm_metadata.json
+```
+
 **Kritik Mantık:**
 - Sınıf → Alan → Ders hiyerarşisi
 - Dinamik alan ID'lerini HTML'den çıkarma
@@ -199,6 +227,26 @@ data/dbf/
         ]
     }
 }
+```
+
+**Dosya Organizasyonu:** ⭐ **YENİ ID Sistemi**
+```
+data/bom/
+├── {ID:02d}_-_{Alan_Adi}/
+│   ├── {ders_id:03d}_-_{Ders_Adi}/
+│   │   ├── {modul_01}.pdf
+│   │   ├── {modul_02}.pdf
+│   │   └── modül_listesi.json
+│   ├── bom_metadata.json
+│   └── alan_bilgileri.json
+
+Örnek:
+├── 04_-_Biyomedikal_Cihaz_Teknolojileri/
+│   ├── 015_-_Medikal_Cihaz_Bakım/
+│   │   ├── Modül_01_Temel_Bilgiler.pdf
+│   │   ├── Modül_02_Uygulama.pdf
+│   │   └── modül_listesi.json
+│   └── bom_metadata.json
 ```
 
 ### 5. 📄 getir_dal.py
@@ -231,6 +279,74 @@ data/dbf/
 - `extract_ders_adi()` - Dosyadan ders adını çıkarır
 - `extract_text_from_pdf()` - PDF metin çıkarma
 - `extract_text_from_docx()` - DOCX metin çıkarma
+
+### 7. 📄 getir_cop_oku_local.py ⭐ **YENİ**
+
+**Amaç:** Yerel PDF dosyalarını test etmek için standalone ÇÖP okuma modülü.
+
+**Özellikler:**
+- Kök dizindeki PDF dosyalarını otomatik tarar
+- `modules/getir_cop_oku.py`'deki fonksiyonları kullanır (kod tekrarı yok)
+- Stand-alone çalışma desteği (import hatası durumunda sys.path yönetimi)
+- Terminal çıktısında detaylı analiz sonuçları
+
+**Ana Fonksiyonlar:**
+- `extract_alan_dal_ders_from_cop_file(pdf_path)` - Yerel PDF'den veri çıkarma
+- `oku_cop_pdf_file(pdf_path)` - Tek PDF dosyasını okuma
+- `oku_tum_pdfler(root_dir)` - Dizindeki tüm PDF'leri toplu okuma
+
+**Kullanım:**
+```bash
+# Script olarak çalıştırma
+python modules/getir_cop_oku_local.py
+
+# Modül olarak kullanma
+from modules.getir_cop_oku_local import oku_cop_pdf_file
+result = oku_cop_pdf_file("test.pdf")
+```
+
+### 8. 📄 utils.py - PDF Cache Yönetimi ⭐ **YENİ**
+
+**Amaç:** Merkezi PDF indirme ve cache yönetimi sistemi.
+
+**Yeni Fonksiyonlar:**
+- `download_and_cache_pdf(url, cache_type, alan_adi, additional_info)` - Organize PDF cache sistemi
+- `get_temp_pdf_path(url)` - Geçici dosya yolu oluşturma
+
+**Cache Yapısı:** ⭐ **YENİ ID Bazlı Organizasyon**
+```
+data/
+├── cop/     # Çerçeve Öğretim Programları
+│   └── {ID:02d}_-_{alan_adi}/
+│       └── cop_{sinif}_sinif_{yil}.pdf
+├── dbf/     # Ders Bilgi Formları  
+│   └── {ID:02d}_-_{alan_adi}/
+│       └── {alan}_dbf_package.rar
+├── dm/      # Ders Materyalleri
+│   └── {ID:02d}_-_{alan_adi}/
+│       └── sinif_{sinif}/
+│           └── {ders_id:03d}_-_{ders_adi}.pdf
+└── bom/     # Bireysel Öğrenme Materyalleri
+    └── {ID:02d}_-_{alan_adi}/
+        └── {ders_id:03d}_-_{ders_adi}/
+            └── {modul}.pdf
+
+Örnek:
+├── 03_-_Bilişim_Teknolojileri/
+│   ├── cop_9_sinif_2023.pdf
+│   ├── sinif_9/
+│   │   ├── 001_-_Programlama_Temelleri.pdf
+│   │   └── 002_-_Bilgisayar_Donanım.pdf
+│   └── 001_-_Programlama_Temelleri/
+│       ├── Modül_01_Temel_Kavramlar.pdf
+│       └── Modül_02_Uygulama.pdf
+```
+
+**Avantajları:**
+- Kod tekrarı önleme
+- Organize dosya yapısı
+- Otomatik cache kontrolü
+- Güvenli dosya adlandırma
 
 ## 🔌 API Endpoints
 
@@ -358,6 +474,39 @@ bom_data = getir_bom()
 from modules.oku import extract_ders_adi
 
 ders_adi = extract_ders_adi("/path/to/dbf/file.pdf")
+```
+
+### Yerel PDF Test ⭐ **YENİ**
+```python
+# Yerel PDF dosyalarını test etme
+from modules.getir_cop_oku_local import oku_cop_pdf_file, oku_tum_pdfler
+
+# Tek dosya analizi
+result = oku_cop_pdf_file("gida.pdf")
+print(result)
+
+# Tüm PDF'leri analiz et
+oku_tum_pdfler(".")  # Kök dizindeki tüm PDF'ler
+
+# Debug araçları
+python debug_gida_table.py      # Tablo yapısı analizi
+python debug_meslek_dersleri.py # MESLEK DERSLERİ algılama testi
+```
+
+### PDF Cache Yönetimi ⭐ **YENİ**
+```python
+from modules.utils import download_and_cache_pdf, get_temp_pdf_path
+
+# Organize cache sistemi
+file_path = download_and_cache_pdf(
+    url="https://example.com/cop.pdf",
+    cache_type="cop",
+    alan_adi="Bilişim Teknolojileri",
+    additional_info="9_sinif_2023"
+)
+
+# Geçici dosya
+temp_path = get_temp_pdf_path("https://example.com/test.pdf")
 ```
 
 ### Veritabanı Güncelleme
