@@ -446,7 +446,7 @@ def download_cop_to_folder(cop_url, alan_adi, sinif):
         os.makedirs(cop_folder, exist_ok=True)
         
         # Dosya adını oluştur
-        filename = f"cop_{sinif}_sinif.pdf"
+        filename = cop_url.split('/')[-1]
         file_path = os.path.join(cop_folder, filename)
         
         # Dosya zaten varsa indirme yap
