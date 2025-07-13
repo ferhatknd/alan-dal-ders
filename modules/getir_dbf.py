@@ -6,6 +6,10 @@ import shutil
 import rarfile
 import zipfile
 import re
+try:
+    from .oku import extract_ders_adi
+except ImportError:
+    from oku import extract_ders_adi
 
 BASE_DBF_URL = "https://meslek.meb.gov.tr/dbflistele.aspx"
 HEADERS = {
@@ -237,15 +241,150 @@ def retry_extract_all_files_with_progress():
                     print(msg)
                     yield {"type": "error", "message": msg}
 
+def extract_course_name_from_dbf(dbf_file_path):
+    """
+    DBF dosyasından ders adını çıkarır
+    """
+    try:
+        if os.path.exists(dbf_file_path) and dbf_file_path.lower().endswith(('.pdf', '.docx')):
+            ders_adi = extract_ders_adi(dbf_file_path)
+            return ders_adi.strip() if ders_adi else None
+    except Exception as e:
+        print(f"DBF dosyası okuma hatası ({dbf_file_path}): {e}")
+    return None
+
+def match_dbf_to_course_by_content(dbf_file_path, course_name):
+    """
+    DBF dosya içeriğinden çıkarılan ders adı ile veritabanındaki ders adını eşleştirir
+    """
+    extracted_course_name = extract_course_name_from_dbf(dbf_file_path)
+    
+    if not extracted_course_name:
+        return False, 0
+    
+    extracted_clean = extracted_course_name.lower().strip()
+    course_clean = course_name.lower().strip()
+    
+    # Tam eşleşme
+    if extracted_clean == course_clean:
+        return True, 100
+    
+    # Kısmi eşleşme
+    if extracted_clean in course_clean or course_clean in extracted_clean:
+        return True, 90
+    
+    # Kelime bazlı eşleşme
+    extracted_words = set(extracted_clean.split())
+    course_words = set(course_clean.split())
+    common_words = extracted_words.intersection(course_words)
+    
+    if len(common_words) > 0:
+        similarity = (len(common_words) * 2) / (len(extracted_words) + len(course_words)) * 100
+        if similarity > 70:
+            return True, similarity
+    
+    return False, 0
+
+def scan_dbf_files_and_extract_courses(alan_adi=None):
+    """
+    DBF klasörlerini tarar ve her dosyadan ders adını çıkarır
+    """
+    results = {}
+    
+    if not os.path.exists(DBF_ROOT_DIR):
+        return results
+    
+    alan_klasorleri = [d for d in os.listdir(DBF_ROOT_DIR) 
+                       if os.path.isdir(os.path.join(DBF_ROOT_DIR, d))]
+    
+    if alan_adi:
+        alan_klasorleri = [alan_adi] if alan_adi in alan_klasorleri else []
+    
+    for alan_klasor in alan_klasorleri:
+        alan_dir = os.path.join(DBF_ROOT_DIR, alan_klasor)
+        results[alan_klasor] = {}
+        
+        # Alan klasörü altındaki tüm klasörleri ve dosyaları tara
+        for root, dirs, files in os.walk(alan_dir):
+            for file in files:
+                if file.lower().endswith(('.pdf', '.docx')):
+                    file_path = os.path.join(root, file)
+                    relative_path = os.path.relpath(file_path, alan_dir)
+                    
+                    ders_adi = extract_course_name_from_dbf(file_path)
+                    if ders_adi:
+                        results[alan_klasor][relative_path] = {
+                            'ders_adi': ders_adi,
+                            'dosya_adi': file,
+                            'tam_yol': file_path
+                        }
+    
+    return results
+
 def main():
     """
-    DBF linklerini çek, indir ve aç.
+    DBF işlemleri ana menüsü
     """
-    print("DBF RAR/ZIP dosyaları toplanıyor...")
-    dbf_data = getir_dbf()
-    print("Tüm DBF linkleri alındı. İndirme ve açma işlemi başlıyor...")
-    download_and_extract_dbf(dbf_data)
-    print("Tüm işlemler tamamlandı.")
+    print("Ders Bilgi Formu (DBF) Getirici")
+    print("1. Veri Çek (9, 10, 11, 12. sınıflar)")
+    print("2. İndir ve Aç")
+    print("3. Yeniden Aç (Retry)")
+    print("4. DBF Dosyalarından Ders Adlarını Çıkar")
+    
+    choice = input("Seçiminizi yapın (1-4): ").strip()
+    
+    if choice == "1":
+        print("DBF verileri çekiliyor...")
+        dbf_data = getir_dbf()
+        if dbf_data:
+            print("✅ DBF verileri başarıyla çekildi!")
+            print(f"Toplam {sum(len(alanlar) for alanlar in dbf_data.values())} alan bulundu.")
+        else:
+            print("❌ DBF verileri çekilemedi!")
+    
+    elif choice == "2":
+        print("DBF verileri çekiliyor...")
+        dbf_data = getir_dbf()
+        if dbf_data:
+            print("✅ DBF verileri çekildi, indirme ve açma başlıyor...")
+            for message in download_and_extract_dbf_with_progress(dbf_data):
+                print(message["message"])
+        else:
+            print("❌ DBF verileri çekilemedi!")
+    
+    elif choice == "3":
+        print("Dosyalar yeniden açılıyor...")
+        for message in retry_extract_all_files_with_progress():
+            if message["type"] == "error":
+                print(f"🔴 {message['message']}")
+            else:
+                print(message["message"])
+    
+    elif choice == "4":
+        print("DBF dosyalarından ders adları çıkarılıyor...")
+        results = scan_dbf_files_and_extract_courses()
+        
+        if not results:
+            print("❌ DBF dosyası bulunamadı!")
+            return
+        
+        toplam_dosya = 0
+        basarili_dosya = 0
+        
+        for alan_adi, dosyalar in results.items():
+            print(f"\n📁 {alan_adi}:")
+            for dosya_yolu, bilgi in dosyalar.items():
+                toplam_dosya += 1
+                if bilgi['ders_adi']:
+                    basarili_dosya += 1
+                    print(f"  ✅ {bilgi['dosya_adi']} → {bilgi['ders_adi']}")
+                else:
+                    print(f"  ❌ {bilgi['dosya_adi']} → Ders adı çıkarılamadı")
+        
+        print(f"\n📊 Özet: {basarili_dosya}/{toplam_dosya} dosyadan ders adı çıkarıldı (%{basarili_dosya/toplam_dosya*100:.1f})")
+    
+    else:
+        print("Geçersiz seçim!")
 
 if __name__ == "__main__":
     main()

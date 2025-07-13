@@ -8,6 +8,267 @@ import json
 import requests
 import sys
 from datetime import datetime
+from abc import ABC, abstractmethod
+from typing import Dict, List, Any, Optional
+
+# ===========================
+# MODULAR REFACTORED CLASSES
+# ===========================
+
+class BaseExtractor(ABC):
+    """
+    Base class for all document extractors
+    """
+    
+    def get_tables(self, file_path: str) -> List[List[List[str]]]:
+        """
+        Extract tables from PDF or DOCX file
+        """
+        return get_tables_from_file(file_path)
+    
+    def clean_text(self, text: str) -> str:
+        """
+        Clean text by removing unnecessary characters and spaces
+        """
+        return clean_text(text)
+    
+    @abstractmethod
+    def extract_all(self, file_path: str) -> Dict[str, Any]:
+        """
+        Extract all relevant data from the document
+        """
+        pass
+    
+    def find_field_in_tables(self, tables: List[List[List[str]]], field_patterns: List[str], 
+                           search_strategy: str = 'comprehensive') -> Optional[str]:
+        """
+        Common field search logic for DBF documents
+        """
+        for table in tables:
+            for i, row in enumerate(table):
+                for j, cell in enumerate(row):
+                    if cell and isinstance(cell, str):
+                        cell_upper = cell.upper()
+                        for pattern in field_patterns:
+                            if pattern.upper() in cell_upper:
+                                # Found the field, now extract content
+                                content = self._extract_content_from_cell(
+                                    table, i, j, cell, search_strategy
+                                )
+                                if content:
+                                    return self.clean_text(content)
+        return None
+    
+    def _extract_content_from_cell(self, table: List[List[str]], row_idx: int, 
+                                 col_idx: int, cell: str, strategy: str) -> Optional[str]:
+        """
+        Extract content from cell using different strategies
+        """
+        # Same cell (after colon)
+        if ':' in cell:
+            content = cell.split(':', 1)[1].strip()
+            if content and content != 'None':
+                return content
+        
+        if strategy == 'comprehensive':
+            # Check previous row
+            if row_idx > 0:
+                prev_row = table[row_idx - 1]
+                for k in range(len(prev_row)):
+                    if prev_row[k] and str(prev_row[k]).strip():
+                        content = str(prev_row[k]).strip()
+                        if self._is_valid_content(content):
+                            return content
+            
+            # Check same row other columns
+            row = table[row_idx]
+            for k in range(len(row)):
+                if k != col_idx and row[k]:
+                    content = str(row[k]).strip()
+                    if self._is_valid_content(content):
+                        return content
+            
+            # Check next row
+            if row_idx + 1 < len(table):
+                next_row = table[row_idx + 1]
+                for next_cell in next_row:
+                    if next_cell:
+                        content = str(next_cell).strip()
+                        if self._is_valid_content(content):
+                            return content
+        
+        return None
+    
+    def _is_valid_content(self, content: str) -> bool:
+        """
+        Check if content is valid (not a field name or noise)
+        """
+        if not content or content == 'None' or len(content) <= 3:
+            return False
+        
+        exclude_keywords = ['DERSİN', 'ÖĞRENME', 'EĞİTİM', 'ÖLÇME', 'SINIF']
+        return not any(keyword in content.upper() for keyword in exclude_keywords)
+
+
+class DBFExtractor(BaseExtractor):
+    """
+    Extractor for DBF (Ders Bilgi Formu) documents
+    """
+    
+    def __init__(self):
+        self.field_mappings = {
+            'ders_adi': ['DERSİN ADI'],
+            'ders_sinifi': ['DERSİN SINIFI', 'SINIF'],
+            'ders_saati': ['DERSİN SÜRESİ', 'SÜRE', 'SAAT'],
+            'dersin_amaci': ['DERSİN AMACI', 'AMAÇ'],
+            'genel_kazanimlar': ['GENEL KAZANIMLAR', 'KAZANIM'],
+            'ortam_donanimi': ['ORTAM VE DONANIM', 'DONANIM'],
+            'olcme_degerlendirme': ['ÖLÇME VE DEĞERLENDİRME', 'DEĞERLENDİRME']
+        }
+    
+    def extract_all(self, file_path: str) -> Dict[str, Any]:
+        """
+        Extract all DBF fields using unified approach
+        """
+        tables = self.get_tables(file_path)
+        result = {}
+        
+        # Extract basic fields using common logic
+        for field_name, patterns in self.field_mappings.items():
+            if field_name in ['ders_adi', 'dersin_amaci']:
+                result[field_name] = self.find_field_in_tables(tables, patterns)
+            elif field_name == 'ders_sinifi':
+                result[field_name] = self._extract_ders_sinifi(tables)
+            elif field_name == 'ders_saati':
+                result[field_name] = self._extract_ders_saati(tables)
+            # Add other complex extractions as needed
+        
+        # Complex extractions that need special logic
+        result['genel_kazanimlar'] = self._extract_genel_kazanimlar(file_path)
+        result['ortam_donanimi'] = self._extract_ortam_donanimi(file_path)
+        result['kazanim_tablosu'] = self._extract_kazanim_tablosu(file_path)
+        result['ogrenme_birimleri'] = self._extract_ogrenme_birimleri(file_path)
+        result['uygulama_faaliyetleri'] = self._extract_uygulama_faaliyetleri(file_path)
+        result['olcme_degerlendirme'] = self._extract_olcme_degerlendirme(file_path)
+        
+        return result
+    
+    def _extract_ders_sinifi(self, tables: List[List[List[str]]]) -> Optional[str]:
+        """Extract class level with number conversion"""
+        content = self.find_field_in_tables(tables, ['DERSİN SINIFI', 'SINIF'])
+        if content:
+            numbers = re.findall(r'\d+', content)
+            return numbers[0] if numbers else content
+        return None
+    
+    def _extract_ders_saati(self, tables: List[List[List[str]]]) -> Optional[str]:
+        """Extract course duration"""
+        content = self.find_field_in_tables(tables, ['DERSİN SÜRESİ', 'SÜRE', 'SAAT'])
+        if content:
+            numbers = re.findall(r'\d+', content)
+            return numbers[0] if numbers else content
+        return None
+    
+    # Delegate complex extractions to existing functions for now
+    def _extract_genel_kazanimlar(self, file_path: str) -> List[str]:
+        return extract_genel_kazanimlar(file_path)
+    
+    def _extract_ortam_donanimi(self, file_path: str) -> List[str]:
+        return extract_ortam_donanimi(file_path)
+    
+    def _extract_kazanim_tablosu(self, file_path: str) -> List[Dict]:
+        return extract_kazanim_tablosu(file_path)
+    
+    def _extract_ogrenme_birimleri(self, file_path: str) -> List[Dict]:
+        return extract_ogrenme_birimleri(file_path)
+    
+    def _extract_uygulama_faaliyetleri(self, file_path: str) -> List[str]:
+        return extract_uygulama_faaliyetleri(file_path)
+    
+    def _extract_olcme_degerlendirme(self, file_path: str) -> List[str]:
+        return extract_olcme_degerlendirme(file_path)
+
+
+class COPExtractor(BaseExtractor):
+    """
+    Extractor for COP (Çerçeve Öğretim Programı) documents
+    """
+    
+    def extract_all(self, file_path: str) -> Dict[str, Any]:
+        """
+        Extract Alan-Dal-Ders relationships from COP documents
+        """
+        # Delegate to existing COP functions for now
+        if file_path.startswith('http'):
+            return oku_cop_pdf(file_path)
+        else:
+            # Handle local COP files if needed
+            return {"error": "Local COP processing not implemented"}
+
+
+class DocumentProcessor:
+    """
+    Main processor that coordinates different extractors
+    """
+    
+    def __init__(self):
+        self.extractors = {
+            'DBF': DBFExtractor(),
+            'COP': COPExtractor()
+        }
+    
+    def detect_document_type(self, file_path: str) -> str:
+        """
+        Detect document type based on file path or content
+        """
+        if 'cop' in file_path.lower() or 'meslek.meb.gov.tr' in file_path:
+            return 'COP'
+        else:
+            return 'DBF'  # Default to DBF for regular PDF/DOCX
+    
+    def process_document(self, file_path: str, doc_type: str = None) -> Dict[str, Any]:
+        """
+        Process document using appropriate extractor
+        """
+        if doc_type is None:
+            doc_type = self.detect_document_type(file_path)
+        
+        extractor = self.extractors.get(doc_type)
+        if not extractor:
+            raise ValueError(f"Unsupported document type: {doc_type}")
+        
+        return extractor.extract_all(file_path)
+    
+    def extract_field(self, file_path: str, field_name: str) -> Any:
+        """
+        Extract a single field from document
+        """
+        doc_type = self.detect_document_type(file_path)
+        extractor = self.extractors.get(doc_type)
+        
+        if doc_type == 'DBF' and field_name in extractor.field_mappings:
+            tables = extractor.get_tables(file_path)
+            patterns = extractor.field_mappings[field_name]
+            
+            if field_name == 'ders_adi':
+                return extractor.find_field_in_tables(tables, patterns)
+            elif field_name == 'ders_sinifi':
+                return extractor._extract_ders_sinifi(tables)
+            elif field_name == 'ders_saati':
+                return extractor._extract_ders_saati(tables)
+            else:
+                return extractor.find_field_in_tables(tables, patterns)
+        
+        return None
+
+
+# Global processor instance
+_processor = DocumentProcessor()
+
+
+# ===========================
+# LEGACY FUNCTIONS (BACKWARD COMPATIBILITY)
+# ===========================
 
 def get_tables_from_file(file_path):
     """
@@ -57,43 +318,11 @@ def clean_text(text):
 def extract_ders_adi(file_path):
     """
     PDF veya DOCX dosyasından ders adını çıkar
+    [LEGACY WRAPPER - Uses new modular system]
     """
     try:
-        tables = get_tables_from_file(file_path)
-        for table in tables:
-            for i, row in enumerate(table):
-                for j, cell in enumerate(row):
-                    if cell and isinstance(cell, str) and 'DERSİN ADI' in cell.upper():
-                        # İçerik aynı hücrede ise
-                        if ':' in cell:
-                            content = cell.split(':', 1)[1].strip()
-                            if content:
-                                return clean_text(content)
-                        # Üst satırda ise (bazı dosyalarda kurs adı üst satırda olabilir)
-                        if i > 0:
-                            prev_row = table[i - 1]
-                            for k in range(len(prev_row)):
-                                if prev_row[k] and str(prev_row[k]).strip():
-                                    content = str(prev_row[k]).strip()
-                                    if content and content != 'None' and len(content) > 3:
-                                        if not any(keyword in content.upper() for keyword in ['DERSİN', 'ÖĞRENME', 'EĞİTİM', 'ÖLÇME', 'SINIF']):
-                                            return clean_text(content)
-                        # Satırın tüm hücrelerinde ara (çünkü veri farklı sütunda olabilir)
-                        for k in range(len(row)):
-                            if k != j and row[k]:
-                                content = str(row[k]).strip()
-                                if content and content != 'None' and len(content) > 3:
-                                    if not any(keyword in content.upper() for keyword in ['DERSİN', 'ÖĞRENME', 'EĞİTİM', 'ÖLÇME']):
-                                        return clean_text(content)
-                        # Alt satırda ise
-                        if i + 1 < len(table):
-                            next_row = table[i + 1]
-                            for next_cell in next_row:
-                                if next_cell:
-                                    content = str(next_cell).strip()
-                                    if content and not any(keyword in content.upper() for keyword in ['DERSİN', 'ÖĞRENME', 'EĞİTİM', 'ÖLÇME']):
-                                        return clean_text(content)
-        return None
+        processor = DocumentProcessor()
+        return processor.extract_field(file_path, 'ders_adi')
     except Exception as e:
         print(f"Error extracting ders adı: {str(e)}")
         return None
@@ -101,43 +330,11 @@ def extract_ders_adi(file_path):
 def extract_ders_sinifi(file_path):
     """
     PDF veya DOCX dosyasından ders sınıfını çıkar ve sayıya çevir
+    [LEGACY WRAPPER - Uses new modular system]
     """
     try:
-        tables = get_tables_from_file(file_path)
-        for table in tables:
-            for i, row in enumerate(table):
-                for j, cell in enumerate(row):
-                    if cell and isinstance(cell, str) and 'DERSİN SINIFI' in cell.upper():
-                        # İçerik aynı hücrede ise
-                        if ':' in cell:
-                            content = cell.split(':', 1)[1].strip()
-                        else:
-                            # Üst satırda ise (bazı dosyalarda değer üst satırda olabilir)
-                            content = None
-                            if i > 0:
-                                prev_row = table[i - 1]
-                                for k in range(len(prev_row)):
-                                    if prev_row[k] and str(prev_row[k]).strip():
-                                        cell_content = str(prev_row[k]).strip()
-                                        if (cell_content and 'DERSİN' not in cell_content.upper() and
-                                            len(cell_content) < 50 and re.search(r'\d', cell_content)):
-                                            content = cell_content
-                                            break
-                            # Satırın tüm hücrelerinde ara
-                            if not content:
-                                for k in range(len(row)):
-                                    if k != j and row[k]:
-                                        cell_content = str(row[k]).strip()
-                                        if cell_content and 'DERSİN' not in cell_content.upper():
-                                            content = cell_content
-                                            break
-                            if not content:
-                                continue
-                        if content:
-                            match = re.search(r'(\d+)', content)
-                            if match:
-                                return int(match.group(1))
-        return None
+        processor = DocumentProcessor()
+        return processor.extract_field(file_path, 'ders_sinifi')
     except Exception as e:
         print(f"Error extracting ders sınıfı: {str(e)}")
         return None
@@ -1689,25 +1886,40 @@ def oku_cop_pdf(pdf_url):
             "alan_bilgileri": {}
         }
 
+# ===========================
+# WRAPPER FUNCTIONS (BACKWARD COMPATIBILITY)
+# ===========================
+
 def oku(file_path):
     """
     PDF veya DOCX dosyasından tüm ders bilgilerini çıkar ve JSON formatında döndür
+    [LEGACY WRAPPER - Uses new modular system internally]
     """
     try:
+        # Use new modular system
+        processor = DocumentProcessor()
+        doc_type = processor.detect_document_type(file_path)
+        
+        if doc_type == 'COP':
+            # COP documents use different processing
+            return oku_cop_pdf(file_path)
+        
+        # DBF documents - use new extractor but maintain old output format
+        result_data = processor.process_document(file_path, 'DBF')
+        
         filename = os.path.basename(file_path)
         
-        # Temel bilgileri çıkar
-        ders_adi = extract_ders_adi(file_path)
-        ders_sinifi = extract_ders_sinifi(file_path)
-        ders_saati = extract_ders_saati(file_path)
-        dersin_amaci = extract_dersin_amaci(file_path)
-        # Diğer fonksiyonlar henüz güncellenmediği için eski parametreyle devam ediyor
-        genel_kazanimlar = extract_genel_kazanimlar(file_path)
-        ortam_donanimi = extract_ortam_donanimi(file_path)
-        olcme_degerlendirme = extract_olcme_degerlendirme(file_path)
-        kazanim_tablosu = extract_kazanim_tablosu(file_path)
-        ogrenme_birimleri = extract_ogrenme_birimleri(file_path)
-        uygulama_faaliyetleri = extract_uygulama_faaliyetleri(file_path)
+        # Extract data from new system
+        ders_adi = result_data.get('ders_adi')
+        ders_sinifi = result_data.get('ders_sinifi') 
+        ders_saati = result_data.get('ders_saati')
+        dersin_amaci = result_data.get('dersin_amaci')
+        genel_kazanimlar = result_data.get('genel_kazanimlar', [])
+        ortam_donanimi = result_data.get('ortam_donanimi', [])
+        olcme_degerlendirme = result_data.get('olcme_degerlendirme', [])
+        kazanim_tablosu = result_data.get('kazanim_tablosu', [])
+        ogrenme_birimleri = result_data.get('ogrenme_birimleri', [])
+        uygulama_faaliyetleri = result_data.get('uygulama_faaliyetleri', [])
         
         # İstatistikleri hesapla
         def kelime_sayisi(text):

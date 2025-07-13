@@ -32,15 +32,85 @@ CACHE_FILE = "data/scraped_data.json"
 @app.route('/api/get-cached-data')
 def get_cached_data():
     """
-    Önbelleğe alınmış veri dosyasını okur ve içeriğini JSON olarak döndürür.
+    Veritabanından UI için uygun formatta veri döndürür.
     """
-    if os.path.exists(CACHE_FILE):
-        try:
-            with open(CACHE_FILE, 'r', encoding='utf-8') as f:
-                return jsonify(json.load(f))
-        except (IOError, json.JSONDecodeError):
-            return jsonify({"error": "Cache file is corrupted"}), 500
-    return jsonify({}) # Dosya yoksa boş nesne döndür
+    try:
+        db_path = find_or_create_database()
+        if not db_path:
+            return jsonify({})
+        
+        with sqlite3.connect(db_path) as conn:
+            cursor = conn.cursor()
+            
+            # Alanları al
+            cursor.execute("""
+                SELECT id, alan_adi, cop_url 
+                FROM temel_plan_alan 
+                ORDER BY alan_adi
+            """)
+            alanlar_raw = cursor.fetchall()
+            
+            if not alanlar_raw:
+                return jsonify({})
+            
+            # UI formatında alan verisi oluştur
+            alanlar = {}
+            ortak_alan_indeksi = {}
+            
+            for alan_id, alan_adi, cop_url in alanlar_raw:
+                # Alan için dersleri al (dal üzerinden bağlantı)
+                cursor.execute("""
+                    SELECT DISTINCT d.ders_adi, d.sinif, d.dm_url, d.dbf_url
+                    FROM temel_plan_ders d
+                    JOIN temel_plan_ders_dal dd ON d.id = dd.ders_id
+                    JOIN temel_plan_dal dal ON dd.dal_id = dal.id
+                    WHERE dal.alan_id = ?
+                    ORDER BY d.ders_adi, d.sinif
+                """, (alan_id,))
+                dersler_raw = cursor.fetchall()
+                
+                # Dersleri UI formatında grupla
+                dersler = {}
+                for ders_adi, sinif, dm_url, dbf_url in dersler_raw:
+                    if dm_url and dm_url not in dersler:
+                        dersler[dm_url] = {
+                            'isim': ders_adi,
+                            'siniflar': [],
+                            'dbf_pdf_path': dbf_url
+                        }
+                    
+                    if dm_url and sinif and sinif not in dersler[dm_url]['siniflar']:
+                        dersler[dm_url]['siniflar'].append(str(sinif))
+                
+                # Alan verisini oluştur
+                alanlar[str(alan_id)] = {
+                    'isim': alan_adi,
+                    'dersler': dersler,
+                    'cop_bilgileri': {
+                        '9': {'link': cop_url, 'guncelleme_yili': '2024'}
+                    } if cop_url else {},
+                    'dbf_bilgileri': {}
+                }
+            
+            # UI beklediği format
+            result = {
+                'alanlar': alanlar,
+                'ortak_alan_indeksi': ortak_alan_indeksi
+            }
+            
+            return jsonify(result)
+            
+    except Exception as e:
+        print(f"Cache data error: {e}")
+        # Fallback: eski JSON dosyası varsa onu dön
+        if os.path.exists(CACHE_FILE):
+            try:
+                with open(CACHE_FILE, 'r', encoding='utf-8') as f:
+                    return jsonify(json.load(f))
+            except:
+                pass
+        
+        return jsonify({})
 
 @app.route('/api/scrape-stream')
 def scrape_stream():

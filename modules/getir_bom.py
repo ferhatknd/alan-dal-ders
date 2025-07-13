@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+# Doğru URL: https://meslek.meb.gov.tr/moduller (debug ile doğrulandı)
 BASE_BOM_URL = "https://meslek.meb.gov.tr/moduller"
 BASE_OPTIONS_URL = "https://meslek.meb.gov.tr/cercevelistele.aspx"
 HEADERS = {
@@ -86,7 +87,11 @@ def get_bom_for_alan(alan_id, alan_adi, session):
                         modul_adi = cols[0].get_text(strip=True)
                         link_tag = cols[1].find('a', href=True)
                         if link_tag:
-                            full_link = requests.compat.urljoin("https://megep.meb.gov.tr/", link_tag['href'])
+                            # URL base'ini meslek.meb.gov.tr olarak değiştir
+                            if link_tag['href'].startswith('http'):
+                                full_link = link_tag['href']
+                            else:
+                                full_link = requests.compat.urljoin("https://meslek.meb.gov.tr/", link_tag['href'])
                             ders_modulleri.append({"isim": modul_adi, "link": full_link})
             
             if ders_modulleri:
