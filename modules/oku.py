@@ -270,39 +270,7 @@ _processor = DocumentProcessor()
 # LEGACY FUNCTIONS (BACKWARD COMPATIBILITY)
 # ===========================
 
-def get_tables_from_file(file_path):
-    """
-    PDF veya DOCX dosyasından tablo listesini döndürür.
-    PDF için: pdfplumber, DOCX için: python-docx kullanır.
-    """
-    if file_path.lower().endswith('.pdf'):
-        try:
-            import pdfplumber
-            with pdfplumber.open(file_path) as pdf:
-                tables = []
-                for page in pdf.pages:
-                    tables.extend(page.extract_tables())
-                return tables
-        except Exception as e:
-            print(f"PDF tablo okuma hatası: {e}")
-            return []
-    elif file_path.lower().endswith('.docx'):
-        try:
-            import docx
-            doc = docx.Document(file_path)
-            tables = []
-            for table in doc.tables:
-                table_data = []
-                for row in table.rows:
-                    table_data.append([cell.text for cell in row.cells])
-                tables.append(table_data)
-            return tables
-        except Exception as e:
-            print(f"DOCX tablo okuma hatası: {e}")
-            return []
-    else:
-        print("Desteklenmeyen dosya formatı.")
-        return []
+# get_tables_from_file fonksiyonu kaldırıldı - kullanılmıyor
 
 def clean_text(text):
     """

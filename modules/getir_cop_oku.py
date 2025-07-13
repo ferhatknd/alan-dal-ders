@@ -28,21 +28,93 @@ def find_alan_name_in_text(text: str, pdf_url: str) -> Optional[str]:
     """
     PDF metninden alan adını çıkar
     """
-    # Metinden alan adını bulmaya çalış
+    # 1. Önce URL'den alan adını tahmin etmeye çalış
+    url_alan = extract_alan_from_url(pdf_url)
+    
+    # 2. Metinden alan adını bulmaya çalış
     lines = text.split('\n')
-    for i, line in enumerate(lines[:50]):  # İlk 50 satırda ara
+    found_alan = None
+    
+    for i, line in enumerate(lines[:100]):  # İlk 100 satırda ara
         line_clean = clean_text(line).strip()
         line_upper = line_clean.upper()
         
-        # "ALAN ADI" pattern'ini ara
+        # Pattern 1: "XXX ALANI" biçimindeki başlıklar
+        if line_upper.endswith(' ALANI') and len(line_clean) > 10:
+            alan_adi = line_upper.replace(' ALANI', '').strip()
+            # Gereksiz kelimeler içermiyorsa ve rakam ile başlamıyorsa
+            if (not any(bad in alan_adi for bad in ["ÇERÇEVE", "ÖĞRETİM", "PROGRAM", "AMAÇLAR", "5."]) 
+                and not alan_adi[0].isdigit()):
+                found_alan = normalize_to_title_case_tr(alan_adi)
+                break
+        
+        # Pattern 2: "ALAN ADI" sonrası
         if 'ALAN' in line_upper and ('ADI' in line_upper or 'ALANI' in line_upper):
             # Sonraki satırları kontrol et
             for j in range(i + 1, min(i + 5, len(lines))):
                 next_line = clean_text(lines[j]).strip()
-                if len(next_line) > 5 and not next_line.upper().startswith('T.C.'):
-                    return normalize_to_title_case_tr(next_line)
+                if (len(next_line) > 5 and not next_line.upper().startswith('T.C.') 
+                    and not any(bad in next_line.upper() for bad in ["ÇERÇEVE", "ÖĞRETİM", "PROGRAM", "AMAÇLAR", "5."])):
+                    found_alan = normalize_to_title_case_tr(next_line)
+                    break
+    
+    # 3. PDF'den bulunan alan adı geçerliyse kullan, değilse URL'den fallback
+    # Eğer bulunan alan adı mantıklı değilse (çok uzun, gereksiz kelimeler içeriyorsa) fallback kullan
+    if found_alan and len(found_alan) > 3:
+        if (len(found_alan) < 100 and  # Çok uzun değil
+            not any(bad in found_alan.upper() for bad in ["AMAÇLARI", "ÜRETIMIN", "KADEMESINDE", "5.1.", "5.2.", "5.3."])):
+            return found_alan
+    
+    # 4. Hiçbir şey bulunamazsa URL'den tahmin edilen alan adını kullan
+    if url_alan:
+        print(f"⚠️  PDF'den alan adı bulunamadı, URL'den tahmin ediliyor: {url_alan}")
+        return url_alan
     
     return None
+
+def extract_alan_from_url(pdf_url: str) -> Optional[str]:
+    """
+    PDF URL'sinden alan adını tahmin et
+    Örnek: https://meslek.meb.gov.tr/upload/cop12/adalet_12.pdf -> Adalet
+    """
+    if not pdf_url:
+        return None
+        
+    try:
+        # URL'den dosya adını çıkar
+        filename = pdf_url.split('/')[-1]
+        
+        # Alan adı mapping'i
+        alan_mapping = {
+            'adalet': 'Adalet',
+            'aile': 'Aile ve Tüketici Hizmetleri',
+            'bilisim': 'Bilişim Teknolojileri',
+            'biyomedikal': 'Biyomedikal Cihaz Teknolojileri',
+            'buro': 'Büro Yönetimi ve Yönetici Asistanlığı',
+            'cocukgelisimi': 'Çocuk Gelişimi ve Eğitimi',
+            'denizcilik': 'Denizcilik',
+            'elektrik': 'Elektrik-Elektronik Teknolojisi',
+            'gida': 'Gıda Teknolojisi',
+            'saglik': 'Sağlık Hizmetleri',
+            'makine': 'Makine ve Tasarım Teknolojisi',
+            'motorluarac': 'Motorlu Araçlar Teknolojisi',
+            'tekstil': 'Tekstil Teknolojisi',
+            'insaat': 'İnşaat Teknolojisi',
+            'muhasebepro': 'Muhasebe ve Finansman',
+            'pazarlama': 'Pazarlama ve Perakende'
+        }
+        
+        # Dosya adından alan kısmını çıkar (örn: adalet_12.pdf -> adalet)
+        for key, value in alan_mapping.items():
+            if key in filename.lower():
+                return value
+                
+        # Mapping'de yoksa dosya adından tahmin et
+        base_name = filename.replace('.pdf', '').split('_')[0]
+        return normalize_to_title_case_tr(base_name)
+        
+    except:
+        return None
 
 
 def find_dallar_in_text(text: str) -> List[str]:
@@ -768,7 +840,7 @@ def save_cop_results_to_db(cop_results: Dict[str, Any], db_path: str, meb_alan_i
                 
                 # Dersleri kaydet
                 for ders_adi in dersler:
-                    if ders_adi.strip():
+                    if isinstance(ders_adi, str) and ders_adi.strip():
                         # Ders var mı kontrol et
                         cursor.execute(
                             "SELECT id FROM temel_plan_ders WHERE ders_adi = ?",

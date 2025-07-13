@@ -39,6 +39,7 @@ Alan (Area) → Dal (Field) → Ders (Course) → Öğrenme Birimi (Learning Uni
 ### 🐛 Debug ve Test Araçları
 - **`debug_gida_table.py`** - PDF tablo yapısını detaylı analiz eden debug script
 - **`debug_meslek_dersleri.py`** - MESLEK DERSLERİ kategori algılama test aracı
+- **`debug_cop_system.py`** - ⭐ **YENİ**: COP sistemi kapsamlı debug aracı, PDF indirme/okuma/veritabanı testleri
 - **`*.pdf`** (kök dizin) - Test için kullanılan sample PDF dosyaları
 
 ## 🗄️ Veritabanı Yapısı (SQLite)
@@ -116,17 +117,21 @@ temel_plan_ders_dal
 
 **Ana Fonksiyonlar:**
 - `clean_text(text)` - Metni temizler
-- `find_alan_name_in_text(text, pdf_url)` - PDF'den alan adını çıkarır
+- `find_alan_name_in_text(text, pdf_url)` - ⭐ **İYİLEŞTİRİLDİ**: PDF'den alan adını çıkarır + URL fallback sistemi
+- `extract_alan_from_url(pdf_url)` - ⭐ **YENİ**: URL'den alan adı tahmin eder
 - `find_dallar_in_text(text)` - PDF'den dal listesini çıkarır
 - `find_lessons_in_cop_pdf(pdf, alan_adi)` - Dal-ders eşleştirmesi yapar
-- `extract_alan_dal_ders_from_cop_pdf(pdf_url)` - Ana işlev, alan/dal/ders bilgilerini çıkarır
+- `extract_alan_dal_ders_from_cop_pdf(pdf_url, cache)` - Ana işlev, alan/dal/ders bilgilerini çıkarır
 - `oku_cop_pdf(pdf_url)` - JSON formatında sonuç döndürür
+- `save_cop_results_to_db(cop_results, db_path, meb_alan_id)` - ⭐ **YENİ**: Veritabanı entegrasyonu
 
 **Kritik Mantık:**
 - Her sınıf için (9-12) paralel HTTP istekleri
-- "HAFTALIK DERS ÇİZELGESİ" bölümlerinden dal-ders eşleştirmesi
+- **URL-based fallback**: PDF'den alan adı bulunamazsa URL'den tahmin
+- "HAFTALIK DERS ÇİZELGESİ" bölümlerinden dal-ders eşleştirmesi  
 - "MESLEK DERSLERİ" tablolarından ders listesi çıkarma
-- Fuzzy matching ile veritabanı eşleştirmesi
+- **Alan adı mapping**: 16 yaygın alan için özel URL-isim eşleştirmesi
+- **Veritabanı entegrasyonu**: Otomatik alan/dal/ders kaydı
 
 ### 2. 📄 getir_dbf.py
 

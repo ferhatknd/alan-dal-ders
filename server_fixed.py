@@ -362,22 +362,26 @@ def api_process_cop_pdfs():
     def generate():
         try:
             # İlk olarak ÇÖP verilerini çek
-            yield f"data: {json.dumps({'type': 'status', 'message': 'ÇÖP verileri çekiliyor...'})}\\n\\n"
+            yield f"data: {json.dumps({'type': 'status', 'message': 'ÇÖP verileri çekiliyor...'})}\n\n"
             cop_data = getir_cop()
             
             if not cop_data:
-                yield f"data: {json.dumps({'type': 'error', 'message': 'ÇÖP verileri çekilemedi'})}\\n\\n"
+                yield f"data: {json.dumps({'type': 'error', 'message': 'ÇÖP verileri çekilemedi'})}\n\n"
                 return
             
             # Veritabanını bul/oluştur
             db_path = find_or_create_database()
             if not db_path:
-                yield f"data: {json.dumps({'type': 'error', 'message': 'Veritabanı bulunamadı veya oluşturulamadı'})}\\n\\n"
+                yield f"data: {json.dumps({'type': 'error', 'message': 'Veritabanı bulunamadı veya oluşturulamadı'}})}
+
+"
                 return
             
             # Alan bazında ÇÖP'leri grupla
             alan_cop_mapping = group_cops_by_alan(cop_data)
-            yield f"data: {json.dumps({'type': 'status', 'message': f'{len(alan_cop_mapping)} farklı alan tespit edildi'})}\\n\\n"
+            yield f"data: {json.dumps({'type': 'status', 'message': f'{len(alan_cop_mapping)} farklı alan tespit edildi'}})}
+
+"
             
             total_processed = 0
             total_saved = 0
@@ -388,7 +392,9 @@ def api_process_cop_pdfs():
                 # Her alan için işlem yap
                 for alan_adi, cop_list in alan_cop_mapping.items():
                     try:
-                        yield f"data: {json.dumps({'type': 'status', 'message': f'{alan_adi} alanı işleniyor ({len(cop_list)} ÇÖP dosyası)...'})}\\n\\n"
+                        yield f"data: {json.dumps({'type': 'status', 'message': f'{alan_adi} alanı işleniyor ({len(cop_list)} ÇÖP dosyası)...'}})}
+
+"
                         
                         # İlk ÇÖP'ten ders bilgilerini al
                         first_cop = cop_list[0]
@@ -398,7 +404,9 @@ def api_process_cop_pdfs():
                         # PDF'yi kalıcı klasöre indir
                         local_pdf_path = download_cop_to_folder(cop_url, alan_adi, sinif)
                         if not local_pdf_path:
-                            yield f"data: {json.dumps({'type': 'error', 'message': f'{alan_adi}: ÇÖP PDF indirilemedi'})}\\n\\n"
+                            yield f"data: {json.dumps({'type': 'error', 'message': f'{alan_adi}: ÇÖP PDF indirilemedi'}})}
+
+"
                             continue
                         
                         # YENİ SİSTEM: getir_cop_oku.py ile işle
@@ -433,22 +441,32 @@ def api_process_cop_pdfs():
                             # Diğer ÇÖP'leri de kalıcı klasöre indir
                             other_pdf_path = download_cop_to_folder(other_url, alan_adi, other_sinif)
                             if other_pdf_path:
-                                yield f"data: {json.dumps({'type': 'info', 'message': f'{alan_adi}: {i+1}. ÇÖP ({other_sinif}. sınıf) indirildi'})}\\n\\n"
+                                yield f"data: {json.dumps({'type': 'info', 'message': f'{alan_adi}: {i+1}. ÇÖP ({other_sinif}. sınıf) indirildi'}})}
+
+"
                             
                             # Alan zaten var, sadece URL'i merge et
                             get_or_create_alan(cursor, alan_adi, None, other_url, None)
                         
                         conn.commit()
                         total_processed += 1
-                        yield f"data: {json.dumps({'type': 'success', 'message': f'{alan_adi}: {saved_count} ders kaydedildi, {len(cop_list)} ÇÖP URL birleştirildi'})}\\n\\n"
+                        yield f"data: {json.dumps({'type': 'success', 'message': f'{alan_adi}: {saved_count} ders kaydedildi, {len(cop_list)} ÇÖP URL birleştirildi'}})}
+
+"
                             
                     except Exception as e:
-                        yield f"data: {json.dumps({'type': 'error', 'message': f'{alan_adi} işlenirken hata: {str(e)}'})}\\n\\n"
+                        yield f"data: {json.dumps({'type': 'error', 'message': f'{alan_adi} işlenirken hata: {str(e)}'}})}
+
+"
             
-            yield f"data: {json.dumps({'type': 'done', 'message': f'İşlem tamamlandı! {total_processed} alan işlendi, toplam {total_saved} ders kaydedildi.'})}\\n\\n"
+            yield f"data: {json.dumps({'type': 'done', 'message': f'İşlem tamamlandı! {total_processed} alan işlendi, toplam {total_saved} ders kaydedildi.'}})}
+
+"
             
         except Exception as e:
-            yield f"data: {json.dumps({'type': 'error', 'message': f'Genel hata: {str(e)}'})}\\n\\n"
+            yield f"data: {json.dumps({'type': 'error', 'message': f'Genel hata: {str(e)}'}})}
+
+"
     
     return Response(generate(), mimetype='text/event-stream')
 
@@ -547,16 +565,22 @@ def api_update_ders_saatleri_from_dbf():
             # Veritabanını bul/oluştur
             db_path = find_or_create_database()
             if not db_path:
-                yield f"data: {json.dumps({'type': 'error', 'message': 'Veritabanı bulunamadı veya oluşturulamadı'})}\\n\\n"
+                yield f"data: {json.dumps({'type': 'error', 'message': 'Veritabanı bulunamadı veya oluşturulamadı'}})}
+
+"
                 return
             
             # DBF klasörünü kontrol et
             dbf_folder = "dbf"
             if not os.path.exists(dbf_folder):
-                yield f"data: {json.dumps({'type': 'error', 'message': 'DBF klasörü bulunamadı. Önce DBF dosyalarını indirin.'})}\\n\\n"
+                yield f"data: {json.dumps({'type': 'error', 'message': 'DBF klasörü bulunamadı. Önce DBF dosyalarını indirin.'}})}
+
+"
                 return
             
-            yield f"data: {json.dumps({'type': 'status', 'message': 'DBF dosyaları taranıyor...'})}\\n\\n"
+            yield f"data: {json.dumps({'type': 'status', 'message': 'DBF dosyaları taranıyor...'}})}
+
+"
             
             total_updated = 0
             total_processed = 0
@@ -568,14 +592,18 @@ def api_update_ders_saatleri_from_dbf():
                     if file.lower().endswith(('.pdf', '.docx')):
                         dbf_files.append(os.path.join(root, file))
             
-            yield f"data: {json.dumps({'type': 'status', 'message': f'{len(dbf_files)} DBF dosyası bulundu. İşleniyor...'})}\\n\\n"
+            yield f"data: {json.dumps({'type': 'status', 'message': f'{len(dbf_files)} DBF dosyası bulundu. İşleniyor...'}})}
+
+"
             
             with sqlite3.connect(db_path) as conn:
                 cursor = conn.cursor()
                 
                 for dbf_file in dbf_files:
                     try:
-                        yield f"data: {json.dumps({'type': 'status', 'message': f'{os.path.basename(dbf_file)} işleniyor...'})}\\n\\n"
+                        yield f"data: {json.dumps({'type': 'status', 'message': f'{os.path.basename(dbf_file)} işleniyor...'}})}
+
+"
                         
                         # oku.py ile DBF dosyasını işle
                         with redirect_stdout(io.StringIO()):
@@ -586,25 +614,35 @@ def api_update_ders_saatleri_from_dbf():
                             total_updated += updated_count
                             
                             if updated_count > 0:
-                                yield f"data: {json.dumps({'type': 'success', 'message': f'{os.path.basename(dbf_file)}: {updated_count} ders güncellendi'})}\\n\\n"
+                                yield f"data: {json.dumps({'type': 'success', 'message': f'{os.path.basename(dbf_file)}: {updated_count} ders güncellendi'}})}
+
+"
                         
                         total_processed += 1
                         
                         # Her 10 dosyada bir commit yap
                         if total_processed % 10 == 0:
                             conn.commit()
-                            yield f"data: {json.dumps({'type': 'info', 'message': f'{total_processed}/{len(dbf_files)} dosya işlendi...'})}\\n\\n"
+                            yield f"data: {json.dumps({'type': 'info', 'message': f'{total_processed}/{len(dbf_files)} dosya işlendi...'}})}
+
+"
                             
                     except Exception as e:
-                        yield f"data: {json.dumps({'type': 'error', 'message': f'{os.path.basename(dbf_file)} işlenirken hata: {str(e)}'})}\\n\\n"
+                        yield f"data: {json.dumps({'type': 'error', 'message': f'{os.path.basename(dbf_file)} işlenirken hata: {str(e)}'}})}
+
+"
                 
                 # Final commit
                 conn.commit()
             
-            yield f"data: {json.dumps({'type': 'done', 'message': f'İşlem tamamlandı! {total_processed} DBF dosyası işlendi, {total_updated} ders saati güncellendi.'})}\\n\\n"
+            yield f"data: {json.dumps({'type': 'done', 'message': f'İşlem tamamlandı! {total_processed} DBF dosyası işlendi, {total_updated} ders saati güncellendi.'}})}
+
+"
             
         except Exception as e:
-            yield f"data: {json.dumps({'type': 'error', 'message': f'Genel hata: {str(e)}'})}\\n\\n"
+            yield f"data: {json.dumps({'type': 'error', 'message': f'Genel hata: {str(e)}'}})}
+
+"
     
     return Response(generate(), mimetype='text/event-stream')
 
