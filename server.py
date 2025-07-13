@@ -13,7 +13,7 @@ from contextlib import redirect_stdout, redirect_stderr
 # artık alanlar_ve_dersler3.py kullanmıyoruz, getir_* modülleri kullanıyoruz
 
 # oku.py'den fonksiyonları import ediyoruz
-from oku import oku
+from oku import oku, oku_cop_pdf
 
 # Yeni modülleri import et
 from getir_dbf import getir_dbf
@@ -301,6 +301,64 @@ def api_get_bom():
             
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route('/api/process-cop-pdfs')
+def api_process_cop_pdfs():
+    """
+    ÇÖP PDF'lerini oku.py ile işleyip alan-dal-ders ilişkisini çıkarır ve veritabanına kaydeder.
+    """
+    def generate():
+        try:
+            # İlk olarak ÇÖP verilerini çek
+            yield f"data: {json.dumps({'type': 'status', 'message': 'ÇÖP verileri çekiliyor...'})}\\n\\n"
+            cop_data = getir_cop()
+            
+            if not cop_data:
+                yield f"data: {json.dumps({'type': 'error', 'message': 'ÇÖP verileri çekilemedi'})}\\n\\n"
+                return
+            
+            # Veritabanını bul/oluştur
+            db_path = find_or_create_database()
+            if not db_path:
+                yield f"data: {json.dumps({'type': 'error', 'message': 'Veritabanı bulunamadı veya oluşturulamadı'})}\\n\\n"
+                return
+            
+            total_processed = 0
+            total_saved = 0
+            
+            # Her sınıf ve alan için PDF'leri işle
+            for sinif, sinif_data in cop_data.items():
+                for alan_adi, cop_info in sinif_data.items():
+                    cop_url = cop_info.get('link', '')
+                    if not cop_url:
+                        continue
+                    
+                    try:
+                        yield f"data: {json.dumps({'type': 'status', 'message': f'{alan_adi} ({sinif}. sınıf) ÇÖP PDF işleniyor...'})}\\n\\n"
+                        
+                        # oku_cop_pdf ile PDF'yi doğrudan URL'den işle
+                        with redirect_stdout(io.StringIO()):
+                            parsed_data = oku_cop_pdf(cop_url)
+                        
+                        # Veritabanına kaydet
+                        with sqlite3.connect(db_path) as conn:
+                            cursor = conn.cursor()
+                            saved_count = save_cop_parsed_data_to_db(cursor, parsed_data, alan_adi, sinif, cop_url)
+                            conn.commit()
+                            total_saved += saved_count
+                        
+                        total_processed += 1
+                        yield f"data: {json.dumps({'type': 'success', 'message': f'{alan_adi} ({sinif}. sınıf): {saved_count} ders kaydedildi'})}\\n\\n"
+                            
+                    except Exception as e:
+                        yield f"data: {json.dumps({'type': 'error', 'message': f'{alan_adi} ({sinif}. sınıf) işlenirken hata: {str(e)}'})}\\n\\n"
+            
+            yield f"data: {json.dumps({'type': 'done', 'message': f'İşlem tamamlandı! {total_processed} PDF işlendi, toplam {total_saved} ders kaydedildi.'})}\\n\\n"
+            
+        except Exception as e:
+            yield f"data: {json.dumps({'type': 'error', 'message': f'Genel hata: {str(e)}'})}\\n\\n"
+    
+    return Response(generate(), mimetype='text/event-stream')
 
 @app.route('/api/scrape-to-db')
 def scrape_to_db():
@@ -739,6 +797,98 @@ def save_bom_data_to_db(cursor, bom_data):
             print(f"BOM güncelleme hatası: {ders_adi} - {str(e)}")
     
     return updated_count
+
+def save_cop_parsed_data_to_db(cursor, parsed_data, alan_adi, sinif, cop_url):
+    """
+    oku.py ile işlenmiş ÇÖP PDF verilerini temel_plan_* tablolarına kaydeder.
+    Gerçek oku.py çıktı formatına göre güncellendi.
+    """
+    saved_count = 0
+    
+    if not parsed_data or not isinstance(parsed_data, dict):
+        return saved_count
+    
+    try:
+        # alan_bilgileri bölümünü kontrol et
+        alan_bilgileri = parsed_data.get('alan_bilgileri', {})
+        if not alan_bilgileri:
+            print(f"alan_bilgileri bulunamadı: {alan_adi}")
+            return saved_count
+        
+        # Alan adını oku.py çıktısından al (daha doğru olabilir)
+        parsed_alan_adi = alan_bilgileri.get('alan_adi', alan_adi)
+        
+        # Alan kaydı/bulma
+        alan_id = get_or_create_alan(cursor, parsed_alan_adi, None, cop_url, None)
+        
+        # dal_ders_listesi'ni işle
+        dal_ders_listesi = alan_bilgileri.get('dal_ders_listesi', [])
+        
+        for dal_data in dal_ders_listesi:
+            if not isinstance(dal_data, dict):
+                continue
+                
+            dal_adi = dal_data.get('dal_adi', '').strip().rstrip(',')  # Sonundaki virgülü temizle
+            if not dal_adi:
+                continue
+                
+            # Dal kaydı/bulma
+            dal_id = get_or_create_dal(cursor, dal_adi, alan_id)
+            
+            # Dersler listesini işle
+            dersler = dal_data.get('dersler', [])
+            for ders_adi in dersler:
+                if isinstance(ders_adi, str) and ders_adi.strip():
+                    # Ders verilerini hazırla (ÇÖP'te sadece ders adı var)
+                    course_data = {
+                        'ders_adi': ders_adi.strip(),
+                        'sinif': sinif,
+                        'haftalik_ders_saati': '',  # ÇÖP'te bu bilgi yok
+                        'amaç': '',  # ÇÖP'te bu bilgi yok
+                        'alan_adi': parsed_alan_adi,
+                        'dal_adi': dal_adi,
+                        'ders_amaclari': [],  # ÇÖP'te bu bilgi yok
+                        'arac_gerec': [],  # ÇÖP'te bu bilgi yok
+                        'olcme_degerlendirme': [],  # ÇÖP'te bu bilgi yok
+                        'ogrenme_birimleri': [],  # ÇÖP'te bu bilgi yok
+                        'cop_url': cop_url
+                    }
+                    
+                    try:
+                        save_single_course(cursor, course_data)
+                        saved_count += 1
+                    except Exception as e:
+                        print(f"Ders kaydı hatası: {ders_adi} - {str(e)}")
+        
+        # Eğer dal yoksa ve doğrudan dersler varsa (nadiren olabilir)
+        if not dal_ders_listesi and 'dersler' in alan_bilgileri:
+            dersler = alan_bilgileri.get('dersler', [])
+            for ders_adi in dersler:
+                if isinstance(ders_adi, str) and ders_adi.strip():
+                    course_data = {
+                        'ders_adi': ders_adi.strip(),
+                        'sinif': sinif,
+                        'haftalik_ders_saati': '',
+                        'amaç': '',
+                        'alan_adi': parsed_alan_adi,
+                        'dal_adi': '',  # Dal bilgisi yok
+                        'ders_amaclari': [],
+                        'arac_gerec': [],
+                        'olcme_degerlendirme': [],
+                        'ogrenme_birimleri': [],
+                        'cop_url': cop_url
+                    }
+                    
+                    try:
+                        save_single_course(cursor, course_data)
+                        saved_count += 1
+                    except Exception as e:
+                        print(f"Ders kaydı hatası: {ders_adi} - {str(e)}")
+    
+    except Exception as e:
+        print(f"ÇÖP veri kayıt hatası: {alan_adi} - {str(e)}")
+    
+    return saved_count
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=True)

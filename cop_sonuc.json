@@ -1,0 +1,49 @@
+{
+  "metadata": {
+    "processed_at": "2025-07-12T23:03:03.390581",
+    "source_url": "https://meslek.meb.gov.tr/upload/cop9/metal_9.pdf",
+    "file_type": "COP_PDF",
+    "status": "success"
+  },
+  "alan_bilgileri": {
+    "alan_adi": "METAL TEKNOLOJİSİ",
+    "dal_sayisi": 2,
+    "toplam_ders_sayisi": 22,
+    "dal_ders_listesi": [
+      {
+        "dal_adi": "Metal Doğrama,",
+        "dersler": [
+          "TEKNİK RESİM",
+          "TEMEL KAYNAK ATÖLYESİ",
+          "METAL DOĞRAMA ATÖLYESİ",
+          "GAZ KORUMALI KAYNAK ATÖLYESİ",
+          "GAZ KORUMALI KAYNAK TEKNOLOJİSİ",
+          "ATÖLYE",
+          "BİLGİSAYARDA KATI MODELLEME",
+          "METAL DOĞRAMA TEKNOLOJİSİ",
+          "TEMEL KAYNAK TEKNOLOJİSİ",
+          "MESLEK TEKNOLOJİSİ",
+          "İŞLETMELERDE MESLEKİ EĞİTİM"
+        ],
+        "ders_sayisi": 11
+      },
+      {
+        "dal_adi": "Kaynakçılık",
+        "dersler": [
+          "TEKNİK RESİM",
+          "TEMEL KAYNAK ATÖLYESİ",
+          "ARK KAYNAK ATÖLYESİ",
+          "GAZ KORUMALI KAYNAK ATÖLYESİ",
+          "GAZ KORUMALI KAYNAK TEKNOLOJİSİ",
+          "ATÖLYE",
+          "BİLGİSAYARDA KATI MODELLEME",
+          "TEMEL KAYNAK TEKNOLOJİSİ",
+          "MESLEK TEKNOLOJİSİ",
+          "ARK KAYNAK TEKNOLOJİSİ",
+          "İŞLETMELERDE MESLEKİ EĞİTİM"
+        ],
+        "ders_sayisi": 11
+      }
+    ]
+  }
+}

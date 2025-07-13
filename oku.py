@@ -5,6 +5,8 @@ import re
 import os
 import glob
 import json
+import requests
+import sys
 from datetime import datetime
 
 def get_tables_from_file(file_path):
@@ -1095,6 +1097,598 @@ def analyze_measurement_content(content):
     
     return olcme_yontemleri
 
+# COP (Çerçeve Öğretim Programı) PDF okuma fonksiyonları
+def extract_alan_from_pdf_url(pdf_url):
+    """
+    PDF URL'sinden alan adını çıkar
+    """
+    try:
+        filename = pdf_url.split('/')[-1]
+        alan_name = filename.replace('.pdf', '').replace('_', ' ')
+        alan_name = ' '.join(word.upper() for word in alan_name.split())
+        
+        replacements = {
+            'ADALET': 'ADALET',
+            'AILE': 'AİLE VE TÜKETİCİ HİZMETLERİ',
+            'BILISIM': 'BİLİŞİM TEKNOLOJİLERİ', 
+            'ELEKTRIK': 'ELEKTRİK-ELEKTRONİK TEKNOLOJİSİ',
+            'INSAAT': 'İNŞAAT TEKNOLOJİSİ',
+            'MAKINE': 'MAKİNE TEKNOLOJİSİ',
+            'OTOMOTIV': 'OTOMOTİV TEKNOLOJİSİ'
+        }
+        
+        for key, value in replacements.items():
+            if key in alan_name:
+                alan_name = value
+                break
+        
+        return alan_name
+        
+    except Exception as e:
+        print(f"Alan adı çıkarma hatası: {e}")
+        return None
+
+def find_alan_name_in_text(text, pdf_url):
+    """
+    PDF metni içinden alan adını bul
+    """
+    alan_from_url = extract_alan_from_pdf_url(pdf_url)
+    
+    lines = text.split('\n')
+    for line in lines:
+        line_clean = clean_text(line.upper())
+        if 'ALANI' in line_clean and len(line_clean) < 100:
+            match = re.search(r'\d+\.\s*([A-ZÇĞIİÖŞÜ\s]+)\s+ALANI', line_clean)
+            if match:
+                alan_name = match.group(1).strip()
+                return alan_name
+    
+    return alan_from_url
+
+def find_dallar_in_text(text):
+    """
+    PDF metni içinden dal listesini bul
+    """
+    dallar = []
+    
+    alan_dal_pattern = r'(\w+\s+)*ALANI?\s+.*?(?:ÇERÇEVESİ?|ÇERÇEVE\s+ÖĞRETİM\s+PROGRAMI?).*?(?:aşağıdaki\s+dallar?|dallar?\s+yer\s+almaktadır|bulunmaktadır)'
+    
+    match = re.search(alan_dal_pattern, text, re.IGNORECASE | re.DOTALL)
+    
+    if match:
+        start_pos = match.end()
+        remaining_text = text[start_pos:]
+        lines = remaining_text.split('\n')
+        
+        for line in lines[:20]:
+            line_clean = clean_text(line).strip()
+            
+            dal_match = re.match(r'^\s*(\d+)\.\s*(.+)', line_clean)
+            if dal_match:
+                dal_name = dal_match.group(2).strip()
+                
+                if (len(dal_name) > 3 and len(dal_name) < 100 and
+                    not any(invalid in dal_name.lower() for invalid in 
+                           ['sayfa', 'bölüm', 'amaç', 'genel', 'kazanım', 'hedef', 'öğretim'])):
+                    dallar.append(dal_name)
+            
+            elif any(keyword in line_clean.lower() for keyword in 
+                    ['amaç', 'genel', 'öğretim', 'kazanım', 'hedef', '5.1', '5.2', '6.']):
+                break
+    
+    if not dallar:
+        known_branches = [
+            'Zabıt Kâtipliği', 'İnfaz ve Koruma', 'Adalet Meslek', 
+            'Hukuk Büro', 'Ceza İnfaz', 'Güvenlik', 'Adli Tıp',
+            'Zabıt Katipliği', 'Infaz ve Koruma'
+        ]
+        
+        for branch in known_branches:
+            if re.search(re.escape(branch), text, re.IGNORECASE):
+                if branch not in dallar:
+                    dallar.append(branch)
+        
+        lines = text.split('\n')
+        for line in lines:
+            line_clean = clean_text(line).strip()
+            
+            dal_match = re.match(r'^\s*([1-9])\.\s*([A-ZÇĞIİÖŞÜa-zçğıiöşü\s]{5,40})$', line_clean)
+            if dal_match:
+                dal_name = dal_match.group(2).strip()
+                
+                if (not any(invalid in dal_name.lower() for invalid in 
+                           ['program', 'öğretim', 'genel', 'amaç', 'süre', 'çerçeve', 'eğitim']) and
+                    dal_name not in dallar):
+                    dallar.append(dal_name)
+    
+    return dallar
+
+def find_lessons_in_cop_pdf(pdf, alan_adi):
+    """
+    COP PDF'sinden dal ve ders bilgilerini çıkar
+    HAFTALIK DERS ÇİZELGELERİ bölümünden dal-ders eşleştirmesi yapar
+    """
+    dal_ders_mapping = {}
+    
+    try:
+        # Tüm sayfaları tara
+        for page_num, page in enumerate(pdf.pages):
+            text = page.extract_text()
+            if not text:
+                continue
+            
+            lines = text.split('\n')
+            
+            # Dal ve ders çizelgesi bulmak için anahtar kelimeleri ara
+            for i, line in enumerate(lines):
+                line_clean = clean_text(line).strip()
+                
+                # HAFTALIK DERS ÇİZELGESİ içeren bölümleri bul
+                if 'HAFTALIK DERS ÇİZELGESİ' in line_clean.upper():
+                    # Bu bölümde dal adını bul
+                    dal_adi = find_dal_name_from_schedule_section(lines, i, alan_adi)
+                    
+                    if dal_adi:
+                        # Bu sayfa ve sonraki sayfalarda ders listesini ara
+                        dersler = extract_lessons_from_schedule_table(page, pdf, page_num)
+                        
+                        # Dal adını temizle ve ekle
+                        dal_adi_clean = clean_text(dal_adi)
+                        if dal_adi_clean not in dal_ders_mapping:
+                            dal_ders_mapping[dal_adi_clean] = []
+                        
+                        # Dersleri ekle (mevcut derslerle birleştir)
+                        existing_dersler = dal_ders_mapping[dal_adi_clean]
+                        combined_dersler = list(set(existing_dersler + dersler))
+                        dal_ders_mapping[dal_adi_clean] = combined_dersler
+    
+    except Exception as e:
+        print(f"Ders çıkarma hatası: {e}")
+    
+    return dal_ders_mapping
+
+def find_dal_name_from_schedule_section(lines, schedule_line_index, alan_adi):
+    """
+    HAFTALIK DERS ÇİZELGESİ bölümünden dal adını çıkar
+    """
+    # Schedule satırından önceki ve sonraki satırları kontrol et
+    search_range = range(max(0, schedule_line_index - 15), min(len(lines), schedule_line_index + 5))
+    
+    for i in search_range:
+        line = clean_text(lines[i]).strip()
+        line_upper = line.upper()
+        
+        # Dal adını belirten pattern'leri ara
+        # "ZABIT KÂTİPLİĞİ DALI" veya sadece "DALI" ile biten satırlar
+        if line_upper.endswith(' DALI'):
+            # "DALI" kelimesini kaldır ve dal adını al
+            dal_name = line_upper.replace(' DALI', '').strip()
+            if len(dal_name) > 3 and dal_name != alan_adi:
+                return dal_name
+        
+        # Alternatif: "(XXXX DALI)" formatında dal adı
+        dal_match = re.search(r'\(([^)]+)\s+DALI\)', line_upper)
+        if dal_match:
+            dal_name = dal_match.group(1).strip()
+            if len(dal_name) > 3:
+                return dal_name
+        
+        # Yeni pattern: Alan adından sonra gelen dal adları için
+        # Örnek: "ZABIT KÂTİPLİĞİ DALI ANADOLU MESLEK PROGRAMI"
+        if 'DALI' in line_upper and ('ANADOLU' in line_upper or 'PROGRAMI' in line_upper):
+            # DALI'den önceki kısmı al
+            dali_pos = line_upper.find(' DALI')
+            if dali_pos > 0:
+                potential_dal = line_upper[:dali_pos].strip()
+                # Alan adı değilse ve yeterince uzunsa
+                if potential_dal != alan_adi and len(potential_dal) > 3:
+                    return potential_dal
+    
+    return None
+
+def extract_lessons_from_schedule_table(page, pdf, page_num):
+    """
+    Sayfa tablolarından sadece MESLEK DERSLERİ bölümündeki dersleri çıkar
+    """
+    dersler = []
+    
+    try:
+        # Mevcut sayfadaki tabloları al
+        tables = page.extract_tables()
+        
+        for table_idx, table in enumerate(tables):
+            if not table:
+                continue
+            
+            # DERSLER sütununu bul
+            dersler_column_index = find_dersler_column_index(table)
+            
+            if dersler_column_index is not None:
+                # MESLEK DERSLERİ bölümünü bul
+                meslek_dersleri_section_found = False
+                
+                for row_idx, row in enumerate(table):
+                    # MESLEK DERSLERİ başlığını ara - çeşitli formatları kontrol et
+                    row_text = ' '.join([str(cell) if cell else '' for cell in row]).upper()
+                    
+                    # MESLEK DERSLERİ veya sadece MESLEK kelimesini ara
+                    if ('MESLEK DERSLERİ' in row_text or 
+                        'MESLEK DERSLER' in row_text or
+                        (row_text.strip() == 'MESLEK DERSLERİ') or
+                        (row_text.strip() == 'MESLEK') or
+                        ('MESLEK' in row_text and 'DERS' in row_text)):
+                        meslek_dersleri_section_found = True
+                        continue
+                    
+                    # MESLEK DERSLERİ bölümünde isek dersleri çıkar
+                    if meslek_dersleri_section_found:
+                        # Başka bir bölüm başladı mı kontrol et (GENEL, ORTAK vs.)
+                        if (any(keyword in row_text for keyword in ['GENEL', 'ORTAK', 'TOPLAM']) and
+                            'MESLEK' not in row_text):
+                            break
+                        
+                        # Ders adını al
+                        if len(row) > dersler_column_index and row[dersler_column_index]:
+                            ders_name = clean_text(str(row[dersler_column_index]))
+                            
+                            if is_valid_lesson_name(ders_name):
+                                # Ders adından (*), (**) gibi suffiksleri kaldır
+                                clean_ders_name = remove_lesson_suffixes(ders_name)
+                                if clean_ders_name:
+                                    dersler.append(clean_ders_name)
+        
+        # Eğer bu sayfada az ders bulunursa sonraki birkaç sayfayı da kontrol et
+        if len(dersler) < 5:
+            for next_page_offset in range(1, 4):  # Sonraki 3 sayfayı kontrol et
+                if page_num + next_page_offset < len(pdf.pages):
+                    next_page = pdf.pages[page_num + next_page_offset]
+                    next_tables = next_page.extract_tables()
+                    
+                    for table in next_tables:
+                        if not table:
+                            continue
+                        
+                        dersler_column_index = find_dersler_column_index(table)
+                        
+                        if dersler_column_index is not None:
+                            meslek_dersleri_section_found = False
+                            
+                            for row_idx, row in enumerate(table):
+                                row_text = ' '.join([str(cell) if cell else '' for cell in row]).upper()
+                                
+                                if 'MESLEK DERSLERİ' in row_text or 'MESLEK DERSLER' in row_text:
+                                    meslek_dersleri_section_found = True
+                                    continue
+                                
+                                if meslek_dersleri_section_found:
+                                    if (any(keyword in row_text for keyword in ['GENEL', 'ORTAK', 'TOPLAM']) and
+                                        'MESLEK' not in row_text):
+                                        break
+                                    
+                                    if len(row) > dersler_column_index and row[dersler_column_index]:
+                                        ders_name = clean_text(str(row[dersler_column_index]))
+                                        
+                                        if is_valid_lesson_name(ders_name):
+                                            clean_ders_name = remove_lesson_suffixes(ders_name)
+                                            if clean_ders_name:
+                                                dersler.append(clean_ders_name)
+    
+    except Exception as e:
+        print(f"Tablo ders çıkarma hatası: {e}")
+    
+    # Dublikatları kaldır ve sırala
+    return list(set(dersler))
+
+def is_valid_lesson_name(ders_name):
+    """
+    Geçerli bir ders adı olup olmadığını kontrol et
+    """
+    if not ders_name or len(ders_name) < 3:
+        return False
+    
+    ders_upper = ders_name.upper()
+    
+    # Geçersiz kelimeler
+    invalid_terms = [
+        'DERSLER', 'TOPLAM', 'NONE', '', 'SINIF', 'SAAT', 'NULL',
+        'HAFTALIK', 'DERS', 'ÇİZELGE', 'PROGRAM', 'ANADOLU'
+    ]
+    
+    if ders_upper in invalid_terms:
+        return False
+    
+    # Sadece sayı ise geçersiz
+    if ders_name.isdigit():
+        return False
+    
+    # Çok kısa ise geçersiz
+    if len(ders_name.strip()) < 3:
+        return False
+    
+    return True
+
+def normalize_turkish_text(text):
+    """
+    Türkçe metni normalize et (büyük/küçük harf, özel karakterler)
+    """
+    if not text:
+        return ""
+    
+    # Türkçe karakter dönüşümleri
+    replacements = {
+        'İ': 'I', 'ı': 'i', 'Ğ': 'G', 'ğ': 'g',
+        'Ü': 'U', 'ü': 'u', 'Ş': 'S', 'ş': 's',
+        'Ö': 'O', 'ö': 'o', 'Ç': 'C', 'ç': 'c'
+    }
+    
+    normalized = text.upper()
+    for tr_char, en_char in replacements.items():
+        normalized = normalized.replace(tr_char, en_char)
+    
+    # Fazla boşlukları temizle
+    normalized = re.sub(r'\s+', ' ', normalized.strip())
+    
+    return normalized
+
+def similarity_score(text1, text2):
+    """
+    İki metin arasında benzerlik skoru hesapla (0-1 arası)
+    """
+    if not text1 or not text2:
+        return 0.0
+    
+    # Kelime bazlı benzerlik
+    words1 = set(text1.split())
+    words2 = set(text2.split())
+    
+    intersection = words1.intersection(words2)
+    union = words1.union(words2)
+    
+    if not union:
+        return 0.0
+    
+    return len(intersection) / len(union)
+
+def remove_lesson_suffixes(ders_name):
+    """
+    Ders adından (*), (**), (***) gibi suffiksleri kaldır
+    """
+    if not ders_name:
+        return ""
+    
+    # (*), (**), (***) gibi suffiksleri kaldır
+    cleaned = re.sub(r'\s*\(\*+\)', '', ders_name)
+    
+    # Diğer parantezli suffiksleri de kaldır
+    cleaned = re.sub(r'\s*\([^)]*\*[^)]*\)', '', cleaned)
+    
+    return cleaned.strip()
+
+def find_alan_column_index(table):
+    """
+    Tabloda ALAN sütununun indeksini bul
+    """
+    if not table or len(table) == 0:
+        return None
+    
+    # İlk birkaç satırı header olarak kontrol et
+    for row_idx in range(min(3, len(table))):
+        row = table[row_idx]
+        
+        for col_idx, cell in enumerate(row):
+            if cell:
+                cell_upper = str(cell).upper()
+                if ('ALAN' in cell_upper and 
+                    ('DERS' not in cell_upper or 'DERSLER' not in cell_upper)):
+                    return col_idx
+    
+    return None
+
+def is_mesleki_lesson(alan_info):
+    """
+    Alan bilgisinden dersin mesleki ders olup olmadığını kontrol et
+    """
+    if not alan_info:
+        return True  # Alan bilgisi yoksa tümünü al
+    
+    alan_upper = alan_info.upper()
+    
+    # Mesleki dersleri belirten anahtar kelimeler
+    mesleki_keywords = [
+        'MESLEKİ', 'MESLEK', 'ALAN', 'DAL', 'UYGULAMA',
+        'TEKNİK', 'BRANŞ', 'ÖZEL', 'STAJ'
+    ]
+    
+    # Genel eğitim derslerini belirten anahtar kelimeler
+    genel_egitim_keywords = [
+        'GENEL', 'ORTAK', 'TEMEL', 'GENEL KÜLTÜR',
+        'KÜLTÜR', 'HAZIRLIK'
+    ]
+    
+    # Önce genel eğitim kontrolü
+    for keyword in genel_egitim_keywords:
+        if keyword in alan_upper:
+            return False
+    
+    # Sonra mesleki ders kontrolü
+    for keyword in mesleki_keywords:
+        if keyword in alan_upper:
+            return True
+    
+    # Belirsizse mesleki kabul et
+    return True
+
+def find_dersler_column_index(table):
+    """
+    Tabloda DERSLER sütununun indeksini bul
+    """
+    if not table or len(table) == 0:
+        return None
+    
+    # İlk birkaç satırı header olarak kontrol et
+    for row_idx in range(min(3, len(table))):
+        row = table[row_idx]
+        
+        for col_idx, cell in enumerate(row):
+            if cell:
+                cell_upper = str(cell).upper()
+                if 'DERSLER' in cell_upper or 'DERS ADI' in cell_upper:
+                    return col_idx
+    
+    return None
+
+def extract_alan_and_dallar_from_cop_pdf(pdf_url):
+    """
+    COP PDF'sinden alan adı ve dal listesini çıkar
+    """
+    try:
+        response = requests.get(pdf_url)
+        response.raise_for_status()
+        
+        temp_pdf_path = "temp_cop.pdf"
+        with open(temp_pdf_path, 'wb') as f:
+            f.write(response.content)
+        
+        alan_adi = None
+        dallar = []
+        
+        with pdfplumber.open(temp_pdf_path) as pdf:
+            full_text = ""
+            for page in pdf.pages:
+                page_text = page.extract_text()
+                if page_text:
+                    full_text += page_text + "\n"
+            
+            alan_adi = find_alan_name_in_text(full_text, pdf_url)
+            dallar = find_dallar_in_text(full_text)
+            dallar = list(set([clean_text(dal) for dal in dallar if dal and len(dal.strip()) > 3]))
+        
+        try:
+            os.remove(temp_pdf_path)
+        except:
+            pass
+        
+        return alan_adi, dallar
+        
+    except Exception as e:
+        print(f"COP PDF okuma hatası: {e}")
+        return None, []
+
+def extract_alan_dal_ders_from_cop_pdf(pdf_url):
+    """
+    COP PDF'sinden alan, dal ve ders bilgilerini çıkar
+    """
+    try:
+        response = requests.get(pdf_url)
+        response.raise_for_status()
+        
+        temp_pdf_path = "temp_cop.pdf"
+        with open(temp_pdf_path, 'wb') as f:
+            f.write(response.content)
+        
+        alan_adi = None
+        dallar = []
+        dal_ders_mapping = {}
+        
+        with pdfplumber.open(temp_pdf_path) as pdf:
+            full_text = ""
+            for page in pdf.pages:
+                page_text = page.extract_text()
+                if page_text:
+                    full_text += page_text + "\n"
+            
+            # Alan adını bul
+            alan_adi = find_alan_name_in_text(full_text, pdf_url)
+            
+            # Dalları bul
+            dallar = find_dallar_in_text(full_text)
+            dallar = list(set([clean_text(dal) for dal in dallar if dal and len(dal.strip()) > 3]))
+            
+            # Dal-ders eşleştirmesini bul
+            dal_ders_mapping = find_lessons_in_cop_pdf(pdf, alan_adi)
+        
+        try:
+            os.remove(temp_pdf_path)
+        except:
+            pass
+        
+        return alan_adi, dallar, dal_ders_mapping
+        
+    except Exception as e:
+        print(f"COP PDF okuma hatası: {e}")
+        return None, [], {}
+
+def oku_cop_pdf(pdf_url):
+    """
+    COP PDF'sinden alan, dal ve ders bilgilerini çıkar ve JSON formatında döndür
+    """
+    try:
+        alan_adi, dallar, dal_ders_mapping = extract_alan_dal_ders_from_cop_pdf(pdf_url)
+        
+        # Dal-ders yapısını oluştur
+        dal_ders_listesi = []
+        
+        for dal in dallar:
+            # Dal adını eşleştirmek için çeşitli formatlarda dene
+            dersler = []
+            
+            # Önce tam eşleşme dene
+            if dal in dal_ders_mapping:
+                dersler = dal_ders_mapping[dal]
+            else:
+                # Kısmi eşleşme dene (büyük/küçük harf duyarlı olmayan)
+                dal_normalized = normalize_turkish_text(dal)
+                for mapped_dal, mapped_dersler in dal_ders_mapping.items():
+                    mapped_dal_normalized = normalize_turkish_text(mapped_dal)
+                    
+                    # Çeşitli eşleşme yöntemleri dene
+                    if (dal_normalized == mapped_dal_normalized or 
+                        dal_normalized in mapped_dal_normalized or 
+                        mapped_dal_normalized in dal_normalized or
+                        similarity_score(dal_normalized, mapped_dal_normalized) > 0.8):
+                        dersler = mapped_dersler
+                        break
+            
+            dal_info = {
+                "dal_adi": dal,
+                "dersler": dersler,
+                "ders_sayisi": len(dersler)
+            }
+            dal_ders_listesi.append(dal_info)
+        
+        # Toplam ders sayısını hesapla
+        toplam_ders_sayisi = sum(dal_info["ders_sayisi"] for dal_info in dal_ders_listesi)
+        
+        result = {
+            "metadata": {
+                "processed_at": datetime.now().isoformat(),
+                "source_url": pdf_url,
+                "file_type": "COP_PDF",
+                "status": "success" if alan_adi and dallar else "partial"
+            },
+            "alan_bilgileri": {
+                "alan_adi": alan_adi,
+                "dal_sayisi": len(dallar),
+                "toplam_ders_sayisi": toplam_ders_sayisi,
+                "dal_ders_listesi": dal_ders_listesi
+            }
+        }
+        
+        return result
+        
+    except Exception as e:
+        print(f"COP PDF işleme hatası: {str(e)}")
+        return {
+            "metadata": {
+                "processed_at": datetime.now().isoformat(),
+                "source_url": pdf_url,
+                "file_type": "COP_PDF",
+                "status": "error",
+                "error": str(e)
+            },
+            "alan_bilgileri": {}
+        }
+
 def oku(file_path):
     """
     PDF veya DOCX dosyasından tüm ders bilgilerini çıkar ve JSON formatında döndür
@@ -1227,15 +1821,116 @@ def process_directory(directory_path, output_json="oku_sonuc.json"):
 
     return results
 
+def is_url(path):
+    """
+    Verilen string'in URL olup olmadığını kontrol et
+    """
+    return path.startswith(('http://', 'https://'))
+
+def is_cop_pdf_url(url):
+    """
+    Verilen URL'nin COP PDF URL'si olup olmadığını kontrol et
+    """
+    return 'meslek.meb.gov.tr' in url and 'cop' in url and url.endswith('.pdf')
+
 def main():
     """
-    Ana fonksiyon - dizindeki PDF'leri işle
+    Ana fonksiyon - argümana göre dosya, dizin veya COP URL işle
     """
-    directory_path = "."  # Current directory
-    output_json = "oku_sonuc.json"
+    if len(sys.argv) > 1:
+        if sys.argv[1].lower() == "cop":
+            # COP modu
+            if len(sys.argv) < 3:
+                print("Hata: COP modu için PDF URL'si gerekli.")
+                print("Kullanım: python oku.py cop <PDF_URL>")
+                print("Örnek: python oku.py cop https://meslek.meb.gov.tr/upload/cop9/adalet_9.pdf")
+                return
+            
+            pdf_url = sys.argv[2]
+            
+            if not is_url(pdf_url):
+                print("Hata: Geçerli bir URL giriniz.")
+                print("Örnek: python oku.py cop https://meslek.meb.gov.tr/upload/cop9/adalet_9.pdf")
+                return
+            
+            # COP PDF URL'si işle
+            
+            result = oku_cop_pdf(pdf_url)
+            
+            # Sonuçları yazdır
+            if result["metadata"]["status"] == "success":
+                alan_bilgileri = result["alan_bilgileri"]
+                
+                dal_ders_listesi = alan_bilgileri.get('dal_ders_listesi', [])
+                toplam_ders_sayisi = alan_bilgileri.get('toplam_ders_sayisi', 0)
+                
+                if dal_ders_listesi:
+                    
+                    for i, dal_info in enumerate(dal_ders_listesi, 1):
+                        dal_adi = dal_info.get('dal_adi', '')
+                        dersler = dal_info.get('dersler', [])
+                        ders_sayisi = dal_info.get('ders_sayisi', 0)
+                        
+                        pass
+                    
+                pass
+            
+            # JSON'a kaydet
+            output_file = "cop_sonuc.json"
+            try:
+                with open(output_file, 'w', encoding='utf-8') as f:
+                    json.dump(result, f, ensure_ascii=False, indent=2)
+                print(f"Sonuç {output_file} dosyasına kaydedildi.")
+            except Exception as e:
+                print(f"JSON kaydetme hatası: {e}")
+        
+        else:
+            # Normal mod - dosya veya dizin işle
+            input_path = sys.argv[1]
+            
+            if os.path.isfile(input_path):
+                # Tek dosya işle
+                print(f"Dosya işleniyor: {input_path}")
+                print("=" * 60)
+                
+                result = oku(input_path)
+                
+                # JSON'a kaydet
+                output_file = f"{os.path.splitext(os.path.basename(input_path))[0]}_sonuc.json"
+                try:
+                    with open(output_file, 'w', encoding='utf-8') as f:
+                        json.dump(result, f, ensure_ascii=False, indent=2)
+                    print(f"\nSonuç {output_file} dosyasına kaydedildi.")
+                except Exception as e:
+                    print(f"JSON kaydetme hatası: {e}")
+                    
+            elif os.path.isdir(input_path):
+                # Dizin işle
+                print(f"Dizin işleniyor: {input_path}")
+                print("=" * 60)
+                
+                output_json = "oku_sonuc.json"
+                results = process_directory(input_path, output_json)
+                
+            else:
+                print(f"Hata: '{input_path}' geçerli bir dosya veya dizin değil.")
     
-    results = process_directory(directory_path, output_json)
-    
+    else:
+        # Argüman verilmemişse mevcut dizini işle
+        print("Mevcut dizindeki PDF/DOCX dosyaları işleniyor...")
+        print("=" * 60)
+        
+        directory_path = "."
+        output_json = "oku_sonuc.json"
+        results = process_directory(directory_path, output_json)
+        
+        print("\nKullanım:")
+        print("  python oku.py [dosya_yolu|dizin_yolu]")
+        print("  python oku.py cop <COP_PDF_URL>")
+        print("\nÖrnekler:")
+        print("  python oku.py ders.pdf")
+        print("  python oku.py /path/to/directory")
+        print("  python oku.py cop https://meslek.meb.gov.tr/upload/cop9/adalet_9.pdf")
 
 if __name__ == "__main__":
     main()

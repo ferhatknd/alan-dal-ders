@@ -573,7 +573,7 @@ const OgrenmeBirimiInput = ({ ogrenme_birimleri, onChange }) => {
   );
 };
 
-const DataTable = ({ data, searchTerm, onCourseEdit }) => {
+const DataTable = ({ data, searchTerm, onCourseEdit, copData }) => {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
 
   const flattenedData = useMemo(() => {
@@ -669,7 +669,20 @@ const DataTable = ({ data, searchTerm, onCourseEdit }) => {
         <tbody>
           {sortedData.map((row) => (
             <tr key={row.uniqueKey}>
-              <td>{row.alanIsim}</td>
+              <td>
+                {row.alanIsim}
+                {copData && copData[row.alanIsim] && (
+                  <a
+                    href={copData[row.alanIsim]}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Çerçeve Öğretim Programı (ÇÖP) PDF"
+                    style={{ marginLeft: 6, fontSize: 16, verticalAlign: 'middle' }}
+                  >
+                    📄 ÇÖP
+                  </a>
+                )}
+              </td>
               <td>{row.dersIsim}</td>
               <td>
                 <span className="sinif-badge">{row.sinif}. Sınıf</span>
@@ -718,7 +731,7 @@ const DataTable = ({ data, searchTerm, onCourseEdit }) => {
   );
 };
 
-const AlanItem = ({ alan, ortakAlanIndeksi, allAlans, searchTerm }) => {
+const AlanItem = ({ alan, ortakAlanIndeksi, allAlans, searchTerm, copData }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const sortedDersler = useMemo(() => {
@@ -749,6 +762,17 @@ const AlanItem = ({ alan, ortakAlanIndeksi, allAlans, searchTerm }) => {
       <div className="alan-header" onClick={() => setIsExpanded(!isExpanded)}>
         <h3>
           {renderHighlightedText(alan.isim, searchTerm)}
+          {copData && copData[alan.isim] && (
+            <a
+              href={copData[alan.isim]}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Çerçeve Öğretim Programı (ÇÖP) PDF"
+              style={{ marginLeft: 8, fontSize: 18, verticalAlign: 'middle' }}
+            >
+              📄 ÇÖP
+            </a>
+          )}
           <span className="ders-sayisi">
             ({Object.keys(alan.dersler || {}).length} ders)
           </span>
@@ -1037,11 +1061,33 @@ function App() {
     }
   };
 
+  // COP verilerini alan adına göre basit bir harita haline getir
+  const createCopMapping = useCallback((copData) => {
+    if (!copData) return {};
+    const mapping = {};
+    
+    // Tüm sınıfları kontrol et ve her alan için bir URL bul
+    Object.values(copData).forEach(sinifData => {
+      Object.entries(sinifData).forEach(([alanAdi, copInfo]) => {
+        if (!mapping[alanAdi] && copInfo.link) {
+          mapping[alanAdi] = copInfo.link;
+        }
+      });
+    });
+    
+    return mapping;
+  }, []);
+
   // Alanları isme göre sıralamak için bir yardımcı fonksiyon
   const getSortedAlans = useCallback((alanlar) => {
     if (!alanlar) return [];
     return Object.entries(alanlar).sort(([, a], [, b]) => a.isim.localeCompare(b.isim, 'tr'));
   }, []); 
+
+  // COP verilerini basit harita haline getir
+  const copMapping = useMemo(() => {
+    return createCopMapping(copData?.data);
+  }, [copData, createCopMapping]);
 
   // Arama terimine göre alanları filtrele
   const filteredAlanlar = useMemo(() => {
@@ -1166,6 +1212,36 @@ function App() {
       }]);
     }
   }, [editedCourses]);
+
+  // ÇÖP PDF işleme fonksiyonu
+  const handleProcessCopPdfs = useCallback(() => {
+    if (!window.confirm('ÇÖP PDF\'lerini işleyip alan-dal-ders ilişkilerini çıkararak veritabanına kaydetmek istediğinize emin misiniz? Bu işlem uzun sürebilir.')) {
+      return;
+    }
+
+    setProgress([]);
+    setError(null);
+
+    const eventSource = new EventSource('http://localhost:5001/api/process-cop-pdfs');
+
+    eventSource.onmessage = (event) => {
+      const eventData = JSON.parse(event.data);
+      setProgress(prev => [...prev, eventData]);
+
+      if (eventData.type === 'done') {
+        eventSource.close();
+      }
+    };
+
+    eventSource.onerror = () => {
+      setError("ÇÖP PDF işleme sırasında bir hata oluştu. Sunucu bağlantısı kesilmiş olabilir.");
+      eventSource.close();
+    };
+
+    return () => {
+      eventSource.close();
+    };
+  }, []);
   
   return (
     <div className="App">
@@ -1241,6 +1317,17 @@ function App() {
           style={{ background: "#16a085", color: "white" }}
         >
           DBF Eşleştirmesini Güncelle
+        </button>
+        <button
+          onClick={handleProcessCopPdfs}
+          style={{ 
+            background: "#8e44ad", 
+            color: "white",
+            marginLeft: "10px"
+          }}
+          title="ÇÖP PDF'lerini oku.py ile işleyip alan-dal-ders ilişkisini çıkararak veritabanına kaydet"
+        >
+          ÇÖP PDF'lerini İşle ve Veritabanına Kaydet
         </button>
         <button
           onClick={handleExportToDatabase}
@@ -1386,7 +1473,7 @@ function App() {
           {viewMode === 'table' ? (
             <div>
               <h2>Tablo Görünümü</h2>
-              <DataTable data={data} searchTerm={debouncedTerm} onCourseEdit={handleCourseEdit} />
+              <DataTable data={data} searchTerm={debouncedTerm} onCourseEdit={handleCourseEdit} copData={copMapping} />
             </div>
           ) : (
             <div>
@@ -1399,6 +1486,7 @@ function App() {
                     ortakAlanIndeksi={data.ortak_alan_indeksi || {}}
                     allAlans={data.alanlar}
                     searchTerm={debouncedTerm}
+                    copData={copMapping}
                   />
                 ))
               ) : (
