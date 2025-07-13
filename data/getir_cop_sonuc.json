@@ -1,0 +1,948 @@
+{
+    "Adalet": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/adalet_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/adalet_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/adalet_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/adalet_12.pdf",
+            "guncelleme_yili": "2020"
+        }
+    },
+    "Aile ve Tüketici Hizmetleri": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/aile_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/aile_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/aile_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/aile_12.pdf",
+            "guncelleme_yili": "2020"
+        }
+    },
+    "Ayakkabı ve Saraciye Teknolojisi": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/ayakkabipro_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/ayakkabipro_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/ayakkabipro_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/ayakkabipro_12.pdf",
+            "guncelleme_yili": "2021"
+        }
+    },
+    "Bilişim Teknolojileri": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/bilisim_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/bilisim_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/bilisim_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/bilisim_12.pdf",
+            "guncelleme_yili": "2022"
+        }
+    },
+    "Biyomedikal Cihaz Teknolojileri": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/biyomedikal_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/biyomedikal_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/biyomedikal_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/biyomedikal_12.pdf",
+            "guncelleme_yili": "2020"
+        }
+    },
+    "Büro Yönetimi ve Yönetici Asistanlığı": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/buro_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/buro_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/buro_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/buro_12.pdf",
+            "guncelleme_yili": "2020"
+        }
+    },
+    "Çocuk Gelişimi ve Eğitimi": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/cocukgelisimi_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/cocukgelisimi_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/cocukgelisimi_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/cocukgelisimi_12.pdf",
+            "guncelleme_yili": "2020"
+        }
+    },
+    "Denizcilik": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/denizcilikpro_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/denizcilikpro_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/denizcilikpro_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/denizcilik_12.pdf",
+            "guncelleme_yili": "2022"
+        }
+    },
+    "El Sanatları Teknolojisi": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/elsanat_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/elsanat_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/elsanat_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/elsanat_12.pdf",
+            "guncelleme_yili": "2020"
+        }
+    },
+    "Elektrik-Elektronik Teknolojisi": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/elektrik_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/elektrik_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/elektrik_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/elektrik_12.pdf",
+            "guncelleme_yili": "2022"
+        }
+    },
+    "Endüstriyel Otomasyon Teknolojileri": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/endustriyel_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/endustriyel_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/endustriyel_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/endustriyel_12.pdf",
+            "guncelleme_yili": "2020"
+        }
+    },
+    "Gazetecilik": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/gazetecilik_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/gazetecilik_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/gazetecilikpro_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/gazetecilik_12.pdf",
+            "guncelleme_yili": "2020"
+        }
+    },
+    "Geleneksel Türk Sanatları": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/geleneksel_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/geleneksel_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/geleneksel_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/geleneksel_12.pdf",
+            "guncelleme_yili": "2020"
+        }
+    },
+    "Gemi Yapımı": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/gemi_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/gemi_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/gemi_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/gemi_12.pdf",
+            "guncelleme_yili": "2020"
+        }
+    },
+    "Gıda Teknolojisi": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/gida_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/gida_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/gida_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/gida_12.pdf",
+            "guncelleme_yili": "2020"
+        }
+    },
+    "Grafik ve Fotoğraf": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/grafikpro_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/grafik_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/grafik_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/grafikpro_12.pdf",
+            "guncelleme_yili": "2021"
+        }
+    },
+    "Güzellik Hizmetleri": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/guzellik_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/guzellik_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/guzellik_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/guzellik_12.pdf",
+            "guncelleme_yili": "2020"
+        }
+    },
+    "Halkla İlişkiler": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/halklailiskiler_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/halklailiskiler_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/halklailiskiler_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/halklailiskiler_12.pdf",
+            "guncelleme_yili": "2020"
+        }
+    },
+    "Harita-Tapu-Kadastro": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/harita_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/harita_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/harita_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/harita_12.pdf",
+            "guncelleme_yili": "2020"
+        }
+    },
+    "Hasta ve Yaşlı Hizmetleri": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/hasta_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/hasta_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/hasta_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/hasta_12.pdf",
+            "guncelleme_yili": "2020"
+        }
+    },
+    "Hayvan Yetiştiriciliği ve Sağlığı": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/hayvanyetistiriciligi_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/hayvanyetistiriciligi_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/hayvanyetistiriciligi_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/hayvanyetistiriciligi_12.pdf",
+            "guncelleme_yili": "2020"
+        }
+    },
+    "İnşaat Teknolojisi": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/insaat_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/insaat_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/insaat_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/insaat_12.pdf",
+            "guncelleme_yili": "2020"
+        }
+    },
+    "İtfaiyecilik ve Yangın Güvenliği": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/itfaiyecilik_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/itfaiyecilik_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/itfaiyecilik_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/itfaiyecilik_12.pdf",
+            "guncelleme_yili": "2020"
+        }
+    },
+    "Kimya Teknolojisi": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/kimya_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/kimya_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/kimya_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/kimya_12.pdf",
+            "guncelleme_yili": "2020"
+        }
+    },
+    "Konaklama ve Seyahat Hizmetleri": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/konaklama_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/konaklama_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/konaklama_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/konaklamapro_12.pdf",
+            "guncelleme_yili": "2020"
+        }
+    },
+    "Kuyumculuk Teknolojisi": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/kuyumculuk_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/kuyumculuk_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/kuyumculuk_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/kuyumculuk_12.pdf",
+            "guncelleme_yili": "2022"
+        }
+    },
+    "Laboratuvar Hizmetleri": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/laboratuvar_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/laboratuvar_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/laboratuvar_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/laboratuvar_12.pdf",
+            "guncelleme_yili": "2020"
+        }
+    },
+    "Maden Teknolojisi": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/maden_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/maden_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/maden_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/maden_12.pdf",
+            "guncelleme_yili": "2020"
+        }
+    },
+    "Makine ve Tasarım Teknolojisi": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/makine_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/makine_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/makine_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/makine_12.pdf",
+            "guncelleme_yili": "2022"
+        }
+    },
+    "Matbaa Teknolojisi": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/matbaa_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/matbaa_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/matbaa_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/matbaa_12.pdf",
+            "guncelleme_yili": "2020"
+        }
+    },
+    "Metal Teknolojisi": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/metal_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/metal_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/metal_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/metal_12.pdf",
+            "guncelleme_yili": "2020"
+        }
+    },
+    "Metalürji Teknolojisi": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/metalurji_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/metalurji_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/metalurji_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/metalurji_12.pdf",
+            "guncelleme_yili": "2020"
+        }
+    },
+    "Mikromekanik": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/mikromekanik_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/mikromekanik_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/mikromekanik_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/mikromekanik_12.pdf",
+            "guncelleme_yili": "2022"
+        }
+    },
+    "Mobilya ve İç Mekân Tasarımı": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/mobilya_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/mobilya_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/mobilya_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/mobilya_12.pdf",
+            "guncelleme_yili": "2020"
+        }
+    },
+    "Moda Tasarım Teknolojileri": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/moda_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/moda_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/moda_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/moda_12.pdf",
+            "guncelleme_yili": "2020"
+        }
+    },
+    "Motorlu Araçlar Teknolojisi": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/motorluarac_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/motorluarac_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/motorluarac_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/motorluarac_12.pdf",
+            "guncelleme_yili": "2020"
+        }
+    },
+    "Muhasebe ve Finansman": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/muhasebepro_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/muhasebepro_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/muhasebepro_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/muhasebepro_12.pdf",
+            "guncelleme_yili": "2020"
+        }
+    },
+    "Pazarlama ve Perakende": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/pazarlama_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/pazarlama_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/pazarlama_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/pazarlama_12.pdf",
+            "guncelleme_yili": "2020"
+        }
+    },
+    "Plastik Sanatlar": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/plastiksanatlar_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/plastiksanatlar_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/plastiksanatlar_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/plastiksanatlar_12.pdf",
+            "guncelleme_yili": "2020"
+        }
+    },
+    "Plastik Teknolojisi": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/plastiktek_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/plastiktek_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/plastiktek_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/plastiktek_12.pdf",
+            "guncelleme_yili": "2020"
+        }
+    },
+    "Radyo-Televizyon": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/radyotv_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/radyotv_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/radyotvpro_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/radyotv_12.pdf",
+            "guncelleme_yili": "2020"
+        }
+    },
+    "Raylı Sistemler Teknolojisi": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/rayli_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/rayli_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/rayli_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/rayli_12.pdf",
+            "guncelleme_yili": "2020"
+        }
+    },
+    "Sağlık Hizmetleri": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/saglik_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/saglik_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/saglik_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/saglik_12.pdf",
+            "guncelleme_yili": "2020"
+        }
+    },
+    "Seramik ve Cam Teknolojisi": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/seramikpro_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/seramikpro_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/seramikpro_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/seramikpro_12.pdf",
+            "guncelleme_yili": "2021"
+        }
+    },
+    "Siber Güvenlik": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/siber_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/siber_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/siber_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/siber_12.pdf",
+            "guncelleme_yili": "2022"
+        }
+    },
+    "Tarım": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/tarim_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/tarim_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/tarim_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/tarim_12.pdf",
+            "guncelleme_yili": "2020"
+        }
+    },
+    "Tekstil Teknolojisi": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/tekstil_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/tekstil_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/tekstil_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/tekstil_12.pdf",
+            "guncelleme_yili": "2022"
+        }
+    },
+    "Tesisat Teknolojisi ve İklimlendirme": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/tesisat_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/tesisat_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/tesisat_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/tesisat_12.pdf",
+            "guncelleme_yili": "2020"
+        }
+    },
+    "Uçak Bakım": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/ucak_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/ucak_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/ucak_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/ucak_12.pdf",
+            "guncelleme_yili": "2020"
+        }
+    },
+    "Ulaştırma Hizmetleri": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/ulastirma_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/ulastirma_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/ulastirma_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/ulastirma_12.pdf",
+            "guncelleme_yili": "2020"
+        }
+    },
+    "Yenilenebilir Enerji Teknolojileri": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/yenilenebilir_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/yenilenebilir_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/yenilenebilir_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/yenilenebilir_12.pdf",
+            "guncelleme_yili": "2020"
+        }
+    },
+    "Yiyecek İçecek Hizmetleri": {
+        "11": {
+            "link": "https://meslek.meb.gov.tr/upload/cop11/yiyecekpro_11.pdf",
+            "guncelleme_yili": "2023"
+        },
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/yiyecekpro_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/yiyecek_9.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "12": {
+            "link": "https://meslek.meb.gov.tr/upload/cop12/yiyecek_12.pdf",
+            "guncelleme_yili": "2020"
+        }
+    },
+    "Havacılık ve Uzay Teknolojisi": {
+        "10": {
+            "link": "https://meslek.meb.gov.tr/upload/cop10/havacilikveuzaypro_10.pdf",
+            "guncelleme_yili": "2024"
+        },
+        "9": {
+            "link": "https://meslek.meb.gov.tr/upload/cop9/havacilikveuzaypro_9.pdf",
+            "guncelleme_yili": "2024"
+        }
+    }
+}

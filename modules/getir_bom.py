@@ -1,6 +1,15 @@
 import requests
 from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import os
+import sqlite3
+import json
+import time
+from pathlib import Path
+try:
+    from .utils import normalize_to_title_case_tr
+except ImportError:
+    from utils import normalize_to_title_case_tr
 
 # Doğru URL: https://meslek.meb.gov.tr/moduller (debug ile doğrulandı)
 BASE_BOM_URL = "https://meslek.meb.gov.tr/moduller"
@@ -9,6 +18,63 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
     "Referer": "https://meslek.meb.gov.tr/"
 }
+
+BOM_ROOT_DIR = "data/bom"
+
+def get_areas_from_db_for_bom():
+    """
+    Veritabanından alan ID ve adlarını çeker (BOM için).
+    Returns: dict {alan_adi: alan_id}
+    """
+    db_path = "data/temel_plan.db"
+    if not os.path.exists(db_path):
+        print(f"Veritabanı bulunamadı: {db_path}")
+        return {}
+    
+    try:
+        with sqlite3.connect(db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT id, alan_adi FROM temel_plan_alan ORDER BY alan_adi")
+            results = cursor.fetchall()
+            return {alan_adi: alan_id for alan_id, alan_adi in results}
+    except Exception as e:
+        print(f"Veritabanı okuma hatası: {e}")
+        return {}
+
+def normalize_bom_area_name(html_area_name):
+    """
+    HTML'den gelen alan adını utils.py standardına göre normalize eder.
+    """
+    return normalize_to_title_case_tr(html_area_name)
+
+def find_matching_area_id_for_bom(html_area_name, db_areas):
+    """
+    HTML'den gelen alan adını veritabanındaki alanlarla eşleştirir (BOM için).
+    Returns: (alan_id, matched_name) veya (None, None)
+    """
+    normalized_html_name = normalize_bom_area_name(html_area_name)
+    
+    # Tam eşleşme kontrolü
+    if normalized_html_name in db_areas:
+        return db_areas[normalized_html_name], normalized_html_name
+    
+    # Kısmi eşleşme kontrolü
+    for db_name, area_id in db_areas.items():
+        if normalized_html_name.lower() in db_name.lower() or db_name.lower() in normalized_html_name.lower():
+            print(f"BOM Kısmi eşleşme bulundu: '{html_area_name}' -> '{db_name}' (ID: {area_id})")
+            return area_id, db_name
+    
+    print(f"BOM Eşleşme bulunamadı: '{html_area_name}' (normalize: '{normalized_html_name}')")
+    return None, None
+
+def sanitize_filename_bom(name):
+    """
+    Dosya/klasör ismi olarak kullanılabilir hale getir (BOM için).
+    """
+    name = name.replace(" ", "_")
+    import re
+    name = re.sub(r"[^\w\-_.()]", "", name)
+    return name
 
 def get_alanlar(sinif_kodu="9"):
     params = {"sinif_kodu": sinif_kodu, "kurum_id": "1"}
@@ -106,6 +172,98 @@ def get_bom_for_alan(alan_id, alan_adi, session):
     
     return bom_data
 
+def download_and_save_bom_pdf(area_name, modul_link, modul_adi, ders_adi, db_areas=None):
+    """
+    BOM PDF'ini indirir ve data/bom/{ID}-{alan_adi}/ klasörüne kaydeder.
+    """
+    try:
+        # Veritabanından alan bilgilerini al (eğer daha önce alınmamışsa)
+        if db_areas is None:
+            db_areas = get_areas_from_db_for_bom()
+        
+        # Alan ID'sini bul
+        area_id, matched_name = find_matching_area_id_for_bom(area_name, db_areas)
+        
+        if area_id:
+            # Klasör adını ID + alan adı formatında oluştur
+            folder_name = f"{area_id:02d} - {matched_name}"
+            bom_dir = Path(BOM_ROOT_DIR) / sanitize_filename_bom(folder_name)
+            print(f"  BOM Klasör: {folder_name}")
+        else:
+            # ID bulunamazsa eski sistemi kullan
+            safe_area_name = area_name.replace('/', '_').replace('\\', '_').replace(':', '_')
+            bom_dir = Path(BOM_ROOT_DIR) / safe_area_name
+            print(f"  BOM ID bulunamadı, eski format kullanılıyor: {area_name}")
+        
+        # Ders alt klasörü oluştur
+        safe_ders_adi = sanitize_filename_bom(ders_adi)
+        ders_dir = bom_dir / safe_ders_adi
+        ders_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Dosya adını oluştur
+        safe_modul_adi = sanitize_filename_bom(modul_adi)
+        pdf_filename = f"{safe_modul_adi}.pdf"
+        pdf_path = ders_dir / pdf_filename
+        
+        # Eğer dosya zaten mevcutsa atla
+        if pdf_path.exists():
+            return str(pdf_path), False
+        
+        # PDF'yi indir
+        response = requests.get(modul_link, headers=HEADERS, timeout=30)
+        response.raise_for_status()
+        
+        # Dosyayı kaydet
+        with open(pdf_path, 'wb') as f:
+            f.write(response.content)
+        
+        print(f"  BOM PDF kaydedildi: {pdf_path}")
+        return str(pdf_path), True
+        
+    except Exception as e:
+        print(f"  BOM PDF indirme hatası ({area_name} - {ders_adi} - {modul_adi}): {e}")
+        return None, False
+
+def save_bom_metadata(area_name, bom_data, db_areas=None):
+    """
+    BOM metadata'larını JSON dosyasına kaydeder (yeni dizin yapısında).
+    """
+    try:
+        # Veritabanından alan bilgilerini al (eğer daha önce alınmamışsa)
+        if db_areas is None:
+            db_areas = get_areas_from_db_for_bom()
+        
+        # Alan ID'sini bul
+        area_id, matched_name = find_matching_area_id_for_bom(area_name, db_areas)
+        
+        if area_id:
+            # Klasör adını ID + alan adı formatında oluştur
+            folder_name = f"{area_id:02d} - {matched_name}"
+            bom_dir = Path(BOM_ROOT_DIR) / sanitize_filename_bom(folder_name)
+        else:
+            # ID bulunamazsa eski sistemi kullan
+            safe_area_name = area_name.replace('/', '_').replace('\\', '_').replace(':', '_')
+            bom_dir = Path(BOM_ROOT_DIR) / safe_area_name
+        
+        metadata_file = bom_dir / 'bom_metadata.json'
+        
+        metadata = {
+            'alan_adi': area_name,
+            'alan_id': area_id,
+            'matched_name': matched_name,
+            'dersler': bom_data.get('dersler', []),
+            'toplam_ders': len(bom_data.get('dersler', [])),
+            'olusturma_tarihi': time.strftime('%Y-%m-%d %H:%M:%S')
+        }
+        
+        with open(metadata_file, 'w', encoding='utf-8') as f:
+            json.dump(metadata, f, ensure_ascii=False, indent=2)
+        
+        print(f"  BOM metadata kaydedildi: {metadata_file}")
+        
+    except Exception as e:
+        print(f"  BOM metadata kaydetme hatası ({area_name}): {e}")
+
 def getir_bom(siniflar=["9", "10", "11", "12"]):
     """
     Tüm alanlar için Bireysel Öğrenme Materyali (BÖM) verilerini eş zamanlı olarak çeker.
@@ -126,3 +284,125 @@ def getir_bom(siniflar=["9", "10", "11", "12"]):
             except Exception as exc:
                 print(f"BÖM verisi işlenirken hata ({alan['isim']}): {exc}")
     return all_bom_data
+
+def getir_bom_with_db_integration(siniflar=["9", "10", "11", "12"]):
+    """
+    BOM verilerini veritabanı entegrasyonu ile çeker ve dosyaları organize eder.
+    Generator olarak her adımda ilerleme mesajı döndürür.
+    """
+    yield {'type': 'status', 'message': 'BOM (Bireysel Öğrenme Materyali) verileri işleniyor...'}
+    
+    # Veritabanından alan bilgilerini tek seferde al (performans için)
+    db_areas = get_areas_from_db_for_bom()
+    if not db_areas:
+        yield {'type': 'error', 'message': 'Veritabanında alan bulunamadı! Önce Adım 1\'i çalıştırın.'}
+        return
+    
+    yield {'type': 'status', 'message': f'Veritabanından {len(db_areas)} alan alındı.'}
+    
+    # Ana dizini oluştur
+    if not os.path.exists(BOM_ROOT_DIR):
+        os.makedirs(BOM_ROOT_DIR)
+    
+    # Tüm sınıflardan benzersiz alanları topla
+    all_alanlar_by_sinif = {sinif: get_alanlar(sinif) for sinif in siniflar}
+    unique_alanlar = list({v['id']:v for k,v_list in all_alanlar_by_sinif.items() for v in v_list}.values())
+    
+    yield {'type': 'status', 'message': f'{len(unique_alanlar)} benzersiz alan için BOM verileri çekiliyor...'}
+    
+    area_bom_data = {}
+    total_processed = 0
+    total_downloaded = 0
+    
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        future_to_alan = {
+            executor.submit(get_bom_for_alan, alan['id'], alan['isim'], requests.Session()): alan 
+            for alan in unique_alanlar if alan['id'] not in ["0", "00"]
+        }
+        
+        for future in as_completed(future_to_alan):
+            alan = future_to_alan[future]
+            alan_adi = alan['isim']
+            
+            try:
+                bom_data = future.result()
+                
+                if bom_data and bom_data.get("dersler"):
+                    # Alan adını normalize et ve veritabanında olup olmadığını kontrol et
+                    normalized_area_name = normalize_bom_area_name(alan_adi)
+                    
+                    # Hem orijinal hem normalize edilmiş isimle kontrol et
+                    if alan_adi in db_areas or normalized_area_name in db_areas:
+                        area_bom_data[alan_adi] = bom_data
+                        
+                        # Her ders ve modülü indir
+                        for ders in bom_data.get("dersler", []):
+                            ders_adi = ders.get("ders_adi", "")
+                            for modul in ders.get("moduller", []):
+                                modul_adi = modul.get("isim", "")
+                                modul_link = modul.get("link", "")
+                                
+                                if modul_link:
+                                    pdf_path, downloaded = download_and_save_bom_pdf(
+                                        alan_adi, 
+                                        modul_link, 
+                                        modul_adi, 
+                                        ders_adi,
+                                        db_areas
+                                    )
+                                    
+                                    if pdf_path:
+                                        if downloaded:
+                                            total_downloaded += 1
+                                        total_processed += 1
+                                        yield {'type': 'success', 'message': f"'{alan_adi}' - '{ders_adi}' - '{modul_adi}' BOM kaydedildi"}
+                                    else:
+                                        yield {'type': 'warning', 'message': f"'{alan_adi}' - '{ders_adi}' - '{modul_adi}' BOM indirilemedi"}
+                        
+                        # Metadata kaydet
+                        save_bom_metadata(alan_adi, bom_data, db_areas)
+                        yield {'type': 'success', 'message': f"'{alan_adi}' BOM metadata kaydedildi"}
+                    else:
+                        yield {'type': 'info', 'message': f"Alan '{alan_adi}' veritabanında yok, atlanıyor"}
+                else:
+                    yield {'type': 'info', 'message': f"'{alan_adi}' için BOM verisi bulunamadı"}
+                    
+            except Exception as exc:
+                yield {'type': 'warning', 'message': f"BOM verisi işlenirken hata ({alan_adi}): {exc}"}
+    
+    # Sonuç özeti
+    yield {
+        'type': 'success', 
+        'message': f'BOM işlemi tamamlandı! {len(area_bom_data)} alan, {total_processed} BOM dosyası işlendi ({total_downloaded} yeni indirme).'
+    }
+    
+    # Son durum için JSON dosyası da oluştur (yedek)
+    output_filename = "data/getir_bom_sonuc.json"
+    with open(output_filename, 'w', encoding='utf-8') as f:
+        json.dump(area_bom_data, f, ensure_ascii=False, indent=4)
+    
+    yield {'type': 'done', 'message': f'BOM verileri kaydedildi. Yedek dosya: {output_filename}'}
+
+def main():
+    """
+    Ana fonksiyon - komut satırından çalıştırıldığında kullanılır.
+    """
+    print("BOM (Bireysel Öğrenme Materyali) Verileri")
+    print("Veritabanı entegrasyonu ile BOM verileri çekiliyor...")
+    
+    for message in getir_bom_with_db_integration():
+        if message['type'] == 'error':
+            print(f"❌ HATA: {message['message']}")
+            return
+        elif message['type'] == 'warning':
+            print(f"⚠️  UYARI: {message['message']}")
+        elif message['type'] == 'success':
+            print(f"✅ {message['message']}")
+        elif message['type'] == 'done':
+            print(f"🎉 {message['message']}")
+            break
+        else:
+            print(f"ℹ️  {message['message']}")
+
+if __name__ == "__main__":
+    main()

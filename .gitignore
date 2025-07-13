@@ -29,9 +29,11 @@ __pycache__/
 *.so
 
 # DBF indirme dizini - büyük dosyalar içerdiği için git'e dahil edilmemeli
-data/alanlar
-data/cop_files
+data/alan
+data/bom
+data/cop
 data/dbf
+data/dm
 
 # Analiz sonuç dosyaları
 kelime_arama_sonuclari.json

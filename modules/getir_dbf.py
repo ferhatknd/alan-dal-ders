@@ -6,10 +6,13 @@ import shutil
 import rarfile
 import zipfile
 import re
+import sqlite3
 try:
     from .oku import extract_ders_adi
+    from .utils import normalize_to_title_case_tr
 except ImportError:
     from oku import extract_ders_adi
+    from utils import normalize_to_title_case_tr
 
 BASE_DBF_URL = "https://meslek.meb.gov.tr/dbflistele.aspx"
 HEADERS = {
@@ -18,6 +21,52 @@ HEADERS = {
 }
 
 DBF_ROOT_DIR = "data/dbf"
+
+def get_areas_from_db():
+    """
+    Veritabanından alan ID ve adlarını çeker.
+    Returns: dict {alan_adi: alan_id}
+    """
+    db_path = "data/temel_plan.db"
+    if not os.path.exists(db_path):
+        print(f"Veritabanı bulunamadı: {db_path}")
+        return {}
+    
+    try:
+        with sqlite3.connect(db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT id, alan_adi FROM temel_plan_alan ORDER BY alan_adi")
+            results = cursor.fetchall()
+            return {alan_adi: alan_id for alan_id, alan_adi in results}
+    except Exception as e:
+        print(f"Veritabanı okuma hatası: {e}")
+        return {}
+
+def normalize_dbf_area_name(html_area_name):
+    """
+    HTML'den gelen alan adını utils.py standardına göre normalize eder.
+    """
+    return normalize_to_title_case_tr(html_area_name)
+
+def find_matching_area_id(html_area_name, db_areas):
+    """
+    HTML'den gelen alan adını veritabanındaki alanlarla eşleştirir.
+    Returns: (alan_id, matched_name) veya (None, None)
+    """
+    normalized_html_name = normalize_dbf_area_name(html_area_name)
+    
+    # Tam eşleşme kontrolü
+    if normalized_html_name in db_areas:
+        return db_areas[normalized_html_name], normalized_html_name
+    
+    # Kısmi eşleşme kontrolü
+    for db_name, area_id in db_areas.items():
+        if normalized_html_name.lower() in db_name.lower() or db_name.lower() in normalized_html_name.lower():
+            print(f"Kısmi eşleşme bulundu: '{html_area_name}' -> '{db_name}' (ID: {area_id})")
+            return area_id, db_name
+    
+    print(f"Eşleşme bulunamadı: '{html_area_name}' (normalize: '{normalized_html_name}')")
+    return None, None
 
 def getir_dbf(siniflar=["9", "10", "11", "12"]):
     """
@@ -85,15 +134,31 @@ def sanitize_filename(name):
 
 def download_and_extract_dbf(dbf_data):
     """
-    Her alan için ilgili RAR/ZIP dosyasını indirir ve dbf/ALAN_ADI/ klasörüne açar.
+    Her alan için ilgili RAR/ZIP dosyasını indirir ve dbf/{ID}-{ALAN_ADI}/ klasörüne açar.
     """
     if not os.path.exists(DBF_ROOT_DIR):
         os.makedirs(DBF_ROOT_DIR)
 
+    # Veritabanından alan bilgilerini al
+    db_areas = get_areas_from_db()
+    
     for sinif, alanlar in dbf_data.items():
         for alan_adi, info in alanlar.items():
             link = info["link"]
-            alan_dir = os.path.join(DBF_ROOT_DIR, sanitize_filename(alan_adi))
+            
+            # Alan ID'sini bul
+            area_id, matched_name = find_matching_area_id(alan_adi, db_areas)
+            
+            if area_id:
+                # Klasör adını ID + alan adı formatında oluştur
+                folder_name = f"{area_id:02d} - {matched_name}"
+                alan_dir = os.path.join(DBF_ROOT_DIR, sanitize_filename(folder_name))
+                print(f"[{alan_adi}] Klasör: {folder_name}")
+            else:
+                # ID bulunamazsa eski sistemi kullan
+                alan_dir = os.path.join(DBF_ROOT_DIR, sanitize_filename(alan_adi))
+                print(f"[{alan_adi}] ID bulunamadı, eski format kullanılıyor")
+            
             if not os.path.exists(alan_dir):
                 os.makedirs(alan_dir)
             archive_filename = os.path.basename(link)
@@ -121,16 +186,32 @@ def download_and_extract_dbf(dbf_data):
 
 def download_and_extract_dbf_with_progress(dbf_data):
     """
-    Her alan için ilgili RAR/ZIP dosyasını indirir ve dbf/ALAN_ADI/ klasörüne açar.
+    Her alan için ilgili RAR/ZIP dosyasını indirir ve dbf/{ID}-{ALAN_ADI}/ klasörüne açar.
     Her adımda yield ile ilerleme mesajı döndürür.
     """
     if not os.path.exists(DBF_ROOT_DIR):
         os.makedirs(DBF_ROOT_DIR)
 
+    # Veritabanından alan bilgilerini al
+    db_areas = get_areas_from_db()
+
     for sinif, alanlar in dbf_data.items():
         for alan_adi, info in alanlar.items():
             link = info["link"]
-            alan_dir = os.path.join(DBF_ROOT_DIR, sanitize_filename(alan_adi))
+            
+            # Alan ID'sini bul
+            area_id, matched_name = find_matching_area_id(alan_adi, db_areas)
+            
+            if area_id:
+                # Klasör adını ID + alan adı formatında oluştur
+                folder_name = f"{area_id:02d} - {matched_name}"
+                alan_dir = os.path.join(DBF_ROOT_DIR, sanitize_filename(folder_name))
+                yield {"type": "status", "message": f"[{alan_adi}] Klasör: {folder_name}"}
+            else:
+                # ID bulunamazsa eski sistemi kullan
+                alan_dir = os.path.join(DBF_ROOT_DIR, sanitize_filename(alan_adi))
+                yield {"type": "warning", "message": f"[{alan_adi}] ID bulunamadı, eski format kullanılıyor"}
+            
             if not os.path.exists(alan_dir):
                 os.makedirs(alan_dir)
             archive_filename = os.path.basename(link)

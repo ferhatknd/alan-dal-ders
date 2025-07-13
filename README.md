@@ -28,7 +28,7 @@ Alan (Area) → Dal (Field) → Ders (Course) → Öğrenme Birimi (Learning Uni
 
 - **`modules/oku.py`** - PDF parsing ve içerik analizi (ÇÖP, DBF, DM dosyaları için)
 - **`modules/getir_dbf.py`** - Ders Bilgi Formları (DBF) verilerini çeker, RAR/ZIP dosyalarını indirir ve açar ([Detaylı Kılavuz](getir_dbf.md))
-- **`modules/getir_cop.py`** - Çerçeve Öğretim Programları (ÇÖP) verilerini çeker  
+- **`modules/getir_cop_oku.py`** - Çerçeve Öğretim Programları (ÇÖP) verilerini çeker  
 - **`modules/getir_dm.py`** - Ders Materyalleri (DM) verilerini çeker
 - **`modules/getir_bom.py`** - Bireysel Öğrenme Materyalleri (BÖM) verilerini çeker
 - **`modules/getir_dal.py`** - Alan-Dal ilişkilerini çeker
@@ -238,7 +238,7 @@ Alan (1) ←→ (N) Dal ←→ (M) Ders ←→ (N) Öğrenme Birimi ←→ (N) K
 #### 📊 Veri Akışı ve Kaynak Entegrasyonu
 
 - **`modules/getir_dm.py`** → `temel_plan_alan` + `temel_plan_dal` + `temel_plan_ders` (dm_url)
-- **`modules/getir_cop.py`** → `temel_plan_alan` (cop_url) + ÇÖP PDF işleme  
+- **`modules/getir_cop_oku.py`** → `temel_plan_alan` (cop_url) + ÇÖP PDF işleme  
 - **`modules/getir_dbf.py`** → `temel_plan_alan` (dbf_urls) + `temel_plan_ders` (ders_saati)
 - **`modules/oku.py`** → Tüm tablolar (PDF'den ders içeriği çıkarımı)
 

@@ -4,6 +4,7 @@ import time
 import os
 import sqlite3
 from pathlib import Path
+from .utils import normalize_to_title_case_tr
 
 # requests.Session() kullanarak çerezleri ve oturum bilgilerini yönetiyoruz
 session = requests.Session()
@@ -190,27 +191,13 @@ def find_or_create_database():
     
     return db_path
 
-def normalize_area_name(area_name):
-    """
-    Alan adını minimal temizlik yapar, kaynaktan gelen formatı korur.
-    """
-    if not area_name:
-        return ""
-    
-    # Sadece boşlukları temizle, karakterleri olduğu gibi bırak
-    normalized = area_name.strip()
-    # Çoklu boşlukları tek boşluğa çevir
-    normalized = ' '.join(normalized.split())
-    
-    return normalized
-
 def save_area_and_branches_to_db(area_name, branches, db_path):
     """
     Bir alanı ve dallarını veritabanına kaydeder.
     """
     try:
         # Alan adını normalize et
-        normalized_area_name = normalize_area_name(area_name)
+        normalized_area_name = normalize_to_title_case_tr(area_name)
         
         with sqlite3.connect(db_path) as conn:
             cursor = conn.cursor()
@@ -258,11 +245,11 @@ def save_area_and_branches_to_db(area_name, branches, db_path):
 
 def create_area_directory_structure(area_name):
     """
-    Alan için klasör yapısını oluşturur: data/alanlar/{alan_adi}/
+    Alan için klasör yapısını oluşturur: data/alan/{alan_adi}/
     """
     # Alan adını dosya sistemi için güvenli hale getir
     safe_area_name = area_name.replace('/', '_').replace('\\', '_').replace(':', '_')
-    area_dir = Path(f"data/alanlar/{safe_area_name}")
+    area_dir = Path(f"data/alan/{safe_area_name}")
     
     # Alt klasörleri oluştur
     subdirs = ['dallar', 'cop', 'dbf', 'dm', 'bom']
@@ -306,78 +293,93 @@ def getir_dal_with_db_integration():
     
     # Bu sözlük, tüm illerdeki benzersiz alan-dal kombinasyonlarını tutacak.
     unique_areas_with_branches = {}
+    total_areas_found = 0
+    total_branches_found = 0
     
     yield {'type': 'status', 'message': 'Ana sayfa ziyareti yapılıyor (oturum çerezini almak için)...'}
     
     try:
         session.get("https://mtegm.meb.gov.tr/kurumlar/", headers=COMMON_HEADERS, timeout=10)
-        yield {'type': 'status', 'message': 'Ana sayfa ziyareti tamamlandı.'}
     except requests.exceptions.RequestException as e:
         yield {'type': 'error', 'message': f'Ana sayfa ziyaretinde hata: {e}'}
         return
     
-    yield {'type': 'status', 'message': 'İl bilgileri çekiliyor...'}
     provinces = get_provinces()
     
     if not provinces:
         yield {'type': 'error', 'message': 'İl bilgileri çekilemedi!'}
         return
     
-    yield {'type': 'status', 'message': f'Toplam {len(provinces)} il bulundu. Alan-dal taraması başlıyor...'}
+    yield {'type': 'status', 'message': f'Toplam {len(provinces)} il bulundu. Alan-dal taraması başlıyor...\n'}
     
     total_provinces = len(provinces)
     processed_provinces = 0
     
     for province_id, province_name in provinces.items():
-        yield {'type': 'status', 'message': f"'{province_name}' ili işleniyor... ({processed_provinces + 1}/{total_provinces})"}
+        new_areas_in_province = 0
+        new_branches_in_province = 0
         
         areas = get_areas_for_province(str(province_id))
         
         if not areas:
-            yield {'type': 'warning', 'message': f"'{province_name}' ili için alan bilgisi bulunamadı."}
             processed_provinces += 1
-            continue
+            # Alan bulunamasa bile ilerleme logunu göster
+            yield {
+                'type': 'progress',
+                'province_name': province_name.upper(),
+                'province_progress': f"({processed_provinces}/{total_provinces})",
+                'new_areas': 0,
+                'total_areas': total_areas_found,
+                'new_branches': 0,
+                'total_branches': total_branches_found
+            }
+            time.sleep(1.5) # Sunucuyu yormamak için bekleme
+            continue # Sonraki ile geç
         
         for area_value, area_name in areas.items():
             if area_name not in unique_areas_with_branches:
-                yield {'type': 'status', 'message': f"Yeni alan bulundu: '{area_name}'. Dalları çekiliyor..."}
-                
                 branches = get_branches_for_area(str(province_id), area_value)
                 
                 if branches is not None:
                     unique_areas_with_branches[area_name] = branches
+                    new_areas_in_province += 1
+                    new_branches_in_province += len(branches)
                     
                     # Veritabanına kaydet
                     area_id = save_area_and_branches_to_db(area_name, branches, db_path)
                     
                     if area_id:
-                        # Klasör yapısını oluştur
                         area_dir = create_area_directory_structure(area_name)
-                        
-                        # Dal bilgilerini dosyaya kaydet
                         save_branches_to_file(area_name, branches, area_dir)
-                        
-                        yield {'type': 'success', 'message': f"Alan '{area_name}' başarıyla kaydedildi ({len(branches)} dal)"}
                     else:
                         yield {'type': 'warning', 'message': f"Alan '{area_name}' veritabanına kaydedilemedi"}
                 else:
                     unique_areas_with_branches[area_name] = []
                     yield {'type': 'warning', 'message': f"Alan '{area_name}' için dal bilgisi çekilemedi"}
                 
-                time.sleep(0.3)  # Dalları çektikten sonra küçük bir gecikme
-            else:
-                yield {'type': 'info', 'message': f"Alan '{area_name}' daha önce işlendi, atlanıyor."}
+                time.sleep(0.3)
         
         processed_provinces += 1
+        total_areas_found += new_areas_in_province
+        total_branches_found += new_branches_in_province
+
+        yield {
+            'type': 'progress',
+            'province_name': province_name.upper(),
+            'province_progress': f"({processed_provinces}/{total_provinces})",
+            'new_areas': new_areas_in_province,
+            'total_areas': total_areas_found,
+            'new_branches': new_branches_in_province,
+            'total_branches': total_branches_found
+        }
+
         time.sleep(1.5)  # Her ilin işlenmesi arasında daha uzun bir gecikme
     
     # Sonuç özeti
-    total_areas = len(unique_areas_with_branches)
-    total_branches = sum(len(branches) for branches in unique_areas_with_branches.values())
     
     yield {
         'type': 'success', 
-        'message': f'Adım 1 tamamlandı! {total_areas} alan, {total_branches} dal işlendi.'
+        'message': f'\nAdım 1 tamamlandı! {total_areas_found} alan, {total_branches_found} dal işlendi.'
     }
     
     # Son durum için JSON dosyası da oluştur (yedek)
@@ -399,12 +401,17 @@ def main():
             print(f"❌ HATA: {message['message']}")
             return
         elif message['type'] == 'warning':
-            print(f"⚠️  UYARI: {message['message']}")
+            # İlerleme logunu bozmamak için uyarıları daha az belirgin yapabiliriz
+            print(f"  -> UYARI: {message['message']}")
         elif message['type'] == 'success':
             print(f"✅ {message['message']}")
         elif message['type'] == 'done':
             print(f"🎉 {message['message']}")
             break
+        elif message['type'] == 'progress':
+            print(f"Bakılan il: {message['province_name']} {message['province_progress']}")
+            print(f"Alan: {message['new_areas']}/{message['total_areas']}")
+            print(f"Dal: {message['new_branches']}/{message['total_branches']}\n")
         else:
             print(f"ℹ️  {message['message']}")
 
