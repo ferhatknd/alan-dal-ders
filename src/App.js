@@ -1078,6 +1078,26 @@ function App() {
     return mapping;
   }, []);
 
+  // Veritabanından gelen JSON cop_url'lerini parse et
+  const parseCopUrl = useCallback((copUrlJson) => {
+    if (!copUrlJson) return null;
+    
+    try {
+      if (copUrlJson.startsWith('{')) {
+        // JSON formatında
+        const copUrls = JSON.parse(copUrlJson);
+        // İlk URL'i döndür
+        const firstKey = Object.keys(copUrls)[0];
+        return firstKey ? copUrls[firstKey] : null;
+      } else {
+        // Eski format (string)
+        return copUrlJson;
+      }
+    } catch (e) {
+      return copUrlJson; // Parse edilemezse original'i döndür
+    }
+  }, []);
+
   // Alanları isme göre sıralamak için bir yardımcı fonksiyon
   const getSortedAlans = useCallback((alanlar) => {
     if (!alanlar) return [];
@@ -1242,108 +1262,253 @@ function App() {
       eventSource.close();
     };
   }, []);
+
+  // DBF'lerden ders saatlerini güncelleme fonksiyonu
+  const handleUpdateDersSaatleri = useCallback(() => {
+    if (!window.confirm('DBF dosyalarından ders saati bilgilerini çıkarıp mevcut dersleri güncellemek istediğinize emin misiniz? Bu işlem uzun sürebilir.')) {
+      return;
+    }
+
+    setProgress([]);
+    setError(null);
+
+    const eventSource = new EventSource('http://localhost:5001/api/update-ders-saatleri-from-dbf');
+
+    eventSource.onmessage = (event) => {
+      const eventData = JSON.parse(event.data);
+      setProgress(prev => [...prev, eventData]);
+
+      if (eventData.type === 'done') {
+        eventSource.close();
+      }
+    };
+
+    eventSource.onerror = () => {
+      setError("DBF ders saati güncelleme sırasında bir hata oluştu. Sunucu bağlantısı kesilmiş olabilir.");
+      eventSource.close();
+    };
+
+    return () => {
+      eventSource.close();
+    };
+  }, []);
   
   return (
     <div className="App">
       <h1>meslek.meb (alan-dal-ders) dosyalar</h1>
-      <button onClick={handleScrape} disabled={loading || initialLoading}>
-        {loading
-          ? 'Veriler Çekiliyor ve Veritabanına Kaydediliyor...'
-          : data
-            ? 'Verileri Yeniden Çek ve Veritabanına Kaydet'
-            : 'Verileri Çek ve Veritabanına Kaydet'}
-      </button>
+      
+      {/* Aşamalı İş Akışı */}
+      <div className="workflow-container" style={{ 
+        background: "#f8f9fa", 
+        padding: "20px", 
+        borderRadius: "8px", 
+        margin: "20px 0",
+        border: "1px solid #dee2e6"
+      }}>
+        <h2 style={{ marginBottom: "20px", color: "#495057" }}>📋 Veri İşleme İş Akışı</h2>
+        
+        {/* Adım 1: Veri Çekme */}
+        <div className="workflow-step" style={{ marginBottom: "25px" }}>
+          <h3 style={{ 
+            background: "#007bff", 
+            color: "white", 
+            padding: "8px 15px", 
+            borderRadius: "5px", 
+            margin: "0 0 10px 0",
+            fontSize: "16px"
+          }}>
+            🚀 Adım 1: Temel Veri Çekme
+          </h3>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", paddingLeft: "15px" }}>
+            <button 
+              onClick={handleScrape} 
+              disabled={loading || initialLoading}
+              style={{ 
+                background: loading ? "#6c757d" : "#28a745", 
+                color: "white", 
+                border: "none", 
+                padding: "10px 20px", 
+                borderRadius: "5px",
+                cursor: loading ? "not-allowed" : "pointer"
+              }}
+            >
+              {loading
+                ? '⏳ Veriler Çekiliyor...'
+                : data
+                  ? '🔄 Verileri Yeniden Çek'
+                  : '▶️ Verileri Çek ve Kaydet'}
+            </button>
+            <button 
+              onClick={fetchDbf} 
+              disabled={catLoading === "dbf"}
+              style={{ background: "#17a2b8", color: "white", border: "none", padding: "10px 20px", borderRadius: "5px" }}
+            >
+              📋 DBF Getir
+            </button>
+            <button 
+              onClick={fetchCop} 
+              disabled={catLoading === "cop"}
+              style={{ background: "#6f42c1", color: "white", border: "none", padding: "10px 20px", borderRadius: "5px" }}
+            >
+              📄 ÇÖP Getir
+            </button>
+            <button 
+              onClick={fetchDm} 
+              disabled={catLoading === "dm"}
+              style={{ background: "#fd7e14", color: "white", border: "none", padding: "10px 20px", borderRadius: "5px" }}
+            >
+              📖 DM Getir
+            </button>
+            <button 
+              onClick={fetchBom} 
+              disabled={catLoading === "bom"}
+              style={{ background: "#20c997", color: "white", border: "none", padding: "10px 20px", borderRadius: "5px" }}
+            >
+              📚 BOM Getir
+            </button>
+          </div>
+        </div>
 
-      {/* Kategorik veri çekme butonları */}
-      <div style={{ margin: "20px 0" }}>
-        <button onClick={fetchDbf} disabled={catLoading === "dbf"}>Ders Bilgi Formu (DBF) Getir</button>{" "}
-        <button onClick={fetchCop} disabled={catLoading === "cop"}>Çerçeve Öğretim Programı (ÇÖP) Getir</button>{" "}
-        <button onClick={fetchDm} disabled={catLoading === "dm"}>Ders Materyali (DM) Getir</button>{" "}
-        <button onClick={fetchBom} disabled={catLoading === "bom"}>Bireysel Öğrenme Materyali (BOM) Getir</button>{" "}
-        <button onClick={handleDbfUnrar} disabled={dbfUnrarLoading} style={{ background: "#e67e22", color: "white" }}>
-          {dbfUnrarLoading ? "DBF Dosyaları İndiriliyor/Açılıyor..." : "DBF Dosyalarını İndir ve Aç"}
-        </button>{" "}
-        <button
-          onClick={async () => {
-            setProgress(prev => [...prev, { type: "status", message: "DBF eşleştirmesi başlatıldı..." }]);
-            try {
-              const res = await fetch("http://localhost:5001/api/dbf-match-refresh", { method: "POST" });
-              const result = await res.json();
-              setProgress(prev => [...prev, result]);
-            } catch (e) {
-              setProgress(prev => [...prev, { type: "error", message: "Eşleştirme isteği başarısız: " + e.message }]);
-            }
-          }}
-          style={{ background: "#16a085", color: "white" }}
-        >
-          DBF Eşleştirmesini Güncelle
-        </button>{" "}
-        <button
-          onClick={() => {
-            setProgress([]);
-            setError(null);
-            const eventSource = new EventSource("http://localhost:5001/api/dbf-retry-extract-all");
-            eventSource.onmessage = (event) => {
-              try {
-                const eventData = JSON.parse(event.data);
-                setProgress(prev => [...prev, eventData]);
-                if (eventData.type === "done") {
+        {/* Adım 2: PDF İşleme */}
+        <div className="workflow-step" style={{ marginBottom: "25px" }}>
+          <h3 style={{ 
+            background: "#fd7e14", 
+            color: "white", 
+            padding: "8px 15px", 
+            borderRadius: "5px", 
+            margin: "0 0 10px 0",
+            fontSize: "16px"
+          }}>
+            📄 Adım 2: PDF İşleme ve Analiz
+          </h3>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", paddingLeft: "15px" }}>
+            <button
+              onClick={handleDbfUnrar}
+              disabled={dbfUnrarLoading}
+              style={{ 
+                background: dbfUnrarLoading ? "#6c757d" : "#e67e22", 
+                color: "white", 
+                border: "none", 
+                padding: "10px 20px", 
+                borderRadius: "5px",
+                cursor: dbfUnrarLoading ? "not-allowed" : "pointer"
+              }}
+            >
+              {dbfUnrarLoading ? "⏳ DBF İndiriliyor..." : "📦 DBF İndir ve Aç"}
+            </button>
+            <button
+              onClick={handleProcessCopPdfs}
+              style={{ 
+                background: "#8e44ad", 
+                color: "white",
+                border: "none", 
+                padding: "10px 20px", 
+                borderRadius: "5px"
+              }}
+              title="ÇÖP PDF'lerini modules/oku.py ile işleyip alan-dal-ders ilişkisini çıkararak veritabanına kaydet"
+            >
+              🔍 ÇÖP PDF'lerini İşle
+            </button>
+            <button
+              onClick={() => {
+                setProgress([]);
+                setError(null);
+                const eventSource = new EventSource("http://localhost:5001/api/dbf-retry-extract-all");
+                eventSource.onmessage = (event) => {
+                  try {
+                    const eventData = JSON.parse(event.data);
+                    setProgress(prev => [...prev, eventData]);
+                    if (eventData.type === "done") {
+                      eventSource.close();
+                    }
+                  } catch (e) {
+                    setProgress(prev => [...prev, { type: "error", message: "Veri işlenemedi: " + e.message }]);
+                  }
+                };
+                eventSource.onerror = (err) => {
+                  setProgress(prev => [...prev, { type: "error", message: "Bağlantı hatası veya sunucu yanıt vermiyor." }]);
                   eventSource.close();
+                };
+              }}
+              style={{ background: "#2980b9", color: "white", border: "none", padding: "10px 20px", borderRadius: "5px" }}
+            >
+              🔄 Tüm PDF'leri Tekrar İşle
+            </button>
+          </div>
+        </div>
+
+        {/* Adım 3: Veritabanı İşlemleri */}
+        <div className="workflow-step" style={{ marginBottom: "15px" }}>
+          <h3 style={{ 
+            background: "#28a745", 
+            color: "white", 
+            padding: "8px 15px", 
+            borderRadius: "5px", 
+            margin: "0 0 10px 0",
+            fontSize: "16px"
+          }}>
+            💾 Adım 3: Veritabanı Güncellemeleri
+          </h3>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", paddingLeft: "15px" }}>
+            <button
+              onClick={async () => {
+                setProgress(prev => [...prev, { type: "status", message: "DBF eşleştirmesi başlatıldı..." }]);
+                try {
+                  const res = await fetch("http://localhost:5001/api/dbf-match-refresh", { method: "POST" });
+                  const result = await res.json();
+                  setProgress(prev => [...prev, result]);
+                } catch (e) {
+                  setProgress(prev => [...prev, { type: "error", message: "Eşleştirme isteği başarısız: " + e.message }]);
                 }
-              } catch (e) {
-                setProgress(prev => [...prev, { type: "error", message: "Veri işlenemedi: " + e.message }]);
-              }
-            };
-            eventSource.onerror = (err) => {
-              setProgress(prev => [...prev, { type: "error", message: "Bağlantı hatası veya sunucu yanıt vermiyor." }]);
-              eventSource.close();
-            };
-          }}
-          style={{ background: "#2980b9", color: "white" }}
-        >
-          Tüm İndirilenleri Tekrar Aç
-        </button>{" "}
-        <button
-          onClick={async () => {
-            setProgress(prev => [...prev, { type: "status", message: "DBF eşleştirmesi başlatıldı..." }]);
-            try {
-              const res = await fetch("http://localhost:5001/api/dbf-match-refresh", { method: "POST" });
-              const result = await res.json();
-              setProgress(prev => [...prev, result]);
-            } catch (e) {
-              setProgress(prev => [...prev, { type: "error", message: "Eşleştirme isteği başarısız: " + e.message }]);
-            }
-          }}
-          style={{ background: "#16a085", color: "white" }}
-        >
-          DBF Eşleştirmesini Güncelle
-        </button>
-        <button
-          onClick={handleProcessCopPdfs}
-          style={{ 
-            background: "#8e44ad", 
-            color: "white",
-            marginLeft: "10px"
-          }}
-          title="ÇÖP PDF'lerini oku.py ile işleyip alan-dal-ders ilişkisini çıkararak veritabanına kaydet"
-        >
-          ÇÖP PDF'lerini İşle ve Veritabanına Kaydet
-        </button>
-        <button
-          onClick={handleExportToDatabase}
-          disabled={editedCourses.size === 0}
-          style={{ 
-            background: editedCourses.size > 0 ? "#e74c3c" : "#bdc3c7", 
-            color: "white",
-            marginLeft: "10px"
-          }}
-          title={`${editedCourses.size} düzenlenmiş ders veritabanına aktar`}
-        >
-          Veritabanına Aktar ({editedCourses.size})
-        </button>
-        {(catLoading || dbfUnrarLoading) && <span style={{ marginLeft: 10 }}>Yükleniyor...</span>}
-        {catError && <span style={{ color: "red", marginLeft: 10 }}>{catError}</span>}
-        {dbfUnrarError && <span style={{ color: "red", marginLeft: 10 }}>{dbfUnrarError}</span>}
+              }}
+              style={{ background: "#16a085", color: "white", border: "none", padding: "10px 20px", borderRadius: "5px" }}
+            >
+              🔗 DBF Eşleştir
+            </button>
+            <button
+              onClick={handleUpdateDersSaatleri}
+              style={{ 
+                background: "#27ae60", 
+                color: "white",
+                border: "none", 
+                padding: "10px 20px", 
+                borderRadius: "5px"
+              }}
+              title="DBF dosyalarından ders saati bilgilerini çıkarıp mevcut dersleri güncelle"
+            >
+              ⏰ Ders Saatlerini Güncelle
+            </button>
+            <button
+              onClick={handleExportToDatabase}
+              disabled={editedCourses.size === 0}
+              style={{ 
+                background: editedCourses.size > 0 ? "#e74c3c" : "#bdc3c7", 
+                color: "white",
+                border: "none", 
+                padding: "10px 20px", 
+                borderRadius: "5px",
+                cursor: editedCourses.size === 0 ? "not-allowed" : "pointer"
+              }}
+              title={`${editedCourses.size} düzenlenmiş ders veritabanına aktar`}
+            >
+              💾 Veritabanına Aktar ({editedCourses.size})
+            </button>
+          </div>
+        </div>
+
+        {/* Durum Göstergeleri */}
+        <div style={{ marginTop: "15px", padding: "10px", background: "#e9ecef", borderRadius: "5px" }}>
+          {(catLoading || dbfUnrarLoading || loading) && (
+            <div style={{ color: "#007bff", fontWeight: "bold" }}>
+              ⏳ İşlem devam ediyor: {catLoading || "genel işlem"}...
+            </div>
+          )}
+          {catError && <div style={{ color: "#dc3545", fontWeight: "bold" }}>❌ Hata: {catError}</div>}
+          {dbfUnrarError && <div style={{ color: "#dc3545", fontWeight: "bold" }}>❌ DBF Hatası: {dbfUnrarError}</div>}
+          {!loading && !catLoading && !dbfUnrarLoading && !catError && !dbfUnrarError && (
+            <div style={{ color: "#28a745", fontWeight: "bold" }}>✅ Hazır - Yukarıdaki adımları sırasıyla takip edin</div>
+          )}
+        </div>
       </div>
 
       {/* Arama Kutusu ve Görünüm Seçenekleri */}

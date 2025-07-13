@@ -4,6 +4,8 @@ from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import shutil
 import rarfile
+import zipfile
+import re
 
 BASE_DBF_URL = "https://meslek.meb.gov.tr/dbflistele.aspx"
 HEADERS = {
@@ -11,18 +13,11 @@ HEADERS = {
     "Referer": "https://meslek.meb.gov.tr/"
 }
 
-DBF_ROOT_DIR = "dbf"
+DBF_ROOT_DIR = "data/dbf"
 
-def sanitize_filename(name):
-    # Dosya/klasör ismi olarak kullanılabilir hale getir
-    import re
-    name = name.replace(" ", "_")
-    name = re.sub(r"[^\w\-_.()]", "", name)
-    return name
-
-def get_dbf_links(siniflar=["9", "10", "11", "12"]):
+def getir_dbf(siniflar=["9", "10", "11", "12"]):
     """
-    Her sınıf için DBF (Ders Bilgi Formu) rar dosyası linklerini ve alan adlarını döndürür.
+    Tüm sınıflar için DBF (Ders Bilgi Formu) verilerini eşzamanlı olarak çeker.
     """
     def get_dbf_data_for_class(sinif_kodu):
         params = {"sinif_kodu": sinif_kodu, "kurum_id": "1"}
@@ -76,9 +71,17 @@ def get_dbf_links(siniflar=["9", "10", "11", "12"]):
                 print(f"DBF verisi işlenirken hata: {exc}")
     return all_dbf_data
 
+def sanitize_filename(name):
+    """
+    Dosya/klasör ismi olarak kullanılabilir hale getir.
+    """
+    name = name.replace(" ", "_")
+    name = re.sub(r"[^\w\-_.()]", "", name)
+    return name
+
 def download_and_extract_dbf(dbf_data):
     """
-    Her alan için ilgili rar dosyasını indirir ve dbf/ALAN_ADI/ klasörüne açar.
+    Her alan için ilgili RAR/ZIP dosyasını indirir ve dbf/ALAN_ADI/ klasörüne açar.
     """
     if not os.path.exists(DBF_ROOT_DIR):
         os.makedirs(DBF_ROOT_DIR)
@@ -89,33 +92,32 @@ def download_and_extract_dbf(dbf_data):
             alan_dir = os.path.join(DBF_ROOT_DIR, sanitize_filename(alan_adi))
             if not os.path.exists(alan_dir):
                 os.makedirs(alan_dir)
-            rar_filename = os.path.basename(link)
-            rar_path = os.path.join(alan_dir, rar_filename)
+            archive_filename = os.path.basename(link)
+            archive_path = os.path.join(alan_dir, archive_filename)
 
             # İndir
-            print(f"[{alan_adi}] {sinif}. sınıf: {rar_filename} indiriliyor...")
+            print(f"[{alan_adi}] {sinif}. sınıf: {archive_filename} indiriliyor...")
             try:
                 with requests.get(link, stream=True, timeout=60) as r:
                     r.raise_for_status()
-                    with open(rar_path, "wb") as f:
+                    with open(archive_path, "wb") as f:
                         shutil.copyfileobj(r.raw, f)
-                print(f"[{alan_adi}] {rar_filename} indirildi.")
+                print(f"[{alan_adi}] {archive_filename} indirildi.")
             except Exception as e:
-                print(f"[{alan_adi}] {rar_filename} indirilemedi: {e}")
+                print(f"[{alan_adi}] {archive_filename} indirilemedi: {e}")
                 continue
 
             # Aç
             try:
-                print(f"[{alan_adi}] {rar_filename} açılıyor...")
-                with rarfile.RarFile(rar_path) as rf:
-                    rf.extractall(alan_dir)
-                print(f"[{alan_adi}] {rar_filename} başarıyla açıldı.")
+                print(f"[{alan_adi}] {archive_filename} açılıyor...")
+                extract_archive(archive_path, alan_dir)
+                print(f"[{alan_adi}] {archive_filename} başarıyla açıldı.")
             except Exception as e:
-                print(f"[{alan_adi}] {rar_filename} açılamadı: {e}")
+                print(f"[{alan_adi}] {archive_filename} açılamadı: {e}")
 
 def download_and_extract_dbf_with_progress(dbf_data):
     """
-    Her alan için ilgili rar dosyasını indirir ve dbf/ALAN_ADI/ klasörüne açar.
+    Her alan için ilgili RAR/ZIP dosyasını indirir ve dbf/ALAN_ADI/ klasörüne açar.
     Her adımda yield ile ilerleme mesajı döndürür.
     """
     if not os.path.exists(DBF_ROOT_DIR):
@@ -127,99 +129,79 @@ def download_and_extract_dbf_with_progress(dbf_data):
             alan_dir = os.path.join(DBF_ROOT_DIR, sanitize_filename(alan_adi))
             if not os.path.exists(alan_dir):
                 os.makedirs(alan_dir)
-            rar_filename = os.path.basename(link)
-            rar_path = os.path.join(alan_dir, rar_filename)
+            archive_filename = os.path.basename(link)
+            archive_path = os.path.join(alan_dir, archive_filename)
 
             # İndir
-            msg = f"[{alan_adi}] {sinif}. sınıf: {rar_filename} indiriliyor..."
+            msg = f"[{alan_adi}] {sinif}. sınıf: {archive_filename} indiriliyor..."
             print(msg)
             yield {"type": "status", "message": msg}
             try:
                 with requests.get(link, stream=True, timeout=60) as r:
                     r.raise_for_status()
-                    with open(rar_path, "wb") as f:
+                    with open(archive_path, "wb") as f:
                         shutil.copyfileobj(r.raw, f)
-                msg = f"[{alan_adi}] {rar_filename} indirildi."
+                msg = f"[{alan_adi}] {archive_filename} indirildi."
                 print(msg)
                 yield {"type": "status", "message": msg}
             except Exception as e:
-                msg = f"[{alan_adi}] {rar_filename} indirilemedi: {e}"
-                print(msg)
-                yield {"type": "error", "message": msg}
-                continue
-
-            # Açmadan önce dosyanın rar veya zip olup olmadığını kontrol et
-            try:
-                with open(rar_path, "rb") as f:
-                    magic = f.read(4)
-                is_rar = magic == b"Rar!"
-                is_zip = magic == b"PK\x03\x04"
-                if not (is_rar or is_zip):
-                    msg = f"[{alan_adi}] {rar_filename} ne RAR ne de ZIP dosyası (ilk byte: {magic})"
-                    print(msg)
-                    yield {"type": "error", "message": msg}
-                    continue
-            except Exception as e:
-                msg = f"[{alan_adi}] {rar_filename} dosya kontrolü yapılamadı: {e}"
+                msg = f"[{alan_adi}] {archive_filename} indirilemedi: {e}"
                 print(msg)
                 yield {"type": "error", "message": msg}
                 continue
 
             # Aç
-            msg = f"[{alan_adi}] {rar_filename} açılıyor..."
+            msg = f"[{alan_adi}] {archive_filename} açılıyor..."
             print(msg)
             yield {"type": "status", "message": msg}
             try:
-                if is_rar:
-                    with rarfile.RarFile(rar_path) as rf:
-                        rf.extractall(alan_dir)
-                elif is_zip:
-                    import zipfile
-                    with zipfile.ZipFile(rar_path) as zf:
-                        zf.extractall(alan_dir)
-                msg = f"[{alan_adi}] {rar_filename} başarıyla açıldı."
+                extract_archive(archive_path, alan_dir)
+                msg = f"[{alan_adi}] {archive_filename} başarıyla açıldı."
                 print(msg)
                 yield {"type": "status", "message": msg}
             except Exception as e:
-                msg = f"[{alan_adi}] {rar_filename} açılamadı: {e}"
+                msg = f"[{alan_adi}] {archive_filename} açılamadı: {e}"
                 print(msg)
                 yield {"type": "error", "message": msg}
 
-def retry_extract_file(alan_adi, rar_filename):
+def extract_archive(archive_path, extract_dir):
     """
-    Belirli bir dosya için tekrar açma işlemi (hem rar hem zip destekler).
+    RAR veya ZIP dosyasını açar. Dosya tipini otomatik algılar.
     """
-    alan_dir = os.path.join(DBF_ROOT_DIR, sanitize_filename(alan_adi))
-    rar_path = os.path.join(alan_dir, rar_filename)
     try:
-        with open(rar_path, "rb") as f:
+        with open(archive_path, "rb") as f:
             magic = f.read(4)
+        
         is_rar = magic == b"Rar!"
         is_zip = magic == b"PK\x03\x04"
-        if not (is_rar or is_zip):
-            msg = f"[{alan_adi}] {rar_filename} ne RAR ne de ZIP dosyası (ilk byte: {magic})"
-            print(msg)
-            return {"type": "error", "message": msg}
+        
+        if is_rar:
+            with rarfile.RarFile(archive_path) as rf:
+                rf.extractall(extract_dir)
+        elif is_zip:
+            with zipfile.ZipFile(archive_path) as zf:
+                zf.extractall(extract_dir)
+        else:
+            raise Exception(f"Desteklenmeyen dosya formatı (magic: {magic})")
     except Exception as e:
-        msg = f"[{alan_adi}] {rar_filename} dosya kontrolü yapılamadı: {e}"
-        print(msg)
-        return {"type": "error", "message": msg}
+        raise Exception(f"Arşiv açılırken hata: {e}")
 
-    msg = f"[{alan_adi}] {rar_filename} tekrar açılıyor..."
+def retry_extract_file(alan_adi, archive_filename):
+    """
+    Belirli bir dosya için tekrar açma işlemi (hem RAR hem ZIP destekler).
+    """
+    alan_dir = os.path.join(DBF_ROOT_DIR, sanitize_filename(alan_adi))
+    archive_path = os.path.join(alan_dir, archive_filename)
+    
+    msg = f"[{alan_adi}] {archive_filename} tekrar açılıyor..."
     print(msg)
     try:
-        if is_rar:
-            with rarfile.RarFile(rar_path) as rf:
-                rf.extractall(alan_dir)
-        elif is_zip:
-            import zipfile
-            with zipfile.ZipFile(rar_path) as zf:
-                zf.extractall(alan_dir)
-        msg = f"[{alan_adi}] {rar_filename} başarıyla tekrar açıldı."
+        extract_archive(archive_path, alan_dir)
+        msg = f"[{alan_adi}] {archive_filename} başarıyla tekrar açıldı."
         print(msg)
         return {"type": "status", "message": msg}
     except Exception as e:
-        msg = f"[{alan_adi}] {rar_filename} tekrar açılamadı: {e}"
+        msg = f"[{alan_adi}] {archive_filename} tekrar açılamadı: {e}"
         print(msg)
         return {"type": "error", "message": msg}
 
@@ -236,37 +218,17 @@ def retry_extract_all_files_with_progress():
         alan_dir = os.path.join(DBF_ROOT_DIR, alan_klasor)
         if not os.path.isdir(alan_dir):
             continue
+        
         for fname in os.listdir(alan_dir):
-            if fname.lower().endswith(".rar") or fname.lower().endswith(".zip"):
-                rar_path = os.path.join(alan_dir, fname)
+            if fname.lower().endswith((".rar", ".zip")):
+                archive_path = os.path.join(alan_dir, fname)
                 alan_adi = alan_klasor
-                try:
-                    with open(rar_path, "rb") as f:
-                        magic = f.read(4)
-                    is_rar = magic == b"Rar!"
-                    is_zip = magic == b"PK\x03\x04"
-                    if not (is_rar or is_zip):
-                        msg = f"[{alan_adi}] {fname} ne RAR ne de ZIP dosyası (ilk byte: {magic})"
-                        print(msg)
-                        yield {"type": "error", "message": msg}
-                        continue
-                except Exception as e:
-                    msg = f"[{alan_adi}] {fname} dosya kontrolü yapılamadı: {e}"
-                    print(msg)
-                    yield {"type": "error", "message": msg}
-                    continue
-
+                
                 msg = f"[{alan_adi}] {fname} tekrar açılıyor..."
                 print(msg)
                 yield {"type": "status", "message": msg}
                 try:
-                    if is_rar:
-                        with rarfile.RarFile(rar_path) as rf:
-                            rf.extractall(alan_dir)
-                    elif is_zip:
-                        import zipfile
-                        with zipfile.ZipFile(rar_path) as zf:
-                            zf.extractall(alan_dir)
+                    extract_archive(archive_path, alan_dir)
                     msg = f"[{alan_adi}] {fname} başarıyla tekrar açıldı."
                     print(msg)
                     yield {"type": "status", "message": msg}
@@ -276,8 +238,11 @@ def retry_extract_all_files_with_progress():
                     yield {"type": "error", "message": msg}
 
 def main():
-    print("DBF rar dosyaları toplanıyor...")
-    dbf_data = get_dbf_links()
+    """
+    DBF linklerini çek, indir ve aç.
+    """
+    print("DBF RAR/ZIP dosyaları toplanıyor...")
+    dbf_data = getir_dbf()
     print("Tüm DBF linkleri alındı. İndirme ve açma işlemi başlıyor...")
     download_and_extract_dbf(dbf_data)
     print("Tüm işlemler tamamlandı.")

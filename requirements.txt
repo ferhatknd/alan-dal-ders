@@ -6,3 +6,7 @@ python-docx
 selenium
 webdriver-manager
 tqdm
+rarfile
+beautifulsoup4
+requests
+pdfplumber

@@ -1,0 +1,1 @@
+# Bu modül MEB mesleki eğitim veri çekme araçlarını içerir

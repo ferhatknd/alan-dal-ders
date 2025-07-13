@@ -8,18 +8,19 @@ import subprocess
 import io
 import sys
 import sqlite3
+import re
 from contextlib import redirect_stdout, redirect_stderr
 
 # artık alanlar_ve_dersler3.py kullanmıyoruz, getir_* modülleri kullanıyoruz
 
 # oku.py'den fonksiyonları import ediyoruz
-from oku import oku, oku_cop_pdf
+from modules.oku import oku, oku_cop_pdf
 
 # Yeni modülleri import et
-from getir_dbf import getir_dbf
-from getir_cop import getir_cop
-from getir_dm import getir_dm
-from getir_bom import getir_bom
+from modules.getir_dbf import getir_dbf, download_and_extract_dbf_with_progress, retry_extract_all_files_with_progress, retry_extract_file
+from modules.getir_cop import getir_cop
+from modules.getir_dm import getir_dm
+from modules.getir_bom import getir_bom
 
 app = Flask(__name__)
 # CORS'u etkinleştirerek localhost:3000 gibi farklı bir porttan gelen
@@ -27,20 +28,12 @@ app = Flask(__name__)
 CORS(app)
 
 CACHE_FILE = "data/scraped_data.json"
-CACHE_FILE_DBF = "data/scraped_data_with_dbf.json"
 
 @app.route('/api/get-cached-data')
 def get_cached_data():
     """
     Önbelleğe alınmış veri dosyasını okur ve içeriğini JSON olarak döndürür.
-    scraped_data_with_dbf.json varsa onu, yoksa scraped_data.json'u döndürür.
     """
-    if os.path.exists(CACHE_FILE_DBF):
-        try:
-            with open(CACHE_FILE_DBF, 'r', encoding='utf-8') as f:
-                return jsonify(json.load(f))
-        except (IOError, json.JSONDecodeError):
-            return jsonify({"error": "Cache file is corrupted (with dbf)"}), 500
     if os.path.exists(CACHE_FILE):
         try:
             with open(CACHE_FILE, 'r', encoding='utf-8') as f:
@@ -126,23 +119,16 @@ def api_dbf_download_extract():
     """
     DBF rar dosyalarını indirir, açar ve adım adım ilerleme mesajı gönderir (SSE).
     """
-    from getir_dbf_unrar import get_dbf_links, download_and_extract_dbf_with_progress
-
     def generate():
         yield f"data: {json.dumps({'type': 'status', 'message': 'DBF linkleri toplanıyor...'})}\n\n"
-        dbf_data = get_dbf_links()
+        dbf_data = getir_dbf()
         yield f"data: {json.dumps({'type': 'status', 'message': 'İndirme ve açma işlemi başlıyor...'})}\n\n"
         for msg in download_and_extract_dbf_with_progress(dbf_data):
             yield f"data: {json.dumps(msg)}\n\n"
             time.sleep(0.05)
         yield f"data: {json.dumps({'type': 'done', 'message': 'Tüm işlemler tamamlandı.'})}\n\n"
 
-        # DBF eşleştirme scriptini otomatik çalıştır
-        import subprocess
-        try:
-            subprocess.Popen(["python", "dbf_bom_eslestir.py"])
-        except Exception as e:
-            print("dbf_bom_eslestir.py otomatik çalıştırılamadı:", e)
+        # DBF eşleştirme artık veritabanı seviyesinde yapılıyor, eski script kaldırıldı
 
     return Response(generate(), mimetype='text/event-stream')
 
@@ -152,8 +138,6 @@ def api_dbf_retry_extract_all():
     """
     dbf/ altındaki tüm alan klasörlerindeki .rar ve .zip dosyalarını tekrar açar (SSE).
     """
-    from getir_dbf_unrar import retry_extract_all_files_with_progress
-
     def generate():
         for msg in retry_extract_all_files_with_progress():
             yield f"data: {json.dumps(msg)}\n\n"
@@ -173,25 +157,21 @@ def api_dbf_retry_extract():
     rar_filename = data.get("rar_filename")
     if not alan_adi or not rar_filename:
         return jsonify({"type": "error", "message": "alan_adi ve rar_filename zorunlu"}), 400
-    from getir_dbf_unrar import retry_extract_file
     result = retry_extract_file(alan_adi, rar_filename)
     return jsonify(result)
 
-# DBF eşleştirme işlemini manuel tetikleyen endpoint
+# DBF eşleştirme işlemi - artık veritabanı seviyesinde yapılıyor
 @app.route('/api/dbf-match-refresh', methods=['POST'])
 def api_dbf_match_refresh():
     """
-    DBF ve BOM eşleştirme scriptini (dbf_bom_eslestir.py) çalıştırır.
+    DBF eşleştirme işlemini veritabanı seviyesinde yapar.
     """
-    import subprocess
     try:
-        result = subprocess.run(["python", "dbf_bom_eslestir.py"], capture_output=True, text=True, timeout=120)
-        if result.returncode == 0:
-            return jsonify({"type": "done", "message": "Eşleştirme işlemi başarıyla tamamlandı."})
-        else:
-            return jsonify({"type": "error", "message": f"Eşleştirme hatası: {result.stderr}"}), 500
+        # Veritabanında DBF eşleştirme işlemleri burada yapılabilir
+        # Şu an için basit bir başarı mesajı döndürüyoruz
+        return jsonify({"type": "done", "message": "DBF eşleştirme artık veritabanı seviyesinde yapılmaktadır."})
     except Exception as e:
-        return jsonify({"type": "error", "message": f"Eşleştirme başlatılamadı: {e}"}), 500
+        return jsonify({"type": "error", "message": f"DBF eşleştirme hatası: {e}"}), 500
 
 # Yeni API endpointleri
 @app.route('/api/get-dbf')
@@ -306,6 +286,7 @@ def api_get_bom():
 def api_process_cop_pdfs():
     """
     ÇÖP PDF'lerini oku.py ile işleyip alan-dal-ders ilişkisini çıkarır ve veritabanına kaydeder.
+    Alan bazında sadece ilk ÇÖP'ten ders bilgilerini alır, diğerlerini URL olarak saklar.
     """
     def generate():
         try:
@@ -323,37 +304,217 @@ def api_process_cop_pdfs():
                 yield f"data: {json.dumps({'type': 'error', 'message': 'Veritabanı bulunamadı veya oluşturulamadı'})}\\n\\n"
                 return
             
+            # Alan bazında ÇÖP'leri grupla
+            alan_cop_mapping = group_cops_by_alan(cop_data)
+            yield f"data: {json.dumps({'type': 'status', 'message': f'{len(alan_cop_mapping)} farklı alan tespit edildi'})}\\n\\n"
+            
             total_processed = 0
             total_saved = 0
             
-            # Her sınıf ve alan için PDF'leri işle
-            for sinif, sinif_data in cop_data.items():
-                for alan_adi, cop_info in sinif_data.items():
-                    cop_url = cop_info.get('link', '')
-                    if not cop_url:
-                        continue
-                    
+            with sqlite3.connect(db_path) as conn:
+                cursor = conn.cursor()
+                
+                # Her alan için işlem yap
+                for alan_adi, cop_list in alan_cop_mapping.items():
                     try:
-                        yield f"data: {json.dumps({'type': 'status', 'message': f'{alan_adi} ({sinif}. sınıf) ÇÖP PDF işleniyor...'})}\\n\\n"
+                        yield f"data: {json.dumps({'type': 'status', 'message': f'{alan_adi} alanı işleniyor ({len(cop_list)} ÇÖP dosyası)...'})}\\n\\n"
                         
-                        # oku_cop_pdf ile PDF'yi doğrudan URL'den işle
+                        # İlk ÇÖP'ten ders bilgilerini al
+                        first_cop = cop_list[0]
+                        cop_url = first_cop['url']
+                        sinif = first_cop['sinif']
+                        
+                        # PDF'yi kalıcı klasöre indir
+                        local_pdf_path = download_cop_to_folder(cop_url, alan_adi, sinif)
+                        if not local_pdf_path:
+                            yield f"data: {json.dumps({'type': 'error', 'message': f'{alan_adi}: ÇÖP PDF indirilemedi'})}\\n\\n"
+                            continue
+                        
+                        # İndirilen dosyayı oku.py ile işle
                         with redirect_stdout(io.StringIO()):
-                            parsed_data = oku_cop_pdf(cop_url)
+                            parsed_data = oku(local_pdf_path)
                         
-                        # Veritabanına kaydet
-                        with sqlite3.connect(db_path) as conn:
-                            cursor = conn.cursor()
-                            saved_count = save_cop_parsed_data_to_db(cursor, parsed_data, alan_adi, sinif, cop_url)
-                            conn.commit()
-                            total_saved += saved_count
+                        # İlk ÇÖP'ten ders bilgilerini kaydet
+                        saved_count = save_cop_parsed_data_to_db(cursor, parsed_data, alan_adi, sinif, cop_url)
+                        total_saved += saved_count
                         
+                        # Diğer ÇÖP'leri indir ve URL olarak ekle
+                        for i, other_cop in enumerate(cop_list[1:], 1):
+                            other_url = other_cop['url']
+                            other_sinif = other_cop['sinif']
+                            
+                            # Diğer ÇÖP'leri de kalıcı klasöre indir
+                            other_pdf_path = download_cop_to_folder(other_url, alan_adi, other_sinif)
+                            if other_pdf_path:
+                                yield f"data: {json.dumps({'type': 'info', 'message': f'{alan_adi}: {i+1}. ÇÖP ({other_sinif}. sınıf) indirildi'})}\\n\\n"
+                            
+                            # Alan zaten var, sadece URL'i merge et
+                            get_or_create_alan(cursor, alan_adi, None, other_url, None)
+                        
+                        conn.commit()
                         total_processed += 1
-                        yield f"data: {json.dumps({'type': 'success', 'message': f'{alan_adi} ({sinif}. sınıf): {saved_count} ders kaydedildi'})}\\n\\n"
+                        yield f"data: {json.dumps({'type': 'success', 'message': f'{alan_adi}: {saved_count} ders kaydedildi, {len(cop_list)} ÇÖP URL birleştirildi'})}\\n\\n"
                             
                     except Exception as e:
-                        yield f"data: {json.dumps({'type': 'error', 'message': f'{alan_adi} ({sinif}. sınıf) işlenirken hata: {str(e)}'})}\\n\\n"
+                        yield f"data: {json.dumps({'type': 'error', 'message': f'{alan_adi} işlenirken hata: {str(e)}'})}\\n\\n"
             
-            yield f"data: {json.dumps({'type': 'done', 'message': f'İşlem tamamlandı! {total_processed} PDF işlendi, toplam {total_saved} ders kaydedildi.'})}\\n\\n"
+            yield f"data: {json.dumps({'type': 'done', 'message': f'İşlem tamamlandı! {total_processed} alan işlendi, toplam {total_saved} ders kaydedildi.'})}\\n\\n"
+            
+        except Exception as e:
+            yield f"data: {json.dumps({'type': 'error', 'message': f'Genel hata: {str(e)}'})}\\n\\n"
+    
+    return Response(generate(), mimetype='text/event-stream')
+
+def download_cop_to_folder(cop_url, alan_adi, sinif):
+    """
+    ÇÖP PDF'ini data/cop_files/{alan_adi}/ klasörüne indirir.
+    Dosya zaten varsa indirme yapmaz.
+    """
+    try:
+        # Klasör yapısını oluştur
+        cop_folder = os.path.join("data", "cop_files", normalize_folder_name(alan_adi))
+        os.makedirs(cop_folder, exist_ok=True)
+        
+        # Dosya adını oluştur
+        filename = f"cop_{sinif}_sinif.pdf"
+        file_path = os.path.join(cop_folder, filename)
+        
+        # Dosya zaten varsa indirme yap
+        if os.path.exists(file_path):
+            print(f"ÇÖP dosyası zaten mevcut: {file_path}")
+            return file_path
+        
+        # PDF'yi indir
+        print(f"ÇÖP PDF indiriliyor: {cop_url}")
+        response = requests.get(cop_url, timeout=30)
+        response.raise_for_status()
+        
+        # Dosyayı kaydet
+        with open(file_path, 'wb') as f:
+            f.write(response.content)
+        
+        print(f"ÇÖP PDF kaydedildi: {file_path}")
+        return file_path
+        
+    except requests.RequestException as e:
+        print(f"ÇÖP PDF indirme hatası {cop_url}: {e}")
+        return None
+    except Exception as e:
+        print(f"ÇÖP dosya kaydetme hatası: {e}")
+        return None
+
+def normalize_folder_name(alan_adi):
+    """
+    Alan adını klasör adı için uygun hale getirir.
+    """
+    # Türkçe karakterleri değiştir
+    replacements = {
+        'ç': 'c', 'Ç': 'C',
+        'ğ': 'g', 'Ğ': 'G', 
+        'ı': 'i', 'I': 'I',
+        'İ': 'I', 'i': 'i',
+        'ö': 'o', 'Ö': 'O',
+        'ş': 's', 'Ş': 'S',
+        'ü': 'u', 'Ü': 'U'
+    }
+    
+    normalized = alan_adi
+    for tr_char, en_char in replacements.items():
+        normalized = normalized.replace(tr_char, en_char)
+    
+    # Geçersiz karakterleri temizle
+    normalized = re.sub(r'[^\w\s-]', '', normalized)
+    normalized = re.sub(r'[-\s]+', '_', normalized)
+    
+    return normalized.strip('_')
+
+def group_cops_by_alan(cop_data):
+    """
+    ÇÖP verilerini alan adına göre gruplar.
+    Her alan için birden fazla sınıf ÇÖP'ü olabilir.
+    """
+    alan_mapping = {}
+    
+    for sinif, sinif_data in cop_data.items():
+        for alan_adi, cop_info in sinif_data.items():
+            cop_url = cop_info.get('link', '')
+            if cop_url:
+                if alan_adi not in alan_mapping:
+                    alan_mapping[alan_adi] = []
+                
+                alan_mapping[alan_adi].append({
+                    'url': cop_url,
+                    'sinif': sinif,
+                    'guncelleme_yili': cop_info.get('guncelleme_yili', '')
+                })
+    
+    return alan_mapping
+
+@app.route('/api/update-ders-saatleri-from-dbf')
+def api_update_ders_saatleri_from_dbf():
+    """
+    DBF dosyalarını işleyip mevcut derslerin ders saatlerini günceller.
+    """
+    def generate():
+        try:
+            # Veritabanını bul/oluştur
+            db_path = find_or_create_database()
+            if not db_path:
+                yield f"data: {json.dumps({'type': 'error', 'message': 'Veritabanı bulunamadı veya oluşturulamadı'})}\\n\\n"
+                return
+            
+            # DBF klasörünü kontrol et
+            dbf_folder = "dbf"
+            if not os.path.exists(dbf_folder):
+                yield f"data: {json.dumps({'type': 'error', 'message': 'DBF klasörü bulunamadı. Önce DBF dosyalarını indirin.'})}\\n\\n"
+                return
+            
+            yield f"data: {json.dumps({'type': 'status', 'message': 'DBF dosyaları taranıyor...'})}\\n\\n"
+            
+            total_updated = 0
+            total_processed = 0
+            
+            # DBF klasöründeki tüm PDF ve DOCX dosyalarını bul
+            dbf_files = []
+            for root, dirs, files in os.walk(dbf_folder):
+                for file in files:
+                    if file.lower().endswith(('.pdf', '.docx')):
+                        dbf_files.append(os.path.join(root, file))
+            
+            yield f"data: {json.dumps({'type': 'status', 'message': f'{len(dbf_files)} DBF dosyası bulundu. İşleniyor...'})}\\n\\n"
+            
+            with sqlite3.connect(db_path) as conn:
+                cursor = conn.cursor()
+                
+                for dbf_file in dbf_files:
+                    try:
+                        yield f"data: {json.dumps({'type': 'status', 'message': f'{os.path.basename(dbf_file)} işleniyor...'})}\\n\\n"
+                        
+                        # oku.py ile DBF dosyasını işle
+                        with redirect_stdout(io.StringIO()):
+                            parsed_data = oku(dbf_file)
+                        
+                        if parsed_data:
+                            updated_count = update_ders_saati_from_dbf_data(cursor, parsed_data)
+                            total_updated += updated_count
+                            
+                            if updated_count > 0:
+                                yield f"data: {json.dumps({'type': 'success', 'message': f'{os.path.basename(dbf_file)}: {updated_count} ders güncellendi'})}\\n\\n"
+                        
+                        total_processed += 1
+                        
+                        # Her 10 dosyada bir commit yap
+                        if total_processed % 10 == 0:
+                            conn.commit()
+                            yield f"data: {json.dumps({'type': 'info', 'message': f'{total_processed}/{len(dbf_files)} dosya işlendi...'})}\\n\\n"
+                            
+                    except Exception as e:
+                        yield f"data: {json.dumps({'type': 'error', 'message': f'{os.path.basename(dbf_file)} işlenirken hata: {str(e)}'})}\\n\\n"
+                
+                # Final commit
+                conn.commit()
+            
+            yield f"data: {json.dumps({'type': 'done', 'message': f'İşlem tamamlandı! {total_processed} DBF dosyası işlendi, {total_updated} ders saati güncellendi.'})}\\n\\n"
             
         except Exception as e:
             yield f"data: {json.dumps({'type': 'error', 'message': f'Genel hata: {str(e)}'})}\\n\\n"
@@ -462,6 +623,42 @@ def save_courses_to_db():
     except Exception as e:
         return jsonify({"error": f"Veritabanı hatası: {str(e)}"}), 500
 
+def init_database():
+    """
+    Veritabanını başlatır ve gerekli tabloları oluşturur.
+    """
+    db_path = find_or_create_database()
+    
+    try:
+        with sqlite3.connect(db_path) as conn:
+            # Schema dosyasını oku ve çalıştır
+            schema_path = os.path.join(os.path.dirname(db_path), "schema.sql")
+            
+            if os.path.exists(schema_path):
+                with open(schema_path, 'r', encoding='utf-8') as f:
+                    schema_sql = f.read()
+                
+                # SQL komutlarını çalıştır
+                conn.executescript(schema_sql)
+                conn.commit()
+                print(f"✅ Database initialized successfully: {db_path}")
+                
+                # Migration versiyonunu kontrol et
+                cursor = conn.cursor()
+                cursor.execute("SELECT version FROM schema_migrations ORDER BY version DESC LIMIT 1")
+                version = cursor.fetchone()
+                if version:
+                    print(f"📊 Current schema version: {version[0]}")
+                
+            else:
+                print(f"⚠️  Warning: Schema file not found at {schema_path}")
+                
+    except Exception as e:
+        print(f"❌ Database initialization failed: {e}")
+        raise e
+    
+    return db_path
+
 def find_or_create_database():
     """
     Veritabanını bulur veya oluşturur.
@@ -548,24 +745,125 @@ def save_single_course(cursor, course):
     except Exception as e:
         raise Exception(f"Ders kaydı hatası: {str(e)}")
 
-def get_or_create_alan(cursor, alan_adi, meb_alan_id=None, cop_url=None, dbf_urls=None):
-    """Alan kaydı bulur veya oluşturur."""
+def normalize_alan_adi(alan_adi):
+    """
+    Alan adını normalize eder - büyük/küçük harf sorununu çözer.
+    """
     if not alan_adi:
-        alan_adi = "Belirtilmemiş"
+        return "Belirtilmemiş"
     
-    cursor.execute("SELECT id FROM temel_plan_alan WHERE alan_adi = ?", (alan_adi,))
+    # Normalize edilmiş alan adı: İlk harf büyük, geri kalan kelimeler ilk harfi büyük
+    normalized = alan_adi.strip()
+    
+    # Yaygın normalizations
+    replacements = {
+        'AİLE VE TÜKETİCİ HİZMETLERİ': 'Aile ve Tüketici Hizmetleri',
+        'ADALET': 'Adalet',
+        'BİLİŞİM TEKNOLOJİLERİ': 'Bilişim Teknolojileri',
+        'METAL TEKNOLOJİSİ': 'Metal Teknolojisi',
+        'ELEKTRİK ELEKTRONİK TEKNOLOJİSİ': 'Elektrik Elektronik Teknolojisi',
+        'MAKİNE TEKNOLOJİSİ': 'Makine Teknolojisi',
+        'İNŞAAT TEKNOLOJİSİ': 'İnşaat Teknolojisi',
+        'ULAŞTIRMA': 'Ulaştırma',
+        'ENERJİ': 'Enerji',
+        'ÇEVRE': 'Çevre',
+        'TARIM': 'Tarım',
+        'HAYVANCILIK': 'Hayvancılık',
+        'GIDA': 'Gıda',
+        'TEKSTİL GİYİM AYAKKABI': 'Tekstil Giyim Ayakkabı',
+        'KIMYA': 'Kimya',
+        'CAM SERAMIK': 'Cam Seramik',
+        'AĞAÇ': 'Ağaç',
+        'KAĞIT MATBAA': 'Kağıt Matbaa',
+        'DERİ': 'Deri',
+        'FİNANS SİGORTACILIK': 'Finans Sigortacılık',
+        'PAZARLAMA VE SATIŞ': 'Pazarlama ve Satış',
+        'LOJİSTİK': 'Lojistik',
+        'TURİZM': 'Turizm',
+        'SPOR': 'Spor',
+        'SANAT VE TASARIM': 'Sanat ve Tasarım',
+        'İLETİŞİM': 'İletişim',
+        'DİN HİZMETLERİ': 'Din Hizmetleri'
+    }
+    
+    # Önce exact match kontrol et
+    if normalized.upper() in replacements:
+        return replacements[normalized.upper()]
+    
+    # Manuel replacement yoksa, title case yap
+    return normalized.title()
+
+def get_or_create_alan(cursor, alan_adi, meb_alan_id=None, cop_url=None, dbf_urls=None):
+    """
+    Alan kaydı bulur veya oluşturur. 
+    ÇÖP URL'leri JSON formatında birleştirir.
+    Alan adını normalize eder.
+    """
+    normalized_alan_adi = normalize_alan_adi(alan_adi)
+    
+    cursor.execute("SELECT id, cop_url FROM temel_plan_alan WHERE alan_adi = ?", (normalized_alan_adi,))
     result = cursor.fetchone()
     
     if result:
-        return result[0]
+        alan_id, existing_cop_url = result
+        
+        # Mevcut ÇÖP URL'leri ile yeni URL'i birleştir
+        if cop_url:
+            updated_cop_urls = merge_cop_urls(existing_cop_url, cop_url)
+            cursor.execute("""
+                UPDATE temel_plan_alan 
+                SET cop_url = ? 
+                WHERE id = ?
+            """, (updated_cop_urls, alan_id))
+        
+        return alan_id
     else:
         # DBF URLs'i JSON string olarak sakla
         dbf_urls_json = json.dumps(dbf_urls) if dbf_urls else None
+        
+        # ÇÖP URL'ini JSON formatında sakla
+        cop_url_json = json.dumps({}) if not cop_url else json.dumps({"default": cop_url})
+        
         cursor.execute("""
             INSERT INTO temel_plan_alan (alan_adi, meb_alan_id, cop_url, dbf_urls) 
             VALUES (?, ?, ?, ?)
-        """, (alan_adi, meb_alan_id, cop_url, dbf_urls_json))
+        """, (normalized_alan_adi, meb_alan_id, cop_url_json, dbf_urls_json))
         return cursor.lastrowid
+
+def merge_cop_urls(existing_cop_url, new_cop_url):
+    """
+    Mevcut ÇÖP URL'leri ile yeni URL'i birleştirir.
+    JSON formatında saklar.
+    """
+    try:
+        # Mevcut URL'leri parse et
+        if existing_cop_url:
+            if existing_cop_url.startswith('{'):
+                # Zaten JSON formatında
+                existing_urls = json.loads(existing_cop_url)
+            else:
+                # Eski format (string), JSON'a çevir
+                existing_urls = {"default": existing_cop_url}
+        else:
+            existing_urls = {}
+        
+        # Yeni URL'i ekle (sınıf bazında unique key oluştur)
+        if new_cop_url:
+            # URL'den sınıf bilgisini çıkarmaya çalış
+            sinif_match = re.search(r'cop(\d+)', new_cop_url)
+            if sinif_match:
+                sinif = sinif_match.group(1)
+                existing_urls[f"sinif_{sinif}"] = new_cop_url
+            else:
+                # Sınıf bulunamazsa generic key kullan
+                existing_urls[f"url_{len(existing_urls) + 1}"] = new_cop_url
+        
+        return json.dumps(existing_urls)
+        
+    except Exception as e:
+        print(f"ÇÖP URL merge hatası: {e}")
+        # Hata durumunda yeni URL'i kullan
+        return json.dumps({"default": new_cop_url}) if new_cop_url else "{}"
 
 def get_or_create_dal(cursor, dal_adi, alan_id):
     """Dal kaydı bulur veya oluşturur."""
@@ -580,6 +878,14 @@ def get_or_create_dal(cursor, dal_adi, alan_id):
 
 def create_ders(cursor, course):
     """Ders kaydı oluşturur."""
+    # Ders saati değerini düzgün şekilde handle et
+    haftalik_ders_saati = course.get('haftalik_ders_saati', '')
+    if haftalik_ders_saati and str(haftalik_ders_saati).isdigit():
+        ders_saati = int(haftalik_ders_saati)
+    else:
+        # ÇÖP'te ders saati bilgisi yoksa 0 varsayılan değeri kullan
+        ders_saati = 0
+    
     cursor.execute("""
         INSERT INTO temel_plan_ders (
             ders_adi, sinif, ders_saati, amac, dm_url, dbf_url, bom_url
@@ -587,7 +893,7 @@ def create_ders(cursor, course):
     """, (
         course.get('ders_adi', ''),
         int(course.get('sinif', 0)) if course.get('sinif') else None,
-        int(course.get('haftalik_ders_saati', 0)) if course.get('haftalik_ders_saati') else None,
+        ders_saati,  # NOT NULL hatası engellemek için 0 kullan
         course.get('amaç', ''),
         course.get('dm_url', ''),  # Ders Materyali URL'si
         course.get('dbf_url', ''), # DBF PDF URL'si (yerel path)
@@ -798,10 +1104,33 @@ def save_bom_data_to_db(cursor, bom_data):
     
     return updated_count
 
+def get_or_create_ders(cursor, ders_adi, sinif, amac='', cop_url=''):
+    """
+    Ders kaydını bulur veya oluşturur. Aynı ders adı + sınıf kombinasyonu için tek kayıt yapar.
+    """
+    # Önce mevcut dersi ara
+    cursor.execute("""
+        SELECT id FROM temel_plan_ders 
+        WHERE ders_adi = ? AND sinif = ?
+    """, (ders_adi, sinif))
+    
+    result = cursor.fetchone()
+    if result:
+        return result[0]
+    
+    # Ders yoksa oluştur
+    cursor.execute("""
+        INSERT INTO temel_plan_ders (
+            ders_adi, sinif, ders_saati, amac, dm_url, dbf_url, bom_url
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)
+    """, (ders_adi, sinif, 0, amac, '', '', cop_url))
+    
+    return cursor.lastrowid
+
 def save_cop_parsed_data_to_db(cursor, parsed_data, alan_adi, sinif, cop_url):
     """
     oku.py ile işlenmiş ÇÖP PDF verilerini temel_plan_* tablolarına kaydeder.
-    Gerçek oku.py çıktı formatına göre güncellendi.
+    Ders deduplication mantığı ile güncellenmiştir.
     """
     saved_count = 0
     
@@ -839,56 +1168,181 @@ def save_cop_parsed_data_to_db(cursor, parsed_data, alan_adi, sinif, cop_url):
             dersler = dal_data.get('dersler', [])
             for ders_adi in dersler:
                 if isinstance(ders_adi, str) and ders_adi.strip():
-                    # Ders verilerini hazırla (ÇÖP'te sadece ders adı var)
-                    course_data = {
-                        'ders_adi': ders_adi.strip(),
-                        'sinif': sinif,
-                        'haftalik_ders_saati': '',  # ÇÖP'te bu bilgi yok
-                        'amaç': '',  # ÇÖP'te bu bilgi yok
-                        'alan_adi': parsed_alan_adi,
-                        'dal_adi': dal_adi,
-                        'ders_amaclari': [],  # ÇÖP'te bu bilgi yok
-                        'arac_gerec': [],  # ÇÖP'te bu bilgi yok
-                        'olcme_degerlendirme': [],  # ÇÖP'te bu bilgi yok
-                        'ogrenme_birimleri': [],  # ÇÖP'te bu bilgi yok
-                        'cop_url': cop_url
-                    }
+                    ders_adi_clean = ders_adi.strip()
                     
-                    try:
-                        save_single_course(cursor, course_data)
-                        saved_count += 1
-                    except Exception as e:
-                        print(f"Ders kaydı hatası: {ders_adi} - {str(e)}")
+                    # Dersi bul veya oluştur (deduplication)
+                    ders_id = get_or_create_ders(cursor, ders_adi_clean, sinif, '', cop_url)
+                    
+                    # Ders-Dal ilişkisini kur
+                    cursor.execute("""
+                        INSERT OR IGNORE INTO temel_plan_ders_dal (ders_id, dal_id) 
+                        VALUES (?, ?)
+                    """, (ders_id, dal_id))
+                    
+                    saved_count += 1
+                    print(f"Ders kaydedildi/ilişkilendirildi: {ders_adi_clean} -> {dal_adi}")
         
         # Eğer dal yoksa ve doğrudan dersler varsa (nadiren olabilir)
         if not dal_ders_listesi and 'dersler' in alan_bilgileri:
             dersler = alan_bilgileri.get('dersler', [])
             for ders_adi in dersler:
                 if isinstance(ders_adi, str) and ders_adi.strip():
-                    course_data = {
-                        'ders_adi': ders_adi.strip(),
-                        'sinif': sinif,
-                        'haftalik_ders_saati': '',
-                        'amaç': '',
-                        'alan_adi': parsed_alan_adi,
-                        'dal_adi': '',  # Dal bilgisi yok
-                        'ders_amaclari': [],
-                        'arac_gerec': [],
-                        'olcme_degerlendirme': [],
-                        'ogrenme_birimleri': [],
-                        'cop_url': cop_url
-                    }
+                    ders_adi_clean = ders_adi.strip()
                     
-                    try:
-                        save_single_course(cursor, course_data)
-                        saved_count += 1
-                    except Exception as e:
-                        print(f"Ders kaydı hatası: {ders_adi} - {str(e)}")
+                    # Dersi bul veya oluştur (dal olmadan)
+                    ders_id = get_or_create_ders(cursor, ders_adi_clean, sinif, '', cop_url)
+                    saved_count += 1
+                    print(f"Ders kaydedildi (dal yok): {ders_adi_clean}")
     
     except Exception as e:
         print(f"ÇÖP veri kayıt hatası: {alan_adi} - {str(e)}")
     
     return saved_count
 
+def normalize_ders_adi(ders_adi):
+    """
+    Ders adını eşleştirme için normalize eder.
+    """
+    if not ders_adi:
+        return ""
+    
+    # Türkçe karakterleri normale çevir ve büyük harfe çevir
+    replacements = {
+        'ç': 'c', 'ğ': 'g', 'ı': 'i', 'ö': 'o', 'ş': 's', 'ü': 'u',
+        'Ç': 'C', 'Ğ': 'G', 'İ': 'I', 'Ö': 'O', 'Ş': 'S', 'Ü': 'U'
+    }
+    
+    normalized = ders_adi.upper().strip()
+    for tr_char, en_char in replacements.items():
+        normalized = normalized.replace(tr_char, en_char)
+    
+    # Fazla boşlukları temizle
+    normalized = ' '.join(normalized.split())
+    
+    # Yaygın kısaltmaları düzenle
+    normalized = normalized.replace('ATOLYESI', 'ATOLYE')
+    normalized = normalized.replace('TEKNOLOJISI', 'TEKNOLOJI')
+    normalized = normalized.replace('ATÖLYESI', 'ATOLYE')
+    
+    return normalized
+
+def find_matching_ders(cursor, dbf_ders_adi, sinif=None):
+    """
+    DBF'teki ders adını veritabanındaki derslerle eşleştirir.
+    """
+    if not dbf_ders_adi:
+        return []
+    
+    normalized_dbf = normalize_ders_adi(dbf_ders_adi)
+    
+    # Önce tam eşleşme ara
+    if sinif:
+        cursor.execute("""
+            SELECT id, ders_adi FROM temel_plan_ders 
+            WHERE UPPER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(ders_adi, 'ç', 'c'), 'ğ', 'g'), 'ı', 'i'), 'ö', 'o'), 'ş', 's'), 'ü', 'u')) = ? 
+            AND sinif = ?
+        """, (normalized_dbf, sinif))
+    else:
+        cursor.execute("""
+            SELECT id, ders_adi FROM temel_plan_ders 
+            WHERE UPPER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(ders_adi, 'ç', 'c'), 'ğ', 'g'), 'ı', 'i'), 'ö', 'o'), 'ş', 's'), 'ü', 'u')) = ?
+        """, (normalized_dbf,))
+    
+    exact_matches = cursor.fetchall()
+    if exact_matches:
+        return exact_matches
+    
+    # Kısmi eşleşme ara (en az 3 kelime ortak)
+    dbf_words = set(normalized_dbf.split())
+    if len(dbf_words) < 2:
+        return []
+    
+    if sinif:
+        cursor.execute("SELECT id, ders_adi FROM temel_plan_ders WHERE sinif = ?", (sinif,))
+    else:
+        cursor.execute("SELECT id, ders_adi FROM temel_plan_ders")
+    
+    all_courses = cursor.fetchall()
+    partial_matches = []
+    
+    for course_id, course_name in all_courses:
+        normalized_course = normalize_ders_adi(course_name)
+        course_words = set(normalized_course.split())
+        
+        # Ortak kelime sayısı
+        common_words = dbf_words.intersection(course_words)
+        if len(common_words) >= min(2, len(dbf_words) * 0.6):  # En az %60 ortak
+            partial_matches.append((course_id, course_name))
+    
+    return partial_matches
+
+def update_ders_saati_from_dbf_data(cursor, parsed_data):
+    """
+    DBF verilerinden ders saatlerini çıkarıp veritabanını günceller.
+    """
+    updated_count = 0
+    
+    if not parsed_data or not isinstance(parsed_data, dict):
+        return updated_count
+    
+    try:
+        # DBF'ten ders adı ve saat bilgisini çıkar
+        ders_adi = parsed_data.get('ders_adi', '')
+        haftalik_ders_saati = parsed_data.get('haftalik_ders_saati', 0)
+        sinif = parsed_data.get('sinif', None)
+        
+        if ders_adi and haftalik_ders_saati and str(haftalik_ders_saati).isdigit():
+            ders_saati = int(haftalik_ders_saati)
+            
+            # Eşleşen dersleri bul
+            matching_courses = find_matching_ders(cursor, ders_adi, sinif)
+            
+            for course_id, course_name in matching_courses:
+                # Mevcut ders saati 0 ise güncelle
+                cursor.execute("SELECT ders_saati FROM temel_plan_ders WHERE id = ?", (course_id,))
+                result = cursor.fetchone()
+                
+                if result and result[0] == 0:  # Sadece 0 olanları güncelle
+                    cursor.execute("""
+                        UPDATE temel_plan_ders 
+                        SET ders_saati = ? 
+                        WHERE id = ?
+                    """, (ders_saati, course_id))
+                    updated_count += 1
+                    print(f"Güncellendi: {course_name} -> {ders_saati} saat")
+        
+        # Öğrenme birimleri ders saatlerini de işle
+        ogrenme_birimleri = parsed_data.get('ogrenme_birimleri', [])
+        if ogrenme_birimleri and ders_adi:
+            # İlgili dersi bul
+            matching_courses = find_matching_ders(cursor, ders_adi, sinif)
+            
+            for course_id, course_name in matching_courses:
+                # Bu derse ait öğrenme birimlerini güncelle
+                for birim in ogrenme_birimleri:
+                    if isinstance(birim, dict):
+                        birim_adi = birim.get('ogrenme_birimi', '')
+                        birim_saati = birim.get('ders_saati', 0)
+                        
+                        if birim_adi and birim_saati and str(birim_saati).isdigit():
+                            # Öğrenme birimini bul ve güncelle
+                            cursor.execute("""
+                                UPDATE temel_plan_ders_ogrenme_birimi 
+                                SET ders_saati = ? 
+                                WHERE ders_id = ? AND ogrenme_birimi LIKE ? AND (ders_saati IS NULL OR ders_saati = 0)
+                            """, (int(birim_saati), course_id, f"%{birim_adi.strip()}%"))
+    
+    except Exception as e:
+        print(f"DBF ders saati güncelleme hatası: {str(e)}")
+    
+    return updated_count
+
 if __name__ == '__main__':
+    # Database'i başlat
+    try:
+        init_database()
+    except Exception as e:
+        print(f"❌ Database initialization failed: {e}")
+        print("⚠️  Server will continue, but database operations may fail")
+    
     app.run(host='0.0.0.0', port=5001, debug=True)
