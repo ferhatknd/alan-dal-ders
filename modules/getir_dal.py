@@ -1,6 +1,9 @@
 import requests
 import json
 import time
+import os
+import sqlite3
+from pathlib import Path
 
 # requests.Session() kullanarak çerezleri ve oturum bilgilerini yönetiyoruz
 session = requests.Session()
@@ -166,61 +169,244 @@ def get_branches_for_area(province_id, area_value):
         print(f"    [{time.strftime('%H:%M:%S')}] Hata: İl ID: {province_id}, Alan: '{area_value}' için dallar çekilirken beklenmeyen bir hata oluştu: {e}")
         return None
 
-# ... (Diğer tüm fonksiyonlar ve COMMON_HEADERS, session tanımlamaları yukarıdaki kodla aynı kalacak) ...
+def find_or_create_database():
+    """
+    Veritabanı dosyasını bulur veya oluşturur.
+    """
+    db_path = "data/temel_plan.db"
+    if os.path.exists(db_path):
+        return db_path
+    
+    # data klasörü yoksa oluştur
+    os.makedirs("data", exist_ok=True)
+    
+    # Şema dosyasından veritabanını oluştur
+    schema_path = "data/schema.sql"
+    if os.path.exists(schema_path):
+        with sqlite3.connect(db_path) as conn:
+            with open(schema_path, 'r', encoding='utf-8') as f:
+                conn.executescript(f.read())
+        print(f"Veritabanı şemadan oluşturuldu: {db_path}")
+    
+    return db_path
 
-def main():
+def normalize_area_name(area_name):
+    """
+    Alan adını minimal temizlik yapar, kaynaktan gelen formatı korur.
+    """
+    if not area_name:
+        return ""
+    
+    # Sadece boşlukları temizle, karakterleri olduğu gibi bırak
+    normalized = area_name.strip()
+    # Çoklu boşlukları tek boşluğa çevir
+    normalized = ' '.join(normalized.split())
+    
+    return normalized
+
+def save_area_and_branches_to_db(area_name, branches, db_path):
+    """
+    Bir alanı ve dallarını veritabanına kaydeder.
+    """
+    try:
+        # Alan adını normalize et
+        normalized_area_name = normalize_area_name(area_name)
+        
+        with sqlite3.connect(db_path) as conn:
+            cursor = conn.cursor()
+            
+            # Alan adına göre alan varsa ID'sini al
+            cursor.execute(
+                "SELECT id FROM temel_plan_alan WHERE alan_adi = ?",
+                (normalized_area_name,)
+            )
+            result = cursor.fetchone()
+            
+            if result:
+                area_id = result[0]
+                print(f"Alan '{area_name}' zaten mevcut (ID: {area_id})")
+            else:
+                cursor.execute(
+                    "INSERT INTO temel_plan_alan (alan_adi) VALUES (?)",
+                    (normalized_area_name,)
+                )
+                area_id = cursor.lastrowid
+                print(f"Yeni alan eklendi: '{normalized_area_name}' (ID: {area_id})")
+            
+            # Dalları ekle (yineleme kontrolü ile)
+            for branch_name in branches:
+                if branch_name.strip():  # Boş dal adlarını atla
+                    cursor.execute(
+                        "SELECT id FROM temel_plan_dal WHERE dal_adi = ? AND alan_id = ?",
+                        (branch_name, area_id)
+                    )
+                    if not cursor.fetchone():
+                        cursor.execute(
+                            "INSERT INTO temel_plan_dal (dal_adi, alan_id) VALUES (?, ?)",
+                            (branch_name, area_id)
+                        )
+                        print(f"  Dal eklendi: '{branch_name}'")
+                    else:
+                        print(f"  Dal '{branch_name}' zaten mevcut")
+            
+            conn.commit()
+            return area_id
+            
+    except Exception as e:
+        print(f"Veritabanı kayıt hatası ({area_name}): {e}")
+        return None
+
+def create_area_directory_structure(area_name):
+    """
+    Alan için klasör yapısını oluşturur: data/alanlar/{alan_adi}/
+    """
+    # Alan adını dosya sistemi için güvenli hale getir
+    safe_area_name = area_name.replace('/', '_').replace('\\', '_').replace(':', '_')
+    area_dir = Path(f"data/alanlar/{safe_area_name}")
+    
+    # Alt klasörleri oluştur
+    subdirs = ['dallar', 'cop', 'dbf', 'dm', 'bom']
+    for subdir in subdirs:
+        (area_dir / subdir).mkdir(parents=True, exist_ok=True)
+    
+    print(f"Klasör yapısı oluşturuldu: {area_dir}")
+    return area_dir
+
+def save_branches_to_file(area_name, branches, area_dir):
+    """
+    Dalları JSON dosyasına kaydeder.
+    """
+    branches_file = area_dir / 'dallar' / 'dallar.json'
+    branch_data = {
+        'alan_adi': area_name,
+        'dallar': branches,
+        'toplam_dal_sayisi': len(branches),
+        'olusturma_tarihi': time.strftime('%Y-%m-%d %H:%M:%S')
+    }
+    
+    with open(branches_file, 'w', encoding='utf-8') as f:
+        json.dump(branch_data, f, ensure_ascii=False, indent=2)
+    
+    print(f"Dal bilgileri kaydedildi: {branches_file}")
+
+def getir_dal_with_db_integration():
+    """
+    Ana dal getirme fonksiyonu - veritabanı entegrasyonu ile.
+    Generator olarak her adımda ilerleme mesajı döndürür.
+    """
+    yield {'type': 'status', 'message': 'Veritabanı bağlantısı kontrol ediliyor...'}
+    
+    db_path = find_or_create_database()
+    if not db_path:
+        yield {'type': 'error', 'message': 'Veritabanı oluşturulamadı!'}
+        return
+    
+    # Ana dizin yapısını oluştur
+    os.makedirs('data/alanlar', exist_ok=True)
+    
     # Bu sözlük, tüm illerdeki benzersiz alan-dal kombinasyonlarını tutacak.
-    # Yapısı: {"ALAN_ADI": ["DAL_ADI_1", "DAL_ADI_2", ...]}
-    unique_areas_with_branches = {} 
-
-    # ÖNEMLİ: İlk olarak ana sayfaya bir GET isteği göndererek oturum çerezini almalıyız.
-    print(f"[{time.strftime('%H:%M:%S')}] Ana sayfa ziyareti yapılıyor (oturum çerezini almak için)...")
+    unique_areas_with_branches = {}
+    
+    yield {'type': 'status', 'message': 'Ana sayfa ziyareti yapılıyor (oturum çerezini almak için)...'}
+    
     try:
         session.get("https://mtegm.meb.gov.tr/kurumlar/", headers=COMMON_HEADERS, timeout=10)
-        print(f"[{time.strftime('%H:%M:%S')}] Ana sayfa ziyareti tamamlandı. Oturum çerezleri: {session.cookies.get_dict()}")
+        yield {'type': 'status', 'message': 'Ana sayfa ziyareti tamamlandı.'}
     except requests.exceptions.RequestException as e:
-        print(f"[{time.strftime('%H:%M:%S')}] HATA: Ana sayfa ziyareti sırasında ağ hatası oluştu: {e}. Çerez alınamadı, program devam edemez.")
-        return 
-
-    provinces = get_provinces()
-
-    if not provinces:
-        print(f"[{time.strftime('%H:%M:%S')}] HATA: İl bilgileri çekilemedi. Program sonlandırılıyor.")
+        yield {'type': 'error', 'message': f'Ana sayfa ziyaretinde hata: {e}'}
         return
-
-    print(f"[{time.strftime('%H:%M:%S')}] Toplam {len(provinces)} il bulundu.")
-
+    
+    yield {'type': 'status', 'message': 'İl bilgileri çekiliyor...'}
+    provinces = get_provinces()
+    
+    if not provinces:
+        yield {'type': 'error', 'message': 'İl bilgileri çekilemedi!'}
+        return
+    
+    yield {'type': 'status', 'message': f'Toplam {len(provinces)} il bulundu. Alan-dal taraması başlıyor...'}
+    
+    total_provinces = len(provinces)
+    processed_provinces = 0
+    
     for province_id, province_name in provinces.items():
-        print(f"\n[{time.strftime('%H:%M:%S')}] '{province_name}' ili için alanlar kontrol ediliyor...")
+        yield {'type': 'status', 'message': f"'{province_name}' ili işleniyor... ({processed_provinces + 1}/{total_provinces})"}
         
-        areas = get_areas_for_province(str(province_id)) 
-
+        areas = get_areas_for_province(str(province_id))
+        
         if not areas:
-            print(f"[{time.strftime('%H:%M:%S')}] Uyarı: '{province_name}' ili için alan bilgisi bulunamadı veya çekilemedi. Bu il geçiliyor.")
+            yield {'type': 'warning', 'message': f"'{province_name}' ili için alan bilgisi bulunamadı."}
+            processed_provinces += 1
             continue
-
+        
         for area_value, area_name in areas.items():
-            # Eğer bu alan daha önce işlenmemişse (yani unique_areas_with_branches içinde yoksa)
             if area_name not in unique_areas_with_branches:
-                print(f"    [{time.strftime('%H:%M:%S')}] Yeni alan bulundu: '{area_name}'. Dalları çekiliyor...")
+                yield {'type': 'status', 'message': f"Yeni alan bulundu: '{area_name}'. Dalları çekiliyor..."}
+                
                 branches = get_branches_for_area(str(province_id), area_value)
                 
                 if branches is not None:
                     unique_areas_with_branches[area_name] = branches
+                    
+                    # Veritabanına kaydet
+                    area_id = save_area_and_branches_to_db(area_name, branches, db_path)
+                    
+                    if area_id:
+                        # Klasör yapısını oluştur
+                        area_dir = create_area_directory_structure(area_name)
+                        
+                        # Dal bilgilerini dosyaya kaydet
+                        save_branches_to_file(area_name, branches, area_dir)
+                        
+                        yield {'type': 'success', 'message': f"Alan '{area_name}' başarıyla kaydedildi ({len(branches)} dal)"}
+                    else:
+                        yield {'type': 'warning', 'message': f"Alan '{area_name}' veritabanına kaydedilemedi"}
                 else:
-                    unique_areas_with_branches[area_name] = [] # Dal çekilemezse boş liste
+                    unique_areas_with_branches[area_name] = []
+                    yield {'type': 'warning', 'message': f"Alan '{area_name}' için dal bilgisi çekilemedi"}
                 
-                time.sleep(0.3) # Dalları çektikten sonra küçük bir gecikme
+                time.sleep(0.3)  # Dalları çektikten sonra küçük bir gecikme
             else:
-                print(f"    [{time.strftime('%H:%M:%S')}] Alan '{area_name}' daha önce işlendi, atlanıyor.")
-            
-        time.sleep(1.5) # Her ilin işlenmesi arasında daha uzun bir gecikme
-
-    output_filename = "getir_dal_sonuc.json"
+                yield {'type': 'info', 'message': f"Alan '{area_name}' daha önce işlendi, atlanıyor."}
+        
+        processed_provinces += 1
+        time.sleep(1.5)  # Her ilin işlenmesi arasında daha uzun bir gecikme
+    
+    # Sonuç özeti
+    total_areas = len(unique_areas_with_branches)
+    total_branches = sum(len(branches) for branches in unique_areas_with_branches.values())
+    
+    yield {
+        'type': 'success', 
+        'message': f'Adım 1 tamamlandı! {total_areas} alan, {total_branches} dal işlendi.'
+    }
+    
+    # Son durum için JSON dosyası da oluştur (yedek)
+    output_filename = "data/getir_dal_sonuc.json"
     with open(output_filename, 'w', encoding='utf-8') as f:
         json.dump(unique_areas_with_branches, f, ensure_ascii=False, indent=4)
     
-    print(f"\n[{time.strftime('%H:%M:%S')}] Benzersiz Alan-Dal verileri başarıyla '{output_filename}' dosyasına kaydedildi.")
+    yield {'type': 'done', 'message': f'Tüm veriler veritabanına kaydedildi. Yedek dosya: {output_filename}'}
+
+def main():
+    """
+    Ana fonksiyon - komut satırından çalıştırıldığında kullanılır.
+    """
+    print("Adım 1: Alan-Dal Verilerini Getirme ve Kaydetme")
+    print("Veritabanı entegrasyonu ile alan-dal verileri çekiliyor...")
+    
+    for message in getir_dal_with_db_integration():
+        if message['type'] == 'error':
+            print(f"❌ HATA: {message['message']}")
+            return
+        elif message['type'] == 'warning':
+            print(f"⚠️  UYARI: {message['message']}")
+        elif message['type'] == 'success':
+            print(f"✅ {message['message']}")
+        elif message['type'] == 'done':
+            print(f"🎉 {message['message']}")
+            break
+        else:
+            print(f"ℹ️  {message['message']}")
 
 if __name__ == "__main__":
     main()

@@ -1140,6 +1140,46 @@ function App() {
     setPdfSidebar({ isOpen: false, url: '', title: '' });
   }, []);
 
+  // Yeni 5 Adımlı İş Akışı Handler
+  const handleWorkflowStep = useCallback((step) => {
+    setData(null);
+    setProgress([]);
+    setError(null);
+    setLoading(true);
+
+    let endpoint;
+    if (step === 'full') {
+      endpoint = 'http://localhost:5001/api/workflow-full';
+    } else {
+      endpoint = `http://localhost:5001/api/workflow-step-${step}`;
+    }
+
+    const eventSource = new EventSource(endpoint);
+    
+    eventSource.onmessage = (event) => {
+      const eventData = JSON.parse(event.data);
+      if (eventData.type === 'done') {
+        // İş akışı tamamlandı, verileri yeniden yükle
+        fetchCachedData();
+        setProgress(prev => [...prev, eventData]);
+        eventSource.close();
+        setLoading(false);
+      } else {
+        setProgress(prev => [...prev, eventData]);
+      }
+    };
+
+    eventSource.onerror = (err) => {
+      setProgress(prev => [...prev, { type: "error", message: "Bağlantı hatası veya sunucu yanıt vermiyor." }]);
+      eventSource.close();
+      setLoading(false);
+    };
+
+    return () => {
+      eventSource.close();
+    };
+  }, []);
+
   const handleSaveCourse = useCallback((editedData) => {
     const courseKey = `${editedData.alan_adi}-${editedData.ders_adi}-${editedData.sinif}`;
     setEditedCourses(prev => new Map(prev.set(courseKey, editedData)));
@@ -1297,7 +1337,7 @@ function App() {
     <div className="App">
       <h1>meslek.meb (alan-dal-ders) dosyalar</h1>
       
-      {/* Aşamalı İş Akışı */}
+      {/* Yeni 5 Adımlı İş Akışı */}
       <div className="workflow-container" style={{ 
         background: "#f8f9fa", 
         padding: "20px", 
@@ -1305,9 +1345,28 @@ function App() {
         margin: "20px 0",
         border: "1px solid #dee2e6"
       }}>
-        <h2 style={{ marginBottom: "20px", color: "#495057" }}>📋 Veri İşleme İş Akışı</h2>
+        <h2 style={{ marginBottom: "20px", color: "#495057" }}>📋 5 Adımlı Veri İşleme İş Akışı</h2>
         
-        {/* Adım 1: Veri Çekme */}
+        {/* Tam İş Akışı Butonu */}
+        <div style={{ marginBottom: "20px", textAlign: "center" }}>
+          <button 
+            onClick={() => handleWorkflowStep('full')} 
+            disabled={loading}
+            style={{ 
+              background: "#28a745", 
+              color: "white", 
+              border: "none", 
+              padding: "15px 30px", 
+              borderRadius: "8px", 
+              fontSize: "18px",
+              fontWeight: "bold"
+            }}
+          >
+            🎯 Tüm Adımları Sırayla Çalıştır
+          </button>
+        </div>
+
+        {/* Adım 1: Alan-Dal Verileri */}
         <div className="workflow-step" style={{ marginBottom: "25px" }}>
           <h3 style={{ 
             background: "#007bff", 
@@ -1317,14 +1376,14 @@ function App() {
             margin: "0 0 10px 0",
             fontSize: "16px"
           }}>
-            🚀 Adım 1: Temel Veri Çekme
+            🏢 Adım 1: Alan-Dal Verilerini Topla
           </h3>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", paddingLeft: "15px" }}>
             <button 
-              onClick={handleScrape} 
-              disabled={loading || initialLoading}
+              onClick={() => handleWorkflowStep(1)} 
+              disabled={loading}
               style={{ 
-                background: loading ? "#6c757d" : "#28a745", 
+                background: loading ? "#6c757d" : "#007bff", 
                 color: "white", 
                 border: "none", 
                 padding: "10px 20px", 
@@ -1332,40 +1391,143 @@ function App() {
                 cursor: loading ? "not-allowed" : "pointer"
               }}
             >
-              {loading
-                ? '⏳ Veriler Çekiliyor...'
-                : data
-                  ? '🔄 Verileri Yeniden Çek'
-                  : '▶️ Verileri Çek ve Kaydet'}
+              {loading ? '⏳ İşleniyor...' : '🏢 Adım 1 Başlat'}
             </button>
+            <p style={{ fontSize: "14px", color: "#6c757d", margin: "5px 0" }}>
+              Türkiye'deki okullardan alan-dal bilgilerini toplar ve veritabanına kaydeder
+            </p>
+          </div>
+        </div>
+
+        {/* Adım 2: ÇÖP Verileri */}
+        <div className="workflow-step" style={{ marginBottom: "25px" }}>
+          <h3 style={{ 
+            background: "#6f42c1", 
+            color: "white", 
+            padding: "8px 15px", 
+            borderRadius: "5px", 
+            margin: "0 0 10px 0",
+            fontSize: "16px"
+          }}>
+            📄 Adım 2: Çerçeve Öğretim Programlarını İşle
+          </h3>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", paddingLeft: "15px" }}>
             <button 
-              onClick={fetchDbf} 
-              disabled={catLoading === "dbf"}
-              style={{ background: "#17a2b8", color: "white", border: "none", padding: "10px 20px", borderRadius: "5px" }}
+              onClick={() => handleWorkflowStep(2)} 
+              disabled={loading}
+              style={{ 
+                background: loading ? "#6c757d" : "#6f42c1", 
+                color: "white", 
+                border: "none", 
+                padding: "10px 20px", 
+                borderRadius: "5px",
+                cursor: loading ? "not-allowed" : "pointer"
+              }}
             >
-              📋 DBF Getir
+              {loading ? '⏳ İşleniyor...' : '📄 Adım 2 Başlat'}
             </button>
+            <p style={{ fontSize: "14px", color: "#6c757d", margin: "5px 0" }}>
+              ÇÖP PDF'lerini indirir ve alan klasörlerine organize eder
+            </p>
+          </div>
+        </div>
+
+        {/* Adım 3: DBF Verileri */}
+        <div className="workflow-step" style={{ marginBottom: "25px" }}>
+          <h3 style={{ 
+            background: "#17a2b8", 
+            color: "white", 
+            padding: "8px 15px", 
+            borderRadius: "5px", 
+            margin: "0 0 10px 0",
+            fontSize: "16px"
+          }}>
+            📋 Adım 3: Ders Bilgi Formlarını İşle
+          </h3>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", paddingLeft: "15px" }}>
             <button 
-              onClick={fetchCop} 
-              disabled={catLoading === "cop"}
-              style={{ background: "#6f42c1", color: "white", border: "none", padding: "10px 20px", borderRadius: "5px" }}
+              onClick={() => handleWorkflowStep(3)} 
+              disabled={loading}
+              style={{ 
+                background: loading ? "#6c757d" : "#17a2b8", 
+                color: "white", 
+                border: "none", 
+                padding: "10px 20px", 
+                borderRadius: "5px",
+                cursor: loading ? "not-allowed" : "pointer"
+              }}
             >
-              📄 ÇÖP Getir
+              {loading ? '⏳ İşleniyor...' : '📋 Adım 3 Başlat'}
             </button>
+            <p style={{ fontSize: "14px", color: "#6c757d", margin: "5px 0" }}>
+              DBF dosyalarını indirir, açar ve ders bilgilerini çıkarır
+            </p>
+          </div>
+        </div>
+
+        {/* Adım 4: DM Verileri */}
+        <div className="workflow-step" style={{ marginBottom: "25px" }}>
+          <h3 style={{ 
+            background: "#fd7e14", 
+            color: "white", 
+            padding: "8px 15px", 
+            borderRadius: "5px", 
+            margin: "0 0 10px 0",
+            fontSize: "16px"
+          }}>
+            📖 Adım 4: Ders Materyallerini İşle
+          </h3>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", paddingLeft: "15px" }}>
             <button 
-              onClick={fetchDm} 
-              disabled={catLoading === "dm"}
-              style={{ background: "#fd7e14", color: "white", border: "none", padding: "10px 20px", borderRadius: "5px" }}
+              onClick={() => handleWorkflowStep(4)} 
+              disabled={loading}
+              style={{ 
+                background: loading ? "#6c757d" : "#fd7e14", 
+                color: "white", 
+                border: "none", 
+                padding: "10px 20px", 
+                borderRadius: "5px",
+                cursor: loading ? "not-allowed" : "pointer"
+              }}
             >
-              📖 DM Getir
+              {loading ? '⏳ İşleniyor...' : '📖 Adım 4 Başlat'}
             </button>
+            <p style={{ fontSize: "14px", color: "#6c757d", margin: "5px 0" }}>
+              Ders materyali PDF linklerini toplar ve veritabanına kaydeder
+            </p>
+          </div>
+        </div>
+
+        {/* Adım 5: BOM Verileri */}
+        <div className="workflow-step" style={{ marginBottom: "25px" }}>
+          <h3 style={{ 
+            background: "#20c997", 
+            color: "white", 
+            padding: "8px 15px", 
+            borderRadius: "5px", 
+            margin: "0 0 10px 0",
+            fontSize: "16px"
+          }}>
+            📚 Adım 5: Bireysel Öğrenme Materyallerini İşle
+          </h3>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", paddingLeft: "15px" }}>
             <button 
-              onClick={fetchBom} 
-              disabled={catLoading === "bom"}
-              style={{ background: "#20c997", color: "white", border: "none", padding: "10px 20px", borderRadius: "5px" }}
+              onClick={() => handleWorkflowStep(5)} 
+              disabled={loading}
+              style={{ 
+                background: loading ? "#6c757d" : "#20c997", 
+                color: "white", 
+                border: "none", 
+                padding: "10px 20px", 
+                borderRadius: "5px",
+                cursor: loading ? "not-allowed" : "pointer"
+              }}
             >
-              📚 BOM Getir
+              {loading ? '⏳ İşleniyor...' : '📚 Adım 5 Başlat'}
             </button>
+            <p style={{ fontSize: "14px", color: "#6c757d", margin: "5px 0" }}>
+              Bireysel öğrenme materyali modüllerini organize eder
+            </p>
           </div>
         </div>
 
