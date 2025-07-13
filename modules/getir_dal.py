@@ -38,8 +38,6 @@ def get_provinces():
         # getIller için Referer ve Origin zaten COMMON_HEADERS'ta tanımlı, tekrar yazmaya gerek yok.
     }
 
-    print(f"[{time.strftime('%H:%M:%S')}] İller AJAX ile çekiliyor...")
-    print(f"[{time.strftime('%H:%M:%S')}] Hedef URL: {ajax_url}")
 
     try:
         # Session kullanılarak GET isteği gönderiliyor
@@ -47,7 +45,6 @@ def get_provinces():
         response.raise_for_status()
 
         response_text = response.text
-        print(f"[{time.strftime('%H:%M:%S')}] getIller.php yanıtının ilk 200 karakteri: \n{response_text[:200]}")
 
         json_data = response.json()
         
@@ -86,8 +83,6 @@ def get_areas_for_province(province_id):
         # Referer ve Origin zaten COMMON_HEADERS'ta tanımlı.
     }
 
-    print(f"  [{time.strftime('%H:%M:%S')}] İl ID: {province_id} için alanlar çekiliyor...")
-    print(f"  [{time.strftime('%H:%M:%S')}] Hedef URL: {ajax_url}, Gönderilen Data: {data}")
 
     try:
         # Session kullanılarak POST isteği gönderiliyor
@@ -96,8 +91,7 @@ def get_areas_for_province(province_id):
         response.raise_for_status()
 
         response_text = response.text
-        # JSONDecodeError'ı daha iyi yakalamak için burada response_text'i yine de yazdırıyoruz.
-        print(f"  [{time.strftime('%H:%M:%S')}] Alanlar yanıtının ilk 500 karakteri: \n{response_text[:500]}") 
+        # JSONDecodeError'ı daha iyi yakalamak için response_text'i saklıyoruz.
 
         json_data = response.json()
         
@@ -138,8 +132,6 @@ def get_branches_for_area(province_id, area_value):
         # Referer ve Origin zaten COMMON_HEADERS'ta tanımlı.
     }
 
-    print(f"    [{time.strftime('%H:%M:%S')}] İl ID: {province_id}, Alan: '{area_value}' için dallar çekiliyor...")
-    print(f"    [{time.strftime('%H:%M:%S')}] Hedef URL: {ajax_url}, Gönderilen Data: {data}")
 
     try:
         # Session kullanılarak POST isteği gönderiliyor
@@ -148,7 +140,6 @@ def get_branches_for_area(province_id, area_value):
         response.raise_for_status()
         
         response_text = response.text
-        print(f"    [{time.strftime('%H:%M:%S')}] Dallar yanıtının ilk 500 karakteri: \n{response_text[:500]}")
 
         json_data = response.json()
         
@@ -211,14 +202,12 @@ def save_area_and_branches_to_db(area_name, branches, db_path):
             
             if result:
                 area_id = result[0]
-                print(f"Alan '{area_name}' zaten mevcut (ID: {area_id})")
             else:
                 cursor.execute(
                     "INSERT INTO temel_plan_alan (alan_adi) VALUES (?)",
                     (normalized_area_name,)
                 )
                 area_id = cursor.lastrowid
-                print(f"Yeni alan eklendi: '{normalized_area_name}' (ID: {area_id})")
             
             # Dalları ekle (yineleme kontrolü ile)
             for branch_name in branches:
@@ -232,9 +221,6 @@ def save_area_and_branches_to_db(area_name, branches, db_path):
                             "INSERT INTO temel_plan_dal (dal_adi, alan_id) VALUES (?, ?)",
                             (branch_name, area_id)
                         )
-                        print(f"  Dal eklendi: '{branch_name}'")
-                    else:
-                        print(f"  Dal '{branch_name}' zaten mevcut")
             
             conn.commit()
             return area_id
@@ -256,7 +242,6 @@ def create_area_directory_structure(area_name):
     for subdir in subdirs:
         (area_dir / subdir).mkdir(parents=True, exist_ok=True)
     
-    print(f"Klasör yapısı oluşturuldu: {area_dir}")
     return area_dir
 
 def save_branches_to_file(area_name, branches, area_dir):
@@ -274,7 +259,6 @@ def save_branches_to_file(area_name, branches, area_dir):
     with open(branches_file, 'w', encoding='utf-8') as f:
         json.dump(branch_data, f, ensure_ascii=False, indent=2)
     
-    print(f"Dal bilgileri kaydedildi: {branches_file}")
 
 def getir_dal_with_db_integration():
     """
