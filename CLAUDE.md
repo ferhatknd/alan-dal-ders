@@ -23,7 +23,7 @@ Alan (Area) → Dal (Field) → Ders (Course) → Öğrenme Birimi (Learning Uni
 ### 🔧 Core Modüller (modules/ klasörü)
 - **`modules/oku.py`** - PDF parsing ve içerik analizi (ÇÖP, DBF, DM dosyaları için)
 - **`modules/getir_dbf.py`** - Ders Bilgi Formları (DBF) verilerini çeker, RAR/ZIP dosyalarını indirir ve açar
-- **`modules/getir_cop_oku.py`** - ⚠️ **ÖNEMLI**: Eskiden `getir_cop.py` idi, şimdi `getir_cop_oku.py` - Çerçeve Öğretim Programları (ÇÖP) verilerini çeker
+- **`modules/oku_cop.py`** - ⭐ **YENİ**: COP (Çerçeve Öğretim Programı) PDF parsing ve analiz modülü - Tamamen yeniden yazıldı
 - **`modules/getir_cop_oku_local.py`** - ⭐ **YENİ**: Yerel PDF dosyalarını test etmek için standalone ÇÖP okuma modülü
 - **`modules/getir_dm.py`** - Ders Materyalleri (DM) verilerini çeker
 - **`modules/getir_bom.py`** - Bireysel Öğrenme Materyalleri (BÖM) verilerini çeker
@@ -107,31 +107,72 @@ temel_plan_ders_dal
 
 ## 📋 Modül Detayları ve Kritik Bilgiler
 
-### 1. 📄 getir_cop_oku.py (Eski adı: getir_cop.py)
+### 1. 📄 oku_cop.py - ⭐ **TAMAMEN YENİDEN YAZILDI**
 
-**⚠️ ÖNEMLİ: Bu modül `getir_cop.py`'den `getir_cop_oku.py`'e yeniden adlandırıldı!**
+**Amaç:** Yerel COP (Çerçeve Öğretim Programı) PDF dosyalarını analiz ederek alan, dal ve ders bilgilerini çıkarır.
 
-**Amaç:** MEB'in Çerçeve Öğretim Programı (ÇÖP) verilerini otomatik olarak çeker ve PDF içeriklerini analiz eder.
-
-**Kaynak URL:** `https://meslek.meb.gov.tr/cercevelistele.aspx`
+**🚀 Yeni Mimari Özellikleri:**
+- **Tablo Başlığı Tabanlı Alan/Dal Tespiti**: İçindekiler yerine HAFTALIK DERS ÇİZELGESİ başlıklarından okuma
+- **Adjacent Column Search**: Header-data mismatch'leri için ±2 sütun arama algoritması  
+- **Encoding-Safe Processing**: Türkçe karakter sorunları için robust algılama
+- **Smart Filtering**: TOPLAM ve REHBERLİK satırları otomatik filtreleme
+- **Clickable Output**: Terminal'de tıklanabilir PDF yolları
 
 **Ana Fonksiyonlar:**
-- `clean_text(text)` - Metni temizler
-- `find_alan_name_in_text(text, pdf_url)` - ⭐ **İYİLEŞTİRİLDİ**: PDF'den alan adını çıkarır + URL fallback sistemi
-- `extract_alan_from_url(pdf_url)` - ⭐ **YENİ**: URL'den alan adı tahmin eder
-- `find_dallar_in_text(text)` - PDF'den dal listesini çıkarır
-- `find_lessons_in_cop_pdf(pdf, alan_adi)` - Dal-ders eşleştirmesi yapar
-- `extract_alan_dal_ders_from_cop_pdf(pdf_url, cache)` - Ana işlev, alan/dal/ders bilgilerini çıkarır
-- `oku_cop_pdf(pdf_url)` - JSON formatında sonuç döndürür
-- `save_cop_results_to_db(cop_results, db_path, meb_alan_id)` - ⭐ **YENİ**: Veritabanı entegrasyonu
+- `extract_alan_dal_from_table_headers(pdf)` - ⭐ **YENİ**: Tablo başlıklarından alan/dal tespiti
+- `parse_schedule_table(table)` - ⭐ **İYİLEŞTİRİLDİ**: Gelişmiş tablo parsing + multi-row header desteği
+- `find_dal_name_for_schedule(lines, index)` - Dal-tablo eşleştirmesi  
+- `extract_ders_info_from_schedules(pdf)` - ⭐ **İYİLEŞTİRİLDİ**: Ders bilgilerini tablolardan çıkarma
+- `oku_cop_pdf_file(pdf_path)` - ⭐ **YENİ**: Ana parsing fonksiyonu
+- `oku_tum_pdfler(root_dir)` - Toplu PDF işleme
 
-**Kritik Mantık:**
-- Her sınıf için (9-12) paralel HTTP istekleri
-- **URL-based fallback**: PDF'den alan adı bulunamazsa URL'den tahmin
-- "HAFTALIK DERS ÇİZELGESİ" bölümlerinden dal-ders eşleştirmesi  
-- "MESLEK DERSLERİ" tablolarından ders listesi çıkarma
-- **Alan adı mapping**: 16 yaygın alan için özel URL-isim eşleştirmesi
-- **Veritabanı entegrasyonu**: Otomatik alan/dal/ders kaydı
+**🔧 Kritik İyileştirmeler:**
+
+**1. Alan/Dal Tespiti:**
+```python
+# Eski: İçindekiler bölümünden (güvenilmez)
+# Yeni: HAFTALIK DERS ÇİZELGESİ üstündeki başlıklardan
+"KUYUMCULUK TEKNOLOJİSİ ALANI"     → Alan: Kuyumculuk Teknolojisi  
+"(TAKI İMALATI DALI)"              → Dal: Takı İmalatı
+```
+
+**2. Adjacent Column Search:**
+```python
+# Header detection: DERSLER sütunu index 3'te
+# Data rows: Ders adları index 2'de
+# Çözüm: ±2 offset ile arama [0, -1, 1, -2, 2]
+```
+
+**3. Encoding-Safe MESLEK DERSLERİ:**
+```python
+if ("MESLEK DERSLERİ" in kategori_cell or 
+    "MESLEKİ DERSLER" in kategori_cell or
+    "MESLEK DERSLER" in kategori_cell or
+    "MESLEK" in kategori_cell and ("DERS" in kategori_cell)):
+```
+
+**4. Smart Filtering:**
+```python
+# Ders olmayan satırları filtrele
+if ("TOPLAM" in potential_upper or 
+    "REHBERLİK" in potential_upper and "YÖNLENDİRME" in potential_upper):
+    continue  # Atla
+```
+
+**📊 Performans Sonuçları:**
+- **gemi_11**: 0 → 28 ders (+∞% iyileştirme)
+- **bilisim_12**: 0 → 21 ders (+∞% iyileştirme)  
+- **kuyumculuk_10**: 0 → 12 ders (+∞% iyileştirme)
+- **gida_12**: 0 → 17 ders (+∞% iyileştirme)
+
+**🎯 Output Formatı:**
+```
+🎯 SONUÇLAR ÖZET:
+   📁 PDF: data/cop/kuyumculuk_10/kuyumculuk_10_cop_program.pdf
+   📚 Alan Adı: Kuyumculuk Teknolojisi
+   🏭 Dal Sayısı: 1
+   📖 Toplam Ders Sayısı: 12
+```
 
 ### 2. 📄 getir_dbf.py
 
@@ -459,17 +500,31 @@ Server-Sent Events (SSE)
 
 ## 🔄 Sık Kullanılan İşlemler
 
+### COP PDF Analizi ⭐ **YENİ SİSTEM**
+```python
+# Yeni oku_cop.py modülü ile yerel PDF analizi
+from modules.oku_cop import oku_cop_pdf_file, oku_tum_pdfler
+
+# Tek PDF dosyası analizi
+result = oku_cop_pdf_file("./data/cop/kuyumculuk_10/kuyumculuk_10_cop_program.pdf")
+
+# Dizindeki tüm PDF'leri analiz et
+oku_tum_pdfler("./data/cop/bilisim_12/")
+
+# Komut satırından kullanım
+python modules/oku_cop.py "./data/cop/gemi_11/"
+python modules/oku_cop.py random  # Rastgele dizin seç
+```
+
 ### Veri Çekme
 ```python
-# Tüm veri tiplerini çek
+# Tüm veri tiplerini çek (eski sistem)
 from modules.getir_dbf import getir_dbf
-from modules.getir_cop_oku import getir_cop  # ESKİ: getir_cop
 from modules.getir_dm import getir_dm
 from modules.getir_bom import getir_bom
 from modules.getir_dal import main as getir_dal
 
 dbf_data = getir_dbf()
-cop_data = getir_cop()
 dm_data = getir_dm()
 bom_data = getir_bom()
 ```
@@ -479,23 +534,6 @@ bom_data = getir_bom()
 from modules.oku import extract_ders_adi
 
 ders_adi = extract_ders_adi("/path/to/dbf/file.pdf")
-```
-
-### Yerel PDF Test ⭐ **YENİ**
-```python
-# Yerel PDF dosyalarını test etme
-from modules.getir_cop_oku_local import oku_cop_pdf_file, oku_tum_pdfler
-
-# Tek dosya analizi
-result = oku_cop_pdf_file("gida.pdf")
-print(result)
-
-# Tüm PDF'leri analiz et
-oku_tum_pdfler(".")  # Kök dizindeki tüm PDF'ler
-
-# Debug araçları
-python debug_gida_table.py      # Tablo yapısı analizi
-python debug_meslek_dersleri.py # MESLEK DERSLERİ algılama testi
 ```
 
 ### PDF Cache Yönetimi ⭐ **YENİ**

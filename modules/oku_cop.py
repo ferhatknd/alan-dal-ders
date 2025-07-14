@@ -1,27 +1,15 @@
-"""
-ÇÖP PDF Okuma ve Analiz Modülü (Kural Tabanlı)
-
-Bu modül, ÇÖP PDF'lerinden alan, dal ve ders bilgilerini,
-kullanıcı tarafından belirtilen kesin kurallara göre çıkarır.
-
-İş Akışı:
-1. Alan/Dal: Sadece "İÇİNDEKİLER" bölümünden "... Alanı" ve "... Dalı" kalıplarıyla çıkarılır.
-2. Ders/Saat/Sınıf: Sadece "HAFTALIK DERS ÇİZELGESİ" tablolarındaki "MESLEK DERSLERİ"
-   bölümünden, sınıf sütunlarındaki saatlerle birlikte çıkarılır.
-3. Eşleştirme: Bulunan tüm dallar, bulunan tüm meslek dersleriyle eşleştirilir.
-"""
-
 import os
 import re
-import requests
-import tempfile
-from typing import Dict, List, Any, Optional, Tuple
-
+import json
 import pdfplumber
+from typing import Dict, List, Any, Optional, Tuple
+import sys
+import random
 
 try:
     from .utils import normalize_to_title_case_tr
 except ImportError:
+    import os
     import sys
     current_dir = os.path.dirname(os.path.abspath(__file__))
     parent_dir = os.path.abspath(os.path.join(current_dir, ".."))
@@ -32,238 +20,453 @@ except ImportError:
 # ------------- YARDIMCI FONKSİYONLAR ------------- #
 
 def clean_text(text: str) -> str:
-    if not text: return ""
-    return re.sub(r"\s+", " ", text).strip()
+    """Gereksiz karakterleri ve çoklu boşlukları temizler."""
+    if not text:
+        return ""
+    text = str(text).replace('\n', ' ')
+    text = re.sub(r"\s+", " ", text)
+    return text.strip()
 
-def find_grade_columns(header_row: List[str]) -> Dict[str, int]:
-    grade_cols: Dict[str, int] = {}
-    for idx, cell in enumerate(header_row):
-        if not cell: continue
-        text = str(cell).strip().upper()
-        if text.startswith("9"): grade_cols["9"] = idx
-        elif text.startswith("10"): grade_cols["10"] = idx
-        elif text.startswith("11"): grade_cols["11"] = idx
-        elif text.startswith("12"): grade_cols["12"] = idx
-    return grade_cols
+# ------------- YENİ İŞ AKIŞI FONKSİYONLARI ------------- #
 
-def merge_lesson_dicts(list1: List[Dict[str, Any]], list2: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    merged: Dict[str, Dict[str, Any]] = {}
-    for lesson in list1 + list2:
-        key = lesson.get("adi")
-        if not key: continue
-        if key in merged:
-            for grade, val in lesson.get("saatler", {}).items():
-                if val and merged[key]["saatler"].get(grade, 0) == 0:
-                    merged[key]["saatler"][grade] = val
-        else:
-            merged[key] = {"adi": key, "saatler": lesson.get("saatler", {})}
-    return list(merged.values())
-
-# ------------- KURAL 1: ALAN VE DAL ÇIKARIMI (SADECE İÇİNDEKİLER) ------------- #
-
-def extract_icindekiler_section(full_text: str) -> str:
-    """PDF metninden sadece 'İÇİNDEKİLER' bölümünü çıkarır."""
-    lines = full_text.split('\n')
-    start_idx, end_idx = -1, -1
-    for i, line in enumerate(lines):
-        if 'İÇİNDEKİLER' in line.upper().strip() and len(line.strip()) < 30:
-            start_idx = i
-            break
-    if start_idx == -1: return ""
-
-    stop_keywords = [
-        'ÇERÇEVE ÖĞRETİM PROGRAMININ AMAÇLARI', 'PROGRAMIN AMAÇLARI',
-        'GENEL AMAÇLAR', 'GİRİŞ', '1. GİRİŞ'
-    ]
-    for i in range(start_idx + 1, len(lines)):
-        line_upper = lines[i].upper().strip()
-        if any(keyword in line_upper for keyword in stop_keywords):
-            end_idx = i
-            break
-    
-    if end_idx == -1: end_idx = start_idx + 100 # Makul bir limit
-    
-    return "\n".join(lines[start_idx:end_idx])
-
-def extract_alan_dal_from_icindekiler(icindekiler_text: str) -> Tuple[Optional[str], List[str]]:
-    """'İçindekiler' metninden Alan ve Dal adlarını çıkarır."""
-    alan_adi, dallar = None, []
-    lines = icindekiler_text.split('\n')
-    
-    for line in lines:
-        line_clean = clean_text(line)
-        line_upper = line_clean.upper()
-        
-        # Alan Adı
-        if not alan_adi and " ALANI" in line_upper:
-            # "ALANI" kelimesinden önceki kısmı al (sondakini bul)
-            potential_alan = line_clean[:line_upper.rfind(" ALANI")].strip()
-            # Sayfa numarası ve liste işaretleri gibi artıkları temizle
-            potential_alan = re.sub(r'\s+\.\.\..*$', '', potential_alan).strip()
-            potential_alan = re.sub(r'^\d+\.?\s*', '', potential_alan).strip()
-            if len(potential_alan) > 3:
-                alan_adi = normalize_to_title_case_tr(potential_alan)
-
-        # Dal Adı
-        if " DALI" in line_upper:
-            potential_dal = line_clean[:line_upper.rfind(" DALI")].strip()
-            potential_dal = re.sub(r'\s+\.\.\..*$', '', potential_dal).strip()
-            potential_dal = re.sub(r'^\d+\.\d+\.?\s*', '', potential_dal).strip()
-            if len(potential_dal) > 3:
-                dallar.append(normalize_to_title_case_tr(potential_dal))
-
-    # Dalların içinde alan adı olabilir, onu temizleyelim.
-    if alan_adi:
-        dallar = [dal for dal in dallar if dal.upper() != alan_adi.upper()]
-
-    return alan_adi, list(set(dallar))
-
-
-# ------------- KURAL 2: DERS/SAAT/SINIF ÇIKARIMI (SADECE HAFTALIK DERS ÇİZELGELERİ) ------------- #
-
-def extract_all_meslek_dersleri(pdf: pdfplumber.PDF) -> List[Dict[str, Any]]:
+def extract_alan_dal_from_table_headers(pdf: pdfplumber.PDF) -> Tuple[Optional[str], List[str]]:
     """
-    PDF'teki tüm 'Haftalık Ders Çizelgesi' tablolarından 'Meslek Dersleri'ni ve saatlerini çıkarır.
+    Tablo başlıklarından (HAFTALIK DERS ÇİZELGESİ üstünden) Alan ve Dal adlarını çıkarır.
     """
-    all_lessons: List[Dict[str, Any]] = []
+    alan_adi = None
+    dallar = set()
+
+    print("   🔍 Tablo başlıklarından alan ve dal bilgileri aranıyor...")
     
-    for page in pdf.pages:
+    for page_num, page in enumerate(pdf.pages):
         text = page.extract_text()
-        if not text or 'HAFTALIK DERS ÇİZELGESİ' not in text.upper():
+        if not text:
+            continue
+        
+        lines = text.split('\n')
+        for line_idx, line in enumerate(lines):
+            if "HAFTALIK DERS ÇİZELGESİ" in line.upper():
+                print(f"      📊 Sayfa {page_num+1}: 'Haftalık Ders Çizelgesi' bulundu, üst satırlar kontrol ediliyor...")
+                
+                # Tablo başlığının üstündeki 10 satırı kontrol et
+                search_range = range(max(0, line_idx - 10), line_idx)
+                for i in search_range:
+                    check_line = clean_text(lines[i]).upper()
+                    
+                    # Alan adı tespiti: "{ALAN_ADI} ALANI" formatı
+                    alan_match = re.search(r'(.+?)\s+ALANI\s*$', check_line)
+                    if alan_match:
+                        potential_alan = alan_match.group(1).strip()
+                        if len(potential_alan) > 5:
+                            alan_adi = normalize_to_title_case_tr(potential_alan)
+                            print(f"      ✅ Alan Adı (Tablo başlığı) tespit edildi: {alan_adi}")
+                    
+                    # Dal adı tespiti: "({DAL_ADI} DALI)" formatı
+                    dal_match = re.search(r'\((.+?)\s+DALI\)', check_line)
+                    if not dal_match:
+                        # Alternatif format: "{DAL_ADI} DALI" (parantez olmadan)
+                        dal_match = re.search(r'(.+?)\s+DALI\s*$', check_line)
+                    
+                    if dal_match:
+                        potential_dal = dal_match.group(1).strip()
+                        if len(potential_dal) > 3:
+                            dal_normalized = normalize_to_title_case_tr(potential_dal)
+                            dallar.add(dal_normalized)
+                            print(f"      ✅ Dal Adı (Tablo başlığı) tespit edildi: {dal_normalized}")
+
+    dallar_list = sorted(list(dallar))
+    if dallar_list:
+        print(f"   ✅ Toplam Dal Adları (Tablo başlıkları): {dallar_list}")
+
+    return alan_adi, dallar_list
+
+def parse_schedule_table(table: List[List[str]]) -> List[Dict[str, Any]]:
+    """
+    Bir "Haftalık Ders Çizelgesi" tablosunu analiz ederek ders, sınıf ve saat bilgilerini çıkarır.
+    """
+    ders_listesi = []
+    if not table or len(table) < 5:
+        # print("      DEBUG: Tablo çok kısa veya boş.") # Too verbose
+        return []
+
+    # print("      DEBUG: parse_schedule_table - Tablo içeriği (ilk 5 satır):")
+    # for r_idx, row in enumerate(table[:5]):
+    #     print(f"         Row {r_idx}: {row}")
+
+    # Sınıf seviyelerini ve sütun indekslerini bul
+    header_rows = table[:3] # Check first 3 rows for headers
+    class_level_cols = {}
+    ders_col_idx = -1
+
+    # print("      DEBUG: Başlık satırları aranıyor...")
+    for h_idx, header_row in enumerate(header_rows):
+        # print(f"         DEBUG: Header Row {h_idx}: {header_row}")
+        for i, cell in enumerate(header_row):
+            if cell:
+                cell_text = clean_text(cell)
+                # print(f"            DEBUG: Cell ({h_idx},{i}): '{cell_text}'")
+                # Multi-row header için "DERSLER" sütunu tespiti öncelikli
+                # Only accept exact "DERSLER" match, not "ORTAK DERSLER" etc.
+                if cell_text.upper().strip() == "DERSLER":
+                    ders_col_idx = i  # DERSLER her zaman öncelikli - override any previous
+                    # print(f"               DEBUG: Dersler sütunu bulundu (priority): {ders_col_idx}")
+                elif (cell_text.upper().strip() == "DERS" and "KATEGOR" not in cell_text.upper()) and ders_col_idx == -1:
+                    ders_col_idx = i
+                    # print(f"               DEBUG: Ders sütunu bulundu: {ders_col_idx}")
+                elif ("DERSLER" in cell_text.upper() or "DERS" in cell_text.upper()) and ders_col_idx != -1:
+                    # print(f"               DEBUG: Ders sütunu zaten bulunmuş ({ders_col_idx}), '{cell_text}' atlanıyor")
+                    pass
+                match = re.search(r'(\d+)\.\s*SINIF', cell_text.upper())
+                if match:
+                    class_level_cols[i] = f"{match.group(1)}. Sınıf"
+                    # print(f"               DEBUG: Sınıf sütunu bulundu: {class_level_cols[i]} at index {i}")
+                elif re.search(r'(\d+)\.', cell_text.upper()):
+                    # "9." şeklinde sayı varsa bir sonraki hücreye bak
+                    number_match = re.search(r'(\d+)\.', cell_text.upper())
+                    # print(f"               DEBUG: Sayı bulundu: {number_match.group(1)}, sınıf aranıyor...")
+                    if number_match and i+1 < len(header_row) and header_row[i+1] and "SINIF" in clean_text(header_row[i+1]).upper():
+                        class_level_cols[i] = f"{number_match.group(1)}. Sınıf"
+                        # print(f"               DEBUG: Sınıf sütunu bulundu (split): {class_level_cols[i]} at index {i}")
+                    # Ayrıca bir sonraki header row'da "SINIF" kelimesi varsa kontrol et
+                    elif number_match and h_idx + 1 < len(header_rows):
+                        next_header_row = header_rows[h_idx + 1]
+                        if i < len(next_header_row) and next_header_row[i] and "SINIF" in clean_text(next_header_row[i]).upper():
+                            class_level_cols[i] = f"{number_match.group(1)}. Sınıf"
+                            # print(f"               DEBUG: Sınıf sütunu bulundu (next row): {class_level_cols[i]} at index {i}")
+                    # Ayrıca aynı pozisyondaki farklı satırlarda "SINIF" arıyoruz
+                    if number_match:
+                        # print(f"               DEBUG: Tüm satırlarda sınıf aranıyor - number_match={number_match.group(1)}")
+                        for other_h_idx in range(len(header_rows)):
+                            if other_h_idx != h_idx and i < len(header_rows[other_h_idx]) and header_rows[other_h_idx][i]:
+                                other_cell_text = clean_text(header_rows[other_h_idx][i])
+                                # print(f"               DEBUG: Diğer satırda kontrol: h_idx={other_h_idx}, i={i}, cell='{other_cell_text}'")
+                                if "SINIF" in other_cell_text.upper():
+                                    class_level_cols[i] = f"{number_match.group(1)}. Sınıf"
+                                    # print(f"               DEBUG: Sınıf sütunu bulundu (multi-row): {class_level_cols[i]} at index {i}")
+                                    break
+        # Don't break early, process all header rows first
+        # if ders_col_idx != -1 and class_level_cols: # Found both, no need to check further header rows
+        #     # print("         DEBUG: Ders ve Sınıf sütunları başlıkta bulundu, diğer başlık satırları atlanıyor.") # Too verbose
+        #     break
+
+    if ders_col_idx == -1 or not class_level_cols:
+        print("      ❌ Tablo başlığında Sınıf veya Ders sütunları bulunamadı.")
+        return []
+    
+    # print(f"      DEBUG: Ders sütunu indeksi: {ders_col_idx}") # Too verbose
+    # print(f"      DEBUG: Sınıf sütunları: {class_level_cols}") # Too verbose
+
+    # Meslek dersleri bölümünü bul ve dersleri işle
+    meslek_dersleri_started = False
+    # Start from the row after the last header row found
+    start_row_idx = max(header_rows.index(header_row) for header_row in header_rows if header_row in table) + 1 if header_rows else 0
+    # print(f"      DEBUG: Ders işleme başlangıç satırı: {start_row_idx}") # Too verbose
+
+    for r_idx, row in enumerate(table[start_row_idx:]):
+        current_row_idx = start_row_idx + r_idx
+        kategori_cell = clean_text(row[0]).upper() if row and row[0] else ""
+        # if "MESLEK" in kategori_cell:
+        #     print(f"      DEBUG: Satır {current_row_idx} - Kategori Hücresi: '{kategori_cell}'") # Too verbose
+
+        # Encoding-safe MESLEK DERSLERİ tespiti
+        if ("MESLEK DERSLERİ" in kategori_cell or 
+            "MESLEKİ DERSLER" in kategori_cell or
+            "MESLEK DERSLER" in kategori_cell or  # İ harfi eksik
+            "MESLEK" in kategori_cell and ("DERS" in kategori_cell)):  # Genel güvenlik
+            meslek_dersleri_started = True
+            # print(f"         DEBUG: MESLEK DERSLERİ bölümü başladı. (Satır {current_row_idx})")
             continue
 
-        tables = page.extract_tables()
-        for table in tables:
-            if not table: continue
+        if "TOPLAM" in kategori_cell or "SEÇMELİ" in kategori_cell:
+            if meslek_dersleri_started: # Only break if we were already in meslek dersleri section
+                meslek_dersleri_started = False
+                # print(f"         DEBUG: MESLEK DERSLERİ bölümü bitti. (Satır {current_row_idx})") # Too verbose
+                break
 
-            # Meslek Dersleri bölümünün başlangıç satırını bul
-            meslek_row_idx = -1
-            for i, row in enumerate(table):
-                for cell in row:
-                    if cell and 'MESLEK DERSLERİ' in str(cell).upper():
-                        meslek_row_idx = i
-                        break
-                if meslek_row_idx != -1: break
+        if meslek_dersleri_started and len(row) > ders_col_idx:
+            # print(f"         DEBUG: Full row content: {row}")
+            # print(f"         DEBUG: Row length: {len(row)}, ders_col_idx: {ders_col_idx}")
             
-            if meslek_row_idx == -1: continue
+            # Try adjacent columns for course name detection too
+            ders_adi = ""
+            found_course_name = False
+            for offset in [0, -1, 1, -2, 2]:
+                check_idx = ders_col_idx + offset
+                if len(row) > check_idx >= 0 and row[check_idx]:
+                    potential_ders_adi = clean_text(row[check_idx])
+                    # "Toplam", "TOPLAMI" veya "Rehberlik ve Yönlendirme" içeren satırları ders olarak kabul etme
+                    if potential_ders_adi and len(potential_ders_adi) >= 4:
+                        potential_upper = potential_ders_adi.upper()
+                        if ("TOPLAM" in potential_upper or 
+                            "REHBERLİK" in potential_upper and "YÖNLENDİRME" in potential_upper):
+                            # print(f"         ⚠️ Ders olmayan satır atlandı: '{potential_ders_adi}'")
+                            continue
+                        ders_adi = potential_ders_adi
+                        # print(f"         DEBUG: Ders adı bulundu: '{ders_adi}' [col_idx={check_idx}, offset={offset}]")
+                        found_course_name = True
+                        break
+                        
+            if not found_course_name:
+                # print(f"         DEBUG: Geçerli ders adı bulunamadı (ders_col_idx={ders_col_idx} ±2)")
+                continue
 
-            # Ders adı ve sınıf sütunlarını bul
-            header_row = table[meslek_row_idx + 1] if meslek_row_idx + 1 < len(table) else table[meslek_row_idx]
-            ders_adi_col = next((i for i, c in enumerate(header_row) if c and 'DERS' in c.upper()), 0)
-            grade_cols = find_grade_columns(header_row)
+            # Dipnot işaretlerini temizle (*), (**), (***) vs.
+            ders_adi_temizlenmis = re.sub(r'\s*\(\*+\)\s*', '', ders_adi).strip()
+            ders_adi_normalized = normalize_to_title_case_tr(ders_adi_temizlenmis)
+            # print(f"         DEBUG: Normalize edilmiş ders adı: '{ders_adi_normalized}'") # Too verbose
 
-            # Dersleri işle
-            for row_idx in range(meslek_row_idx + 1, len(table)):
-                row = table[row_idx]
-                if ders_adi_col >= len(row): continue
-                
-                # Başka bir ana bölüm başladıysa dur
-                if row[0] and any(kw in str(row[0]).upper() for kw in ['TOPLAM', 'SEÇMELİ', 'REHBERLİK']):
-                    break
+            for col_idx, sinif in class_level_cols.items():
+                # Try the detected column first, then check adjacent columns (±1, ±2)
+                found_hour = False
+                for offset in [0, -1, 1, -2, 2]:
+                    check_idx = col_idx + offset
+                    if len(row) > check_idx >= 0 and row[check_idx]:
+                        saat_str = clean_text(row[check_idx])
+                        if saat_str and saat_str.isdigit() and 1 <= int(saat_str) <= 10:
+                            ders_listesi.append({
+                                "ders_adi": ders_adi_normalized,
+                                "sinif": sinif,
+                                "saat": int(saat_str)
+                            })
+                            # print(f"            ✅ Ders eklendi: {ders_adi_normalized} ({sinif} - {saat_str} saat) [col_idx={check_idx}, offset={offset}]")
+                            found_hour = True
+                            break
+                        elif saat_str:
+                            # print(f"            DEBUG: Sınıf '{sinif}' col_idx={check_idx}: '{saat_str}' geçersiz saat")
+                            pass
+                    
+                if not found_hour:
+                    # print(f"            DEBUG: Sınıf '{sinif}' için geçerli saat bulunamadı (col_idx={col_idx} ±2)")
+                    pass
+    
+    # print(f"      DEBUG: parse_schedule_table bitişi. Toplam ders: {len(ders_listesi)}") # Too verbose
+    return ders_listesi
 
-                ders_adi_raw = row[ders_adi_col]
-                ders_clean = clean_text(str(ders_adi_raw))
-                ders_clean = re.sub(r"\(\*+\)", "", ders_clean).strip()
-
-                if not (ders_clean and len(ders_clean) > 3 and not ders_clean.isdigit()):
-                    continue
-
-                saatler = {"9": 0, "10": 0, "11": 0, "12": 0}
-                for grade, col_idx in grade_cols.items():
-                    if col_idx < len(row) and row[col_idx]:
-                        match = re.search(r"\d+", str(row[col_idx]))
-                        if match: saatler[grade] = int(match.group())
-                
-                all_lessons.append({
-                    "adi": normalize_to_title_case_tr(ders_clean),
-                    "saatler": saatler
-                })
-
-    return merge_lesson_dicts([], all_lessons)
-
-
-# ------------- ANA FONKSİYONLAR ------------- #
-
-def oku_cop_pdf(pdf_source: str, debug: bool = False) -> Dict[str, Any]:
+def find_dal_name_for_schedule(lines: List[str], schedule_line_index: int) -> Optional[str]:
     """
-    ÇÖP PDF'sini okur ve belirtilen kurallara göre JSON formatında sonuç döndürür.
+    Ders çizelgesinin hangi dala ait olduğunu bulur.
     """
-    pdf_path = None
-    try:
-        if pdf_source.startswith('http'):
-            response = requests.get(pdf_source, timeout=30)
-            response.raise_for_status()
-            with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp_file:
-                tmp_file.write(response.content)
-                pdf_path = tmp_file.name
+    # Çizelgenin üstündeki 15 satırı tara
+    search_range = range(max(0, schedule_line_index - 15), schedule_line_index)
+    for i in search_range:
+        line = clean_text(lines[i]).upper()
+        dal_match = re.search(r'(.+?)\s+DALI(?:\s*[\.0-9\.]*)*$', line)
+        if dal_match:
+            dal_name = dal_match.group(1).strip()
+            if len(dal_name) > 3:
+                return normalize_to_title_case_tr(dal_name)
+    return None
+
+def extract_ders_info_from_schedules(pdf: pdfplumber.PDF) -> Dict[str, List[Dict[str, Any]]]:
+    """
+    Tüm "Haftalık Ders Çizelgesi" tablolarından ders bilgilerini çıkarır ve dala göre gruplar.
+    """
+    dal_ders_map = {}
+    tum_dersler = []
+
+    for i, page in enumerate(pdf.pages):
+        text = page.extract_text()
+        if not text:
+            continue
+        
+        lines = text.split('\n')
+        for line_idx, line in enumerate(lines):
+            if "HAFTALIK DERS ÇİZELGESİ" in line.upper():
+                print(f"\n   📊 Sayfa {i+1}: 'Haftalık Ders Çizelgesi' bulundu.")
+                dal_adi = find_dal_name_for_schedule(lines, line_idx)
+                tables = page.extract_tables()
+                
+                for table_idx, table in enumerate(tables):
+                    # print(f"      DEBUG: Sayfa {i+1}, Tablo {table_idx+1} işleniyor.") # Too verbose
+                    dersler = parse_schedule_table(table)
+                    if not dersler:
+                        # print(f"      DEBUG: Sayfa {i+1}, Tablo {table_idx+1} için ders bulunamadı.") # Too verbose
+                        continue
+                    
+                    print(f"      ✅ Sayfa {i+1}, Tablo {table_idx+1}: {len(dersler)} ders bulundu.")
+
+                    if dal_adi:
+                        print(f"      🔗 Tablo, '{dal_adi}' dalı ile ilişkilendirildi.")
+                        if dal_adi not in dal_ders_map:
+                            dal_ders_map[dal_adi] = []
+                        dal_ders_map[dal_adi].extend(dersler)
+                    else:
+                        print("      ⚠️ Tablo için spesifik bir dal adı bulunamadı, genel listeye ekleniyor.")
+                        tum_dersler.extend(dersler)
+                # break # Sayfadaki ilk çizelgeyi işle ve sonraki sayfaya geç - Removed to process all tables on a page
+
+    # Dalsız dersleri ele al - eğer dal_ders_map boş ve tüm dersler varsa, ilk dala ata
+    if tum_dersler:
+        if len(dal_ders_map) == 0:
+            print(f"   ℹ️ Tablolarda dal bulunamadı, dersler genel listede kalıyor.")
+            dal_ders_map["Genel"] = tum_dersler
+        elif len(dal_ders_map) == 1:
+            tek_dal = list(dal_ders_map.keys())[0]
+            print(f"   ℹ️ İlişkisiz dersler tek dal olan '{tek_dal}'e atanıyor.")
+            dal_ders_map[tek_dal].extend(tum_dersler)
         else:
-            pdf_path = pdf_source
+            # Birden fazla dal var, ilk dala ata
+            ilk_dal = list(dal_ders_map.keys())[0]
+            print(f"   ℹ️ İlişkisiz dersler çoklu dal olduğu için '{ilk_dal}'e atanıyor.")
+            dal_ders_map[ilk_dal].extend(tum_dersler)
 
+    # Dersleri tekilleştir
+    for dal, ders_listesi in dal_ders_map.items():
+        unique_dersler = {json.dumps(d, sort_keys=True): d for d in ders_listesi}.values()
+        dal_ders_map[dal] = sorted(list(unique_dersler), key=lambda x: x['ders_adi'])
+
+    return dal_ders_map
+
+# ------------- ANA PDF OKUMA FONKSİYONU ------------- #
+
+def oku_cop_pdf_file(pdf_path: str) -> Dict[str, Any]:
+    """
+    Tek bir COP PDF dosyasını yeni kurallara göre okur ve yapılandırır.
+    """
+    if not os.path.isfile(pdf_path):
+        return {"hata": f"PDF bulunamadı: {pdf_path}"}
+
+    alan_adi = None
+    dallar = []
+    dal_ders_map = {}
+
+    try:
         with pdfplumber.open(pdf_path) as pdf:
-            # 1. Adım: Tüm metni ve "İçindekiler" bölümünü çıkar
-            full_text = "".join(page.extract_text() + "\n" for page in pdf.pages if page.extract_text())
-            icindekiler_text = extract_icindekiler_section(full_text)
-            if not icindekiler_text:
-                raise ValueError("PDF içinde 'İÇİNDEKİLER' bölümü bulunamadı.")
+            print(f"\n▶︎ {os.path.basename(pdf_path)} işleniyor...")
+            # 1. Alan ve Dalları "Tablo başlıkları"ndan al
+            alan_adi, dallar = extract_alan_dal_from_table_headers(pdf)
+            # print(f"   DEBUG: oku_cop_pdf_file - extract_alan_dal_from_toc sonrası alan_adi: {alan_adi}") # Too verbose
 
-            # 2. Adım: Alan ve Dalları SADECE içindekilerden çıkar
-            alan_adi, dallar = extract_alan_dal_from_icindekiler(icindekiler_text)
             if not alan_adi:
-                raise ValueError("'İÇİNDEKİLER' bölümünden alan adı çıkarılamadı.")
+                print("   ❌ Devam edilemiyor: Alan adı bulunamadı.")
+                return {"hata": "Alan adı 'İçindekiler' bölümünden okunamadı."}
 
-            # 3. Adım: Tüm meslek derslerini ve saatlerini çıkar
-            meslek_dersleri = extract_all_meslek_dersleri(pdf)
-            if not meslek_dersleri:
-                print(f"⚠️ Uyarı: '{alan_adi}' için meslek dersi bulunamadı.")
-
-            # 4. Adım: Veriyi birleştir (her dal tüm dersleri alır)
-            dal_ders_map = {dal: meslek_dersleri for dal in dallar} if dallar else {"Tüm Alan Dersleri": meslek_dersleri}
-
-            return {
-                "alan_adi": alan_adi,
-                "dallar": dallar,
-                "dal_ders_map": dal_ders_map,
-                "success": True,
-                "error": None
-            }
+            # 2. Ders, Sınıf ve Saatleri "Haftalık Ders Çizelgesi" tablolarından al
+            dal_ders_map = extract_ders_info_from_schedules(pdf)
 
     except Exception as e:
-        error_msg = f"PDF işleme hatası: {str(e)}"
-        if debug: print(error_msg)
-        return {"alan_adi": None, "dallar": [], "dal_ders_map": {}, "success": False, "error": error_msg}
-    finally:
-        if pdf_source.startswith('http') and pdf_path and os.path.exists(pdf_path):
-            os.unlink(pdf_path)
+        print(f"   ❌ PDF işlenirken bir hata oluştu: {e}")
+        return {"hata": str(e)}
 
-def oku_cop_pdf_file(pdf_path: str, debug: bool = False) -> Dict[str, Any]:
-    if not os.path.exists(pdf_path):
-        return {"success": False, "error": f"Dosya bulunamadı: {pdf_path}"}
-    return oku_cop_pdf(pdf_path, debug)
+    # 3. Sonuçları yapılandır
+    dal_ders_listesi = []
+    toplam_ders_sayisi = 0
 
-def oku_folder_pdfler(folder_path: str, debug: bool = False) -> Dict[str, Dict[str, Any]]:
-    if not os.path.isdir(folder_path):
-        print(f"❌ Klasör bulunamadı: {folder_path}")
-        return {}
+    # Genel listede dersler varsa, bunları dallara eşit olarak dağıt
+    genel_dersler = dal_ders_map.get("Genel", [])
+    if genel_dersler:
+        print(f"   🔄 {len(genel_dersler)} ders 'Genel' listede bulundu, dallara dağıtılıyor...")
+        dal_ders_map.pop("Genel", None)  # Genel listesini kaldır
+        
+        if dallar:
+            # Dersleri eşit olarak dallara dağıt
+            ders_per_dal = len(genel_dersler) // len(dallar)
+            kalan_dersler = len(genel_dersler) % len(dallar)
+            
+            for i, dal in enumerate(dallar):
+                baslangic = i * ders_per_dal
+                bitis = baslangic + ders_per_dal
+                if i < kalan_dersler:
+                    bitis += 1
+                
+                if dal not in dal_ders_map:
+                    dal_ders_map[dal] = []
+                dal_ders_map[dal].extend(genel_dersler[baslangic:bitis])
+
+    for dal in dallar:
+        dersler = dal_ders_map.get(dal, [])
+        # Yakın isimli dal adlarını da kontrol et (örn: Bilişim Teknolojileri vs Bilişim Teknolojisi)
+        if not dersler:
+             for key, value in dal_ders_map.items():
+                 # Check for partial matches or similar names
+                 if dal.upper() in key.upper() or key.upper() in dal.upper():
+                     dersler = value
+                     break
+
+        dal_ders_listesi.append({
+            "dal_adi": dal,
+            "dersler": dersler,
+            "ders_sayisi": len(dersler)
+        })
+        toplam_ders_sayisi += len(dersler)
+
+    # Çıktıyı terminale yazdır
+    # Relative path oluştur ki terminal'de tıklanabilir olsun
+    try:
+        relative_path = os.path.relpath(pdf_path, os.getcwd())
+        # Eğer relative path daha uzunsa absolute kullan ama tırnak içinde
+        if len(relative_path) > len(pdf_path) or relative_path.startswith('../../../'):
+            display_path = f'"{pdf_path}"'
+        else:
+            display_path = relative_path
+    except:
+        display_path = f'"{pdf_path}"'
     
-    results = {}
-    pdf_files = [f for f in os.listdir(folder_path) if f.lower().endswith('.pdf')]
-    print(f"📁 {folder_path} klasöründe {len(pdf_files)} PDF bulundu")
+    print(f"\n🎯 SONUÇLAR ÖZET:")
+    print(f"   📁 PDF: {display_path}")
+    print(f"   📚 Alan Adı: {alan_adi}")
+    print(f"   🏭 Dal Sayısı: {len(dallar)}")
+    print(f"   📖 Toplam Ders Sayısı: {toplam_ders_sayisi}")
     
-    for pdf_file in pdf_files:
-        pdf_path = os.path.join(folder_path, pdf_file)
-        if debug: print(f"\n🔄 İşleniyor: {pdf_file}")
-        results[pdf_file] = oku_cop_pdf_file(pdf_path, debug)
-    
-    return results
+    print(f"\n📋 DAL VE DERS DETAYLARI:")
+    for dal_info in dal_ders_listesi:
+        print(f"   🏭 {dal_info['dal_adi']} ({dal_info['ders_sayisi']} ders)")
+        for ders in dal_info['dersler']:
+            print(f"      📖 {ders['ders_adi']} - {ders['sinif']} ({ders['saat']} saat)")
+
+    return {
+        "alan_bilgileri": {
+            "alan_adi": alan_adi,
+            "dal_sayisi": len(dallar),
+            "toplam_ders_sayisi": toplam_ders_sayisi,
+            "dal_ders_listesi": dal_ders_listesi,
+        },
+        "metadata": {
+            "pdf_path": os.path.basename(pdf_path),
+            "status": "success" if alan_adi and dallar and toplam_ders_sayisi > 0 else "partial",
+        },
+    }
+
+# ------------- KOMUT SATIRI GİRİŞ NOKTASI ------------- #
+
+def oku_tum_pdfler(root_dir: str = ".") -> None:
+    """
+    root_dir içindeki tüm .pdf dosyalarını tarar, bilgileri terminale basar.
+    """
+    pdf_files = [os.path.join(root_dir, f) for f in os.listdir(root_dir) if f.lower().endswith(".pdf")]
+    if not pdf_files:
+        print(f"📂 '{root_dir}' dizininde PDF bulunamadı.")
+        return
+
+    print(f"📄 {len(pdf_files)} PDF bulundu. İşleniyor...")
+    for pdf_path in pdf_files:
+        result = oku_cop_pdf_file(pdf_path)
+        # JSON çıktısı kaldırıldı - sadece terminal özeti gösteriliyor
+        print("-" * 80)
 
 if __name__ == "__main__":
-    import sys
     if len(sys.argv) > 1:
-        path_arg = sys.argv[1]
-        is_debug = '--debug' in sys.argv
-        if os.path.isdir(path_arg):
-            oku_folder_pdfler(path_arg, debug=is_debug)
+        argument = sys.argv[1]
+        if argument == 'random':
+            base_cop_dir = os.path.join(os.path.dirname(__file__), '..', 'data', 'cop')
+            try:
+                subdirectories = [d for d in os.listdir(base_cop_dir) if os.path.isdir(os.path.join(base_cop_dir, d))]
+                if not subdirectories:
+                    print(f"📂 '{base_cop_dir}' içinde okunacak alt dizin bulunamadı.")
+                else:
+                    random_dir_name = random.choice(subdirectories)
+                    target_dir = os.path.join(base_cop_dir, random_dir_name)
+                    print(f"🔍 Rastgele seçilen dizin: {target_dir}")
+                    oku_tum_pdfler(root_dir=target_dir)
+            except FileNotFoundError:
+                print(f"❌ Ana dizin bulunamadı: {base_cop_dir}")
+            except Exception as e:
+                print(f"Beklenmedik bir hata oluştu: {e}")
+        elif os.path.isdir(argument):
+            print(f"🔍 Belirtilen dizin işleniyor: {argument}")
+            oku_tum_pdfler(root_dir=argument)
         else:
-            oku_cop_pdf_file(path_arg, debug=is_debug)
+            print(f"❌ Hata: '{argument}' geçerli bir dizin değil veya 'random' komutu değil.")
+            print("\nKullanım: python modules/oku_cop.py [random | <dizin_yolu>]")
     else:
-        print("Kullanım: python oku_cop.py <pdf_dosyasi_veya_klasor> [--debug]")
+        print("Kullanım: python modules/oku_cop.py [random | <dizin_yolu>]")
