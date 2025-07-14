@@ -731,126 +731,7 @@ const DataTable = ({ data, searchTerm, onCourseEdit, copData }) => {
   );
 };
 
-const AlanItem = ({ alan, ortakAlanIndeksi, allAlans, searchTerm, copData }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  const sortedDersler = useMemo(() => {
-    if (!alan.dersler) return [];
-    return Object.entries(alan.dersler).sort(([, a], [, b]) => a.isim.localeCompare(b.isim, 'tr'));
-  }, [alan.dersler]);
-
-  const renderHighlightedText = (text, highlight) => {
-    if (!highlight.trim()) {
-      return text;
-    }
-    const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
-    return (
-      <>
-        {parts.map((part, i) =>
-          part.toLowerCase() === highlight.toLowerCase() ? (
-            <mark key={i}>{part}</mark>
-          ) : (
-            part
-          )
-        )}
-      </>
-    );
-  };
-
-  return (
-    <div className="alan-item">
-      <div className="alan-header" onClick={() => setIsExpanded(!isExpanded)}>
-        <h3>
-          {renderHighlightedText(alan.isim, searchTerm)}
-          {copData && copData[alan.isim] && (
-            <a
-              href={copData[alan.isim]}
-              target="_blank"
-              rel="noopener noreferrer"
-              title="Çerçeve Öğretim Programı (ÇÖP) PDF"
-              style={{ marginLeft: 8, fontSize: 18, verticalAlign: 'middle' }}
-            >
-              📄 ÇÖP
-            </a>
-          )}
-          <span className="ders-sayisi">
-            ({Object.keys(alan.dersler || {}).length} ders)
-          </span>
-        </h3>
-        <span>{isExpanded ? '−' : '+'}</span>
-      </div>
-      {isExpanded && (
-        <div className="alan-details">
-          {sortedDersler.length > 0 ? (
-            <table className="ders-tablosu">
-              <thead>
-                <tr>
-                  <th>Alan</th>
-                  <th>Ders Adı</th>
-                  <th>Sınıfı</th>
-                  <th>Ders Materyali (DM)</th>
-                  <th>DBF PDF</th>
-                  <th>Okutulduğu Diğer Alanlar</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sortedDersler.map(([link, ders]) => (
-                  <tr key={link}>
-                    <td>{alan.isim}</td>
-                    <td>{ders.isim}</td>
-                    <td>{ders.siniflar.join('-')}</td>
-                    <td><a href={link} target="_blank" rel="noopener noreferrer" className="ders-link">DM PDF</a></td>
-                    <td>
-                      {ders.dbf_pdf_path ? (
-                        <a
-                          href={`file://${ders.dbf_pdf_path}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="dbf-link"
-                        >
-                          {ders.dbf_pdf_path.split('/').pop()}
-                        </a>
-                      ) : (
-                        "-"
-                      )}
-                    </td>
-                    <OrtakAlanlarCell
-                      dersLink={link}
-                      currentAlanId={alan.id}
-                      ortakAlanIndeksi={ortakAlanIndeksi}
-                      allAlans={allAlans}
-                    />
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <p>Bu alan için ders (Çerçeve Öğretim Programı) bulunamadı.</p>
-          )}
-
-          <div className="info-section">
-            {alan.dbf_bilgileri && Object.keys(alan.dbf_bilgileri).length > 0 && (
-              <ul>
-                <strong>Ders Bilgi Formları (DBF):</strong>
-                {Object.entries(alan.dbf_bilgileri).sort(([a], [b]) => parseInt(a) - parseInt(b)).map(([sinif, info]) => (
-                  <li key={`dbf-${sinif}`}>{sinif}. Sınıf: <a href={info.link} target="_blank" rel="noopener noreferrer">{info.link.split('/').pop()}</a> {info.guncelleme_tarihi && <small>({info.guncelleme_tarihi})</small>}</li>
-                ))}
-              </ul>
-            )}
-            {alan.cop_bilgileri && Object.keys(alan.cop_bilgileri).length > 0 && (
-              <ul>
-                <strong>Çerçeve Öğretim Programları (ÇÖP):</strong>
-                {Object.entries(alan.cop_bilgileri).sort(([a], [b]) => parseInt(a) - parseInt(b)).map(([sinif, info]) => (
-                  <li key={`cop-${sinif}`}>{sinif}. Sınıf: <a href={info.link} target="_blank" rel="noopener noreferrer">{info.link.split('/').pop()}</a> {info.guncelleme_yili && <small>(Yıl: {info.guncelleme_yili})</small>}</li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
+// AlanItem component removed - only table view is used now
 
 function App() {  
   const [data, setData] = useState(null);
@@ -860,7 +741,7 @@ function App() {
   const [progress, setProgress] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedTerm, setDebouncedTerm] = useState(searchTerm);
-  const [viewMode, setViewMode] = useState('card'); // 'card' or 'table'
+  // viewMode removed - only table view now
   const [editingSidebar, setEditingSidebar] = useState({ isOpen: false, course: null });
   const [editedCourses, setEditedCourses] = useState(new Map()); // Store edited course data
   const [pdfSidebar, setPdfSidebar] = useState({ isOpen: false, url: '', title: '' });
@@ -872,6 +753,21 @@ function App() {
   const [bomData, setBomData] = useState(null);
   const [catLoading, setCatLoading] = useState(""); // "dbf", "cop", "dm", "bom"
   const [catError, setCatError] = useState("");
+
+  // İstatistik state'leri
+  const [stats, setStats] = useState({
+    alan: 0,
+    dal: 0,
+    ders: 0,
+    cop_pdf: 0,
+    dbf_rar: 0,
+    dbf_pdf: 0,
+    dbf_docx: 0,
+    dm_pdf: 0,
+    bom_pdf: 0,
+    cop_okunan: 0,
+    dbf_okunan: 0
+  });
 
   // DBF rar indir/aç state'leri
   const [dbfUnrarLoading, setDbfUnrarLoading] = useState(false);
@@ -886,6 +782,19 @@ function App() {
       clearTimeout(timerId);
     };
   }, [searchTerm]); 
+
+  // İstatistikleri yükle
+  const loadStatistics = useCallback(async () => {
+    try {
+      const response = await fetch('http://localhost:5001/api/get-statistics');
+      if (response.ok) {
+        const statisticsData = await response.json();
+        setStats(statisticsData);
+      }
+    } catch (e) {
+      console.error("İstatistik yükleme hatası:", e);
+    }
+  }, []);
 
   // Sayfa ilk yüklendiğinde önbellekteki veriyi çek
   useEffect(() => {
@@ -902,6 +811,8 @@ function App() {
         } else {
           setProgress([{ message: "Önbellek boş. Verileri çekmek için butona tıklayın.", type: 'info' }]);
         }
+        // İstatistikleri yükle
+        await loadStatistics();
       } catch (e) {
         console.error("Önbellek verisi çekme hatası:", e);
         setError(`Önbellek verisi çekilemedi. Backend sunucusunun çalıştığından emin olun. Hata: ${e.message}`);
@@ -911,7 +822,7 @@ function App() {
     };
 
     fetchCachedData();
-  }, []);
+  }, [loadStatistics]);
 
   // Veri çekme fonksiyonu - artık direkt veritabanına kaydediyor
   const handleScrape = useCallback(() => {
@@ -927,6 +838,11 @@ function App() {
 
     eventSource.onmessage = (event) => {
       const eventData = JSON.parse(event.data);
+
+      // İstatistikleri güncelle
+      if (eventData.stats) {
+        setStats(prev => ({ ...prev, ...eventData.stats }));
+      }
 
       if (eventData.type === 'done') {
         // Veri çekme tamamlandı, önbellekten tekrar yükle
@@ -1012,6 +928,25 @@ function App() {
       if (!res.ok) throw new Error("DBF verisi alınamadı");
       const json = await res.json();
       setDbfData(json);
+      
+      // DBF istatistiklerini hesapla
+      let rarCount = 0, pdfCount = 0, docxCount = 0;
+      Object.values(json).forEach(sinifData => {
+        Object.values(sinifData).forEach(alanData => {
+          if (alanData.link) {
+            if (alanData.link.endsWith('.rar') || alanData.link.endsWith('.zip')) {
+              rarCount++;
+            }
+          }
+        });
+      });
+      
+      setStats(prev => ({ 
+        ...prev, 
+        dbf_rar: rarCount,
+        dbf_pdf: pdfCount,
+        dbf_docx: docxCount 
+      }));
     } catch (e) {
       setCatError("DBF: " + e.message);
     } finally {
@@ -1026,6 +961,20 @@ function App() {
       if (!res.ok) throw new Error("ÇÖP verisi alınamadı");
       const json = await res.json();
       setCopData(json);
+      
+      // COP PDF sayısını hesapla
+      let pdfCount = 0;
+      if (json.data) {
+        Object.values(json.data).forEach(sinifData => {
+          Object.values(sinifData).forEach(alanData => {
+            if (alanData.link) {
+              pdfCount++;
+            }
+          });
+        });
+      }
+      
+      setStats(prev => ({ ...prev, cop_pdf: pdfCount }));
     } catch (e) {
       setCatError("ÇÖP: " + e.message);
     } finally {
@@ -1040,6 +989,18 @@ function App() {
       if (!res.ok) throw new Error("Ders Materyali verisi alınamadı");
       const json = await res.json();
       setDmData(json);
+      
+      // DM PDF sayısını hesapla
+      let pdfCount = 0;
+      Object.values(json).forEach(sinifData => {
+        Object.values(sinifData).forEach(alanData => {
+          if (alanData && Array.isArray(alanData)) {
+            pdfCount += alanData.length;
+          }
+        });
+      });
+      
+      setStats(prev => ({ ...prev, dm_pdf: pdfCount }));
     } catch (e) {
       setCatError("DM: " + e.message);
     } finally {
@@ -1098,29 +1059,10 @@ function App() {
     }
   }, []);
 
-  // Alanları isme göre sıralamak için bir yardımcı fonksiyon
-  const getSortedAlans = useCallback((alanlar) => {
-    if (!alanlar) return [];
-    return Object.entries(alanlar).sort(([, a], [, b]) => a.isim.localeCompare(b.isim, 'tr'));
-  }, []); 
-
   // COP verilerini basit harita haline getir
   const copMapping = useMemo(() => {
     return createCopMapping(copData?.data);
   }, [copData, createCopMapping]);
-
-  // Arama terimine göre alanları filtrele
-  const filteredAlanlar = useMemo(() => {
-    if (!data || !data.alanlar) {
-      return [];
-    }
-    const term = debouncedTerm.trim().toLocaleLowerCase('tr');
-    const sorted = getSortedAlans(data.alanlar);
-    if (!term) {
-      return sorted;
-    }
-    return sorted.filter(([, alanData]) => alanData.isim.toLocaleLowerCase('tr').includes(term));
-  }, [debouncedTerm, data, getSortedAlans]);
 
   // Course editing functions
   const handleCourseEdit = useCallback((course) => {
@@ -1140,45 +1082,7 @@ function App() {
     setPdfSidebar({ isOpen: false, url: '', title: '' });
   }, []);
 
-  // Yeni 5 Adımlı İş Akışı Handler
-  const handleWorkflowStep = useCallback((step) => {
-    setData(null);
-    setProgress([]);
-    setError(null);
-    setLoading(true);
-
-    let endpoint;
-    if (step === 'full') {
-      endpoint = 'http://localhost:5001/api/workflow-full';
-    } else {
-      endpoint = `http://localhost:5001/api/workflow-step-${step}`;
-    }
-
-    const eventSource = new EventSource(endpoint);
-    
-    eventSource.onmessage = (event) => {
-      const eventData = JSON.parse(event.data);
-      if (eventData.type === 'done') {
-        // İş akışı tamamlandı, verileri yeniden yükle
-        fetchCachedData();
-        setProgress(prev => [...prev, eventData]);
-        eventSource.close();
-        setLoading(false);
-      } else {
-        setProgress(prev => [...prev, eventData]);
-      }
-    };
-
-    eventSource.onerror = (err) => {
-      setProgress(prev => [...prev, { type: "error", message: "Bağlantı hatası veya sunucu yanıt vermiyor." }]);
-      eventSource.close();
-      setLoading(false);
-    };
-
-    return () => {
-      eventSource.close();
-    };
-  }, []);
+  // Workflow step handler removed - using individual module functions now
 
   const handleSaveCourse = useCallback((editedData) => {
     const courseKey = `${editedData.alan_adi}-${editedData.ders_adi}-${editedData.sinif}`;
@@ -1337,7 +1241,7 @@ function App() {
     <div className="App">
       <h1>meslek.meb (alan-dal-ders) dosyalar</h1>
       
-      {/* Yeni 5 Adımlı İş Akışı */}
+      {/* Yeni Tek Satır İş Akışı */}
       <div className="workflow-container" style={{ 
         background: "#f8f9fa", 
         padding: "20px", 
@@ -1345,374 +1249,261 @@ function App() {
         margin: "20px 0",
         border: "1px solid #dee2e6"
       }}>
-        <h2 style={{ marginBottom: "20px", color: "#495057" }}>📋 5 Adımlı Veri İşleme İş Akışı</h2>
+        <h2 style={{ marginBottom: "20px", color: "#495057", textAlign: "center" }}>🔄 MEB Veri İşleme Sistemi</h2>
         
-        {/* Tam İş Akışı Butonu */}
-        <div style={{ marginBottom: "20px", textAlign: "center" }}>
-          <button 
-            onClick={() => handleWorkflowStep('full')} 
+        {/* Tek Satır Buton Dizisi */}
+        <div style={{ 
+          display: "flex", 
+          justifyContent: "center", 
+          gap: "15px", 
+          flexWrap: "wrap",
+          marginBottom: "20px"
+        }}>
+          {/* 1. Getir Alan ve Dal */}
+          <button
+            onClick={async () => {
+              setProgress([]);
+              setError(null);
+              setLoading(true);
+              try {
+                const response = await fetch('http://localhost:5001/api/get-dal');
+                const result = await response.json();
+                setProgress(prev => [...prev, { type: 'done', message: 'Alan-Dal verileri başarıyla çekildi' }]);
+              } catch (e) {
+                setProgress(prev => [...prev, { type: 'error', message: 'Alan-Dal çekme hatası: ' + e.message }]);
+              } finally {
+                setLoading(false);
+              }
+            }}
             disabled={loading}
-            style={{ 
-              background: "#28a745", 
-              color: "white", 
-              border: "none", 
-              padding: "15px 30px", 
-              borderRadius: "8px", 
-              fontSize: "18px",
-              fontWeight: "bold"
+            style={{
+              width: "120px",
+              height: "80px",
+              background: "#007bff",
+              color: "white",
+              border: "none",
+              borderRadius: "8px",
+              fontSize: "12px",
+              fontWeight: "bold",
+              cursor: loading ? "not-allowed" : "pointer",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              textAlign: "center",
+              padding: "5px"
             }}
           >
-            🎯 Tüm Adımları Sırayla Çalıştır
+            <div style={{ fontSize: "20px", marginBottom: "5px" }}>🏢</div>
+            <div>Getir Alan ve Dal</div>
+          </button>
+
+          {/* Bağlantı Oku */}
+          <div style={{ display: "flex", alignItems: "center", fontSize: "16px", color: "#6c757d" }}>➤</div>
+
+          {/* 2. Getir COP */}
+          <button
+            onClick={fetchCop}
+            disabled={loading || catLoading === "cop"}
+            style={{
+              width: "120px",
+              height: "80px",
+              background: "#6f42c1",
+              color: "white",
+              border: "none",
+              borderRadius: "8px",
+              fontSize: "12px",
+              fontWeight: "bold",
+              cursor: (loading || catLoading === "cop") ? "not-allowed" : "pointer",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              textAlign: "center",
+              padding: "5px"
+            }}
+          >
+            <div style={{ fontSize: "20px", marginBottom: "5px" }}>📄</div>
+            <div>Getir COP</div>
+          </button>
+
+          {/* Bağlantı Oku */}
+          <div style={{ display: "flex", alignItems: "center", fontSize: "16px", color: "#6c757d" }}>➤</div>
+
+          {/* 3. Getir DBF */}
+          <button
+            onClick={fetchDbf}
+            disabled={loading || catLoading === "dbf"}
+            style={{
+              width: "120px",
+              height: "80px",
+              background: "#17a2b8",
+              color: "white",
+              border: "none",
+              borderRadius: "8px",
+              fontSize: "12px",
+              fontWeight: "bold",
+              cursor: (loading || catLoading === "dbf") ? "not-allowed" : "pointer",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              textAlign: "center",
+              padding: "5px"
+            }}
+          >
+            <div style={{ fontSize: "20px", marginBottom: "5px" }}>📋</div>
+            <div>Getir DBF</div>
+          </button>
+
+          {/* Bağlantı Oku */}
+          <div style={{ display: "flex", alignItems: "center", fontSize: "16px", color: "#6c757d" }}>➤</div>
+
+          {/* 4. Getir DM */}
+          <button
+            onClick={fetchDm}
+            disabled={loading || catLoading === "dm"}
+            style={{
+              width: "120px",
+              height: "80px",
+              background: "#fd7e14",
+              color: "white",
+              border: "none",
+              borderRadius: "8px",
+              fontSize: "12px",
+              fontWeight: "bold",
+              cursor: (loading || catLoading === "dm") ? "not-allowed" : "pointer",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              textAlign: "center",
+              padding: "5px"
+            }}
+          >
+            <div style={{ fontSize: "20px", marginBottom: "5px" }}>📖</div>
+            <div>Getir DM</div>
+          </button>
+
+          {/* Bağlantı Oku */}
+          <div style={{ display: "flex", alignItems: "center", fontSize: "16px", color: "#6c757d" }}>➤</div>
+
+          {/* 5. Getir BOM */}
+          <button
+            onClick={fetchBom}
+            disabled={loading || catLoading === "bom"}
+            style={{
+              width: "120px",
+              height: "80px",
+              background: "#20c997",
+              color: "white",
+              border: "none",
+              borderRadius: "8px",
+              fontSize: "12px",
+              fontWeight: "bold",
+              cursor: (loading || catLoading === "bom") ? "not-allowed" : "pointer",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              textAlign: "center",
+              padding: "5px"
+            }}
+          >
+            <div style={{ fontSize: "20px", marginBottom: "5px" }}>📚</div>
+            <div>Getir BOM</div>
+          </button>
+
+          {/* Bağlantı Oku */}
+          <div style={{ display: "flex", alignItems: "center", fontSize: "16px", color: "#6c757d" }}>➤</div>
+
+          {/* 6. Oku COP */}
+          <button
+            onClick={handleProcessCopPdfs}
+            disabled={loading}
+            style={{
+              width: "120px",
+              height: "80px",
+              background: "#e67e22",
+              color: "white",
+              border: "none",
+              borderRadius: "8px",
+              fontSize: "12px",
+              fontWeight: "bold",
+              cursor: loading ? "not-allowed" : "pointer",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              textAlign: "center",
+              padding: "5px"
+            }}
+          >
+            <div style={{ fontSize: "20px", marginBottom: "5px" }}>🔍</div>
+            <div>Oku COP</div>
+          </button>
+
+          {/* Bağlantı Oku */}
+          <div style={{ display: "flex", alignItems: "center", fontSize: "16px", color: "#6c757d" }}>➤</div>
+
+          {/* 7. Oku DBF */}
+          <button
+            onClick={handleUpdateDersSaatleri}
+            disabled={loading}
+            style={{
+              width: "120px",
+              height: "80px",
+              background: "#28a745",
+              color: "white",
+              border: "none",
+              borderRadius: "8px",
+              fontSize: "12px",
+              fontWeight: "bold",
+              cursor: loading ? "not-allowed" : "pointer",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              textAlign: "center",
+              padding: "5px"
+            }}
+          >
+            <div style={{ fontSize: "20px", marginBottom: "5px" }}>📝</div>
+            <div>Oku DBF</div>
           </button>
         </div>
 
-        {/* Adım 1: Alan-Dal Verileri */}
-        <div className="workflow-step" style={{ marginBottom: "25px" }}>
-          <h3 style={{ 
-            background: "#007bff", 
-            color: "white", 
-            padding: "8px 15px", 
-            borderRadius: "5px", 
-            margin: "0 0 10px 0",
-            fontSize: "16px"
-          }}>
-            🏢 Adım 1: Alan-Dal Verilerini Topla
-          </h3>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", paddingLeft: "15px" }}>
-            <button 
-              onClick={() => handleWorkflowStep(1)} 
-              disabled={loading}
-              style={{ 
-                background: loading ? "#6c757d" : "#007bff", 
-                color: "white", 
-                border: "none", 
-                padding: "10px 20px", 
-                borderRadius: "5px",
-                cursor: loading ? "not-allowed" : "pointer"
-              }}
-            >
-              {loading ? '⏳ İşleniyor...' : '🏢 Adım 1 Başlat'}
-            </button>
-            <p style={{ fontSize: "14px", color: "#6c757d", margin: "5px 0" }}>
-              Türkiye'deki okullardan alan-dal bilgilerini toplar ve veritabanına kaydeder
-            </p>
-          </div>
-        </div>
-
-        {/* Adım 2: ÇÖP Verileri */}
-        <div className="workflow-step" style={{ marginBottom: "25px" }}>
-          <h3 style={{ 
-            background: "#6f42c1", 
-            color: "white", 
-            padding: "8px 15px", 
-            borderRadius: "5px", 
-            margin: "0 0 10px 0",
-            fontSize: "16px"
-          }}>
-            📄 Adım 2: Çerçeve Öğretim Programlarını İşle
-          </h3>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", paddingLeft: "15px" }}>
-            <button 
-              onClick={() => handleWorkflowStep(2)} 
-              disabled={loading}
-              style={{ 
-                background: loading ? "#6c757d" : "#6f42c1", 
-                color: "white", 
-                border: "none", 
-                padding: "10px 20px", 
-                borderRadius: "5px",
-                cursor: loading ? "not-allowed" : "pointer"
-              }}
-            >
-              {loading ? '⏳ İşleniyor...' : '📄 Adım 2 Başlat'}
-            </button>
-            <p style={{ fontSize: "14px", color: "#6c757d", margin: "5px 0" }}>
-              ÇÖP PDF'lerini indirir ve alan klasörlerine organize eder
-            </p>
-          </div>
-        </div>
-
-        {/* Adım 3: DBF Verileri */}
-        <div className="workflow-step" style={{ marginBottom: "25px" }}>
-          <h3 style={{ 
-            background: "#17a2b8", 
-            color: "white", 
-            padding: "8px 15px", 
-            borderRadius: "5px", 
-            margin: "0 0 10px 0",
-            fontSize: "16px"
-          }}>
-            📋 Adım 3: Ders Bilgi Formlarını İşle
-          </h3>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", paddingLeft: "15px" }}>
-            <button 
-              onClick={() => handleWorkflowStep(3)} 
-              disabled={loading}
-              style={{ 
-                background: loading ? "#6c757d" : "#17a2b8", 
-                color: "white", 
-                border: "none", 
-                padding: "10px 20px", 
-                borderRadius: "5px",
-                cursor: loading ? "not-allowed" : "pointer"
-              }}
-            >
-              {loading ? '⏳ İşleniyor...' : '📋 Adım 3 Başlat'}
-            </button>
-            <p style={{ fontSize: "14px", color: "#6c757d", margin: "5px 0" }}>
-              DBF dosyalarını indirir, açar ve ders bilgilerini çıkarır
-            </p>
-          </div>
-        </div>
-
-        {/* Adım 4: DM Verileri */}
-        <div className="workflow-step" style={{ marginBottom: "25px" }}>
-          <h3 style={{ 
-            background: "#fd7e14", 
-            color: "white", 
-            padding: "8px 15px", 
-            borderRadius: "5px", 
-            margin: "0 0 10px 0",
-            fontSize: "16px"
-          }}>
-            📖 Adım 4: Ders Materyallerini İşle
-          </h3>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", paddingLeft: "15px" }}>
-            <button 
-              onClick={() => handleWorkflowStep(4)} 
-              disabled={loading}
-              style={{ 
-                background: loading ? "#6c757d" : "#fd7e14", 
-                color: "white", 
-                border: "none", 
-                padding: "10px 20px", 
-                borderRadius: "5px",
-                cursor: loading ? "not-allowed" : "pointer"
-              }}
-            >
-              {loading ? '⏳ İşleniyor...' : '📖 Adım 4 Başlat'}
-            </button>
-            <p style={{ fontSize: "14px", color: "#6c757d", margin: "5px 0" }}>
-              Ders materyali PDF linklerini toplar ve veritabanına kaydeder
-            </p>
-          </div>
-        </div>
-
-        {/* Adım 5: BOM Verileri */}
-        <div className="workflow-step" style={{ marginBottom: "25px" }}>
-          <h3 style={{ 
-            background: "#20c997", 
-            color: "white", 
-            padding: "8px 15px", 
-            borderRadius: "5px", 
-            margin: "0 0 10px 0",
-            fontSize: "16px"
-          }}>
-            📚 Adım 5: Bireysel Öğrenme Materyallerini İşle
-          </h3>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", paddingLeft: "15px" }}>
-            <button 
-              onClick={() => handleWorkflowStep(5)} 
-              disabled={loading}
-              style={{ 
-                background: loading ? "#6c757d" : "#20c997", 
-                color: "white", 
-                border: "none", 
-                padding: "10px 20px", 
-                borderRadius: "5px",
-                cursor: loading ? "not-allowed" : "pointer"
-              }}
-            >
-              {loading ? '⏳ İşleniyor...' : '📚 Adım 5 Başlat'}
-            </button>
-            <p style={{ fontSize: "14px", color: "#6c757d", margin: "5px 0" }}>
-              Bireysel öğrenme materyali modüllerini organize eder
-            </p>
-          </div>
-        </div>
-
-        {/* Adım 2: PDF İşleme */}
-        <div className="workflow-step" style={{ marginBottom: "25px" }}>
-          <h3 style={{ 
-            background: "#fd7e14", 
-            color: "white", 
-            padding: "8px 15px", 
-            borderRadius: "5px", 
-            margin: "0 0 10px 0",
-            fontSize: "16px"
-          }}>
-            📄 Adım 2: PDF İşleme ve Analiz
-          </h3>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", paddingLeft: "15px" }}>
-            <button
-              onClick={handleDbfUnrar}
-              disabled={dbfUnrarLoading}
-              style={{ 
-                background: dbfUnrarLoading ? "#6c757d" : "#e67e22", 
-                color: "white", 
-                border: "none", 
-                padding: "10px 20px", 
-                borderRadius: "5px",
-                cursor: dbfUnrarLoading ? "not-allowed" : "pointer"
-              }}
-            >
-              {dbfUnrarLoading ? "⏳ DBF İndiriliyor..." : "📦 DBF İndir ve Aç"}
-            </button>
-            <button
-              onClick={handleProcessCopPdfs}
-              style={{ 
-                background: "#8e44ad", 
-                color: "white",
-                border: "none", 
-                padding: "10px 20px", 
-                borderRadius: "5px"
-              }}
-              title="ÇÖP PDF'lerini modules/oku.py ile işleyip alan-dal-ders ilişkisini çıkararak veritabanına kaydet"
-            >
-              🔍 ÇÖP PDF'lerini İşle
-            </button>
-            <button
-              onClick={() => {
-                setProgress([]);
-                setError(null);
-                const eventSource = new EventSource("http://localhost:5001/api/dbf-retry-extract-all");
-                eventSource.onmessage = (event) => {
-                  try {
-                    const eventData = JSON.parse(event.data);
-                    setProgress(prev => [...prev, eventData]);
-                    if (eventData.type === "done") {
-                      eventSource.close();
-                    }
-                  } catch (e) {
-                    setProgress(prev => [...prev, { type: "error", message: "Veri işlenemedi: " + e.message }]);
-                  }
-                };
-                eventSource.onerror = (err) => {
-                  setProgress(prev => [...prev, { type: "error", message: "Bağlantı hatası veya sunucu yanıt vermiyor." }]);
-                  eventSource.close();
-                };
-              }}
-              style={{ background: "#2980b9", color: "white", border: "none", padding: "10px 20px", borderRadius: "5px" }}
-            >
-              🔄 Tüm PDF'leri Tekrar İşle
-            </button>
-          </div>
-        </div>
-
-        {/* Adım 3: Veritabanı İşlemleri */}
-        <div className="workflow-step" style={{ marginBottom: "15px" }}>
-          <h3 style={{ 
-            background: "#28a745", 
-            color: "white", 
-            padding: "8px 15px", 
-            borderRadius: "5px", 
-            margin: "0 0 10px 0",
-            fontSize: "16px"
-          }}>
-            💾 Adım 3: Veritabanı Güncellemeleri
-          </h3>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", paddingLeft: "15px" }}>
-            <button
-              onClick={async () => {
-                setProgress(prev => [...prev, { type: "status", message: "DBF eşleştirmesi başlatıldı..." }]);
-                try {
-                  const res = await fetch("http://localhost:5001/api/dbf-match-refresh", { method: "POST" });
-                  const result = await res.json();
-                  setProgress(prev => [...prev, result]);
-                } catch (e) {
-                  setProgress(prev => [...prev, { type: "error", message: "Eşleştirme isteği başarısız: " + e.message }]);
-                }
-              }}
-              style={{ background: "#16a085", color: "white", border: "none", padding: "10px 20px", borderRadius: "5px" }}
-            >
-              🔗 DBF Eşleştir
-            </button>
-            <button
-              onClick={handleUpdateDersSaatleri}
-              style={{ 
-                background: "#27ae60", 
-                color: "white",
-                border: "none", 
-                padding: "10px 20px", 
-                borderRadius: "5px"
-              }}
-              title="DBF dosyalarından ders saati bilgilerini çıkarıp mevcut dersleri güncelle"
-            >
-              ⏰ Ders Saatlerini Güncelle
-            </button>
-            <button
-              onClick={handleExportToDatabase}
-              disabled={editedCourses.size === 0}
-              style={{ 
-                background: editedCourses.size > 0 ? "#e74c3c" : "#bdc3c7", 
-                color: "white",
-                border: "none", 
-                padding: "10px 20px", 
-                borderRadius: "5px",
-                cursor: editedCourses.size === 0 ? "not-allowed" : "pointer"
-              }}
-              title={`${editedCourses.size} düzenlenmiş ders veritabanına aktar`}
-            >
-              💾 Veritabanına Aktar ({editedCourses.size})
-            </button>
-          </div>
-        </div>
-
         {/* Durum Göstergeleri */}
-        <div style={{ marginTop: "15px", padding: "10px", background: "#e9ecef", borderRadius: "5px" }}>
-          {(catLoading || dbfUnrarLoading || loading) && (
+        <div style={{ textAlign: "center", padding: "10px", background: "#e9ecef", borderRadius: "5px" }}>
+          {(catLoading || loading) && (
             <div style={{ color: "#007bff", fontWeight: "bold" }}>
               ⏳ İşlem devam ediyor: {catLoading || "genel işlem"}...
             </div>
           )}
           {catError && <div style={{ color: "#dc3545", fontWeight: "bold" }}>❌ Hata: {catError}</div>}
-          {dbfUnrarError && <div style={{ color: "#dc3545", fontWeight: "bold" }}>❌ DBF Hatası: {dbfUnrarError}</div>}
-          {!loading && !catLoading && !dbfUnrarLoading && !catError && !dbfUnrarError && (
+          {!loading && !catLoading && !catError && (
             <div style={{ color: "#28a745", fontWeight: "bold" }}>✅ Hazır - Yukarıdaki adımları sırasıyla takip edin</div>
           )}
         </div>
       </div>
 
-      {/* Arama Kutusu ve Görünüm Seçenekleri */}
+      {/* Arama Kutusu */}
       {!initialLoading && data && (
-        <div className="search-and-view-controls" style={{ marginBottom: '20px' }}>
-          <div className="search-bar" style={{ marginBottom: '10px' }}>
-            <input
-              type="text"
-              placeholder="Filtrelemek için alan adı girin..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          <div className="view-mode-toggle">
-            <button 
-              onClick={() => setViewMode('card')} 
-              className={viewMode === 'card' ? 'active' : ''}
-              style={{ 
-                marginRight: '10px', 
-                backgroundColor: viewMode === 'card' ? '#007bff' : '#f8f9fa',
-                color: viewMode === 'card' ? 'white' : 'black',
-                border: '1px solid #ccc',
-                padding: '8px 16px',
-                cursor: 'pointer'
-              }}
-            >
-              Kart Görünümü
-            </button>
-            <button 
-              onClick={() => setViewMode('table')} 
-              className={viewMode === 'table' ? 'active' : ''}
-              style={{ 
-                backgroundColor: viewMode === 'table' ? '#007bff' : '#f8f9fa',
-                color: viewMode === 'table' ? 'white' : 'black',
-                border: '1px solid #ccc',
-                padding: '8px 16px',
-                cursor: 'pointer'
-              }}
-            >
-              Tablo Görünümü
-            </button>
-          </div>
+        <div className="search-bar" style={{ marginBottom: '20px', textAlign: 'center' }}>
+          <input
+            type="text"
+            placeholder="Filtrelemek için alan adı girin..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{
+              padding: '10px 15px',
+              fontSize: '16px',
+              border: '1px solid #ccc',
+              borderRadius: '8px',
+              width: '400px',
+              maxWidth: '90%'
+            }}
+          />
         </div>
       )}
 
@@ -1794,33 +1585,11 @@ function App() {
         )}
       </div>
 
-      {/* Veri görüntüleme alanı */}
+      {/* Veri görüntüleme alanı - Sadece Tablo Görünümü */}
       {!initialLoading && data && (
         <div className="data-display">
-          {viewMode === 'table' ? (
-            <div>
-              <h2>Tablo Görünümü</h2>
-              <DataTable data={data} searchTerm={debouncedTerm} onCourseEdit={handleCourseEdit} copData={copMapping} />
-            </div>
-          ) : (
-            <div>
-              <h2>Alınan Veriler ({filteredAlanlar.length} alan bulundu)</h2>
-              {filteredAlanlar.length > 0 ? (
-                filteredAlanlar.map(([alanId, alanData]) => (
-                  <AlanItem
-                    key={alanId}
-                    alan={{ ...alanData, id: alanId }}
-                    ortakAlanIndeksi={data.ortak_alan_indeksi || {}}
-                    allAlans={data.alanlar}
-                    searchTerm={debouncedTerm}
-                    copData={copMapping}
-                  />
-                ))
-              ) : (
-                <p>Arama kriterlerinize uygun alan bulunamadı.</p>
-              )}
-            </div>
-          )}
+          <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Ders Verileri</h2>
+          <DataTable data={data} searchTerm={debouncedTerm} onCourseEdit={handleCourseEdit} copData={copMapping} />
         </div>
       )}
 
