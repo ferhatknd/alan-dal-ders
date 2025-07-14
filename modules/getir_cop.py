@@ -1,5 +1,5 @@
 """
-modules/getir_cop_oku.py - ÇÖP (Çerçeve Öğretim Programları) İndirme ve Veritabanı Entegrasyonu
+modules/getir_cop.py - ÇÖP (Çerçeve Öğretim Programları) İndirme ve Veritabanı Entegrasyonu
 
 Bu modül:
 1. MEB sitesinden ÇÖP verilerini çeker (getir_cop)

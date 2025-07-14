@@ -10,8 +10,8 @@ Bu sistem, Türkiye Cumhuriyeti Milli Eğitim Bakanlığı'nın mesleki ve tekni
 
 - **Database Schema**: `data/schema.sql` - 13 tablo ile kapsamlı veritabanı yapısı
 - **Alan-Dal Modülü**: `modules/getir_dal.py` - MEB API'dan alan/dal verilerini çeker
-- **ÇÖP Modülü**: `modules/getir_cop_oku.py` - Çerçeve Öğretim Programı verilerini işler
-- **ÇÖP Okuma Modülü**: `modules/getir_cop_oku.py` - COP PDF'lerini okur ve analiz eder
+- **ÇÖP Modülü**: `modules/getir_cop.py` - Çerçeve Öğretim Programı verilerini işler
+- **ÇÖP Okuma Modülü**: `modules/getir_cop.py` - COP PDF'lerini okur ve analiz eder
 - **Yerel Test Modülü**: `modules/getir_cop_oku_local.py` - Yerel PDF test aracı ⭐ **YENİ**
 - **Debug Araçları**: `debug_*.py` dosyaları - PDF analiz ve hata ayıklama ⭐ **YENİ**
 - **Normalizasyon Modülü**: `modules/utils.py` - Türkçe karakter/metin standardizasyonu ve PDF cache yönetimi ⭐ **GÜNCELLENDİ**
@@ -94,7 +94,7 @@ temel_plan_alan (Alanlar)
 
 ### Adım 2: Çerçeve Öğretim Programı (ÇÖP) Verilerini İşleme
 
-**Dosya**: `modules/getir_cop_oku.py`
+**Dosya**: `modules/getir_cop.py`
 **Fonksiyon**: `getir_cop_with_db_integration()`
 
 **Amaç**: MEB'den ÇÖP PDF dosyalarını indirir, okur ve ders bilgilerini çıkarır.
@@ -119,7 +119,7 @@ temel_plan_alan (Alanlar)
    - Mevcut dosya kontrolü (gereksiz indirme önleme)
 
 4. **PDF Okuma ve Analiz** ⭐ **YENİ ÖZELLIK**
-   - `getir_cop_oku.py` modülü kullanılır
+   - `getir_cop.py` modülü kullanılır
    - `oku_cop_pdf()` fonksiyonu ile PDF içeriği analiz edilir
    - **Alan-Dal-Ders İlişkisi Çıkarma**:
      - PDF'den alan adı tespiti
@@ -137,7 +137,7 @@ temel_plan_alan (Alanlar)
    - Her alan için `cop_metadata.json` dosyası
    - ÇÖP bilgileri `temel_plan_alan.cop_url` sütununda JSON format
 
-**ÇÖP Okuma Detayları** (`getir_cop_oku.py`):
+**ÇÖP Okuma Detayları** (`getir_cop.py`):
 
 - **Alan Adı Tespiti**: URL pattern veya PDF içeriğinden
 - **Dal Bulma**: "DALI" keyword'ü ile biten satırlar
@@ -216,11 +216,11 @@ temel_plan_alan (Alanlar)
 ```
 MEB API'lar → getir_dal.py → Veritabanı (Alan/Dal)
      ↓
-MEB ÇÖP Sistemi → getir_cop_oku.py → PDF İndirme
+MEB ÇÖP Sistemi → getir_cop.py → PDF İndirme
      ↓
 📥 Local PDF Test → getir_cop_oku_local.py + debug_*.py → Test & Debug ⭐ YENİ
      ↓
-PDF Dosyaları → getir_cop_oku.py → Ders Çıkarma
+PDF Dosyaları → getir_cop.py → Ders Çıkarma
      ↓
 Veritabanı (Ders/İlişkiler) ← save_cop_results_to_db()
 ```
@@ -300,7 +300,7 @@ DM ve BÖM modülleri ders ID bazlı alt organizasyon kullanır:
 2. Debug Analysis (debug_*.py) → Pattern Issues
 3. Algorithm Fix → Code Update
 4. Re-test → Validation
-5. Production Deploy → getir_cop_oku.py
+5. Production Deploy → getir_cop.py
 ```
 
 ### Quality Metrics

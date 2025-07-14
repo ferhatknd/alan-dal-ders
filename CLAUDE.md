@@ -90,7 +90,7 @@ temel_plan_ders_dal
 ### 🚀 Adım 1: Temel Veri Çekme
 - **Verileri Çek:** MEB sitesinden ana veri çekme
 - **DBF Getir:** Ders Bilgi Formu linklerini çek (`modules/getir_dbf.py`)
-- **ÇÖP Getir:** Çerçeve Öğretim Programı linklerini çek (`modules/getir_cop_oku.py`)
+- **ÇÖP Getir:** Çerçeve Öğretim Programı linklerini çek (`modules/getir_cop.py`)
 - **DM Getir:** Ders Materyali linklerini çek (`modules/getir_dm.py`)
 - **BÖM Getir:** Bireysel Öğrenme Materyali linklerini çek (`modules/getir_bom.py`)
 - **Dal Getir:** Alan-Dal ilişkilerini çek (`modules/getir_dal.py`)
@@ -420,10 +420,10 @@ data/
 ## 🚨 Kritik Hatalardan Kaçınma Kuralları
 
 ### 1. Modül İsimleri
-- ⚠️ **ASLA `getir_cop.py` kullanma! Şimdi `getir_cop_oku.py`**
+- ⚠️ **ASLA `getir_cop.py` kullanma! Şimdi `getir_cop.py`**
 - Import'larda doğru modül adını kullan:
   ```python
-  from modules.getir_cop_oku import oku_cop_pdf, extract_alan_dal_ders_from_cop_pdf
+  from modules.getir_cop import oku_cop_pdf, extract_alan_dal_ders_from_cop_pdf
   ```
 
 ### 2. Veritabanı İşlemleri

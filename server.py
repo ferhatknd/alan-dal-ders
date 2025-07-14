@@ -18,8 +18,8 @@ from modules.oku import oku, oku_cop_pdf
 
 # Yeni modülleri import et
 from modules.getir_dbf import getir_dbf, download_and_extract_dbf_with_progress, retry_extract_all_files_with_progress, retry_extract_file
-from modules.getir_cop_oku import oku_cop_pdf as new_oku_cop_pdf, save_cop_results_to_db as new_save_cop_results_to_db
-from modules.getir_cop_oku import getir_cop
+from modules.getir_cop import oku_cop_pdf as new_oku_cop_pdf, save_cop_results_to_db as new_save_cop_results_to_db
+from modules.getir_cop import getir_cop
 from modules.getir_dm import getir_dm
 from modules.getir_bom import getir_bom
 
@@ -1451,7 +1451,7 @@ def workflow_step_2():
     def generate():
         try:
             # getir_cop_oku modülünden yeni entegre fonksiyonu kullan
-            from modules.getir_cop_oku import getir_cop_with_db_integration
+            from modules.getir_cop import getir_cop_with_db_integration
             
             for message in getir_cop_with_db_integration():
                 yield f"data: {json.dumps(message)}\n\n"
