@@ -21,7 +21,7 @@ Alan (Area) → Dal (Field) → Ders (Course) → Öğrenme Birimi (Learning Uni
 ## 📁 Kritik Dosya Yapısı
 
 ### 🔧 Core Modüller (modules/ klasörü)
-- **`modules/oku.py`** - PDF parsing ve içerik analizi (ÇÖP, DBF, DM dosyaları için)
+- **`modules/oku_dbf.py`** - ⭐ **YENİDEN ADLANDIRILDI**: DBF PDF parsing ve içerik analizi (eski: oku.py)
 - **`modules/getir_dbf.py`** - Ders Bilgi Formları (DBF) verilerini çeker, RAR/ZIP dosyalarını indirir ve açar
 - **`modules/oku_cop.py`** - ⭐ **YENİ**: COP (Çerçeve Öğretim Programı) PDF parsing ve analiz modülü - Tamamen yeniden yazıldı
 - **`modules/getir_cop_oku_local.py`** - ⭐ **YENİ**: Yerel PDF dosyalarını test etmek için standalone ÇÖP okuma modülü
@@ -31,8 +31,8 @@ Alan (Area) → Dal (Field) → Ders (Course) → Öğrenme Birimi (Learning Uni
 - **`modules/utils.py`** - Yardımcı fonksiyonlar, Türkçe karakter normalizasyonu ve **PDF cache yönetimi**
 
 ### 🌐 Ana Dosyalar
-- **`server.py`** - Ana Flask sunucusu, tüm API endpoint'leri ve veritabanı işlemleri
-- **`src/App.js`** - Ana React komponenti, aşamalı iş akışı UI
+- **`server.py`** - Ana Flask sunucusu, tüm API endpoint'leri, veritabanı işlemleri ve **istatistik sistemi**
+- **`src/App.js`** - ⭐ **YENİLENDİ**: Tek satır workflow UI, console panel, JSON popup'sız tasarım
 - **`data/temel_plan.db`** - SQLite veritabanı dosyası
 - **`data/schema.sql`** - Veritabanı schema dosyası
 
@@ -313,15 +313,21 @@ data/bom/
 - `/api/getAlanlar.php` - Alan listesi
 - `/api/getDallar.php` - Dal listesi
 
-### 6. 📄 oku.py
+### 6. 📄 oku_dbf.py ⭐ **YENİDEN ADLANDIRILDI**
 
-**Amaç:** PDF parsing ve içerik analizi.
+**Amaç:** DBF PDF parsing ve içerik analizi (eski: oku.py).
+
+**🔧 Kritik İyileştirmeler:**
+- **Daha İyi Amaç Çıkarma**: `_is_valid_amac_content()` ile 10+ kelime validasyonu
+- **Kazanım Eşleştirme Düzeltmesi**: Newline karakterleri için robust handling
+- **Temizlik**: Kullanılmayan fonksiyonlar kaldırıldı, sadece DBF işleme odaklı
 
 **Desteklenen Formatlar:**
 - PDF (`pdfplumber`)
 - DOCX (`python-docx`)
 
 **Ana Fonksiyonlar:**
+- `oku_dbf()` - Ana DBF parsing fonksiyonu (eski: oku)
 - `extract_ders_adi()` - Dosyadan ders adını çıkarır
 - `extract_text_from_pdf()` - PDF metin çıkarma
 - `extract_text_from_docx()` - DOCX metin çıkarma
@@ -407,6 +413,9 @@ data/
 - `GET /api/get-dm` - DM verilerini getir
 - `GET /api/get-bom` - BÖM verilerini getir
 
+### ⭐ **YENİ**: İstatistik Sistemi
+- `GET /api/get-statistics` - Gerçek zamanlı istatistikler (database + disk dosyaları)
+
 ### PDF ve DBF İşlemleri
 - `GET /api/dbf-download-extract` - DBF dosyalarını indir/aç (SSE)
 - `GET /api/dbf-retry-extract-all` - Tüm DBF'leri tekrar aç (SSE)
@@ -419,22 +428,29 @@ data/
 
 ## 🚨 Kritik Hatalardan Kaçınma Kuralları
 
-### 1. Modül İsimleri
-- ⚠️ **ASLA `getir_cop.py` kullanma! Şimdi `getir_cop.py`**
+### 1. Modül İsimleri ⭐ **GÜNCELLENDİ**
+- ⚠️ **`oku.py` artık `oku_dbf.py` oldu!**
 - Import'larda doğru modül adını kullan:
   ```python
-  from modules.getir_cop import oku_cop_pdf, extract_alan_dal_ders_from_cop_pdf
+  from modules.oku_dbf import oku_dbf, extract_ders_adi  # ✅ Doğru
+  from modules.oku import oku  # ❌ Eski, artık yok
   ```
 
-### 2. Veritabanı İşlemleri
+### 2. UI Tasarımı ⭐ **YENİ KURAL**
+- **ASLA** JSON popup/display ekranları ekleme
+- Tüm veri gösterimleri console panel'de olmalı
+- Button istatistikleri database + disk dosyalarından otomatik yüklenmeli
+- Real-time logging için SSE kullan
+
+### 3. Veritabanı İşlemleri
 - **ASLA** veritabanı dosyasını silme
 - Migration'ları `schema.sql`'den uygula
 - `IF NOT EXISTS` kullan
 - Transaction'ları `with sqlite3.connect()` ile yönet
 
-### 3. PDF İşleme
+### 4. PDF İşleme
 - Content-based matching kullan (fuzzy matching yerine)
-- `modules/oku.py`'yi PDF okuma için kullan
+- `modules/oku_dbf.py`'yi DBF PDF okuma için kullan (eski: oku.py)
 - Encoding: `UTF-8` ile dosya okuma/yazma
 
 ### 4. Error Handling

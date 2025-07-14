@@ -748,10 +748,7 @@ function App() {
   const [consoleOpen, setConsoleOpen] = useState(false);
 
   // Kategorik veri state'leri
-  const [dbfData, setDbfData] = useState(null);
   const [copData, setCopData] = useState(null);
-  const [dmData, setDmData] = useState(null);
-  const [bomData, setBomData] = useState(null);
   const [catLoading, setCatLoading] = useState(""); // "dbf", "cop", "dm", "bom"
   const [catError, setCatError] = useState("");
 
@@ -924,32 +921,24 @@ function App() {
   const fetchDbf = async () => {
     setCatLoading("dbf");
     setCatError("");
+    
+    // Console'u aç ve mesaj yazdır
+    setConsoleOpen(true);
+    setProgress(prev => [...prev, { type: 'status', message: 'DBF verileri çekiliyor...' }]);
+    
     try {
       const res = await fetch("http://localhost:5001/api/get-dbf");
       if (!res.ok) throw new Error("DBF verisi alınamadı");
       const json = await res.json();
-      setDbfData(json);
       
-      // DBF istatistiklerini hesapla
-      let rarCount = 0, pdfCount = 0, docxCount = 0;
-      Object.values(json).forEach(sinifData => {
-        Object.values(sinifData).forEach(alanData => {
-          if (alanData.link) {
-            if (alanData.link.endsWith('.rar') || alanData.link.endsWith('.zip')) {
-              rarCount++;
-            }
-          }
-        });
-      });
+      setProgress(prev => [...prev, { type: 'success', message: `DBF: ${json.updated_count || 0} alan güncellendi` }]);
       
-      setStats(prev => ({ 
-        ...prev, 
-        dbf_rar: rarCount,
-        dbf_pdf: pdfCount,
-        dbf_docx: docxCount 
-      }));
+      // Disk dosyalarından gerçek istatistikleri yükle
+      await loadStatistics();
+      
     } catch (e) {
       setCatError("DBF: " + e.message);
+      setProgress(prev => [...prev, { type: 'error', message: 'DBF hatası: ' + e.message }]);
     } finally {
       setCatLoading("");
     }
@@ -957,27 +946,25 @@ function App() {
   const fetchCop = async () => {
     setCatLoading("cop");
     setCatError("");
+    
+    // Console'u aç ve mesaj yazdır
+    setConsoleOpen(true);
+    setProgress(prev => [...prev, { type: 'status', message: 'ÇÖP verileri çekiliyor...' }]);
+    
     try {
       const res = await fetch("http://localhost:5001/api/get-cop");
       if (!res.ok) throw new Error("ÇÖP verisi alınamadı");
       const json = await res.json();
       setCopData(json);
       
-      // COP PDF sayısını hesapla
-      let pdfCount = 0;
-      if (json.data) {
-        Object.values(json.data).forEach(sinifData => {
-          Object.values(sinifData).forEach(alanData => {
-            if (alanData.link) {
-              pdfCount++;
-            }
-          });
-        });
-      }
+      setProgress(prev => [...prev, { type: 'success', message: `ÇÖP: ${json.updated_count || 0} alan güncellendi` }]);
       
-      setStats(prev => ({ ...prev, cop_pdf: pdfCount }));
+      // Disk dosyalarından gerçek istatistikleri yükle
+      await loadStatistics();
+      
     } catch (e) {
       setCatError("ÇÖP: " + e.message);
+      setProgress(prev => [...prev, { type: 'error', message: 'ÇÖP hatası: ' + e.message }]);
     } finally {
       setCatLoading("");
     }
@@ -985,25 +972,24 @@ function App() {
   const fetchDm = async () => {
     setCatLoading("dm");
     setCatError("");
+    
+    // Console'u aç ve mesaj yazdır
+    setConsoleOpen(true);
+    setProgress(prev => [...prev, { type: 'status', message: 'DM verileri çekiliyor...' }]);
+    
     try {
       const res = await fetch("http://localhost:5001/api/get-dm");
       if (!res.ok) throw new Error("Ders Materyali verisi alınamadı");
       const json = await res.json();
-      setDmData(json);
       
-      // DM PDF sayısını hesapla
-      let pdfCount = 0;
-      Object.values(json).forEach(sinifData => {
-        Object.values(sinifData).forEach(alanData => {
-          if (alanData && Array.isArray(alanData)) {
-            pdfCount += alanData.length;
-          }
-        });
-      });
+      setProgress(prev => [...prev, { type: 'success', message: `DM: ${json.saved_count || 0} ders kaydedildi` }]);
       
-      setStats(prev => ({ ...prev, dm_pdf: pdfCount }));
+      // Disk dosyalarından gerçek istatistikleri yükle
+      await loadStatistics();
+      
     } catch (e) {
       setCatError("DM: " + e.message);
+      setProgress(prev => [...prev, { type: 'error', message: 'DM hatası: ' + e.message }]);
     } finally {
       setCatLoading("");
     }
@@ -1011,27 +997,24 @@ function App() {
   const fetchBom = async () => {
     setCatLoading("bom");
     setCatError("");
+    
+    // Console'u aç ve mesaj yazdır
+    setConsoleOpen(true);
+    setProgress(prev => [...prev, { type: 'status', message: 'BOM verileri çekiliyor...' }]);
+    
     try {
       const res = await fetch("http://localhost:5001/api/get-bom");
       if (!res.ok) throw new Error("BOM verisi alınamadı");
       const json = await res.json();
-      setBomData(json);
       
-      // BOM PDF sayısını hesapla
-      let pdfCount = 0;
-      Object.values(json).forEach(alanData => {
-        if (alanData.dersler && Array.isArray(alanData.dersler)) {
-          alanData.dersler.forEach(ders => {
-            if (ders.moduller && Array.isArray(ders.moduller)) {
-              pdfCount += ders.moduller.length;
-            }
-          });
-        }
-      });
+      setProgress(prev => [...prev, { type: 'success', message: `BOM: ${json.updated_count || 0} ders güncellendi` }]);
       
-      setStats(prev => ({ ...prev, bom_pdf: pdfCount }));
+      // Disk dosyalarından gerçek istatistikleri yükle
+      await loadStatistics();
+      
     } catch (e) {
       setCatError("BOM: " + e.message);
+      setProgress(prev => [...prev, { type: 'error', message: 'BOM hatası: ' + e.message }]);
     } finally {
       setCatLoading("");
     }
@@ -1372,9 +1355,6 @@ function App() {
             <div style={{ fontSize: "10px", marginTop: "5px" }}>({stats.alan}) ve ({stats.dal})</div>
           </button>
 
-          {/* Bağlantı Oku */}
-          <div style={{ display: "flex", alignItems: "center", fontSize: "16px", color: "#6c757d" }}>➤</div>
-
           {/* 2. Getir COP */}
           <button
             onClick={fetchCop}
@@ -1397,12 +1377,9 @@ function App() {
               padding: "10px"
             }}
           >
-            <div>Getir COP</div>
+            <div>Getir ÇÖP</div>
             <div style={{ fontSize: "10px", marginTop: "5px" }}>({stats.cop_pdf} PDF)</div>
           </button>
-
-          {/* Bağlantı Oku */}
-          <div style={{ display: "flex", alignItems: "center", fontSize: "16px", color: "#6c757d" }}>➤</div>
 
           {/* 3. Getir DBF */}
           <button
@@ -1415,7 +1392,7 @@ function App() {
               color: "white",
               border: "none",
               borderRadius: "8px",
-              fontSize: "9px",
+              fontSize: "10px",
               fontWeight: "bold",
               cursor: (loading || catLoading === "dbf") ? "not-allowed" : "pointer",
               display: "flex",
@@ -1427,13 +1404,10 @@ function App() {
             }}
           >
             <div>Getir DBF</div>
-            <div style={{ fontSize: "8px", marginTop: "5px" }}>
-              Ders({stats.ders}) ({stats.dbf_rar} RAR, {stats.dbf_pdf} PDF, {stats.dbf_docx} DOCX)
+            <div style={{ fontSize: "10px", marginTop: "5px" }}>
+              Ders({stats.ders})<br />({stats.dbf_rar} RAR, {stats.dbf_pdf} PDF, {stats.dbf_docx} DOCX)
             </div>
           </button>
-
-          {/* Bağlantı Oku */}
-          <div style={{ display: "flex", alignItems: "center", fontSize: "16px", color: "#6c757d" }}>➤</div>
 
           {/* 4. Getir DM */}
           <button
@@ -1461,9 +1435,6 @@ function App() {
             <div style={{ fontSize: "10px", marginTop: "5px" }}>({stats.dm_pdf} PDF)</div>
           </button>
 
-          {/* Bağlantı Oku */}
-          <div style={{ display: "flex", alignItems: "center", fontSize: "16px", color: "#6c757d" }}>➤</div>
-
           {/* 5. Getir BOM */}
           <button
             onClick={fetchBom}
@@ -1490,9 +1461,6 @@ function App() {
             <div style={{ fontSize: "10px", marginTop: "5px" }}>({stats.bom_pdf} PDF)</div>
           </button>
 
-          {/* Bağlantı Oku */}
-          <div style={{ display: "flex", alignItems: "center", fontSize: "16px", color: "#6c757d" }}>➤</div>
-
           {/* 6. Oku COP */}
           <button
             onClick={handleProcessCopPdfs}
@@ -1518,9 +1486,6 @@ function App() {
             <div>Oku COP</div>
             <div style={{ fontSize: "10px", marginTop: "5px" }}>({stats.cop_okunan} Ders)</div>
           </button>
-
-          {/* Bağlantı Oku */}
-          <div style={{ display: "flex", alignItems: "center", fontSize: "16px", color: "#6c757d" }}>➤</div>
 
           {/* 7. Oku DBF */}
           <button
@@ -1742,33 +1707,6 @@ function App() {
         </div>
       </div>
 
-      {/* Kategorik veri görüntüleme alanları */}
-      <div style={{ margin: "20px 0" }}>
-        {dbfData && (
-          <div>
-            <h2>Ders Bilgi Formu (DBF) Verisi</h2>
-            <pre style={{ maxHeight: 300, overflow: "auto", background: "#f4f4f4", padding: 10 }}>{JSON.stringify(dbfData, null, 2)}</pre>
-          </div>
-        )}
-        {copData && (
-          <div>
-            <h2>Çerçeve Öğretim Programı (ÇÖP) Verisi</h2>
-            <pre style={{ maxHeight: 300, overflow: "auto", background: "#f4f4f4", padding: 10 }}>{JSON.stringify(copData, null, 2)}</pre>
-          </div>
-        )}
-        {dmData && (
-          <div>
-            <h2>Ders Materyali (DM) Verisi</h2>
-            <pre style={{ maxHeight: 300, overflow: "auto", background: "#f4f4f4", padding: 10 }}>{JSON.stringify(dmData, null, 2)}</pre>
-          </div>
-        )}
-        {bomData && (
-          <div>
-            <h2>Bireysel Öğrenme Materyali (BOM) Verisi</h2>
-            <pre style={{ maxHeight: 300, overflow: "auto", background: "#f4f4f4", padding: 10 }}>{JSON.stringify(bomData, null, 2)}</pre>
-          </div>
-        )}
-      </div>
 
       {/* Veri görüntüleme alanı - Sadece Tablo Görünümü */}
       {!initialLoading && data && (
