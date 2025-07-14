@@ -8,10 +8,10 @@ import zipfile
 import re
 import sqlite3
 try:
-    from .oku import extract_ders_adi
+    from .oku_dbf import extract_ders_adi
     from .utils import normalize_to_title_case_tr
 except ImportError:
-    from oku import extract_ders_adi
+    from oku_dbf import extract_ders_adi
     from utils import normalize_to_title_case_tr
 
 BASE_DBF_URL = "https://meslek.meb.gov.tr/dbflistele.aspx"

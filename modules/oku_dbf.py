@@ -1,12 +1,8 @@
 import pdfplumber
 import docx
-import pandas as pd
 import re
 import os
-import glob
 import json
-import requests
-import sys
 from datetime import datetime
 from abc import ABC, abstractmethod
 from typing import Dict, List, Any, Optional
@@ -358,8 +354,6 @@ class DocumentProcessor:
         return None
 
 
-# Global processor instance
-_processor = DocumentProcessor()
 
 
 # ===========================
@@ -379,29 +373,6 @@ def clean_text(text):
     text = re.sub(r'\s+', ' ', text.strip())
     return text
 
-def extract_ders_adi(file_path):
-    """
-    PDF veya DOCX dosyasından ders adını çıkar
-    [LEGACY WRAPPER - Uses new modular system]
-    """
-    try:
-        processor = DocumentProcessor()
-        return processor.extract_field(file_path, 'ders_adi')
-    except Exception as e:
-        print(f"Error extracting ders adı: {str(e)}")
-        return None
-
-def extract_ders_sinifi(file_path):
-    """
-    PDF veya DOCX dosyasından ders sınıfını çıkar ve sayıya çevir
-    [LEGACY WRAPPER - Uses new modular system]
-    """
-    try:
-        processor = DocumentProcessor()
-        return processor.extract_field(file_path, 'ders_sinifi')
-    except Exception as e:
-        print(f"Error extracting ders sınıfı: {str(e)}")
-        return None
 
 def extract_ders_saati(file_path, tables=None):
     """
@@ -1129,13 +1100,27 @@ def analyze_measurement_content(content):
 
 
 # ===========================
-# WRAPPER FUNCTIONS (BACKWARD COMPATIBILITY)
+# PUBLIC EXTRACTION FUNCTIONS
 # ===========================
 
-def oku(file_path):
+def extract_ders_adi(file_path):
     """
-    PDF veya DOCX dosyasından tüm ders bilgilerini çıkar ve JSON formatında döndür
-    [LEGACY WRAPPER - Uses new modular system internally]
+    PDF veya DOCX dosyasından ders adını çıkar
+    """
+    try:
+        processor = DocumentProcessor()
+        return processor.extract_field(file_path, 'ders_adi')
+    except Exception as e:
+        print(f"Error extracting ders adı: {str(e)}")
+        return None
+
+# ===========================
+# MAIN DBF PROCESSING FUNCTION
+# ===========================
+
+def oku_dbf(file_path):
+    """
+    PDF veya DOCX dosyasından tüm DBF ders bilgilerini çıkar ve JSON formatında döndür
     """
     try:
         # Use new modular system
@@ -1234,98 +1219,4 @@ def oku(file_path):
             "uygulama_faaliyetleri": []
         }
 
-def process_directory(directory_path, output_json="oku_sonuc.json"):
-    """
-    Dizindeki tüm PDF ve DOCX dosyalarını işle ve sonuçları JSON'a kaydet
-    """
-    results = {}
 
-    pdf_pattern = os.path.join(directory_path, "*.pdf")
-    docx_pattern = os.path.join(directory_path, "*.docx")
-    pdf_files = glob.glob(pdf_pattern)
-    docx_files = glob.glob(docx_pattern)
-    all_files = pdf_files + docx_files
-
-    print(f"Found {len(pdf_files)} PDF and {len(docx_files)} DOCX files in {directory_path}")
-
-    for file_path in all_files:
-        filename = os.path.basename(file_path)
-        result = oku(file_path)
-        results[filename] = result
-
-    # JSON'a kaydet
-    output_data = {
-        "metadata": {
-            "processed_at": datetime.now().isoformat(),
-            "source_directory": os.path.abspath(directory_path),
-            "total_files": len(results),
-            "successful_files": sum(1 for r in results.values() if r["metadata"]["status"] == "success"),
-            "partial_files": sum(1 for r in results.values() if r["metadata"]["status"] == "partial"),
-            "failed_files": sum(1 for r in results.values() if r["metadata"]["status"] == "error")
-        },
-        "results": results
-    }
-
-    try:
-        with open(output_json, 'w', encoding='utf-8') as f:
-            json.dump(output_data, f, ensure_ascii=False, indent=2)
-        print(f"\n✓ Results saved to: {output_json}")
-    except Exception as e:
-        print(f"✗ Error saving JSON file: {str(e)}")
-
-    return results
-
-
-
-def main():
-    """
-    Ana fonksiyon - argümana göre dosya veya dizin işle
-    """
-    if len(sys.argv) > 1:
-        input_path = sys.argv[1]
-        
-        if os.path.isfile(input_path):
-            # Tek dosya işle
-            print(f"Dosya işleniyor: {input_path}")
-            print("=" * 60)
-            
-            result = oku(input_path)
-            
-            # JSON'a kaydet
-            output_file = f"{os.path.splitext(os.path.basename(input_path))[0]}_sonuc.json"
-            try:
-                with open(output_file, 'w', encoding='utf-8') as f:
-                    json.dump(result, f, ensure_ascii=False, indent=2)
-                print(f"\nSonuç {output_file} dosyasına kaydedildi.")
-            except Exception as e:
-                print(f"JSON kaydetme hatası: {e}")
-                
-        elif os.path.isdir(input_path):
-            # Dizin işle
-            print(f"Dizin işleniyor: {input_path}")
-            print("=" * 60)
-            
-            output_json = "oku_sonuc.json"
-            results = process_directory(input_path, output_json)
-            
-        else:
-            print(f"Hata: '{input_path}' geçerli bir dosya veya dizin değil.")
-    
-    else:
-        # Argüman verilmemişse mevcut dizini işle
-        print("Mevcut dizindeki PDF/DOCX dosyaları işleniyor...")
-        print("=" * 60)
-        
-        directory_path = "."
-        output_json = "oku_sonuc.json"
-        results = process_directory(directory_path, output_json)
-        
-        print("\nKullanım:")
-        print("  python oku.py [dosya_yolu|dizin_yolu]")
-        print("\nÖrnekler:")
-        print("  python oku.py ders.pdf")
-        print("  python oku.py /path/to/directory")
-
-
-if __name__ == "__main__":
-    main()

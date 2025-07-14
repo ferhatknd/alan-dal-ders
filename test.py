@@ -3,7 +3,7 @@ import sys
 import glob
 import random
 import json
-from modules import oku
+from modules.oku_dbf import oku_dbf
 
 def get_subdirectories(base_path):
     """Belirtilen yol altındaki tüm alt dizinleri döndürür."""
@@ -60,7 +60,7 @@ if __name__ == "__main__":
             for pdf_file in pdf_files_to_process:
                 print(f"\n--- {os.path.basename(pdf_file)} işleniyor ---")
                 try:
-                    result = oku.oku(pdf_file)
+                    result = oku_dbf(pdf_file)
                     # oku.oku zaten terminale çıktı veriyor, burada sadece JSON çıktısını basabiliriz
                     # print(json.dumps(result, ensure_ascii=False, indent=2))
                 except Exception as e:

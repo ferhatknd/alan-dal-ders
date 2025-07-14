@@ -13,8 +13,8 @@ from contextlib import redirect_stdout, redirect_stderr
 
 # artık alanlar_ve_dersler3.py kullanmıyoruz, getir_* modülleri kullanıyoruz
 
-# oku.py'den fonksiyonları import ediyoruz
-from modules.oku import oku
+# oku_dbf.py'den fonksiyonları import ediyoruz
+from modules.oku_dbf import oku_dbf
 
 # Yeni modülleri import et
 from modules.getir_dbf import getir_dbf, download_and_extract_dbf_with_progress, retry_extract_all_files_with_progress, retry_extract_file
@@ -159,9 +159,9 @@ def process_pdf():
             output_buffer = io.StringIO()
             
             try:
-                # stdout'u yakalayarak oku() fonksiyonunun çıktısını al
+                # stdout'u yakalayarak oku_dbf() fonksiyonunun çıktısını al
                 with redirect_stdout(output_buffer):
-                    result = oku(temp_filename)
+                    result = oku_dbf(temp_filename)
                 
                 # Yakalanan çıktıyı satır satır gönder
                 output_lines = output_buffer.getvalue().split('\n')
@@ -577,9 +577,9 @@ def api_update_ders_saatleri_from_dbf():
                     try:
                         yield f"data: {json.dumps({'type': 'status', 'message': f'{os.path.basename(dbf_file)} işleniyor...'})}\\n\\n"
                         
-                        # oku.py ile DBF dosyasını işle
+                        # oku_dbf.py ile DBF dosyasını işle
                         with redirect_stdout(io.StringIO()):
-                            parsed_data = oku(dbf_file)
+                            parsed_data = oku_dbf(dbf_file)
                         
                         if parsed_data:
                             updated_count = update_ders_saati_from_dbf_data(cursor, parsed_data)

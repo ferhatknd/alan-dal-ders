@@ -531,7 +531,7 @@ bom_data = getir_bom()
 
 ### PDF İşleme
 ```python
-from modules.oku import extract_ders_adi
+from modules.oku_dbf import extract_ders_adi
 
 ders_adi = extract_ders_adi("/path/to/dbf/file.pdf")
 ```
