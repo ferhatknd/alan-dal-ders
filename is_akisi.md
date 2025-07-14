@@ -94,8 +94,14 @@ temel_plan_alan (Alanlar)
 
 ### Adım 2: Çerçeve Öğretim Programı (ÇÖP) Verilerini İşleme
 
-**Dosya**: `modules/getir_cop_oku.py`
-**Fonksiyon**: `getir_cop_with_db_integration()`
+**Ana Modüller**: 
+- `modules/getir_cop.py` - HTML scraping ve PDF indirme ⭐ **YENİ**
+- `modules/oku_cop.py` - PDF okuma ve analiz ⭐ **YENİ**
+
+**Ana Fonksiyonlar**: 
+- `getir_cop_links()` - ÇÖP linklerini çeker
+- `download_cop_pdfs()` - PDF'leri indirir
+- `oku_cop_pdf()` - PDF'leri analiz eder
 
 **Amaç**: MEB'den ÇÖP PDF dosyalarını indirir, okur ve ders bilgilerini çıkarır.
 
@@ -106,25 +112,28 @@ temel_plan_alan (Alanlar)
    - Veritabanındaki alanları MEB sistemi ile eşleştirir
    - `temel_plan_alan.meb_alan_id` sütununu günceller
 
-2. **ÇÖP URL Tarama** (Paralel işlem)
+2. **ÇÖP URL Tarama** (Paralel işlem) - `getir_cop.py`
+   - `getir_cop_links()` fonksiyonu
    - Endpoint: `https://meslek.meb.gov.tr/cercevelistele.aspx`
    - Her sınıf için (9, 10, 11, 12) ÇÖP listesi çeker
    - BeautifulSoup ile HTML ayrıştırma
    - PDF linklerini ve güncelleme yıllarını çıkarır
 
-3. **PDF İndirme ve Organizasyon**
-   - `download_and_save_cop_pdf()` fonksiyonu
+3. **PDF İndirme ve Organizasyon** - `getir_cop.py`
+   - `download_cop_pdfs()` fonksiyonu
+   - `utils.download_and_cache_pdf()` ile merkezi indirme ⭐ **YENİ**
    - `data/cop/{ID:02d}_-_{alan_adi}/` formatında ID bazlı klasör yapısı ⭐ **YENİ**
    - Dosya adı: `cop_{sinif}_sinif_{guncelleme_yili}.pdf`
    - Mevcut dosya kontrolü (gereksiz indirme önleme)
 
-4. **PDF Okuma ve Analiz** ⭐ **YENİ ÖZELLIK**
-   - `getir_cop_oku.py` modülü kullanılır
-   - `oku_cop_pdf()` fonksiyonu ile PDF içeriği analiz edilir
+4. **PDF Okuma ve Analiz** - `oku_cop.py` ⭐ **YENİ ÖZELLIK**
+   - `oku_cop.extract_alan_dal_ders_from_pdf()` fonksiyonu ile PDF içeriği analiz edilir
+   - `oku_cop.oku_cop_pdf()` birleşik analiz fonksiyonu
    - **Alan-Dal-Ders İlişkisi Çıkarma**:
-     - PDF'den alan adı tespiti
+     - PDF'den alan adı tespiti (geliştirilmiş algoritma)
+     - İçindekiler'den dal adları çıkarma (basitleştirilmiş "DALI" algılama)
      - HAFTALIK DERS ÇİZELGESİ bölümlerinden dal adları
-     - MESLEK DERSLERİ tablolarından ders listesi
+     - MESLEK DERSLERİ tablolarından ders listesi (dinamik sütun algılama)
      - Dal-ders eşleştirmesi
 
 5. **Veritabanı Entegrasyonu** ⭐ **YENİ ÖZELLIK**
@@ -137,13 +146,14 @@ temel_plan_alan (Alanlar)
    - Her alan için `cop_metadata.json` dosyası
    - ÇÖP bilgileri `temel_plan_alan.cop_url` sütununda JSON format
 
-**ÇÖP Okuma Detayları** (`getir_cop_oku.py`):
+**ÇÖP Okuma Detayları** (`oku_cop.py`):
 
-- **Alan Adı Tespiti**: URL pattern veya PDF içeriğinden
-- **Dal Bulma**: "DALI" keyword'ü ile biten satırlar
-- **Ders Çıkarma**: Tablo ayrıştırma ile MESLEK DERSLERİ bölümü
-- **Metin Temizleme**: Türkçe karakter normalizasyonu
-- **Eşleştirme**: Fuzzy matching ile dal-ders ilişkilendirme
+- **Alan Adı Tespiti**: URL pattern veya PDF içeriğinden (geliştirilmiş fallback sistemi)
+- **Dal Bulma**: İçindekiler'den "DALI" keyword'ü ile basitleştirilmiş algoritma
+- **Ders Çıkarma**: Dinamik sütun algılama ile MESLEK DERSLERİ bölümü
+- **Metin Temizleme**: Türkçe karakter normalizasyonu (`utils.normalize_to_title_case_tr`)
+- **Eşleştirme**: Content-based matching ile dal-ders ilişkilendirme
+- **Yerel Test Desteği**: `oku_cop_pdf_file()` ve `oku_folder_pdfler()` fonksiyonları
 
 **Çıktılar**:
 - İndirilmiş ÇÖP PDF dosyaları
@@ -216,13 +226,15 @@ temel_plan_alan (Alanlar)
 ```
 MEB API'lar → getir_dal.py → Veritabanı (Alan/Dal)
      ↓
-MEB ÇÖP Sistemi → getir_cop_oku.py → PDF İndirme
+MEB ÇÖP Sistemi → getir_cop.py → PDF İndirme ⭐ YENİ MODÜL
      ↓
 📥 Local PDF Test → getir_cop_oku_local.py + debug_*.py → Test & Debug ⭐ YENİ
      ↓
-PDF Dosyaları → getir_cop_oku.py → Ders Çıkarma
+PDF Dosyaları → oku_cop.py → Ders Çıkarma ⭐ YENİ MODÜL
      ↓
-Veritabanı (Ders/İlişkiler) ← save_cop_results_to_db()
+Veritabanı (Ders/İlişkiler) ← server.py API endpoints
+
+⚠️ DEPRECATED: getir_cop_oku.py → Backward compatibility wrapper
 ```
 
 ## Teknolojiler
@@ -316,5 +328,64 @@ DM ve BÖM modülleri ders ID bazlı alt organizasyon kullanır:
 
 ---
 
-**Son Güncelleme**: 2025-01-13
-**Versiyon**: 2.1 (Yerel Test ve Debug Araçları Entegrasyonu)
+---
+
+## 🔄 Modül Yapısı Değişiklikleri (v2.2) ⭐ **YENİ**
+
+### Yeni Modül Organizasyonu
+
+#### `modules/getir_cop.py` - HTML Scraping ve İndirme
+**Sorumluluklar:**
+- MEB sitesinden ÇÖP linklerini çekme
+- PDF URL'lerini bulma ve organize etme
+- `utils.py` üzerinden merkezi indirme
+- Sınıf bazlı paralel istek yönetimi
+- Cache kontrolü ve metadata yönetimi
+
+**Ana Fonksiyonlar:**
+- `getir_cop_links()` - ÇÖP linklerini çeker
+- `download_cop_pdfs()` - PDF'leri toplu indirir
+- `get_cop_metadata()` - Metadata toplar
+- `validate_cop_links()` - Link geçerliliği kontrol
+
+#### `modules/oku_cop.py` - PDF Okuma ve Analiz
+**Sorumluluklar:**
+- PDF içerik çıkarma (text extraction)
+- Alan/dal/ders algoritmaları (geliştirilmiş)
+- İçindekiler analizi
+- Tablo parsing ve ders listesi çıkarma
+- Local + URL bazlı PDF okuma desteği
+
+**Ana Fonksiyonlar:**
+- `extract_alan_dal_ders_from_pdf()` - Tam analiz
+- `oku_cop_pdf()` - JSON formatında sonuç
+- `oku_cop_pdf_file()` - Yerel dosya okuma
+- `oku_folder_pdfler()` - Klasör bazlı toplu okuma
+- `validate_pdf_content()` - İçerik doğrulama
+
+#### `modules/getir_cop_oku.py` - ⚠️ DEPRECATED
+**Durum:** Backward compatibility wrapper
+**Amaç:** Eski API'yi koruyarak yeni modüllere yönlendirme
+**Gelecek:** Gelecek versiyonlarda kaldırılacak
+
+### API Değişiklikleri
+
+| Eski (Deprecated) | Yeni (Önerilen) | Modül |
+|-------------------|-----------------|-------|
+| `getir_cop()` | `getir_cop_links()` | getir_cop.py |
+| `extract_alan_and_dallar_from_cop_pdf()` | `extract_alan_dal_ders_from_pdf()` | oku_cop.py |
+| `oku_cop_pdf_legacy()` | `oku_cop_pdf()` | oku_cop.py |
+| - | `oku_cop_pdf_file()` | oku_cop.py (YENİ) |
+| - | `oku_folder_pdfler()` | oku_cop.py (YENİ) |
+
+### Yeni Özellikler
+- **Geliştirilmiş Algoritmalar**: İçindekiler analizi, dinamik sütun algılama
+- **Yerel Test Desteği**: Folder bazlı PDF okuma
+- **Merkezi Cache**: utils.py ile organize indirme sistemi
+- **Validation**: PDF içerik doğrulama fonksiyonları
+- **Debug Friendly**: Her modül bağımsız test edilebilir
+
+---
+
+**Son Güncelleme**: 2025-01-14
+**Versiyon**: 2.2 (Modül Yapısı Yeniden Düzenleme)

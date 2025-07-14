@@ -77,6 +77,139 @@ def get_temp_pdf_path(url: str) -> str:
     return f"temp_pdf_{url_hash}.pdf"
 
 
+def get_cop_cache_path(alan_adi: str, sinif: str, year: str = None, alan_id: str = None) -> str:
+    """
+    ÇÖP PDF'i için organize cache yolu oluştur
+    
+    Args:
+        alan_adi: Alan adı
+        sinif: Sınıf seviyesi (9, 10, 11, 12)
+        year: Güncelleme yılı (opsiyonel)
+        alan_id: Alan ID'si (opsiyonel)
+    
+    Returns:
+        Cache dosya yolu
+    """
+    # Normalize alan adı
+    safe_alan_adi = alan_adi.replace(' ', '_').replace('/', '_').replace('\\', '_')
+    
+    # Klasör adı oluştur
+    if alan_id:
+        folder_name = f"{int(alan_id):02d}_-_{safe_alan_adi}"
+    else:
+        folder_name = safe_alan_adi
+    
+    # Dosya adı oluştur
+    filename = f"cop_{sinif}_sinif"
+    if year and year != "Bilinmiyor":
+        filename += f"_{year}"
+    filename += ".pdf"
+    
+    return os.path.join("data", "cop", folder_name, filename)
+
+
+def validate_pdf_file(file_path: str) -> bool:
+    """
+    PDF dosyasının geçerliliğini kontrol eder
+    
+    Args:
+        file_path: PDF dosya yolu
+    
+    Returns:
+        True ise geçerli PDF, False ise değil
+    """
+    if not os.path.exists(file_path):
+        return False
+    
+    if not file_path.lower().endswith('.pdf'):
+        return False
+    
+    try:
+        # Dosya boyutunu kontrol et (çok küçük ise bozuk olabilir)
+        file_size = os.path.getsize(file_path)
+        if file_size < 1024:  # 1KB'den küçük
+            return False
+        
+        # PDF header kontrolü
+        with open(file_path, 'rb') as f:
+            header = f.read(8)
+            if not header.startswith(b'%PDF-'):
+                return False
+        
+        return True
+        
+    except Exception:
+        return False
+
+
+def cleanup_temp_files(temp_dir: str = None) -> int:
+    """
+    Geçici PDF dosyalarını temizler
+    
+    Args:
+        temp_dir: Temizlenecek dizin (None ise mevcut dizin)
+    
+    Returns:
+        Temizlenen dosya sayısı
+    """
+    if temp_dir is None:
+        temp_dir = "."
+    
+    if not os.path.exists(temp_dir):
+        return 0
+    
+    cleaned_count = 0
+    
+    try:
+        for filename in os.listdir(temp_dir):
+            if filename.startswith('temp_pdf_') and filename.endswith('.pdf'):
+                file_path = os.path.join(temp_dir, filename)
+                try:
+                    os.remove(file_path)
+                    cleaned_count += 1
+                    print(f"🗑️ Temizlendi: {filename}")
+                except Exception as e:
+                    print(f"⚠️ Temizleme hatası ({filename}): {e}")
+        
+        if cleaned_count > 0:
+            print(f"✅ {cleaned_count} geçici dosya temizlendi")
+        
+    except Exception as e:
+        print(f"❌ Temp dizin temizleme hatası: {e}")
+    
+    return cleaned_count
+
+
+def create_cache_structure(base_path: str = "data") -> bool:
+    """
+    Cache klasör yapısını oluşturur
+    
+    Args:
+        base_path: Ana data klasörü
+    
+    Returns:
+        True ise başarılı, False ise hata
+    """
+    try:
+        cache_dirs = [
+            os.path.join(base_path, "cop"),
+            os.path.join(base_path, "dbf"), 
+            os.path.join(base_path, "dm"),
+            os.path.join(base_path, "bom")
+        ]
+        
+        for cache_dir in cache_dirs:
+            os.makedirs(cache_dir, exist_ok=True)
+            print(f"📁 Oluşturuldu: {cache_dir}")
+        
+        print("✅ Cache yapısı oluşturuldu")
+        return True
+        
+    except Exception as e:
+        print(f"❌ Cache yapısı oluşturma hatası: {e}")
+        return False
+
+
 def normalize_to_title_case_tr(name: str) -> str:
     """
     Bir metni, Türkçe karakterleri ve dil kurallarını dikkate alarak
