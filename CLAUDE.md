@@ -23,14 +23,12 @@ Alan (Area) → Dal (Field) → Ders (Course) → Öğrenme Birimi (Learning Uni
 ### 🔧 Core Modüller (modules/ klasörü)
 - **`modules/oku.py`** - PDF parsing ve içerik analizi (ÇÖP, DBF, DM dosyaları için)
 - **`modules/getir_dbf.py`** - Ders Bilgi Formları (DBF) verilerini çeker, RAR/ZIP dosyalarını indirir ve açar
-- **`modules/getir_cop.py`** - ⭐ **YENİ**: ÇÖP HTML scraping ve PDF indirme modülü
-- **`modules/oku_cop.py`** - ⭐ **YENİ**: ÇÖP PDF okuma ve analiz modülü (geliştirilmiş algoritmalar)
-- **`test_oku_cop.py`** - ⭐ **YENİ**: oku_cop.py modülü test aracı
+- **`modules/getir_cop_oku.py`** - ⚠️ **ÖNEMLI**: Eskiden `getir_cop.py` idi, şimdi `getir_cop_oku.py` - Çerçeve Öğretim Programları (ÇÖP) verilerini çeker
 - **`modules/getir_cop_oku_local.py`** - ⭐ **YENİ**: Yerel PDF dosyalarını test etmek için standalone ÇÖP okuma modülü
 - **`modules/getir_dm.py`** - Ders Materyalleri (DM) verilerini çeker
 - **`modules/getir_bom.py`** - Bireysel Öğrenme Materyalleri (BÖM) verilerini çeker
 - **`modules/getir_dal.py`** - Alan-Dal ilişkilerini çeker
-- **`modules/utils.py`** - Yardımcı fonksiyonlar, Türkçe karakter normalizasyonu ve **merkezi PDF cache yönetimi** ⭐ **GÜNCELLENDİ**
+- **`modules/utils.py`** - Yardımcı fonksiyonlar, Türkçe karakter normalizasyonu ve **PDF cache yönetimi**
 
 ### 🌐 Ana Dosyalar
 - **`server.py`** - Ana Flask sunucusu, tüm API endpoint'leri ve veritabanı işlemleri
@@ -92,15 +90,14 @@ temel_plan_ders_dal
 ### 🚀 Adım 1: Temel Veri Çekme
 - **Verileri Çek:** MEB sitesinden ana veri çekme
 - **DBF Getir:** Ders Bilgi Formu linklerini çek (`modules/getir_dbf.py`)
-- **ÇÖP Getir:** Çerçeve Öğretim Programı linklerini çek (`modules/getir_cop.py`) ⭐ **YENİ MODÜL**
+- **ÇÖP Getir:** Çerçeve Öğretim Programı linklerini çek (`modules/getir_cop_oku.py`)
 - **DM Getir:** Ders Materyali linklerini çek (`modules/getir_dm.py`)
 - **BÖM Getir:** Bireysel Öğrenme Materyali linklerini çek (`modules/getir_bom.py`)
 - **Dal Getir:** Alan-Dal ilişkilerini çek (`modules/getir_dal.py`)
 
 ### 📄 Adım 2: PDF İşleme ve Analiz
 - **DBF İndir ve Aç:** RAR/ZIP dosyalarını otomatik işle
-- **ÇÖP PDF'lerini İndir:** `modules/getir_cop.py` ile PDF indirme ⭐ **YENİ**
-- **ÇÖP PDF'lerini İşle:** `modules/oku_cop.py` ile PDF içeriklerini analiz et ⭐ **YENİ**
+- **ÇÖP PDF'lerini İşle:** PDF içeriklerini analiz et ve veritabanına kaydet
 - **Tüm PDF'leri Tekrar İşle:** Başarısız işlemleri yeniden dene
 
 ### 💾 Adım 3: Veritabanı Güncellemeleri
@@ -110,76 +107,33 @@ temel_plan_ders_dal
 
 ## 📋 Modül Detayları ve Kritik Bilgiler
 
-### 1. 📄 getir_cop.py ⭐ **YENİ MODÜL**
+### 1. 📄 getir_cop_oku.py (Eski adı: getir_cop.py)
+
+**⚠️ ÖNEMLİ: Bu modül `getir_cop.py`'den `getir_cop_oku.py`'e yeniden adlandırıldı!**
+
+**Amaç:** MEB'in Çerçeve Öğretim Programı (ÇÖP) verilerini otomatik olarak çeker ve PDF içeriklerini analiz eder.
 
 **Kaynak URL:** `https://meslek.meb.gov.tr/cercevelistele.aspx`
 
 **Ana Fonksiyonlar:**
-- `getir_cop_links(siniflar)` - MEB sitesinden ÇÖP linklerini çeker (paralel işlem)
-- `download_cop_pdfs(alan_list, cache)` - PDF'leri toplu indirir (utils.py entegrasyonu)
-- `get_cop_metadata(save_to_file)` - ÇÖP metadata'sını toplar ve kaydeder
-- `validate_cop_links(cop_data)` - ÇÖP linklerinin geçerliliğini kontrol eder
-- `get_cop_data_for_class(sinif_kodu)` - Belirli sınıf için ÇÖP verilerini çeker
+- `clean_text(text)` - Metni temizler
+- `find_alan_name_in_text(text, pdf_url)` - ⭐ **İYİLEŞTİRİLDİ**: PDF'den alan adını çıkarır + URL fallback sistemi
+- `extract_alan_from_url(pdf_url)` - ⭐ **YENİ**: URL'den alan adı tahmin eder
+- `find_dallar_in_text(text)` - PDF'den dal listesini çıkarır
+- `find_lessons_in_cop_pdf(pdf, alan_adi)` - Dal-ders eşleştirmesi yapar
+- `extract_alan_dal_ders_from_cop_pdf(pdf_url, cache)` - Ana işlev, alan/dal/ders bilgilerini çıkarır
+- `oku_cop_pdf(pdf_url)` - JSON formatında sonuç döndürür
+- `save_cop_results_to_db(cop_results, db_path, meb_alan_id)` - ⭐ **YENİ**: Veritabanı entegrasyonu
 
 **Kritik Mantık:**
 - Her sınıf için (9-12) paralel HTTP istekleri
-- BeautifulSoup ile HTML ayrıştırma
-- PDF URL'leri ve güncelleme yılları çıkarma
-- **Merkezi indirme**: `utils.download_and_cache_pdf()` fonksiyonu
-- **Cache yönetimi**: Mevcut dosya kontrolü, gereksiz indirme önleme
-- **Alan ID entegrasyonu**: Veritabanı ile ID eşleştirmesi
-
-### 2. 📄 oku_cop.py ⭐ **YENİ MODÜL**
-
-**Amaç:** PDF okuma ve analiz işlemleri - ÇÖP PDF dosyalarından alan, dal ve ders bilgilerini çıkarır.
-
-**Ana Fonksiyonlar:**
-- `extract_alan_dal_ders_from_pdf(pdf_source, debug)` - Tam PDF analizi (alan/dal/ders)
-- `oku_cop_pdf(pdf_source, debug)` - JSON formatında sonuç döndürür  
-- `oku_cop_pdf_file(pdf_path, debug)` - Yerel PDF dosyasını okur
-- `oku_folder_pdfler(folder_path, debug)` - Klasördeki tüm PDF'leri okur
-- `validate_pdf_content(pdf_source)` - PDF içeriğinin geçerliliğini kontrol eder
-- `find_alan_name_in_text(text, pdf_url)` - PDF'den alan adını çıkarır (geliştirilmiş)
-- `find_dallar_from_icindekiler(text, debug)` - İçindekiler'den dal listesi (basitleştirilmiş)
-- `find_lessons_in_cop_pdf(pdf, alan_adi, debug)` - Dal-ders eşleştirmesi (dinamik sütun)
-
-**Kritik Mantık:**
-- **Geliştirilmiş algoritmalar**: İçindekiler analizi, dinamik sütun algılama
 - **URL-based fallback**: PDF'den alan adı bulunamazsa URL'den tahmin
-- **Basitleştirilmiş dal bulma**: "DALI" keyword'ü ile öncesindeki metin
-- **Dinamik MESLEK DERSLERİ algılama**: Farklı tablo yapılarına uyum
-- **Yerel + Remote desteği**: Hem URL hem dosya yolu kabul eder
-- **Content-based matching**: Fuzzy matching yerine içerik bazlı eşleştirme
+- "HAFTALIK DERS ÇİZELGESİ" bölümlerinden dal-ders eşleştirmesi  
+- "MESLEK DERSLERİ" tablolarından ders listesi çıkarma
+- **Alan adı mapping**: 16 yaygın alan için özel URL-isim eşleştirmesi
+- **Veritabanı entegrasyonu**: Otomatik alan/dal/ders kaydı
 
-### 3. 📄 test_oku_cop.py ⭐ **YENİ TEST ARACI**
-
-**Amaç:** oku_cop.py modülünün fonksiyonlarını test eder ve doğrular.
-
-**Ana Fonksiyonlar:**
-- `test_single_pdf(pdf_path, debug)` - Tek PDF dosyasını test eder
-- `test_folder(folder_path, debug)` - Klasördeki tüm PDF'leri test eder
-- `test_all_pdfs_in_current_dir(debug)` - Kök dizindeki PDF'leri test eder
-- `validate_pdf_files(file_paths)` - PDF doğrulama testi
-- `print_summary(all_results)` - Test sonuçlarının özeti
-
-**Kullanım Örnekleri:**
-```bash
-python test_oku_cop.py                    # Kök dizindeki tüm PDF'leri test et
-python test_oku_cop.py gida.pdf          # Belirli bir PDF'yi test et
-python test_oku_cop.py data/cop/          # Klasördeki PDF'leri test et
-python test_oku_cop.py --debug gida.pdf  # Debug modu ile test et
-python test_oku_cop.py --validate *.pdf  # PDF'leri doğrula
-python test_oku_cop.py --json            # JSON formatında sonuç
-```
-
-**Özellikler:**
-- **Kapsamlı Test**: Alan/dal/ders çıkarma algoritmalarını doğrular
-- **Validation**: PDF içerik geçerliliği kontrolü
-- **İstatistikler**: Başarı oranı, çıkarılan veri sayıları
-- **Debug Modu**: Detaylı algoritma analizi
-- **JSON Export**: Programatik kullanım için JSON çıktı
-
-### 4. 📄 getir_dbf.py
+### 2. 📄 getir_dbf.py
 
 **Amaç:** Ders Bilgi Formu (DBF) verilerini çeker, indirip açar ve içeriklerini analiz eder.
 
@@ -337,7 +291,7 @@ data/bom/
 
 **Özellikler:**
 - Kök dizindeki PDF dosyalarını otomatik tarar
-- `modules/oku_cop.py`'deki fonksiyonları kullanır (kod tekrarı yok)
+- `modules/getir_cop_oku.py`'deki fonksiyonları kullanır (kod tekrarı yok)
 - Stand-alone çalışma desteği (import hatası durumunda sys.path yönetimi)
 - Terminal çıktısında detaylı analiz sonuçları
 
@@ -356,18 +310,13 @@ from modules.getir_cop_oku_local import oku_cop_pdf_file
 result = oku_cop_pdf_file("test.pdf")
 ```
 
-### 8. 📄 utils.py - Merkezi Cache Yönetimi ⭐ **GÜNCELLENDİ**
+### 8. 📄 utils.py - PDF Cache Yönetimi ⭐ **YENİ**
 
 **Amaç:** Merkezi PDF indirme ve cache yönetimi sistemi.
 
-**Yeni/Güncellenmiş Fonksiyonlar:**
-- `download_and_cache_pdf(url, cache_type, alan_adi, additional_info, alan_id)` - Organize PDF cache sistemi
+**Yeni Fonksiyonlar:**
+- `download_and_cache_pdf(url, cache_type, alan_adi, additional_info)` - Organize PDF cache sistemi
 - `get_temp_pdf_path(url)` - Geçici dosya yolu oluşturma
-- `get_cop_cache_path(alan_adi, sinif, year, alan_id)` - ⭐ **YENİ**: ÇÖP için özel cache yolu
-- `validate_pdf_file(file_path)` - ⭐ **YENİ**: PDF dosya doğrulama
-- `cleanup_temp_files(temp_dir)` - ⭐ **YENİ**: Geçici dosya temizleme
-- `create_cache_structure(base_path)` - ⭐ **YENİ**: Cache klasör yapısı oluşturma
-- `normalize_to_title_case_tr(name)` - Türkçe karakter normalizasyonu (mevcut)
 
 **Cache Yapısı:** ⭐ **YENİ ID Bazlı Organizasyon**
 ```
@@ -429,17 +378,11 @@ data/
 
 ## 🚨 Kritik Hatalardan Kaçınma Kuralları
 
-### 1. Modül İsimleri ⭐ **GÜNCELLENDİ**
-- ✅ **YENİ MODÜLLER kullan**: `getir_cop.py` ve `oku_cop.py`
-- ⚠️ **DEPRECATED**: `getir_cop.py + oku_cop.py` sadece geriye uyumluluk için
-- Import'larda yeni modül adlarını kullan:
+### 1. Modül İsimleri
+- ⚠️ **ASLA `getir_cop.py` kullanma! Şimdi `getir_cop_oku.py`**
+- Import'larda doğru modül adını kullan:
   ```python
-  # YENİ (önerilen)
-  from modules.getir_cop import getir_cop_links, download_cop_pdfs
-  from modules.oku_cop import oku_cop_pdf, extract_alan_dal_ders_from_pdf
-  
-  # ESKİ (deprecated - dosya silindi)
-  # from modules.getir_cop_oku import getir_cop, oku_cop_pdf_legacy
+  from modules.getir_cop_oku import oku_cop_pdf, extract_alan_dal_ders_from_cop_pdf
   ```
 
 ### 2. Veritabanı İşlemleri
@@ -516,26 +459,19 @@ Server-Sent Events (SSE)
 
 ## 🔄 Sık Kullanılan İşlemler
 
-### Veri Çekme ⭐ **GÜNCELLENDİ**
+### Veri Çekme
 ```python
-# YENİ MODÜL YAPISI
+# Tüm veri tiplerini çek
 from modules.getir_dbf import getir_dbf
-from modules.getir_cop import getir_cop_links, download_cop_pdfs  # YENİ
-from modules.oku_cop import oku_cop_pdf  # YENİ
+from modules.getir_cop_oku import getir_cop  # ESKİ: getir_cop
 from modules.getir_dm import getir_dm
 from modules.getir_bom import getir_bom
 from modules.getir_dal import main as getir_dal
 
-# Veri çekme
 dbf_data = getir_dbf()
-cop_data = getir_cop_links()  # ESKİ: getir_cop()
+cop_data = getir_cop()
 dm_data = getir_dm()
 bom_data = getir_bom()
-
-# ÇÖP PDF'leri indir ve analiz et
-pdf_files = download_cop_pdfs(alan_list, cache=True)
-for pdf_file in pdf_files.values():
-    result = oku_cop_pdf(pdf_file)
 ```
 
 ### PDF İşleme
@@ -545,62 +481,37 @@ from modules.oku import extract_ders_adi
 ders_adi = extract_ders_adi("/path/to/dbf/file.pdf")
 ```
 
-### Yerel PDF Test ⭐ **GÜNCELLENDİ**
+### Yerel PDF Test ⭐ **YENİ**
 ```python
-# YENİ MODÜL ile yerel PDF test
-from modules.oku_cop import oku_cop_pdf_file, oku_folder_pdfler
+# Yerel PDF dosyalarını test etme
+from modules.getir_cop_oku_local import oku_cop_pdf_file, oku_tum_pdfler
 
 # Tek dosya analizi
-result = oku_cop_pdf_file("gida.pdf", debug=True)
+result = oku_cop_pdf_file("gida.pdf")
 print(result)
 
-# Klasör bazlı toplu analiz
-results = oku_folder_pdfler("data/cop/gida_12/", debug=True)
-
-# Legacy modül ile test (alternatif)
-from modules.getir_cop_oku_local import oku_cop_pdf_file as legacy_oku
-legacy_result = legacy_oku("gida.pdf")
-
-# YENİ test aracı (önerilen)
-import subprocess
-subprocess.run(["python", "test_oku_cop.py", "gida.pdf", "--debug"])
+# Tüm PDF'leri analiz et
+oku_tum_pdfler(".")  # Kök dizindeki tüm PDF'ler
 
 # Debug araçları
 python debug_gida_table.py      # Tablo yapısı analizi
 python debug_meslek_dersleri.py # MESLEK DERSLERİ algılama testi
 ```
 
-### PDF Cache Yönetimi ⭐ **GÜNCELLENDİ**
+### PDF Cache Yönetimi ⭐ **YENİ**
 ```python
-from modules.utils import (
-    download_and_cache_pdf, 
-    get_cop_cache_path,
-    validate_pdf_file, 
-    cleanup_temp_files
-)
+from modules.utils import download_and_cache_pdf, get_temp_pdf_path
 
-# Organize cache sistemi (ÇÖP için özel)
+# Organize cache sistemi
 file_path = download_and_cache_pdf(
     url="https://example.com/cop.pdf",
     cache_type="cop",
     alan_adi="Bilişim Teknolojileri",
-    additional_info="9_sinif_2023",
-    alan_id="03"  # YENİ: ID bazlı organizasyon
+    additional_info="9_sinif_2023"
 )
 
-# ÇÖP cache yolu oluşturma
-cache_path = get_cop_cache_path(
-    alan_adi="Gıda Teknolojisi",
-    sinif="12",
-    year="2023",
-    alan_id="04"
-)
-
-# PDF doğrulama ve temizlik
-if validate_pdf_file(file_path):
-    print("PDF geçerli")
-
-cleanup_temp_files()  # Geçici dosyaları temizle
+# Geçici dosya
+temp_path = get_temp_pdf_path("https://example.com/test.pdf")
 ```
 
 ### Veritabanı Güncelleme
@@ -617,10 +528,9 @@ with sqlite3.connect('data/temel_plan.db') as conn:
 
 ### Planlanan Özellikler
 - [ ] Incremental updates
-- [x] PDF content validation ✅ (oku_cop.py)
+- [ ] PDF content validation
 - [ ] Auto-retry with exponential backoff
 - [x] Content-based DBF matching ✅
-- [x] Modular architecture ✅ (getir_cop.py + oku_cop.py)
 - [ ] Real-time monitoring
 
 ### Optimizasyon Alanları
@@ -635,36 +545,6 @@ with sqlite3.connect('data/temel_plan.db') as conn:
 - **Session Yönetimi**: Özellikle BÖM ve Dal modülleri için kritik
 - **PDF Validation**: Dosya bütünlüğü kontrolü önemli
 - **Error Recovery**: Network hatalarında robust retry mekanizması
-
----
-
-## 🔄 Modül Yapısı Değişiklikleri v2.2 ⭐ **YENİ**
-
-### API Migration Kılavuzu
-
-| Eski API (Deprecated) | Yeni API (Önerilen) | Modül | Durum |
-|----------------------|---------------------|-------|--------|
-| `getir_cop()` | `getir_cop_links()` | getir_cop.py | ✅ Aktif |
-| `extract_alan_and_dallar_from_cop_pdf()` | `extract_alan_dal_ders_from_pdf()` | oku_cop.py | ✅ Geliştirildi |
-| `oku_cop_pdf_legacy()` | `oku_cop_pdf()` | oku_cop.py | ✅ Aktif |
-| `save_cop_results_to_db()` | server.py endpoints | server.py | ⚠️ Değişti |
-| - | `oku_cop_pdf_file()` | oku_cop.py | 🆕 Yeni |
-| - | `oku_folder_pdfler()` | oku_cop.py | 🆕 Yeni |
-| - | `download_cop_pdfs()` | getir_cop.py | 🆕 Yeni |
-
-### Yeni Özellikler Özeti
-- **Temiz Sorumluluk Ayrımı**: HTML/indirme vs PDF/analiz
-- **Geliştirilmiş Algoritmalar**: İçindekiler analizi, dinamik sütun algılama  
-- **Yerel Test Desteği**: Folder bazlı PDF okuma
-- **Merkezi Cache**: utils.py ile organize indirme sistemi
-- **Validation**: PDF içerik doğrulama fonksiyonları
-- **Backward Compatibility**: Eski kod çalışmaya devam eder
-
-### Migration Adımları
-1. **Yeni import'ları güncelleyin** (yukarıdaki tablo)
-2. **Test edin** (`getir_cop.py + oku_cop.py` wrapper hala çalışır)
-3. **Aşamalı geçiş** (eski API deprecation warning verir)
-4. **Gelecek**: `getir_cop.py + oku_cop.py` kaldırılacak
 
 ---
 

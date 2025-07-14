@@ -18,8 +18,8 @@ from modules.oku import oku, oku_cop_pdf
 
 # Yeni modülleri import et
 from modules.getir_dbf import getir_dbf, download_and_extract_dbf_with_progress, retry_extract_all_files_with_progress, retry_extract_file
-from modules.getir_cop import getir_cop_links, download_cop_pdfs, get_cop_metadata
-from modules.oku_cop import oku_cop_pdf as new_oku_cop_pdf, extract_alan_dal_ders_from_pdf
+from modules.getir_cop_oku import oku_cop_pdf as new_oku_cop_pdf, save_cop_results_to_db as new_save_cop_results_to_db
+from modules.getir_cop_oku import getir_cop
 from modules.getir_dm import getir_dm
 from modules.getir_bom import getir_bom
 
@@ -278,7 +278,7 @@ def api_get_cop():
     ÇÖP (Çerçeve Öğretim Programı) verilerini çeker ve veritabanına kaydeder.
     """
     try:
-        result = getir_cop_links()
+        result = getir_cop()
         
         # Veritabanına kaydet
         db_path = find_or_create_database()
@@ -363,7 +363,7 @@ def api_process_cop_pdfs():
         try:
             # İlk olarak ÇÖP verilerini çek
             yield f"data: {json.dumps({'type': 'status', 'message': 'ÇÖP verileri çekiliyor...'})}\\n\\n"
-            cop_data = getir_cop_links()
+            cop_data = getir_cop()
             
             if not cop_data:
                 yield f"data: {json.dumps({'type': 'error', 'message': 'ÇÖP verileri çekilemedi'})}\\n\\n"
@@ -416,11 +416,10 @@ def api_process_cop_pdfs():
                             
                             yield f"data: {json.dumps({'type': 'info', 'message': f'{alan_adi}: {len(dal_ders_listesi)} dal bulundu'})}\n\n"
                         
-                        # Veritabanına kaydet (server.py'deki mevcut fonksiyonları kullan)
-                        if cop_result and cop_result.get('success', False):
-                            # Manual database save - save_cop_results_to_db deprecated
-                            saved_count = 1
-                            yield f"data: {json.dumps({'type': 'info', 'message': f'{alan_adi}: Veritabanı kaydı başarılı'})}\n\n"
+                        # Veritabanına kaydet
+                        if cop_result and cop_result.get('metadata', {}).get('status') == 'success':
+                            saved = new_save_cop_results_to_db(cop_result, db_path)
+                            saved_count = 1 if saved else 0
                         else:
                             saved_count = 0
                             yield f"data: {json.dumps({'type': 'warning', 'message': f'{alan_adi}: PDF işlenemedi veya veri çıkarılamadı'})}\n\n"
@@ -641,7 +640,7 @@ def scrape_to_db():
                 
                 # 3. ÇÖP verilerini çek ve kaydet
                 yield f"data: {json.dumps({'type': 'status', 'message': '3/4: ÇÖP verileri çekiliyor...'})}\n\n"
-                cop_data = getir_cop_links()
+                cop_data = getir_cop()
                 cop_saved = save_cop_data_to_db(cursor, cop_data)
                 yield f"data: {json.dumps({'type': 'status', 'message': f'ÇÖP: {cop_saved} alan güncellendi'})}\n\n"
                 
@@ -1451,25 +1450,12 @@ def workflow_step_2():
     """
     def generate():
         try:
-            # Yeni modül yapısı ile ÇÖP işleme
-            cop_data = getir_cop_links()
+            # getir_cop_oku modülünden yeni entegre fonksiyonu kullan
+            from modules.getir_cop_oku import getir_cop_with_db_integration
             
-            yield f"data: {json.dumps({'type': 'status', 'message': 'ÇÖP linkleri çekildi, PDF\'ler indiriliyor...'})}\n\n"
-            
-            # PDF'leri indir (örnek alan listesi)
-            alan_list = []
-            for sinif, alanlar in cop_data.get('cop_data', {}).items():
-                for alan_adi, info in alanlar.items():
-                    alan_list.append({
-                        'alan_adi': alan_adi,
-                        'link': info['link'],
-                        'sinif': sinif,
-                        'year': info['guncelleme_yili']
-                    })
-            
-            downloaded_files = download_cop_pdfs(alan_list[:5], cache=True)  # İlk 5 alan test
-            
-            yield f"data: {json.dumps({'type': 'success', 'message': f'{len(downloaded_files)} PDF dosyası indirildi'})}\n\n"
+            for message in getir_cop_with_db_integration():
+                yield f"data: {json.dumps(message)}\n\n"
+                time.sleep(0.05)
         except Exception as e:
             yield f"data: {json.dumps({'type': 'error', 'message': f'Adım 2 hatası: {str(e)}'})}\n\n"
     
@@ -1573,8 +1559,7 @@ def workflow_full():
                         time.sleep(0.05)
                 elif step_endpoint == '/api/workflow-step-2':
                     cop_data = getir_cop_links()
-                    sinif_sayisi = len(cop_data.get("cop_data", {}))
-                    yield f"data: {json.dumps({'type': 'success', 'message': f'ÇÖP verileri çekildi: {sinif_sayisi} sınıf'})}\n\n"
+                    yield f"data: {json.dumps({'type': 'success', 'message': f'ÇÖP verileri çekildi: {len(cop_data.get(\"cop_data\", {}))} sınıf'})}\n\n"
                 # Diğer adımlar için basitleştirilmiş versiyonlar
                 elif step_endpoint == '/api/workflow-step-3':
                     yield f"data: {json.dumps({'type': 'status', 'message': 'DBF verileri işleniyor...'})}\n\n"
