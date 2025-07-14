@@ -362,7 +362,7 @@ def api_process_cop_pdfs():
     def generate():
         try:
             # İlk olarak ÇÖP verilerini çek
-            yield f"data: {json.dumps({'type': 'status', 'message': 'ÇÖP verileri çekiliyor...'})}\\n\\n"
+            yield f"data: {json.dumps({'type': 'status', 'message': 'ÇÖP verileri çekiliyor...'})}\n\n"
             cop_data = getir_cop()
             
             if not cop_data:
@@ -1559,7 +1559,7 @@ def workflow_full():
                         time.sleep(0.05)
                 elif step_endpoint == '/api/workflow-step-2':
                     cop_data = getir_cop_links()
-                    yield f"data: {json.dumps({'type': 'success', 'message': f'ÇÖP verileri çekildi: {len(cop_data.get(\"cop_data\", {}))} sınıf'})}\n\n"
+                    yield f"data: {json.dumps({'type': 'success', 'message': f'ÇÖP verileri çekildi: {len(cop_data.get("cop_data", {}))} sınıf'})}\n\n"
                 # Diğer adımlar için basitleştirilmiş versiyonlar
                 elif step_endpoint == '/api/workflow-step-3':
                     yield f"data: {json.dumps({'type': 'status', 'message': 'DBF verileri işleniyor...'})}\n\n"
