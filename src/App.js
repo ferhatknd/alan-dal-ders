@@ -745,6 +745,7 @@ function App() {
   const [editingSidebar, setEditingSidebar] = useState({ isOpen: false, course: null });
   const [editedCourses, setEditedCourses] = useState(new Map()); // Store edited course data
   const [pdfSidebar, setPdfSidebar] = useState({ isOpen: false, url: '', title: '' });
+  const [consoleOpen, setConsoleOpen] = useState(false);
 
   // Kategorik veri state'leri
   const [dbfData, setDbfData] = useState(null);
@@ -1015,6 +1016,20 @@ function App() {
       if (!res.ok) throw new Error("BOM verisi alınamadı");
       const json = await res.json();
       setBomData(json);
+      
+      // BOM PDF sayısını hesapla
+      let pdfCount = 0;
+      Object.values(json).forEach(alanData => {
+        if (alanData.dersler && Array.isArray(alanData.dersler)) {
+          alanData.dersler.forEach(ders => {
+            if (ders.moduller && Array.isArray(ders.moduller)) {
+              pdfCount += ders.moduller.length;
+            }
+          });
+        }
+      });
+      
+      setStats(prev => ({ ...prev, bom_pdf: pdfCount }));
     } catch (e) {
       setCatError("BOM: " + e.message);
     } finally {
@@ -1185,11 +1200,24 @@ function App() {
 
     setProgress([]);
     setError(null);
+    // Reset COP read count
+    setStats(prev => ({ ...prev, cop_okunan: 0 }));
 
     const eventSource = new EventSource('http://localhost:5001/api/process-cop-pdfs');
 
     eventSource.onmessage = (event) => {
       const eventData = JSON.parse(event.data);
+      
+      // Update read count from progress messages
+      if (eventData.message && eventData.message.includes('ders bilgisi çıkarıldı')) {
+        setStats(prev => ({ ...prev, cop_okunan: prev.cop_okunan + 1 }));
+      }
+      
+      // İstatistikleri güncelle
+      if (eventData.stats) {
+        setStats(prev => ({ ...prev, ...eventData.stats }));
+      }
+      
       setProgress(prev => [...prev, eventData]);
 
       if (eventData.type === 'done') {
@@ -1215,11 +1243,24 @@ function App() {
 
     setProgress([]);
     setError(null);
+    // Reset DBF read count
+    setStats(prev => ({ ...prev, dbf_okunan: 0 }));
 
     const eventSource = new EventSource('http://localhost:5001/api/update-ders-saatleri-from-dbf');
 
     eventSource.onmessage = (event) => {
       const eventData = JSON.parse(event.data);
+      
+      // Update read count from progress messages
+      if (eventData.message && (eventData.message.includes('işlendi') || eventData.message.includes('okundu'))) {
+        setStats(prev => ({ ...prev, dbf_okunan: prev.dbf_okunan + 1 }));
+      }
+      
+      // İstatistikleri güncelle
+      if (eventData.stats) {
+        setStats(prev => ({ ...prev, ...eventData.stats }));
+      }
+      
       setProgress(prev => [...prev, eventData]);
 
       if (eventData.type === 'done') {
@@ -1239,7 +1280,30 @@ function App() {
   
   return (
     <div className="App">
-      <h1>meslek.meb (alan-dal-ders) dosyalar</h1>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+        <h1>meslek.meb (alan-dal-ders) dosyalar</h1>
+        
+        {/* Console Toggle Button */}
+        <button
+          onClick={() => setConsoleOpen(!consoleOpen)}
+          style={{
+            padding: "10px 20px",
+            background: "#343a40",
+            color: "white",
+            border: "none",
+            borderRadius: "5px",
+            fontSize: "14px",
+            fontWeight: "bold",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px"
+          }}
+        >
+          <span style={{ fontSize: "16px" }}>⚡</span>
+          Console
+        </button>
+      </div>
       
       {/* Yeni Tek Satır İş Akışı */}
       <div className="workflow-container" style={{ 
@@ -1249,7 +1313,6 @@ function App() {
         margin: "20px 0",
         border: "1px solid #dee2e6"
       }}>
-        <h2 style={{ marginBottom: "20px", color: "#495057", textAlign: "center" }}>🔄 MEB Veri İşleme Sistemi</h2>
         
         {/* Tek Satır Buton Dizisi */}
         <div style={{ 
@@ -1268,7 +1331,18 @@ function App() {
               try {
                 const response = await fetch('http://localhost:5001/api/get-dal');
                 const result = await response.json();
+                
+                // İstatistikleri güncelle
+                if (result.alanlar && result.dallar) {
+                  setStats(prev => ({ 
+                    ...prev, 
+                    alan: result.alanlar.length || 0,
+                    dal: result.dallar.length || 0
+                  }));
+                }
+                
                 setProgress(prev => [...prev, { type: 'done', message: 'Alan-Dal verileri başarıyla çekildi' }]);
+                await loadStatistics(); // Veritabanından güncel istatistikleri yükle
               } catch (e) {
                 setProgress(prev => [...prev, { type: 'error', message: 'Alan-Dal çekme hatası: ' + e.message }]);
               } finally {
@@ -1277,13 +1351,13 @@ function App() {
             }}
             disabled={loading}
             style={{
-              width: "120px",
+              width: "140px",
               height: "80px",
-              background: "#007bff",
+              background: "linear-gradient(135deg, #87ceeb 0%, #4da6ff 100%)",
               color: "white",
               border: "none",
               borderRadius: "8px",
-              fontSize: "12px",
+              fontSize: "11px",
               fontWeight: "bold",
               cursor: loading ? "not-allowed" : "pointer",
               display: "flex",
@@ -1291,11 +1365,11 @@ function App() {
               alignItems: "center",
               justifyContent: "center",
               textAlign: "center",
-              padding: "5px"
+              padding: "10px"
             }}
           >
-            <div style={{ fontSize: "20px", marginBottom: "5px" }}>🏢</div>
             <div>Getir Alan ve Dal</div>
+            <div style={{ fontSize: "10px", marginTop: "5px" }}>({stats.alan}) ve ({stats.dal})</div>
           </button>
 
           {/* Bağlantı Oku */}
@@ -1306,13 +1380,13 @@ function App() {
             onClick={fetchCop}
             disabled={loading || catLoading === "cop"}
             style={{
-              width: "120px",
+              width: "140px",
               height: "80px",
-              background: "#6f42c1",
+              background: "linear-gradient(135deg, #7bb3f0 0%, #337ab7 100%)",
               color: "white",
               border: "none",
               borderRadius: "8px",
-              fontSize: "12px",
+              fontSize: "11px",
               fontWeight: "bold",
               cursor: (loading || catLoading === "cop") ? "not-allowed" : "pointer",
               display: "flex",
@@ -1320,11 +1394,11 @@ function App() {
               alignItems: "center",
               justifyContent: "center",
               textAlign: "center",
-              padding: "5px"
+              padding: "10px"
             }}
           >
-            <div style={{ fontSize: "20px", marginBottom: "5px" }}>📄</div>
             <div>Getir COP</div>
+            <div style={{ fontSize: "10px", marginTop: "5px" }}>({stats.cop_pdf} PDF)</div>
           </button>
 
           {/* Bağlantı Oku */}
@@ -1335,13 +1409,13 @@ function App() {
             onClick={fetchDbf}
             disabled={loading || catLoading === "dbf"}
             style={{
-              width: "120px",
+              width: "160px",
               height: "80px",
-              background: "#17a2b8",
+              background: "linear-gradient(135deg, #74a9d8 0%, #4285c9 100%)",
               color: "white",
               border: "none",
               borderRadius: "8px",
-              fontSize: "12px",
+              fontSize: "9px",
               fontWeight: "bold",
               cursor: (loading || catLoading === "dbf") ? "not-allowed" : "pointer",
               display: "flex",
@@ -1349,11 +1423,13 @@ function App() {
               alignItems: "center",
               justifyContent: "center",
               textAlign: "center",
-              padding: "5px"
+              padding: "10px"
             }}
           >
-            <div style={{ fontSize: "20px", marginBottom: "5px" }}>📋</div>
             <div>Getir DBF</div>
+            <div style={{ fontSize: "8px", marginTop: "5px" }}>
+              Ders({stats.ders}) ({stats.dbf_rar} RAR, {stats.dbf_pdf} PDF, {stats.dbf_docx} DOCX)
+            </div>
           </button>
 
           {/* Bağlantı Oku */}
@@ -1364,13 +1440,13 @@ function App() {
             onClick={fetchDm}
             disabled={loading || catLoading === "dm"}
             style={{
-              width: "120px",
+              width: "140px",
               height: "80px",
-              background: "#fd7e14",
+              background: "linear-gradient(135deg, #6fa8dc 0%, #2e5c8a 100%)",
               color: "white",
               border: "none",
               borderRadius: "8px",
-              fontSize: "12px",
+              fontSize: "11px",
               fontWeight: "bold",
               cursor: (loading || catLoading === "dm") ? "not-allowed" : "pointer",
               display: "flex",
@@ -1378,11 +1454,11 @@ function App() {
               alignItems: "center",
               justifyContent: "center",
               textAlign: "center",
-              padding: "5px"
+              padding: "10px"
             }}
           >
-            <div style={{ fontSize: "20px", marginBottom: "5px" }}>📖</div>
             <div>Getir DM</div>
+            <div style={{ fontSize: "10px", marginTop: "5px" }}>({stats.dm_pdf} PDF)</div>
           </button>
 
           {/* Bağlantı Oku */}
@@ -1393,13 +1469,13 @@ function App() {
             onClick={fetchBom}
             disabled={loading || catLoading === "bom"}
             style={{
-              width: "120px",
+              width: "140px",
               height: "80px",
-              background: "#20c997",
+              background: "linear-gradient(135deg, #5f9bcc 0%, #1f4e79 100%)",
               color: "white",
               border: "none",
               borderRadius: "8px",
-              fontSize: "12px",
+              fontSize: "11px",
               fontWeight: "bold",
               cursor: (loading || catLoading === "bom") ? "not-allowed" : "pointer",
               display: "flex",
@@ -1407,11 +1483,11 @@ function App() {
               alignItems: "center",
               justifyContent: "center",
               textAlign: "center",
-              padding: "5px"
+              padding: "10px"
             }}
           >
-            <div style={{ fontSize: "20px", marginBottom: "5px" }}>📚</div>
             <div>Getir BOM</div>
+            <div style={{ fontSize: "10px", marginTop: "5px" }}>({stats.bom_pdf} PDF)</div>
           </button>
 
           {/* Bağlantı Oku */}
@@ -1422,13 +1498,13 @@ function App() {
             onClick={handleProcessCopPdfs}
             disabled={loading}
             style={{
-              width: "120px",
+              width: "140px",
               height: "80px",
-              background: "#e67e22",
+              background: "linear-gradient(135deg, #4f8fc0 0%, #1a4a6b 100%)",
               color: "white",
               border: "none",
               borderRadius: "8px",
-              fontSize: "12px",
+              fontSize: "11px",
               fontWeight: "bold",
               cursor: loading ? "not-allowed" : "pointer",
               display: "flex",
@@ -1436,11 +1512,11 @@ function App() {
               alignItems: "center",
               justifyContent: "center",
               textAlign: "center",
-              padding: "5px"
+              padding: "10px"
             }}
           >
-            <div style={{ fontSize: "20px", marginBottom: "5px" }}>🔍</div>
             <div>Oku COP</div>
+            <div style={{ fontSize: "10px", marginTop: "5px" }}>({stats.cop_okunan} Ders)</div>
           </button>
 
           {/* Bağlantı Oku */}
@@ -1451,13 +1527,13 @@ function App() {
             onClick={handleUpdateDersSaatleri}
             disabled={loading}
             style={{
-              width: "120px",
+              width: "140px",
               height: "80px",
-              background: "#28a745",
+              background: "linear-gradient(135deg, #3f7fb3 0%, #164058 100%)",
               color: "white",
               border: "none",
               borderRadius: "8px",
-              fontSize: "12px",
+              fontSize: "11px",
               fontWeight: "bold",
               cursor: loading ? "not-allowed" : "pointer",
               display: "flex",
@@ -1465,11 +1541,11 @@ function App() {
               alignItems: "center",
               justifyContent: "center",
               textAlign: "center",
-              padding: "5px"
+              padding: "10px"
             }}
           >
-            <div style={{ fontSize: "20px", marginBottom: "5px" }}>📝</div>
             <div>Oku DBF</div>
+            <div style={{ fontSize: "10px", marginTop: "5px" }}>({stats.dbf_okunan} Ders)</div>
           </button>
         </div>
 
@@ -1481,9 +1557,6 @@ function App() {
             </div>
           )}
           {catError && <div style={{ color: "#dc3545", fontWeight: "bold" }}>❌ Hata: {catError}</div>}
-          {!loading && !catLoading && !catError && (
-            <div style={{ color: "#28a745", fontWeight: "bold" }}>✅ Hazır - Yukarıdaki adımları sırasıyla takip edin</div>
-          )}
         </div>
       </div>
 
@@ -1507,23 +1580,90 @@ function App() {
         </div>
       )}
 
-      {/* İlerleme ve Hata Mesajları Alanı */}
-      {(loading || progress.length > 0 || error) && (
-        <div id="progress-container" style={{ border: '1px solid #ccc', padding: '10px', marginTop: '10px', height: '300px', overflowY: 'scroll', backgroundColor: '#f8f9fa' }}>
-          {initialLoading && <p>Önbellek kontrol ediliyor...</p>}
-          {error && <p style={{ color: 'red', fontWeight: 'bold' }}>HATA: {error}</p>}
+      {/* Sliding Console Panel */}
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          right: consoleOpen ? "0" : "-400px",
+          width: "400px",
+          height: "100vh",
+          background: "#1e1e1e",
+          color: "#ffffff",
+          transition: "right 0.3s ease",
+          zIndex: 1000,
+          display: "flex",
+          flexDirection: "column",
+          boxShadow: consoleOpen ? "-5px 0 15px rgba(0,0,0,0.3)" : "none"
+        }}
+      >
+        {/* Console Header */}
+        <div style={{
+          padding: "15px 20px",
+          background: "#2d2d2d",
+          borderBottom: "1px solid #444",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center"
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <span style={{ fontSize: "16px" }}>⚡</span>
+            <h3 style={{ margin: 0, color: "#ffffff" }}>Console</h3>
+          </div>
+          <button
+            onClick={() => setConsoleOpen(false)}
+            style={{
+              background: "transparent",
+              border: "none",
+              color: "#ffffff",
+              fontSize: "18px",
+              cursor: "pointer",
+              padding: "5px"
+            }}
+          >
+            ×
+          </button>
+        </div>
+
+        {/* Console Content */}
+        <div style={{
+          flex: 1,
+          padding: "10px",
+          overflowY: "auto",
+          fontFamily: "Consolas, 'Courier New', monospace",
+          fontSize: "12px",
+          lineHeight: "1.4"
+        }}>
+          {initialLoading && (
+            <div style={{ color: "#00ff00", marginBottom: "5px" }}>
+              › Önbellek kontrol ediliyor...
+            </div>
+          )}
+          {error && (
+            <div style={{ color: "#ff4444", fontWeight: "bold", marginBottom: "5px" }}>
+              ✗ HATA: {error}
+            </div>
+          )}
           {progress.map((p, index) => {
             // Hata mesajından alan_adi ve rar_filename çıkarılabiliyorsa buton ekle
             let retryButton = null;
             if (p.type === 'error' && p.message) {
-              // [ALAN] dosyaadı.rar ... şeklinde başlıyor mu?
               const match = p.message.match(/^\[([^\]]+)\].*?([^\s\/]+\.rar|[^\s\/]+\.zip)/i);
               if (match) {
                 const alan_adi = match[1];
                 const rar_filename = match[2];
                 retryButton = (
                   <button
-                    style={{ marginLeft: 8, fontSize: 12, padding: "2px 6px" }}
+                    style={{
+                      marginLeft: 8,
+                      fontSize: 10,
+                      padding: "2px 6px",
+                      background: "#444",
+                      color: "#fff",
+                      border: "1px solid #666",
+                      borderRadius: "3px",
+                      cursor: "pointer"
+                    }}
                     onClick={async () => {
                       try {
                         const res = await fetch("http://localhost:5001/api/dbf-retry-extract", {
@@ -1532,30 +1672,75 @@ function App() {
                           body: JSON.stringify({ alan_adi, rar_filename })
                         });
                         const result = await res.json();
-                        // Sonucu progress'e ekle
                         setProgress(prev => [...prev, result]);
                       } catch (e) {
                         setProgress(prev => [...prev, { type: "error", message: "Tekrar deneme isteği başarısız: " + e.message }]);
                       }
                     }}
                   >
-                    Tekrar Dene
+                    Retry
                   </button>
                 );
               }
             }
+
+            const timestamp = new Date().toLocaleTimeString();
+            const getColor = () => {
+              switch(p.type) {
+                case 'error': return '#ff4444';
+                case 'warning': return '#ffaa00';
+                case 'done': return '#00ff00';
+                case 'success': return '#00ff00';
+                default: return '#cccccc';
+              }
+            };
+
+            const getPrefix = () => {
+              switch(p.type) {
+                case 'error': return '✗';
+                case 'warning': return '⚠';
+                case 'done': return '✓';
+                case 'success': return '✓';
+                default: return '›';
+              }
+            };
+
             return (
-              <div key={index} style={{ color: p.type === 'error' ? 'red' : p.type === 'warning' ? '#e67e22' : 'black' }}>
-                <p style={{ margin: '2px 0' }}>
-                  {p.message}
-                  {retryButton}
-                </p>
-                {p.estimation && <small><i>{p.estimation}</i></small>}
+              <div key={index} style={{
+                color: getColor(),
+                marginBottom: "3px",
+                wordWrap: "break-word"
+              }}>
+                <span style={{ color: "#888", fontSize: "10px" }}>[{timestamp}] </span>
+                <span>{getPrefix()} {p.message}</span>
+                {retryButton}
+                {p.estimation && (
+                  <div style={{ color: "#888", fontSize: "10px", marginLeft: "60px" }}>
+                    └ {p.estimation}
+                  </div>
+                )}
               </div>
             );
           })}
+          
+          {progress.length === 0 && !initialLoading && !error && (
+            <div style={{ color: "#888", fontStyle: "italic" }}>
+              › Console ready. Run operations to see logs...
+            </div>
+          )}
         </div>
-      )}
+
+        {/* Console Footer */}
+        <div style={{
+          padding: "10px",
+          background: "#2d2d2d",
+          borderTop: "1px solid #444",
+          fontSize: "10px",
+          color: "#888"
+        }}>
+          {progress.length} log entries
+        </div>
+      </div>
 
       {/* Kategorik veri görüntüleme alanları */}
       <div style={{ margin: "20px 0" }}>
@@ -1588,7 +1773,6 @@ function App() {
       {/* Veri görüntüleme alanı - Sadece Tablo Görünümü */}
       {!initialLoading && data && (
         <div className="data-display">
-          <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Ders Verileri</h2>
           <DataTable data={data} searchTerm={debouncedTerm} onCourseEdit={handleCourseEdit} copData={copMapping} />
         </div>
       )}
