@@ -1,6 +1,8 @@
 import os
 import re
 import json
+import sys
+import random
 from typing import Dict, List, Any, Optional
 
 import pdfplumber
@@ -355,6 +357,29 @@ def oku_tum_pdfler(root_dir: str = ".") -> None:
         print("-" * 80)
 
 
-# Script olarak çalıştırıldığında ana dizindeki PDF'leri oku
+# Script olarak çalıştırıldığında
 if __name__ == "__main__":
-    oku_tum_pdfler(root_dir=".")
+    # Komut satırı argümanlarını kontrol et
+    if len(sys.argv) > 1 and sys.argv[1] == 'random':
+        base_cop_dir = "data/cop/"
+        try:
+            # data/cop içindeki tüm alt dizinleri bul
+            subdirectories = [d for d in os.listdir(base_cop_dir) if os.path.isdir(os.path.join(base_cop_dir, d))]
+            
+            if not subdirectories:
+                print(f"📂 '{base_cop_dir}' içinde okunacak alt dizin bulunamadı.")
+            else:
+                # Rastgele bir dizin seç
+                random_dir_name = random.choice(subdirectories)
+                target_dir = os.path.join(base_cop_dir, random_dir_name)
+                print(f"🔍 Rastgele seçilen dizin: {target_dir}")
+                oku_tum_pdfler(root_dir=target_dir)
+
+        except FileNotFoundError:
+            print(f"❌ Ana dizin bulunamadı: {base_cop_dir}")
+        except Exception as e:
+            print(f"Beklenmedik bir hata oluştu: {e}")
+    else:
+        # Varsayılan davranış veya yardım mesajı
+        print("Kullanım: python modules/getir_cop_oku_local.py [random]")
+        print("  'random' argümanı ile 'data/cop/' altındaki rastgele bir klasör işlenir.")
