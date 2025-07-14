@@ -229,37 +229,6 @@ def save_area_and_branches_to_db(area_name, branches, db_path):
         print(f"Veritabanı kayıt hatası ({area_name}): {e}")
         return None
 
-def create_area_directory_structure(area_name):
-    """
-    Alan için klasör yapısını oluşturur: data/alan/{alan_adi}/
-    """
-    # Alan adını dosya sistemi için güvenli hale getir
-    safe_area_name = area_name.replace('/', '_').replace('\\', '_').replace(':', '_')
-    area_dir = Path(f"data/alan/{safe_area_name}")
-    
-    # Alt klasörleri oluştur
-    subdirs = ['dallar', 'cop', 'dbf', 'dm', 'bom']
-    for subdir in subdirs:
-        (area_dir / subdir).mkdir(parents=True, exist_ok=True)
-    
-    return area_dir
-
-def save_branches_to_file(area_name, branches, area_dir):
-    """
-    Dalları JSON dosyasına kaydeder.
-    """
-    branches_file = area_dir / 'dallar' / 'dallar.json'
-    branch_data = {
-        'alan_adi': area_name,
-        'dallar': branches,
-        'toplam_dal_sayisi': len(branches),
-        'olusturma_tarihi': time.strftime('%Y-%m-%d %H:%M:%S')
-    }
-    
-    with open(branches_file, 'w', encoding='utf-8') as f:
-        json.dump(branch_data, f, ensure_ascii=False, indent=2)
-    
-
 def getir_dal_with_db_integration():
     """
     Ana dal getirme fonksiyonu - veritabanı entegrasyonu ile.
@@ -271,9 +240,6 @@ def getir_dal_with_db_integration():
     if not db_path:
         yield {'type': 'error', 'message': 'Veritabanı oluşturulamadı!'}
         return
-    
-    # Ana dizin yapısını oluştur
-    os.makedirs('data/alanlar', exist_ok=True)
     
     # Bu sözlük, tüm illerdeki benzersiz alan-dal kombinasyonlarını tutacak.
     unique_areas_with_branches = {}
@@ -358,10 +324,7 @@ def getir_dal_with_db_integration():
                     # Veritabanına kaydet
                     area_id = save_area_and_branches_to_db(area_name, branches, db_path)
                     
-                    if area_id:
-                        area_dir = create_area_directory_structure(area_name)
-                        save_branches_to_file(area_name, branches, area_dir)
-                    else:
+                    if not area_id:
                         yield {'type': 'warning', 'message': f"Alan '{area_name}' veritabanına kaydedilemedi"}
                 else:
                     unique_areas_with_branches[area_name] = []
@@ -391,12 +354,7 @@ def getir_dal_with_db_integration():
         'message': f'\nAdım 1 tamamlandı! {total_areas_found} alan, {total_branches_found} dal işlendi.'
     }
     
-    # Son durum için JSON dosyası da oluştur (yedek)
-    output_filename = "data/getir_dal_sonuc.json"
-    with open(output_filename, 'w', encoding='utf-8') as f:
-        json.dump(unique_areas_with_branches, f, ensure_ascii=False, indent=4)
-    
-    yield {'type': 'done', 'message': f'Tüm veriler veritabanına kaydedildi. Yedek dosya: {output_filename}'}
+    yield {'type': 'done', 'message': 'Tüm veriler başarıyla veritabanına kaydedildi.'}
 
 def main():
     """
