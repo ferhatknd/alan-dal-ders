@@ -794,33 +794,35 @@ function App() {
     }
   }, []);
 
-  // Sayfa ilk yüklendiğinde önbellekteki veriyi çek
-  useEffect(() => {
-    const fetchCachedData = async () => {
-      try {
-        const response = await fetch('http://localhost:5001/api/get-cached-data');
-        if (!response.ok) {
-          throw new Error(`Önbellek sunucusundan yanıt alınamadı: ${response.statusText}`);
-        }
-        const cachedData = await response.json();
-        if (cachedData && cachedData.alanlar && Object.keys(cachedData.alanlar).length > 0) {
-          setData(cachedData);
-          setProgress([{ message: "Önbellekten veriler başarıyla yüklendi.", type: 'done' }]);
-        } else {
-          setProgress([{ message: "Önbellek boş. Verileri çekmek için butona tıklayın.", type: 'info' }]);
-        }
-        // İstatistikleri yükle
-        await loadStatistics();
-      } catch (e) {
-        console.error("Önbellek verisi çekme hatası:", e);
-        setError(`Önbellek verisi çekilemedi. Backend sunucusunun çalıştığından emin olun. Hata: ${e.message}`);
-      } finally {
-        setInitialLoading(false);
+  // Önbellekteki veriyi ve istatistikleri çeken birleşik fonksiyon
+  const fetchCachedData = useCallback(async (isInitialLoad = false) => {
+    if (isInitialLoad) setInitialLoading(true);
+    try {
+      const response = await fetch('http://localhost:5001/api/get-cached-data');
+      if (!response.ok) throw new Error(`Önbellek sunucusundan yanıt alınamadı: ${response.statusText}`);
+      
+      const cachedData = await response.json();
+      if (cachedData && cachedData.alanlar && Object.keys(cachedData.alanlar).length > 0) {
+        setData(cachedData);
+        const message = isInitialLoad ? "Önbellekten veriler başarıyla yüklendi." : "Veriler başarıyla yeniden yüklendi.";
+        setProgress(prev => isInitialLoad ? [{ message, type: 'done' }] : [...prev, { message, type: 'done' }]);
+      } else if (isInitialLoad) {
+        setProgress([{ message: "Önbellek boş. Verileri çekmek için butona tıklayın.", type: 'info' }]);
       }
-    };
-
-    fetchCachedData();
+      // Her zaman istatistikleri yükle
+      await loadStatistics();
+    } catch (e) {
+      console.error("Önbellek verisi çekme hatası:", e);
+      setError(`Önbellek verisi çekilemedi. Backend sunucusunun çalıştığından emin olun. Hata: ${e.message}`);
+    } finally {
+      if (isInitialLoad) setInitialLoading(false);
+    }
   }, [loadStatistics]);
+
+  // Sayfa ilk yüklendiğinde veriyi çek
+  useEffect(() => {
+    fetchCachedData(true);
+  }, [fetchCachedData]);
 
   // Veri çekme fonksiyonu - artık direkt veritabanına kaydediyor
   const handleScrape = useCallback(() => {
@@ -844,7 +846,7 @@ function App() {
 
       if (eventData.type === 'done') {
         // Veri çekme tamamlandı, önbellekten tekrar yükle
-        fetchCachedData();
+        fetchCachedData(false);
         setProgress(prev => [...prev, eventData]);
         eventSource.close();
         setLoading(false);
@@ -862,24 +864,7 @@ function App() {
     return () => {
       eventSource.close();
     };
-  }, [data]);
-
-  const fetchCachedData = async () => {
-    try {
-      const response = await fetch('http://localhost:5001/api/get-cached-data');
-      if (!response.ok) {
-        throw new Error(`Önbellek sunucusundan yanıt alınamadı: ${response.statusText}`);
-      }
-      const cachedData = await response.json();
-      if (cachedData && cachedData.alanlar && Object.keys(cachedData.alanlar).length > 0) {
-        setData(cachedData);
-        setProgress(prev => [...prev, { message: "Önbellekten veriler başarıyla yüklendi.", type: 'done' }]);
-      }
-    } catch (e) {
-      console.error("Önbellek verisi çekme hatası:", e);
-      setError(`Önbellek verisi çekilemedi. Backend sunucusunun çalıştığından emin olun. Hata: ${e.message}`);
-    }
-  };
+  }, [data, fetchCachedData]);
 
   // DBF Dosyalarını indirip açan fonksiyon
   const handleDbfUnrar = useCallback(() => {

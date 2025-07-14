@@ -353,6 +353,66 @@ def api_get_bom():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/get-statistics')
+def get_statistics():
+    """
+    Veritabanı ve dosya sisteminden istatistikleri toplar ve döndürür.
+    """
+    stats = {
+        "alan": 0, "dal": 0, "ders": 0,
+        "cop_pdf": 0, "dbf_rar": 0, "dbf_pdf": 0, "dbf_docx": 0,
+        "dm_pdf": 0, "bom_pdf": 0, "cop_okunan": 0, "dbf_okunan": 0
+    }
+
+    try:
+        # 1. Veritabanından istatistikleri al
+        db_path = find_or_create_database()
+        if db_path and os.path.exists(db_path):
+            with sqlite3.connect(db_path) as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT COUNT(id) FROM temel_plan_alan")
+                stats["alan"] = cursor.fetchone()[0]
+                
+                cursor.execute("SELECT COUNT(id) FROM temel_plan_dal")
+                stats["dal"] = cursor.fetchone()[0]
+                
+                cursor.execute("SELECT COUNT(id) FROM temel_plan_ders")
+                stats["ders"] = cursor.fetchone()[0]
+
+                # dbf_okunan: ders saati 0'dan büyük olan dersler
+                cursor.execute("SELECT COUNT(id) FROM temel_plan_ders WHERE ders_saati > 0")
+                stats["dbf_okunan"] = cursor.fetchone()[0]
+
+                # cop_okunan: bir dala bağlı olan dersler
+                cursor.execute("SELECT COUNT(DISTINCT ders_id) FROM temel_plan_ders_dal")
+                stats["cop_okunan"] = cursor.fetchone()[0]
+
+        # 2. Dosya sisteminden istatistikleri al
+        data_dir = "data"
+        if os.path.exists(data_dir):
+            
+            def count_files_in_dir(directory, extensions):
+                count = 0
+                if os.path.exists(directory):
+                    for _, _, files in os.walk(directory):
+                        for file in files:
+                            if file.lower().endswith(tuple(extensions)):
+                                count += 1
+                return count
+
+            stats["cop_pdf"] = count_files_in_dir(os.path.join(data_dir, "cop"), ['.pdf']) + count_files_in_dir(os.path.join(data_dir, "cop_files"), ['.pdf'])
+            stats["dbf_rar"] = count_files_in_dir(os.path.join(data_dir, "dbf"), ['.rar', '.zip'])
+            stats["dbf_pdf"] = count_files_in_dir(os.path.join(data_dir, "dbf"), ['.pdf'])
+            stats["dbf_docx"] = count_files_in_dir(os.path.join(data_dir, "dbf"), ['.docx'])
+            stats["dm_pdf"] = count_files_in_dir(os.path.join(data_dir, "dm"), ['.pdf'])
+            stats["bom_pdf"] = count_files_in_dir(os.path.join(data_dir, "bom"), ['.pdf'])
+
+    except Exception as e:
+        print(f"İstatistik alınırken hata oluştu: {e}")
+        return jsonify({"error": str(e)}), 500
+
+    return jsonify(stats)
+
 @app.route('/api/process-cop-pdfs')
 def api_process_cop_pdfs():
     """
