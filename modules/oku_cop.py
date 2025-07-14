@@ -43,8 +43,8 @@ def clean_text(text: str) -> str:
     """
     if not text:
         return ""
-    text = re.sub(r"\\s+", " ", text)
-    text = text.replace("\\x00", "").replace("\\ufffd", "")
+    text = re.sub(r"\s+", " ", text)
+    text = text.replace("\x00", "").replace("\ufffd", "")
     return text.strip()
 
 
@@ -109,7 +109,7 @@ def find_alan_name_in_text(text: str, pdf_url: str = "") -> Optional[str]:
         url_alan = extract_alan_from_url(pdf_url)
     
     # 2. Metinden alan adını bulmaya çalış
-    lines = text.split('\\n')
+    lines = text.split('\n')
     found_alan = None
     
     for i, line in enumerate(lines[:100]):  # İlk 100 satırda ara
@@ -168,7 +168,7 @@ def find_alan_from_icindekiler(text: str, debug: bool = False) -> Optional[str]:
         print(f"📄 İçindekiler metni ({len(icindekiler_text)} karakter):")
         print(icindekiler_text[:500] + "..." if len(icindekiler_text) > 500 else icindekiler_text)
     
-    lines = icindekiler_text.split('\\n')
+    lines = icindekiler_text.split('\n')
     
     for i, line in enumerate(lines):
         line_clean = clean_text(line).strip()
@@ -207,7 +207,7 @@ def find_dallar_from_icindekiler(text: str, debug: bool = False) -> List[str]:
             print("❌ İçindekiler bölümü bulunamadı")
         return []
     
-    lines = icindekiler_text.split('\\n')
+    lines = icindekiler_text.split('\n')
     dallar = []
     
     for i, line in enumerate(lines):
@@ -219,7 +219,7 @@ def find_dallar_from_icindekiler(text: str, debug: bool = False) -> List[str]:
             not any(bad in line_upper for bad in ['ANADOLU MESLEK PROGRAMI', 'TEKNİK PROGRAMI'])):
             
             # "DALI" öncesindeki kısmı al
-            dal_text = re.sub(r'\\s*DALI.*', '', line_clean, flags=re.IGNORECASE)
+            dal_text = re.sub(r'\s*DALI.*', '', line_clean, flags=re.IGNORECASE)
             dal_text = dal_text.strip()
             
             if (len(dal_text) > 3 and 
@@ -242,7 +242,7 @@ def extract_icindekiler_section(text: str) -> str:
     PDF metninden içindekiler bölümünü çıkarır.
     getir_cop_oku_local.py'den uyarlandı
     """
-    lines = text.split('\\n')
+    lines = text.split('\n')
     icindekiler_start = -1
     icindekiler_end = -1
     
@@ -345,7 +345,7 @@ def extract_dal_from_page_title(page_text: str) -> Optional[str]:
     Sayfa metninden dal adını çıkar.
     "HAFTALIK DERS ÇİZELGESİ" öncesindeki satırlardan dal adını bul.
     """
-    lines = page_text.split('\\n')
+    lines = page_text.split('\n')
     
     for i, line in enumerate(lines):
         line_upper = line.upper().strip()
@@ -362,7 +362,7 @@ def extract_dal_from_page_title(page_text: str) -> Optional[str]:
                     not any(bad in prev_upper for bad in ['ÇERÇEVE', 'ÖĞRETİM', 'AMAÇLAR', 'SINIF'])):
                     
                     # "DALI" veya "PROGRAMI" kelimesini temizle
-                    dal_name = re.sub(r'\\s+(DALI|PROGRAMI).*', '', prev_line, flags=re.IGNORECASE).strip()
+                    dal_name = re.sub(r'\s+(DALI|PROGRAMI).*', '', prev_line, flags=re.IGNORECASE).strip()
                     if len(dal_name) > 3:
                         return normalize_to_title_case_tr(dal_name)
     
@@ -409,9 +409,9 @@ def extract_lessons_from_page(page, page_num: int, debug: bool = False) -> List[
                         ders_clean = clean_text(ders_adi).strip()
                         
                         # Dipnot & artık temizliği
-                        ders_clean = re.sub(r"\\(\\*+\\)", "", ders_clean)          # dipnot (*)
-                        ders_clean = re.sub(r"-+\\s*\\d+\\s*-", "", ders_clean)    # --2-, -3-
-                        ders_clean = re.sub(r"\\s{2,}", " ", ders_clean).strip()
+                        ders_clean = re.sub(r"\(\*+\)", "", ders_clean)          # dipnot (*)
+                        ders_clean = re.sub(r"-+\s*\d+\s*-", "", ders_clean)    # --2-, -3-
+                        ders_clean = re.sub(r"\s{2,}", " ", ders_clean).strip()
                         
                         # Geçerli ders adı kontrolü
                         if (len(ders_clean) > 3 and 
@@ -482,7 +482,7 @@ def extract_lessons_from_text(page_text: str, debug: bool = False) -> List[str]:
     Sayfa metninden ders listesini çıkar (tablo alternatifi).
     """
     lessons = []
-    lines = page_text.split("\\n")
+    lines = page_text.split("\n")
     
     for idx, line in enumerate(lines):
         line_upper = line.upper()
@@ -542,7 +542,7 @@ def extract_alan_dal_ders_from_pdf(pdf_source: str, debug: bool = False) -> Tupl
             for page in pdf.pages:
                 page_text = page.extract_text()
                 if page_text:
-                    full_text += page_text + "\\n"
+                    full_text += page_text + "\n"
             
             if debug:
                 print(f"📄 Toplam {len(pdf.pages)} sayfa, {len(full_text)} karakter")

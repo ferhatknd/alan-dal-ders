@@ -1573,7 +1573,8 @@ def workflow_full():
                         time.sleep(0.05)
                 elif step_endpoint == '/api/workflow-step-2':
                     cop_data = getir_cop_links()
-                    yield f"data: {json.dumps({'type': 'success', 'message': f'ÇÖP verileri çekildi: {len(cop_data.get(\"cop_data\", {}))} sınıf'})}\n\n"
+                    sinif_sayisi = len(cop_data.get("cop_data", {}))
+                    yield f"data: {json.dumps({'type': 'success', 'message': f'ÇÖP verileri çekildi: {sinif_sayisi} sınıf'})}\n\n"
                 # Diğer adımlar için basitleştirilmiş versiyonlar
                 elif step_endpoint == '/api/workflow-step-3':
                     yield f"data: {json.dumps({'type': 'status', 'message': 'DBF verileri işleniyor...'})}\n\n"
