@@ -84,6 +84,12 @@ class BaseExtractor(ABC):
                 return content
         
         if strategy == 'comprehensive':
+            # Check cell to the left (user's specific request)
+            if col_idx > 0 and table[row_idx][col_idx - 1]:
+                content = str(table[row_idx][col_idx - 1]).strip()
+                if self._is_valid_content(content):
+                    return content
+
             # Check previous row
             if row_idx > 0:
                 prev_row = table[row_idx - 1]
@@ -93,10 +99,10 @@ class BaseExtractor(ABC):
                         if self._is_valid_content(content):
                             return content
             
-            # Check same row other columns
+            # Check same row other columns (excluding the current and left cell)
             row = table[row_idx]
             for k in range(len(row)):
-                if k != col_idx and row[k]:
+                if k != col_idx and k != (col_idx - 1) and row[k]:
                     content = str(row[k]).strip()
                     if self._is_valid_content(content):
                         return content
@@ -121,7 +127,63 @@ class BaseExtractor(ABC):
         
         exclude_keywords = ['DERSİN', 'ÖĞRENME', 'EĞİTİM', 'ÖLÇME', 'SINIF']
         return not any(keyword in content.upper() for keyword in exclude_keywords)
-
+    
+    def _is_valid_amac_content(self, content: str) -> bool:
+        """
+        Check if content is valid for dersin amacı (not kazanımlar or noise)
+        """
+        if not self._is_valid_content(content):
+            return False
+        
+        content_trimmed = content.strip()
+        
+        # RULE 1: Must be at least 10 words for a proper dersin amacı
+        word_count = len(content_trimmed.split())
+        if word_count < 10:
+            return False
+        
+        # RULE 2: Check if content looks like a list of kazanımlar (numbered items)
+        if content_trimmed.startswith('1.'):
+            # Count how many numbered items (1., 2., 3., etc.)
+            import re
+            numbered_items = re.findall(r'\d+\.\s', content_trimmed)
+            if len(numbered_items) > 1:  # Multiple numbered items = kazanımlar
+                return False
+        
+        # RULE 3: Check if it's just a course title or similar short phrase
+        # Common patterns that suggest it's NOT a dersin amacı
+        content_upper = content_trimmed.upper()
+        
+        # If it's all caps and short, likely a title
+        if content_upper == content_trimmed and word_count < 15:
+            return False
+        
+        # If it contains only the course name or similar patterns
+        exclude_patterns = [
+            'ATÖLYESİ', 'TEKNOLOJİSİ', 'ALANI', 'DALI', 'SINIF', 'HAFTALIK', 'DERS SAATİ'
+        ]
+        
+        # If it contains mainly these patterns and is short, skip it
+        pattern_matches = sum(1 for pattern in exclude_patterns if pattern in content_upper)
+        if pattern_matches > 0 and word_count < 15:
+            return False
+        
+        # RULE 4: Positive indicators for dersin amacı
+        positive_indicators = [
+            'BU DERSTE', 'AMAÇLANMAKTADIR', 'ÖĞRENCIYE', 'KAZANDIRILMASI', 
+            'BİLGİ VE BECERİLERİN', 'İLE İLGİLİ', 'YAPMA', 'AMAÇ'
+        ]
+        
+        # If it contains positive indicators, it's likely a proper dersin amacı
+        positive_matches = sum(1 for indicator in positive_indicators if indicator in content_upper)
+        if positive_matches >= 2:  # At least 2 positive indicators
+            return True
+        
+        # RULE 5: If it's long enough and doesn't trigger negative rules, accept it
+        if word_count >= 15:
+            return True
+        
+        return False
 
 class DBFExtractor(BaseExtractor):
     """
@@ -139,6 +201,51 @@ class DBFExtractor(BaseExtractor):
             'olcme_degerlendirme': ['ÖLÇME VE DEĞERLENDİRME', 'DEĞERLENDİRME']
         }
     
+    def _extract_dersin_amaci_from_tables(self, tables: List[List[List[str]]]) -> Optional[str]:
+        """
+        Extracts the course objective (dersin amacı) from the tables.
+        This method implements a more robust search logic for this specific field.
+        """
+        for table in tables:
+            for i, row in enumerate(table):
+                for j, cell in enumerate(row):
+                    if cell and isinstance(cell, str) and 'DERSİN AMACI' in cell.upper():
+                        # PRIORITY 0: Check previous rows first (amac is often above the "DERSİN AMACI" header)
+                        for prev_i in range(max(0, i - 3), i):
+                            prev_row = table[prev_i]
+                            for prev_cell in prev_row:
+                                if prev_cell:
+                                    content = str(prev_cell).strip()
+                                    if self._is_valid_amac_content(content):
+                                        return self.clean_text(content)
+                        
+                        # PRIORITY 1: Check other cells in the same row (especially to the right)
+                        for k in range(len(row)):
+                            if k != j and row[k]:
+                                content = str(row[k]).strip()
+                                if self._is_valid_amac_content(content):
+                                    return self.clean_text(content)
+                        
+                        # PRIORITY 2: Check the same cell (after colon) 
+                        if ':' in cell:
+                            content = cell.split(':', 1)[1].strip()
+                            if self._is_valid_amac_content(content):
+                                return self.clean_text(content)
+                        
+                        # PRIORITY 3: Check the cell to the left (if exists)
+                        if j > 0 and table[i][j-1] and self._is_valid_amac_content(str(table[i][j-1]).strip()):
+                            return self.clean_text(str(table[i][j-1]).strip())
+
+                        # PRIORITY 4: Check subsequent rows for the first meaningful text (look deeper)
+                        for next_i in range(i + 1, min(i + 5, len(table))):
+                            next_row = table[next_i]
+                            for next_cell in next_row:
+                                if next_cell:
+                                    content = str(next_cell).strip()
+                                    if self._is_valid_amac_content(content):
+                                        return self.clean_text(content)
+        return None
+
     def extract_all(self, file_path: str) -> Dict[str, Any]:
         """
         Extract all DBF fields using unified approach
@@ -148,8 +255,10 @@ class DBFExtractor(BaseExtractor):
         
         # Extract basic fields using common logic
         for field_name, patterns in self.field_mappings.items():
-            if field_name in ['ders_adi', 'dersin_amaci']:
+            if field_name == 'ders_adi':
                 result[field_name] = self.find_field_in_tables(tables, patterns)
+            elif field_name == 'dersin_amaci': # Use specific extraction for dersin_amaci
+                result[field_name] = self._extract_dersin_amaci_from_tables(tables)
             elif field_name == 'ders_sinifi':
                 result[field_name] = self._extract_ders_sinifi(tables)
             elif field_name == 'ders_saati':
@@ -197,24 +306,6 @@ class DBFExtractor(BaseExtractor):
     def _extract_olcme_degerlendirme(self, file_path: str) -> List[str]:
         return extract_olcme_degerlendirme(file_path)
 
-
-class COPExtractor(BaseExtractor):
-    """
-    Extractor for COP (Çerçeve Öğretim Programı) documents
-    """
-    
-    def extract_all(self, file_path: str) -> Dict[str, Any]:
-        """
-        Extract Alan-Dal-Ders relationships from COP documents
-        """
-        # Delegate to existing COP functions for now
-        if file_path.startswith('http'):
-            return oku_cop_pdf(file_path)
-        else:
-            # Handle local COP files if needed
-            return {"error": "Local COP processing not implemented"}
-
-
 class DocumentProcessor:
     """
     Main processor that coordinates different extractors
@@ -222,18 +313,14 @@ class DocumentProcessor:
     
     def __init__(self):
         self.extractors = {
-            'DBF': DBFExtractor(),
-            'COP': COPExtractor()
+            'DBF': DBFExtractor()
         }
     
     def detect_document_type(self, file_path: str) -> str:
         """
         Detect document type based on file path or content
         """
-        if 'cop' in file_path.lower() or 'meslek.meb.gov.tr' in file_path:
-            return 'COP'
-        else:
-            return 'DBF'  # Default to DBF for regular PDF/DOCX
+        return 'DBF'  # Always return DBF as COP reading is removed
     
     def process_document(self, file_path: str, doc_type: str = None) -> Dict[str, Any]:
         """
@@ -363,64 +450,7 @@ def extract_ders_saati(file_path, tables=None):
         print(f"Error extracting ders saati: {str(e)}")
         return None
 
-def extract_dersin_amaci(file_path, tables=None):
-    """
-    PDF veya DOCX dosyasından dersin amacını çıkar
-    """
-    try:
-        if tables is None:
-            processor = DocumentProcessor()
-            tables = processor.extractors['DBF'].get_tables(file_path)
 
-        for table in tables:
-            for i, row in enumerate(table):
-                for j, cell in enumerate(row):
-                    if cell and isinstance(cell, str) and 'DERSİN AMACI' in cell.upper():
-                        # Başlıktan sonraki satırlarda ilk anlamlı metni bul
-                        for down in range(i + 1, len(table)):
-                            next_row = table[down]
-                            for next_cell in next_row:
-                                if next_cell:
-                                    content = str(next_cell).strip()
-                                    # En az 10 karakter, başlık değil ve "DERSİN" gibi kelimeler içermiyor
-                                    if (content and len(content) > 10 and
-                                        not any(kw in content.upper() for kw in ['DERSİN', 'SÜRESİ', 'SINIFI', 'ADI', 'KAZANIM', 'ORTAM', 'DONANIM', 'ÖLÇME'])):
-                                        return clean_text(content)
-                        # Eğer alt satırlarda bulunamazsa, eski mantıkla devam et
-                        content = ""
-                        if ':' in cell:
-                            content = cell.split(':', 1)[1].strip()
-                        if not content and i > 0:
-                            prev_row = table[i - 1]
-                            for k in range(len(prev_row)):
-                                if prev_row[k] and str(prev_row[k]).strip():
-                                    cell_content = str(prev_row[k]).strip()
-                                    if (cell_content and len(cell_content) > 10 and
-                                        'DERSİN' not in cell_content.upper() and
-                                        'HAFTALIK' not in cell_content.upper() and
-                                        'DERS SAATİ' not in cell_content.upper() and
-                                        'SAATİ' not in cell_content.upper()):
-                                        content = cell_content
-                                        break
-                        if not content:
-                            for k in range(len(row)):
-                                if k != j and row[k]:
-                                    cell_content = str(row[k]).strip()
-                                    if cell_content and len(cell_content) > 10 and 'DERSİN' not in cell_content.upper():
-                                        content = cell_content
-                                        break
-                        if not content and i + 1 < len(table):
-                            next_row = table[i + 1]
-                            for next_cell in next_row:
-                                if next_cell and str(next_cell).strip():
-                                    content = str(next_cell).strip()
-                                    break
-                        if content and len(content) > 10:
-                            return clean_text(content)
-        return None
-    except Exception as e:
-        print(f"Error extracting dersin amacı: {str(e)}")
-        return None
 
 def extract_genel_kazanimlar(file_path, tables=None):
     """
@@ -436,36 +466,72 @@ def extract_genel_kazanimlar(file_path, tables=None):
         for table in tables:
             for i, row in enumerate(table):
                 for j, cell in enumerate(row):
-                    if cell and isinstance(cell, str) and ('DERSİN ÖĞRENME KAZANIMLARI' in cell.upper() or 'DERSİN KAZANIMLARI' in cell.upper()):
+                    if cell and isinstance(cell, str):
+                        # Clean cell content for matching (remove newlines and normalize spaces)
+                        cell_clean = ' '.join(cell.split())
+                        if ('DERSİN ÖĞRENME KAZANIMLARI' in cell_clean.upper() or 'DERSİN KAZANIMLARI' in cell_clean.upper()):
 
-                        # İçerik aynı hücrede ise
-                        if ':' in cell:
-                            content = cell.split(':', 1)[1].strip()
-                        else:
-                            # Yan hücredeki içeriği al
-                            if j + 1 < len(row) and row[j + 1]:
-                                content = str(row[j + 1]).strip()
+                            # İçerik aynı hücrede ise
+                            if ':' in cell:
+                                content = cell.split(':', 1)[1].strip()
                             else:
-                                # Alt satırdaki içeriği al
-                                if i + 1 < len(table) and len(table[i + 1]) > j:
-                                    content = str(table[i + 1][j]).strip() if table[i + 1][j] else ""
-                                else:
+                                content = None
+                                
+                                # PRIORITY 1: Check previous rows (kazanımlar often above the header)
+                                for prev_i in range(max(0, i - 3), i):
+                                    prev_row = table[prev_i]
+                                    for prev_cell in prev_row:
+                                        if prev_cell:
+                                            potential_content = str(prev_cell).strip()
+                                            if potential_content and len(potential_content) > 10:
+                                                # Check if it looks like kazanımlar (numbered items)
+                                                if (potential_content.startswith(('1.', '2.', '3.')) or 
+                                                    '•' in potential_content or 
+                                                    potential_content.count('.') > 2):
+                                                    content = potential_content
+                                                    break
+                                    if content:
+                                        break
+                                
+                                # PRIORITY 2: Check same row other cells
+                                if not content:
+                                    for k in range(len(row)):
+                                        if k != j and row[k]:
+                                            potential_content = str(row[k]).strip()
+                                            if potential_content and len(potential_content) > 10:
+                                                content = potential_content
+                                                break
+                                
+                                # PRIORITY 3: Check next rows
+                                if not content:
+                                    for next_i in range(i + 1, min(i + 4, len(table))):
+                                        next_row = table[next_i]
+                                        for next_cell in next_row:
+                                            if next_cell:
+                                                potential_content = str(next_cell).strip()
+                                                if potential_content and len(potential_content) > 10:
+                                                    content = potential_content
+                                                    break
+                                        if content:
+                                            break
+                                
+                                if not content:
                                     continue
 
-                        if content and len(content) > 10:
-                            # Madde işaretleriyle ayrılmış kazanımları ayır
-                            if '•' in content or content.startswith(('1.', '2.', '3.')):
-                                kazanim_items = re.split(r'[•\-]\s*|\d+\.\s*', content)
-                                for item in kazanim_items:
-                                    clean_item = clean_text(item)
+                            if content and len(content) > 10:
+                                # Madde işaretleriyle ayrılmış kazanımları ayır
+                                if '•' in content or content.startswith(('1.', '2.', '3.')):
+                                    kazanim_items = re.split(r'[•\-]\s*|\d+\.\s*', content)
+                                    for item in kazanim_items:
+                                        clean_item = clean_text(item)
+                                        if clean_item and len(clean_item) > 10:
+                                            kazanimlar.append(clean_item)
+                                else:
+                                    clean_item = clean_text(content)
                                     if clean_item and len(clean_item) > 10:
                                         kazanimlar.append(clean_item)
-                            else:
-                                clean_item = clean_text(content)
-                                if clean_item and len(clean_item) > 10:
-                                    kazanimlar.append(clean_item)
 
-                            return kazanimlar[:10]  # İlk eşleşmede dön
+                                return kazanimlar[:10]  # İlk eşleşmede dön
 
         return kazanimlar
 
@@ -1076,9 +1142,7 @@ def oku(file_path):
         processor = DocumentProcessor()
         doc_type = processor.detect_document_type(file_path)
         
-        if doc_type == 'COP':
-            # COP documents use different processing
-            return oku_cop_pdf(file_path)
+        
         
         # DBF documents - use new extractor but maintain old output format
         result_data = processor.process_document(file_path, 'DBF')
@@ -1113,6 +1177,8 @@ def oku(file_path):
         print(f"Sınıf                  : {ders_sinifi or 'Bulunamadı'}")
         print(f"Dersin Süresi          : {ders_saati or 'Bulunamadı'}")
         print(f"Dersin Amacı           : {kelime_sayisi(dersin_amaci)} Kelime")
+        if dersin_amaci:
+            print(f"  İçerik               : {dersin_amaci}")
         print(f"Dersin Kazanımları     : {len(genel_kazanimlar)} Madde")
         print(f"EÖ Ortam ve Donanımı   : {len(ortam_donanimi)} Madde")
         print(f"Ölçme Değerlendirme    : {len(olcme_degerlendirme)} Madde")
@@ -1209,99 +1275,41 @@ def process_directory(directory_path, output_json="oku_sonuc.json"):
 
     return results
 
-def is_url(path):
-    """
-    Verilen string'in URL olup olmadığını kontrol et
-    """
-    return path.startswith(('http://', 'https://'))
 
-def is_cop_pdf_url(url):
-    """
-    Verilen URL'nin COP PDF URL'si olup olmadığını kontrol et
-    """
-    return 'meslek.meb.gov.tr' in url and 'cop' in url and url.endswith('.pdf')
 
 def main():
     """
-    Ana fonksiyon - argümana göre dosya, dizin veya COP URL işle
+    Ana fonksiyon - argümana göre dosya veya dizin işle
     """
     if len(sys.argv) > 1:
-        if sys.argv[1].lower() == "cop":
-            # COP modu
-            if len(sys.argv) < 3:
-                print("Hata: COP modu için PDF URL'si gerekli.")
-                print("Kullanım: python oku.py cop <PDF_URL>")
-                print("Örnek: python oku.py cop https://meslek.meb.gov.tr/upload/cop9/adalet_9.pdf")
-                return
+        input_path = sys.argv[1]
+        
+        if os.path.isfile(input_path):
+            # Tek dosya işle
+            print(f"Dosya işleniyor: {input_path}")
+            print("=" * 60)
             
-            pdf_url = sys.argv[2]
-            
-            if not is_url(pdf_url):
-                print("Hata: Geçerli bir URL giriniz.")
-                print("Örnek: python oku.py cop https://meslek.meb.gov.tr/upload/cop9/adalet_9.pdf")
-                return
-            
-            # COP PDF URL'si işle
-            
-            result = oku_cop_pdf(pdf_url)
-            
-            # Sonuçları yazdır
-            if result["metadata"]["status"] == "success":
-                alan_bilgileri = result["alan_bilgileri"]
-                
-                dal_ders_listesi = alan_bilgileri.get('dal_ders_listesi', [])
-                toplam_ders_sayisi = alan_bilgileri.get('toplam_ders_sayisi', 0)
-                
-                if dal_ders_listesi:
-                    
-                    for i, dal_info in enumerate(dal_ders_listesi, 1):
-                        dal_adi = dal_info.get('dal_adi', '')
-                        dersler = dal_info.get('dersler', [])
-                        ders_sayisi = dal_info.get('ders_sayisi', 0)
-                        
-                        pass
-                    
-                pass
+            result = oku(input_path)
             
             # JSON'a kaydet
-            output_file = "cop_sonuc.json"
+            output_file = f"{os.path.splitext(os.path.basename(input_path))[0]}_sonuc.json"
             try:
                 with open(output_file, 'w', encoding='utf-8') as f:
                     json.dump(result, f, ensure_ascii=False, indent=2)
-                print(f"Sonuç {output_file} dosyasına kaydedildi.")
+                print(f"\nSonuç {output_file} dosyasına kaydedildi.")
             except Exception as e:
                 print(f"JSON kaydetme hatası: {e}")
-        
-        else:
-            # Normal mod - dosya veya dizin işle
-            input_path = sys.argv[1]
+                
+        elif os.path.isdir(input_path):
+            # Dizin işle
+            print(f"Dizin işleniyor: {input_path}")
+            print("=" * 60)
             
-            if os.path.isfile(input_path):
-                # Tek dosya işle
-                print(f"Dosya işleniyor: {input_path}")
-                print("=" * 60)
-                
-                result = oku(input_path)
-                
-                # JSON'a kaydet
-                output_file = f"{os.path.splitext(os.path.basename(input_path))[0]}_sonuc.json"
-                try:
-                    with open(output_file, 'w', encoding='utf-8') as f:
-                        json.dump(result, f, ensure_ascii=False, indent=2)
-                    print(f"\nSonuç {output_file} dosyasına kaydedildi.")
-                except Exception as e:
-                    print(f"JSON kaydetme hatası: {e}")
-                    
-            elif os.path.isdir(input_path):
-                # Dizin işle
-                print(f"Dizin işleniyor: {input_path}")
-                print("=" * 60)
-                
-                output_json = "oku_sonuc.json"
-                results = process_directory(input_path, output_json)
-                
-            else:
-                print(f"Hata: '{input_path}' geçerli bir dosya veya dizin değil.")
+            output_json = "oku_sonuc.json"
+            results = process_directory(input_path, output_json)
+            
+        else:
+            print(f"Hata: '{input_path}' geçerli bir dosya veya dizin değil.")
     
     else:
         # Argüman verilmemişse mevcut dizini işle
@@ -1314,11 +1322,10 @@ def main():
         
         print("\nKullanım:")
         print("  python oku.py [dosya_yolu|dizin_yolu]")
-        print("  python oku.py cop <COP_PDF_URL>")
         print("\nÖrnekler:")
         print("  python oku.py ders.pdf")
         print("  python oku.py /path/to/directory")
-        print("  python oku.py cop https://meslek.meb.gov.tr/upload/cop9/adalet_9.pdf")
+
 
 if __name__ == "__main__":
     main()

@@ -19,7 +19,7 @@ def find_pdf_files_recursive(directory):
     return pdf_files
 
 if __name__ == "__main__":
-    dbf_base_path = "/Volumes/Dropbox2TB/Estherian Dropbox/Ferhat Kondakcı/github/alan-dal-ders/data/dbf"
+    dbf_base_path = "data/dbf"
 
     if not os.path.exists(dbf_base_path):
         print(f"Hata: '{dbf_base_path}' dizini bulunamadı.")

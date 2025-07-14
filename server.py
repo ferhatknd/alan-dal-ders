@@ -14,7 +14,7 @@ from contextlib import redirect_stdout, redirect_stderr
 # artık alanlar_ve_dersler3.py kullanmıyoruz, getir_* modülleri kullanıyoruz
 
 # oku.py'den fonksiyonları import ediyoruz
-from modules.oku import oku, oku_cop_pdf
+from modules.oku import oku
 
 # Yeni modülleri import et
 from modules.getir_dbf import getir_dbf, download_and_extract_dbf_with_progress, retry_extract_all_files_with_progress, retry_extract_file
