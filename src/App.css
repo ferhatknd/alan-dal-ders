@@ -397,7 +397,6 @@ mark {
   margin: 0 0 15px 0;
   font-size: 14px;
   color: #555;
-  border-bottom: 1px solid #ddd;
   padding-bottom: 8px;
 }
 
@@ -916,7 +915,6 @@ mark {
 }
 
 .form-section {
-  border-bottom: 1px solid #eee;
   background: transparent;
 }
 

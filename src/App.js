@@ -26,80 +26,15 @@ const OrtakAlanlarCell = ({ dersLink, currentAlanId, ortakAlanIndeksi, allAlans 
   );
 };
 
-const PDFViewerSidebar = ({ pdfUrl, isOpen, onClose, courseTitle }) => {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    if (isOpen && pdfUrl) {
-      setLoading(true);
-      setError(null);
-    }
-  }, [isOpen, pdfUrl]);
-
-  const handleIframeLoad = () => {
-    setLoading(false);
-  };
-
-  const handleIframeError = () => {
-    setLoading(false);
-    setError('PDF yüklenemedi. URL erişilebilir değil veya dosya bulunamadı.');
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="pdf-viewer-sidebar-independent">
-      <div className="pdf-sidebar-overlay" onClick={onClose}></div>
-      <div className="pdf-sidebar-content">
-        <div className="pdf-sidebar-header">
-          <h3>PDF Viewer</h3>
-          <button className="close-btn" onClick={onClose}>×</button>
-        </div>
-        <div className="pdf-course-info">
-          <strong>{courseTitle}</strong>
-          <div className="pdf-url">
-            <a href={pdfUrl} target="_blank" rel="noopener noreferrer" className="external-link">
-              🔗 Yeni sekmede aç
-            </a>
-          </div>
-        </div>
-        <div className="pdf-viewer-container">
-          {loading && (
-            <div className="pdf-loading">
-              <div className="loading-spinner"></div>
-              <p>PDF yükleniyor...</p>
-            </div>
-          )}
-          {error && (
-            <div className="pdf-error">
-              <p>❌ {error}</p>
-              <button onClick={() => window.open(pdfUrl, '_blank')} className="retry-btn">
-                Yeni Sekmede Aç
-              </button>
-            </div>
-          )}
-          <iframe
-            src={pdfUrl}
-            width="100%"
-            height="100%"
-            title="PDF Viewer"
-            frameBorder="0"
-            onLoad={handleIframeLoad}
-            onError={handleIframeError}
-            style={{ display: loading ? 'none' : 'block' }}
-          />
-        </div>
-      </div>
-    </div>
-  );
-};
 
 // COP Dropdown Bileşeni
 const CopDropdown = ({ copUrls, onSelectCop }) => {
   const [isOpen, setIsOpen] = useState(false);
   
+  console.log('CopDropdown render - copUrls:', copUrls);
+  
   if (!copUrls || Object.keys(copUrls).length === 0) {
+    console.log('CopDropdown: COP URL\'leri bulunamadı veya boş');
     return null;
   }
   
@@ -108,6 +43,8 @@ const CopDropdown = ({ copUrls, onSelectCop }) => {
     url: url,
     key: key
   }));
+  
+  console.log('CopDropdown: COP listesi oluşturuldu:', copList);
   
   return (
     <div className="cop-dropdown" style={{ position: 'relative', display: 'inline-block' }}>
@@ -124,7 +61,7 @@ const CopDropdown = ({ copUrls, onSelectCop }) => {
           fontWeight: 'bold'
         }}
       >
-        ÇÖP PDF ({copList.length}) {isOpen ? '▲' : '▼'}
+        ÇÖP {isOpen ? '▲' : '▼'}
       </button>
       {isOpen && (
         <div style={{
@@ -168,7 +105,150 @@ const CopDropdown = ({ copUrls, onSelectCop }) => {
   );
 };
 
-const CourseEditSidebar = ({ course, isOpen, onClose, onSave, onShowPDF }) => {
+// DBF Dropdown Bileşeni
+const DbfDropdown = ({ dbfUrls, onSelectDbf }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  
+  console.log('DbfDropdown render - dbfUrls:', dbfUrls);
+  console.log('DbfDropdown - dbfUrls type:', typeof dbfUrls);
+  console.log('DbfDropdown - dbfUrls keys:', Object.keys(dbfUrls));
+  
+  if (!dbfUrls || Object.keys(dbfUrls).length === 0) {
+    console.log('DbfDropdown: DBF URL\'leri bulunamadı veya boş - return null');
+    return null;
+  }
+  
+  const dbfList = Object.entries(dbfUrls).map(([key, url]) => ({
+    label: key.includes('sinif_') ? `${key.split('_')[1]}. Sınıf` : `${key}. Sınıf`,
+    url: url,
+    key: key
+  }));
+  
+  console.log('DbfDropdown: DBF listesi oluşturuldu:', dbfList);
+  
+  return (
+    <div className="dbf-dropdown" style={{ position: 'relative', display: 'inline-block' }}>
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        style={{
+          padding: '8px 12px',
+          background: '#28a745',
+          color: 'white',
+          border: 'none',
+          borderRadius: '4px',
+          cursor: 'pointer',
+          fontSize: '12px',
+          fontWeight: 'bold'
+        }}
+      >
+        DBF {isOpen ? '▲' : '▼'}
+      </button>
+      {isOpen && (
+        <div style={{
+          position: 'absolute',
+          top: '100%',
+          left: 0,
+          background: 'white',
+          border: '1px solid #ccc',
+          borderRadius: '4px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+          zIndex: 1000,
+          minWidth: '140px'
+        }}>
+          {dbfList.map(item => (
+            <button
+              key={item.key}
+              onClick={() => {
+                onSelectDbf(item.url, `DBF - ${item.label}`);
+                setIsOpen(false);
+              }}
+              style={{
+                display: 'block',
+                width: '100%',
+                padding: '8px 12px',
+                background: 'none',
+                border: 'none',
+                textAlign: 'left',
+                cursor: 'pointer',
+                fontSize: '12px',
+                borderBottom: '1px solid #f0f0f0'
+              }}
+              onMouseOver={(e) => e.target.style.background = '#f8f9fa'}
+              onMouseOut={(e) => e.target.style.background = 'none'}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Button Group Bileşeni
+const ButtonGroup = ({ label, options, value, onChange, maxPerRow = 4 }) => {
+  return (
+    <div className="form-section" style={{ marginBottom: '20px' }}>
+      <div style={{ 
+        display: 'flex', 
+        flexWrap: 'wrap', 
+        gap: '12px',
+        alignItems: 'center'
+      }}>
+        <label style={{ 
+          fontSize: '14px', 
+          fontWeight: 'bold', 
+          color: '#495057',
+          minWidth: '60px',
+          flexShrink: 0
+        }}>
+          {label}:
+        </label>
+        <div style={{ 
+          display: 'flex',
+          border: '1px solid #dee2e6',
+          borderRadius: '4px',
+          overflow: 'hidden'
+        }}>
+          {options.map((option, index) => (
+            <button
+              key={option.value}
+              onClick={() => onChange(option.value)}
+              style={{
+                padding: '8px 12px',
+                border: 'none',
+                backgroundColor: value === option.value ? '#007bff' : '#ffffff',
+                color: value === option.value ? '#ffffff' : '#495057',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: value === option.value ? 'bold' : 'normal',
+                minWidth: '44px',
+                transition: 'all 0.2s ease',
+                outline: 'none',
+                position: 'relative',
+                zIndex: value === option.value ? 2 : 1
+              }}
+              onMouseOver={(e) => {
+                if (value !== option.value) {
+                  e.target.style.backgroundColor = '#f8f9fa';
+                }
+              }}
+              onMouseOut={(e) => {
+                if (value !== option.value) {
+                  e.target.style.backgroundColor = '#ffffff';
+                }
+              }}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const CourseEditSidebar = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfTitle }) => {
   const [editData, setEditData] = useState({
     ders_id: '',
     ders_adi: '',
@@ -183,8 +263,19 @@ const CourseEditSidebar = ({ course, isOpen, onClose, onSave, onShowPDF }) => {
   });
   
   const [alanDalOptions, setAlanDalOptions] = useState({ alanlar: [], dallar: {} });
-  const [pdfPreview, setPdfPreview] = useState({ isOpen: false, url: '', title: '' });
   const [copUrls, setCopUrls] = useState({});
+  const [dbfUrls, setDbfUrls] = useState({});
+  
+  // Split pane için state'ler
+  const [leftWidth, setLeftWidth] = useState(50); // Percentage
+  const [isResizing, setIsResizing] = useState(false);
+  
+  // PDF loading states
+  const [pdfLoading, setPdfLoading] = useState(true);
+  const [pdfError, setPdfError] = useState(null);
+  
+  // Split screen mode - PDF açık mı?
+  const isSplitMode = Boolean(pdfUrl);
 
   // Alan-Dal seçeneklerini yükle
   useEffect(() => {
@@ -192,15 +283,8 @@ const CourseEditSidebar = ({ course, isOpen, onClose, onSave, onShowPDF }) => {
       fetch('http://localhost:5001/api/alan-dal-options')
         .then(res => res.json())
         .then(data => {
+          console.log('Alan-Dal seçenekleri yüklendi:', data);
           setAlanDalOptions(data);
-          // Parse all COP URLs when data is loaded
-          if (data.alanlar) {
-            const allCopUrls = parseAllCopUrls(data.alanlar);
-            // Set initial COP URLs based on current alan_id
-            if (editData.alan_id && allCopUrls[editData.alan_id]) {
-              setCopUrls(allCopUrls[editData.alan_id]);
-            }
-          }
         })
         .catch(err => console.error('Alan-Dal seçenekleri yüklenirken hata:', err));
     }
@@ -222,6 +306,96 @@ const CourseEditSidebar = ({ course, isOpen, onClose, onSave, onShowPDF }) => {
       });
     }
   }, [course, isOpen]);
+
+  // COP ve DBF URL'lerini alan_id değiştiğinde güncelle
+  useEffect(() => {
+    if (editData.alan_id && alanDalOptions.alanlar.length > 0) {
+      console.log('COP ve DBF URL\'leri güncelleniyor, alan_id:', editData.alan_id);
+      
+      const selectedAlan = alanDalOptions.alanlar.find(alan => alan.id === parseInt(editData.alan_id));
+      console.log('selectedAlan bulundu:', selectedAlan);
+      
+      // COP URL'lerini güncelle
+      if (selectedAlan && selectedAlan.cop_url) {
+        try {
+          const copData = JSON.parse(selectedAlan.cop_url);
+          console.log('COP verisi parse edildi:', copData);
+          setCopUrls(copData);
+        } catch (e) {
+          console.log('COP verisi JSON değil, string olarak işleniyor:', selectedAlan.cop_url);
+          setCopUrls({ 'cop_url': selectedAlan.cop_url });
+        }
+      } else {
+        console.log('Seçilen alan için COP verisi bulunamadı');
+        setCopUrls({});
+      }
+      
+      // DBF URL'lerini güncelle
+      if (selectedAlan && selectedAlan.dbf_urls) {
+        try {
+          const dbfData = JSON.parse(selectedAlan.dbf_urls);
+          console.log('DBF verisi parse edildi:', dbfData);
+          setDbfUrls(dbfData);
+        } catch (e) {
+          console.log('DBF verisi JSON değil, string olarak işleniyor:', selectedAlan.dbf_urls);
+          setDbfUrls({ 'dbf_urls': selectedAlan.dbf_urls });
+        }
+      } else {
+        console.log('Seçilen alan için DBF verisi bulunamadı, selectedAlan:', selectedAlan);
+        console.log('selectedAlan.dbf_urls:', selectedAlan?.dbf_urls);
+        setDbfUrls({});
+      }
+    }
+  }, [editData.alan_id, alanDalOptions.alanlar]);
+
+  // PDF URL değiştiğinde loading state'ini sıfırla
+  useEffect(() => {
+    if (pdfUrl) {
+      setPdfLoading(true);
+      setPdfError(null);
+    }
+  }, [pdfUrl]);
+
+  // Resize functionality
+  const handleMouseDown = (e) => {
+    setIsResizing(true);
+    e.preventDefault();
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (isResizing) {
+        const containerWidth = window.innerWidth;
+        const newLeftWidth = (e.clientX / containerWidth) * 100;
+        if (newLeftWidth >= 20 && newLeftWidth <= 80) { // Min %20, Max %80
+          setLeftWidth(newLeftWidth);
+        }
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+    };
+
+    if (isResizing) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isResizing]);
+
+  const handlePdfLoad = () => {
+    setPdfLoading(false);
+  };
+
+  const handlePdfError = () => {
+    setPdfLoading(false);
+    setPdfError('PDF yüklenemedi. URL erişilebilir değil veya dosya bulunamadı.');
+  };
 
   const handleInputChange = (field, value) => {
     setEditData(prev => ({ ...prev, [field]: value }));
@@ -262,192 +436,622 @@ const CourseEditSidebar = ({ course, isOpen, onClose, onSave, onShowPDF }) => {
     }
   };
 
-  const openPdfPreview = (url, title) => {
-    setPdfPreview({ isOpen: true, url, title });
-  };
 
-  const closePdfPreview = () => {
-    setPdfPreview({ isOpen: false, url: '', title: '' });
-  };
 
-  // Parse all COP URLs from alanlar data
-  const parseAllCopUrls = (alanlarData) => {
-    const copUrlsMap = {};
-    alanlarData.forEach(alan => {
-      if (alan.cop_url) {
-        try {
-          const copData = JSON.parse(alan.cop_url);
-          copUrlsMap[alan.id] = copData;
-        } catch (e) {
-          // If not JSON, treat as single URL
-          copUrlsMap[alan.id] = { 'cop_url': alan.cop_url };
-        }
-      }
-    });
-    return copUrlsMap;
-  };
-
-  // Alan değiştiğinde dal listesini güncelle ve COP URLs'leri parse et
+  // Alan değiştiğinde dal listesini güncelle (COP URLs'leri useEffect ile hallonuyor)
   const handleAlanChange = (alanId) => {
+    console.log('Alan değişti:', alanId);
     setEditData(prev => ({ ...prev, alan_id: alanId, dal_id: '' }));
-    
-    // Parse COP URLs for the selected alan
-    const selectedAlan = alanDalOptions.alanlar.find(alan => alan.id === parseInt(alanId));
-    if (selectedAlan && selectedAlan.cop_url) {
-      try {
-        const copData = JSON.parse(selectedAlan.cop_url);
-        setCopUrls(copData);
-      } catch (e) {
-        // If not JSON, treat as single URL
-        setCopUrls({ 'cop_url': selectedAlan.cop_url });
-      }
-    } else {
-      setCopUrls({});
-    }
   };
 
   // Handle COP PDF selection
   const handleCopSelect = (pdfUrl, title) => {
     onShowPDF(pdfUrl, title);
   };
+  
+  // Handle DBF PDF selection
+  const handleDbfSelect = (pdfUrl, title) => {
+    onShowPDF(pdfUrl, title);
+  };
+  
+  // Handle PDF button clicks
+  const handlePdfButtonClick = (url, title) => {
+    onShowPDF(url, title);
+  };
 
   console.log('CourseEditSidebar render:', { isOpen, course });
   
   if (!isOpen) return null;
 
-  return (
-    <>
-      <div className="course-edit-sidebar">
-        <div className="sidebar-overlay" onClick={onClose}></div>
-        <div className="sidebar-content">
-          <div className="sidebar-header">
-            <div className="header-title">
-              <h3>{editData.ders_adi || 'Ders Adı'}</h3>
-              <div className="pdf-links">
-                {editData.dm_url && (
-                  <button onClick={() => openPdfPreview(editData.dm_url, 'DM')}>DM</button>
-                )}
-                {editData.dbf_url && (
-                  <button onClick={() => openPdfPreview(editData.dbf_url, 'DBF')}>DBF</button>
-                )}
-                {editData.bom_url && (
-                  <button onClick={() => openPdfPreview(editData.bom_url, 'BOM')}>BOM</button>
-                )}
-              </div>
-            </div>
-            <button className="close-btn" onClick={onClose}>×</button>
-          </div>
-          
-          <div className="sidebar-body">
-            {/* Alan-Dal Seçimi */}
-            <div className="form-section">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <MaterialTextField
-                  label="Alan"
-                  value={editData.alan_id}
-                  onChange={(value) => handleAlanChange(value)}
-                  select={true}
-                  options={alanDalOptions.alanlar.map(alan => ({
-                    value: alan.id,
-                    label: alan.adi
-                  }))}
-                />
-                
-                <CopDropdown 
-                  copUrls={copUrls} 
-                  onSelectCop={handleCopSelect}
-                />
-              </div>
-              
-              <MaterialTextField
-                label="Dal"
-                value={editData.dal_id}
-                onChange={(value) => handleInputChange('dal_id', value)}
-                select={true}
-                disabled={!editData.alan_id}
-                options={editData.alan_id ? (alanDalOptions.dallar[editData.alan_id] || []).map(dal => ({
-                  value: dal.id,
-                  label: dal.adi
-                })) : []}
-              />
-            </div>
-
-            {/* Ders Adı */}
-            <div className="form-section">
-              <MaterialTextField
-                label="Ders Adı"
-                value={editData.ders_adi}
-                onChange={(value) => handleInputChange('ders_adi', value)}
-                type="text"
-              />
-            </div>
-
-            {/* Sınıf Seçimi */}
-            <div className="form-section">
-              <MaterialTextField
-                label="Sınıf"
-                value={editData.sinif}
-                onChange={(value) => handleInputChange('sinif', parseInt(value))}
-                select={true}
-                options={[9, 10, 11, 12].map(sinif => ({
-                  value: sinif,
-                  label: `${sinif}. Sınıf`
-                }))}
-              />
-            </div>
-
-            {/* Ders Saati Seçimi */}
-            <div className="form-section">
-              <MaterialTextField
-                label="Ders Saati (Haftalık)"
-                value={editData.ders_saati}
-                onChange={(value) => handleInputChange('ders_saati', parseInt(value))}
-                select={true}
-                options={[1, 2, 3, 4, 5, 6, 7, 8].map(saat => ({
-                  value: saat,
-                  label: `${saat} Saat`
-                }))}
-              />
-            </div>
-
-            {/* Dersin Amacı */}
-            <div className="form-section">
-              <MaterialTextField
-                label="Dersin Amacı"
-                value={editData.amac}
-                onChange={(value) => handleInputChange('amac', value)}
-                multiline={true}
-                rows={4}
-              />
+  // Normal sidebar mode (no PDF)
+  if (!isSplitMode) {
+    return (
+      <div 
+        className="edit-sidebar"
+        style={{
+          position: 'fixed',
+          top: 0,
+          right: 0,
+          width: '600px',
+          height: '100vh',
+          backgroundColor: '#ffffff',
+          borderLeft: '1px solid #dee2e6',
+          zIndex: 1000,
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden'
+        }}
+      >
+        {/* Header */}
+        <div className="edit-header" style={{
+          padding: '20px',
+          borderBottom: '1px solid #dee2e6',
+          backgroundColor: '#f8f9fa',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          <div>
+            <h3 style={{ margin: 0, marginBottom: '10px' }}>{editData.ders_adi || 'Ders Adı'}</h3>
+            <div className="pdf-links" style={{ display: 'flex', gap: '8px' }}>
+              {editData.dm_url && (
+                <button 
+                  onClick={() => handlePdfButtonClick(editData.dm_url, 'DM')}
+                  style={{
+                    padding: '4px 8px',
+                    fontSize: '12px',
+                    backgroundColor: '#007bff',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '3px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  DM
+                </button>
+              )}
+              {editData.dbf_url && (
+                <button 
+                  onClick={() => handlePdfButtonClick(editData.dbf_url, 'DBF')}
+                  style={{
+                    padding: '4px 8px',
+                    fontSize: '12px',
+                    backgroundColor: '#28a745',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '3px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  DBF
+                </button>
+              )}
+              {editData.bom_url && (
+                <button 
+                  onClick={() => handlePdfButtonClick(editData.bom_url, 'BOM')}
+                  style={{
+                    padding: '4px 8px',
+                    fontSize: '12px',
+                    backgroundColor: '#ffc107',
+                    color: 'black',
+                    border: 'none',
+                    borderRadius: '3px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  BOM
+                </button>
+              )}
             </div>
           </div>
-
-          <div className="sidebar-footer">
-            <button className="btn-cancel" onClick={onClose}>İptal</button>
-            <button className="btn-copy" onClick={handleCopy}>Kopyala</button>
-            <button className="btn-save" onClick={handleSave}>Kaydet</button>
-          </div>
+          <button 
+            onClick={onClose}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              fontSize: '24px',
+              cursor: 'pointer',
+              color: '#6c757d'
+            }}
+          >
+            ×
+          </button>
         </div>
-      </div>
 
-      {/* PDF Preview Sidebar */}
-      {pdfPreview.isOpen && (
-        <div className="pdf-preview-sidebar">
-          <div className="pdf-preview-content">
-            <div className="pdf-preview-header">
-              <h4>{pdfPreview.title} Preview</h4>
-              <button onClick={closePdfPreview}>×</button>
+        {/* Form Content - Scrollable */}
+        <div className="edit-content" style={{
+          flex: 1,
+          padding: '20px',
+          overflowY: 'auto'
+        }}>
+          {/* Alan-Dal Seçimi */}
+          <div className="form-section" style={{ marginBottom: '20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
+              <MaterialTextField
+                label="Alan"
+                value={editData.alan_id}
+                onChange={(value) => handleAlanChange(value)}
+                select={true}
+                options={alanDalOptions.alanlar.map(alan => ({
+                  value: alan.id,
+                  label: alan.adi
+                }))}
+              />
+              
+              <CopDropdown 
+                copUrls={copUrls} 
+                onSelectCop={handleCopSelect}
+              />
+              
+              <DbfDropdown 
+                dbfUrls={dbfUrls} 
+                onSelectDbf={handleDbfSelect}
+              />
             </div>
-            <iframe
-              src={pdfPreview.url}
-              width="100%"
-              height="100%"
-              title="PDF Preview"
+            
+            <MaterialTextField
+              label="Dal"
+              value={editData.dal_id}
+              onChange={(value) => handleInputChange('dal_id', value)}
+              select={true}
+              disabled={!editData.alan_id}
+              options={editData.alan_id ? (alanDalOptions.dallar[editData.alan_id] || []).map(dal => ({
+                value: dal.id,
+                label: dal.adi
+              })) : []}
+            />
+          </div>
+
+          {/* Ders Bilgileri */}
+          <div className="form-section" style={{ marginBottom: '20px' }}>
+            <MaterialTextField
+              label="Ders Adı"
+              value={editData.ders_adi}
+              onChange={(value) => handleInputChange('ders_adi', value)}
+              type="text"
+            />
+          </div>
+
+          <ButtonGroup
+            label="Sınıf"
+            value={editData.sinif}
+            onChange={(value) => handleInputChange('sinif', value)}
+            options={[9, 10, 11, 12].map(sinif => ({
+              value: sinif,
+              label: `${sinif}`
+            }))}
+          />
+
+          <ButtonGroup
+            label="Saat"
+            value={editData.ders_saati}
+            onChange={(value) => handleInputChange('ders_saati', value)}
+            options={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(saat => ({
+              value: saat,
+              label: `${saat}`
+            }))}
+          />
+
+          <div className="form-section" style={{ marginBottom: '20px' }}>
+            <MaterialTextField
+              label="Dersin Amacı"
+              value={editData.amac}
+              onChange={(value) => handleInputChange('amac', value)}
+              multiline={true}
+              rows={4}
             />
           </div>
         </div>
-      )}
-    </>
+
+        {/* Footer */}
+        <div className="edit-footer" style={{
+          padding: '20px',
+          borderTop: '1px solid #dee2e6',
+          backgroundColor: '#f8f9fa',
+          display: 'flex',
+          gap: '10px',
+          justifyContent: 'flex-end'
+        }}>
+          <button 
+            onClick={onClose}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: '#6c757d',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            İptal
+          </button>
+          <button 
+            onClick={handleCopy}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: '#17a2b8',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            Kopyala
+          </button>
+          <button 
+            onClick={handleSave}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: '#28a745',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            Kaydet
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Split screen mode (PDF açık)
+  return (
+    <div 
+      className="split-screen-container"
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        backgroundColor: '#ffffff',
+        zIndex: 1000,
+        display: 'flex',
+        flexDirection: 'row'
+      }}
+    >
+      {/* Sol Panel - PDF Viewer */}
+      <div 
+        className="pdf-panel"
+        style={{
+          width: `${leftWidth}%`,
+          height: '100vh',
+          backgroundColor: '#f8f9fa',
+          borderRight: '1px solid #dee2e6',
+          position: 'relative',
+          display: 'flex',
+          flexDirection: 'column'
+        }}
+      >
+        {pdfUrl ? (
+          <>
+            {pdfLoading && (
+              <div style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                textAlign: 'center',
+                color: '#6c757d',
+                zIndex: 10
+              }}>
+                <div style={{ fontSize: '16px' }}>PDF yükleniyor...</div>
+              </div>
+            )}
+            {pdfError && (
+              <div style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                textAlign: 'center',
+                color: '#dc3545',
+                zIndex: 10
+              }}>
+                <p>❌ {pdfError}</p>
+                <button 
+                  onClick={() => window.open(pdfUrl, '_blank')}
+                  style={{
+                    padding: '8px 12px',
+                    backgroundColor: '#007bff',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Yeni Sekmede Aç
+                </button>
+              </div>
+            )}
+            <iframe
+              src={pdfUrl}
+              width="100%"
+              height="100%"
+              title="PDF Viewer"
+              frameBorder="0"
+              onLoad={handlePdfLoad}
+              onError={handlePdfError}
+              style={{ 
+                display: pdfLoading ? 'none' : 'block',
+                border: 'none'
+              }}
+            />
+          </>
+        ) : (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '100%',
+            color: '#6c757d',
+            fontSize: '16px',
+            textAlign: 'center'
+          }}>
+            <div>
+              <div style={{ fontSize: '48px', marginBottom: '16px' }}>📄</div>
+              <div>PDF görüntülemek için DM, DBF, BOM veya ÇÖP butonlarından birine tıklayın</div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Resize Handle */}
+      <div
+        className="resize-handle"
+        onMouseDown={handleMouseDown}
+        style={{
+          width: '8px',
+          height: '100vh',
+          backgroundColor: '#dee2e6',
+          cursor: 'col-resize',
+          borderLeft: '1px solid #adb5bd',
+          borderRight: '1px solid #adb5bd',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0
+        }}
+      >
+        <div style={{
+          width: '2px',
+          height: '40px',
+          backgroundColor: '#6c757d',
+          marginRight: '2px'
+        }}></div>
+        <div style={{
+          width: '2px',
+          height: '40px',
+          backgroundColor: '#6c757d'
+        }}></div>
+      </div>
+
+      {/* Sağ Panel - Edit Form */}
+      <div 
+        className="edit-panel"
+        style={{
+          width: `${100 - leftWidth}%`,
+          height: '100vh',
+          backgroundColor: '#ffffff',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden'
+        }}
+      >
+        {/* Header */}
+        <div className="edit-header" style={{
+          padding: '20px',
+          borderBottom: '1px solid #dee2e6',
+          backgroundColor: '#f8f9fa',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          <div>
+            <h3 style={{ margin: 0, marginBottom: '10px' }}>{editData.ders_adi || 'Ders Adı'}</h3>
+            <div className="pdf-links" style={{ display: 'flex', gap: '8px' }}>
+              {editData.dm_url && (
+                <button 
+                  onClick={() => handlePdfButtonClick(editData.dm_url, 'DM')}
+                  style={{
+                    padding: '4px 8px',
+                    fontSize: '12px',
+                    backgroundColor: '#007bff',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '3px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  DM
+                </button>
+              )}
+              {editData.dbf_url && (
+                <button 
+                  onClick={() => handlePdfButtonClick(editData.dbf_url, 'DBF')}
+                  style={{
+                    padding: '4px 8px',
+                    fontSize: '12px',
+                    backgroundColor: '#28a745',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '3px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  DBF
+                </button>
+              )}
+              {editData.bom_url && (
+                <button 
+                  onClick={() => handlePdfButtonClick(editData.bom_url, 'BOM')}
+                  style={{
+                    padding: '4px 8px',
+                    fontSize: '12px',
+                    backgroundColor: '#ffc107',
+                    color: 'black',
+                    border: 'none',
+                    borderRadius: '3px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  BOM
+                </button>
+              )}
+            </div>
+          </div>
+          <button 
+            onClick={onClose}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              fontSize: '24px',
+              cursor: 'pointer',
+              color: '#6c757d'
+            }}
+          >
+            ×
+          </button>
+        </div>
+
+        {/* Form Content - Scrollable */}
+        <div className="edit-content" style={{
+          flex: 1,
+          padding: '20px',
+          overflowY: 'auto'
+        }}>
+          {/* Alan-Dal Seçimi */}
+          <div className="form-section" style={{ marginBottom: '20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
+              <MaterialTextField
+                label="Alan"
+                value={editData.alan_id}
+                onChange={(value) => handleAlanChange(value)}
+                select={true}
+                options={alanDalOptions.alanlar.map(alan => ({
+                  value: alan.id,
+                  label: alan.adi
+                }))}
+              />
+              
+              <CopDropdown 
+                copUrls={copUrls} 
+                onSelectCop={handleCopSelect}
+              />
+              
+              <DbfDropdown 
+                dbfUrls={dbfUrls} 
+                onSelectDbf={handleDbfSelect}
+              />
+            </div>
+            
+            <MaterialTextField
+              label="Dal"
+              value={editData.dal_id}
+              onChange={(value) => handleInputChange('dal_id', value)}
+              select={true}
+              disabled={!editData.alan_id}
+              options={editData.alan_id ? (alanDalOptions.dallar[editData.alan_id] || []).map(dal => ({
+                value: dal.id,
+                label: dal.adi
+              })) : []}
+            />
+          </div>
+
+          {/* Ders Bilgileri */}
+          <div className="form-section" style={{ marginBottom: '20px' }}>
+            <MaterialTextField
+              label="Ders Adı"
+              value={editData.ders_adi}
+              onChange={(value) => handleInputChange('ders_adi', value)}
+              type="text"
+            />
+          </div>
+
+          <ButtonGroup
+            label="Sınıf"
+            value={editData.sinif}
+            onChange={(value) => handleInputChange('sinif', value)}
+            options={[9, 10, 11, 12].map(sinif => ({
+              value: sinif,
+              label: `${sinif}`
+            }))}
+          />
+
+          <ButtonGroup
+            label="Saat"
+            value={editData.ders_saati}
+            onChange={(value) => handleInputChange('ders_saati', value)}
+            options={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(saat => ({
+              value: saat,
+              label: `${saat}`
+            }))}
+          />
+
+          <div className="form-section" style={{ marginBottom: '20px' }}>
+            <MaterialTextField
+              label="Dersin Amacı"
+              value={editData.amac}
+              onChange={(value) => handleInputChange('amac', value)}
+              multiline={true}
+              rows={4}
+            />
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="edit-footer" style={{
+          padding: '20px',
+          borderTop: '1px solid #dee2e6',
+          backgroundColor: '#f8f9fa',
+          display: 'flex',
+          gap: '10px',
+          justifyContent: 'flex-end'
+        }}>
+          <button 
+            onClick={onClose}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: '#6c757d',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            İptal
+          </button>
+          <button 
+            onClick={handleCopy}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: '#17a2b8',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            Kopyala
+          </button>
+          <button 
+            onClick={handleSave}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: '#28a745',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            Kaydet
+          </button>
+        </div>
+      </div>
+    </div>
   );
 };
 
@@ -1088,14 +1692,12 @@ function App() {
   const [loading, setLoading] = useState(false); // isScraping yerine
   const [initialLoading, setInitialLoading] = useState(true); // Sayfa ilk yüklenirken
   const [error, setError] = useState(null);
-  const [progress, setProgress] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedTerm, setDebouncedTerm] = useState(searchTerm);
   // viewMode removed - only table view now
   const [editingSidebar, setEditingSidebar] = useState({ isOpen: false, course: null });
   const [editedCourses, setEditedCourses] = useState(new Map()); // Store edited course data
   const [pdfSidebar, setPdfSidebar] = useState({ isOpen: false, url: '', title: '' });
-  const [consoleOpen, setConsoleOpen] = useState(false);
 
   // Kategorik veri state'leri
   const [copData, setCopData] = useState(null);
@@ -1155,10 +1757,7 @@ function App() {
       if (response.ok) {
         const tableDataResponse = await response.json();
         setTableData(tableDataResponse);
-        setProgress(prev => [...prev, { 
-          message: `${tableDataResponse.length} ders veritabanından yüklendi.`,
-          type: 'done' 
-        }]);
+        console.log(`${tableDataResponse.length} ders veritabanından yüklendi.`);
       } else {
         console.error("Tablo verisi yüklenemedi:", response.statusText);
       }
@@ -1179,9 +1778,9 @@ function App() {
       if (cachedData && cachedData.alanlar && Object.keys(cachedData.alanlar).length > 0) {
         setData(cachedData);
         const message = isInitialLoad ? "Önbellekten veriler başarıyla yüklendi." : "Veriler başarıyla yeniden yüklendi.";
-        setProgress(prev => isInitialLoad ? [{ message, type: 'done' }] : [...prev, { message, type: 'done' }]);
+        console.log(message);
       } else if (isInitialLoad) {
-        setProgress([{ message: "Önbellek boş. Verileri çekmek için butona tıklayın.", type: 'info' }]);
+        console.log("Önbellek boş. Verileri çekmek için butona tıklayın.");
       }
       // Her zaman istatistikleri ve tablo verilerini yükle
       await loadStatistics();
@@ -1205,7 +1804,6 @@ function App() {
       return;
     }
     setData(null);
-    setProgress([]);
     setError(null);
     setLoading(true);
 
@@ -1222,11 +1820,11 @@ function App() {
       if (eventData.type === 'done') {
         // Veri çekme tamamlandı, önbellekten tekrar yükle
         fetchCachedData(false);
-        setProgress(prev => [...prev, eventData]);
+        console.log(eventData.message || eventData);
         eventSource.close();
         setLoading(false);
       } else {
-        setProgress(prev => [...prev, eventData]);
+        console.log(eventData.message || eventData);
       }
     };
 
@@ -1245,7 +1843,6 @@ function App() {
   const handleDbfUnrar = useCallback(() => {
     setDbfUnrarLoading(true);
     setDbfUnrarError("");
-    setProgress([]);
     setError(null);
 
     const eventSource = new EventSource("http://localhost:5001/api/dbf-download-extract");
@@ -1253,7 +1850,7 @@ function App() {
     eventSource.onmessage = (event) => {
       try {
         const eventData = JSON.parse(event.data);
-        setProgress(prev => [...prev, eventData]);
+        console.log(eventData.message || eventData);
         if (eventData.type === "done") {
           setDbfUnrarLoading(false);
           eventSource.close();
@@ -1283,15 +1880,14 @@ function App() {
 
     setCatLoading("dbf");
     setCatError("");
-    setConsoleOpen(true);
-    setProgress(prev => [...prev, { type: 'status', message: 'DBF verileri çekiliyor...' }]);
+    console.log('DBF verileri çekiliyor...');
 
     const eventSource = new EventSource("http://localhost:5001/api/get-dbf");
 
     eventSource.onmessage = (event) => {
       try {
         const eventData = JSON.parse(event.data);
-        setProgress(prev => [...prev, eventData]);
+        console.log(eventData.message || eventData);
         if (eventData.type === "done" || eventData.type === "error") {
           setCatLoading("");
           loadStatistics(); // İstatistikleri yeniden yükle
@@ -1300,7 +1896,7 @@ function App() {
       } catch (e) {
         const errorMsg = "Gelen DBF verisi işlenemedi: " + e.message;
         setCatError(errorMsg);
-        setProgress(prev => [...prev, { type: 'error', message: errorMsg }]);
+        console.error(errorMsg);
         setCatLoading("");
         eventSource.close();
       }
@@ -1309,7 +1905,7 @@ function App() {
     eventSource.onerror = (err) => {
       const errorMsg = "DBF indirme bağlantı hatası veya sunucu yanıt vermiyor.";
       setCatError(errorMsg);
-      setProgress(prev => [...prev, { type: 'error', message: errorMsg }]);
+      console.error(errorMsg);
       setCatLoading("");
       eventSource.close();
     };
@@ -1323,15 +1919,14 @@ function App() {
 
     setCatLoading("cop");
     setCatError("");
-    setConsoleOpen(true);
-    setProgress(prev => [...prev, { type: 'status', message: 'ÇÖP linkleri çekiliyor...' }]);
+    console.log('ÇÖP linkleri çekiliyor...');
 
     const eventSource = new EventSource("http://localhost:5001/api/get-cop");
 
     eventSource.onmessage = (event) => {
       try {
         const eventData = JSON.parse(event.data);
-        setProgress(prev => [...prev, eventData]);
+        console.log(eventData.message || eventData);
         if (eventData.type === "done" || eventData.type === "error") {
           setCatLoading("");
           loadStatistics(); // İstatistikleri yeniden yükle
@@ -1340,7 +1935,7 @@ function App() {
       } catch (e) {
         const errorMsg = "Gelen indirme verisi işlenemedi: " + e.message;
         setCatError(errorMsg);
-        setProgress(prev => [...prev, { type: 'error', message: errorMsg }]);
+        console.error(errorMsg);
         setCatLoading("");
         eventSource.close();
       }
@@ -1349,7 +1944,7 @@ function App() {
     eventSource.onerror = (err) => {
       const errorMsg = "ÇÖP indirme bağlantı hatası veya sunucu yanıt vermiyor.";
       setCatError(errorMsg);
-setProgress(prev => [...prev, { type: 'error', message: errorMsg }]);
+console.error(errorMsg);
       setCatLoading("");
       eventSource.close();
     };
@@ -1363,22 +1958,21 @@ setProgress(prev => [...prev, { type: 'error', message: errorMsg }]);
     setCatError("");
     
     // Console'u aç ve mesaj yazdır
-    setConsoleOpen(true);
-    setProgress(prev => [...prev, { type: 'status', message: 'DM verileri çekiliyor...' }]);
+    console.log('DM verileri çekiliyor...');
     
     try {
       const res = await fetch("http://localhost:5001/api/get-dm");
       if (!res.ok) throw new Error("Ders Materyali verisi alınamadı");
       const json = await res.json();
       
-      setProgress(prev => [...prev, { type: 'success', message: `DM: ${json.saved_count || 0} ders kaydedildi` }]);
+      console.log(`DM: ${json.saved_count || 0} ders kaydedildi`);
       
       // Disk dosyalarından gerçek istatistikleri yükle
       await loadStatistics();
       
     } catch (e) {
       setCatError("DM: " + e.message);
-      setProgress(prev => [...prev, { type: 'error', message: 'DM hatası: ' + e.message }]);
+      console.error('DM hatası: ' + e.message);
     } finally {
       setCatLoading("");
     }
@@ -1388,22 +1982,21 @@ setProgress(prev => [...prev, { type: 'error', message: errorMsg }]);
     setCatError("");
     
     // Console'u aç ve mesaj yazdır
-    setConsoleOpen(true);
-    setProgress(prev => [...prev, { type: 'status', message: 'BOM verileri çekiliyor...' }]);
+    console.log('BOM verileri çekiliyor...');
     
     try {
       const res = await fetch("http://localhost:5001/api/get-bom");
       if (!res.ok) throw new Error("BOM verisi alınamadı");
       const json = await res.json();
       
-      setProgress(prev => [...prev, { type: 'success', message: `BOM: ${json.updated_count || 0} ders güncellendi` }]);
+      console.log(`BOM: ${json.updated_count || 0} ders güncellendi`);
       
       // Disk dosyalarından gerçek istatistikleri yükle
       await loadStatistics();
       
     } catch (e) {
       setCatError("BOM: " + e.message);
-      setProgress(prev => [...prev, { type: 'error', message: 'BOM hatası: ' + e.message }]);
+      console.error('BOM hatası: ' + e.message);
     } finally {
       setCatLoading("");
     }
@@ -1459,15 +2052,13 @@ setProgress(prev => [...prev, { type: 'error', message: errorMsg }]);
 
   const handleCloseSidebar = useCallback(() => {
     setEditingSidebar({ isOpen: false, course: null });
+    setPdfSidebar({ isOpen: false, url: '', title: '' }); // PDF sidebar'ı da kapat
   }, []);
 
   const handleShowPDF = useCallback((url, title) => {
     setPdfSidebar({ isOpen: true, url, title });
   }, []);
 
-  const handleClosePDFSidebar = useCallback(() => {
-    setPdfSidebar({ isOpen: false, url: '', title: '' });
-  }, []);
 
   // Workflow step handler removed - using individual module functions now
 
@@ -1500,38 +2091,26 @@ setProgress(prev => [...prev, { type: 'error', message: errorMsg }]);
       }
 
       // Show success message
-      setProgress(prev => [...prev, { 
-        type: 'success', 
-        message: `"${editedData.ders_adi}" dersi başarıyla güncellendi.` 
-      }]);
+      console.log(`"${editedData.ders_adi}" dersi başarıyla güncellendi.`);
 
       // Reload table data to reflect changes
       await loadTableData();
       
     } catch (error) {
-      setProgress(prev => [...prev, { 
-        type: 'error', 
-        message: `Ders güncelleme hatası: ${error.message}` 
-      }]);
+      console.error(`Ders güncelleme hatası: ${error.message}`);
     }
   }, [loadTableData]);
 
   const handleExportToDatabase = useCallback(async () => {
     if (editedCourses.size === 0) {
-      setProgress(prev => [...prev, { 
-        type: 'warning', 
-        message: 'Veritabanına aktarılacak düzenlenmiş ders bulunamadı.' 
-      }]);
+      console.warn('Veritabanına aktarılacak düzenlenmiş ders bulunamadı.');
       return;
     }
 
     try {
       const exportData = Array.from(editedCourses.values());
       
-      setProgress(prev => [...prev, { 
-        type: 'status', 
-        message: `${exportData.length} ders veritabanına aktarılıyor...` 
-      }]);
+      console.log(`${exportData.length} ders veritabanına aktarılıyor...`);
       
       // Gerçek API çağrısı
       const response = await fetch('http://localhost:5001/api/save-courses-to-db', {
@@ -1551,24 +2130,15 @@ setProgress(prev => [...prev, { type: 'error', message: errorMsg }]);
       }
       
       // Başarı mesajı
-      setProgress(prev => [...prev, { 
-        type: 'done', 
-        message: result.message || `${result.success} ders başarıyla kaydedildi!`
-      }]);
+      console.log(result.message || `${result.success} ders başarıyla kaydedildi!`);
       
       // Detaylı sonuçları göster
       if (result.results && result.results.length > 0) {
         result.results.forEach(res => {
           if (res.status === 'error') {
-            setProgress(prev => [...prev, { 
-              type: 'error', 
-              message: `❌ ${res.course}: ${res.message}` 
-            }]);
+            console.error(`❌ ${res.course}: ${res.message}`);
           } else {
-            setProgress(prev => [...prev, { 
-              type: 'success', 
-              message: `✅ ${res.course}: Başarıyla kaydedildi (ID: ${res.ders_id})` 
-            }]);
+            console.log(`✅ ${res.course}: Başarıyla kaydedildi (ID: ${res.ders_id})`);
           }
         });
       }
@@ -1591,10 +2161,7 @@ setProgress(prev => [...prev, { type: 'error', message: errorMsg }]);
       }
       
     } catch (error) {
-      setProgress(prev => [...prev, { 
-        type: 'error', 
-        message: `Veritabanına aktarım hatası: ${error.message}` 
-      }]);
+      console.error(`Veritabanına aktarım hatası: ${error.message}`);
     }
   }, [editedCourses]);
 
@@ -1604,10 +2171,8 @@ setProgress(prev => [...prev, { type: 'error', message: errorMsg }]);
       return;
     }
 
-    setProgress([]);
     setError(null);
     setCopProcessing(true);
-    setConsoleOpen(true);
     // Reset COP read count
     setStats(prev => ({ ...prev, cop_okunan: 0 }));
 
@@ -1626,12 +2191,12 @@ setProgress(prev => [...prev, { type: 'error', message: errorMsg }]);
         setStats(prev => ({ ...prev, ...eventData.stats }));
       }
       
-      setProgress(prev => [...prev, eventData]);
+      console.log(eventData.message || eventData);
 
       if (eventData.type === 'done') {
         setCopProcessing(false);
         eventSource.close();
-        setProgress(prev => [...prev, { type: 'success', message: 'ÇÖP işleme tamamlandı. Tablo güncelleniyor...' }]);
+        console.log('ÇÖP işleme tamamlandı. Tablo güncelleniyor...');
         loadTableData(); // Tabloyu yeniden yükle
       }
     };
@@ -1653,10 +2218,8 @@ setProgress(prev => [...prev, { type: 'error', message: errorMsg }]);
       return;
     }
 
-    setProgress([]);
     setError(null);
     setDbfProcessing(true);
-    setConsoleOpen(true);
     // Reset DBF read count
     setStats(prev => ({ ...prev, dbf_okunan: 0 }));
 
@@ -1675,12 +2238,12 @@ setProgress(prev => [...prev, { type: 'error', message: errorMsg }]);
         setStats(prev => ({ ...prev, ...eventData.stats }));
       }
       
-      setProgress(prev => [...prev, eventData]);
+      console.log(eventData.message || eventData);
 
       if (eventData.type === 'done') {
         setDbfProcessing(false);
         eventSource.close();
-        setProgress(prev => [...prev, { type: 'success', message: 'DBF işleme tamamlandı. Tablo güncelleniyor...' }]);
+        console.log('DBF işleme tamamlandı. Tablo güncelleniyor...');
         loadTableData(); // Tabloyu yeniden yükle
       }
     };
@@ -1703,8 +2266,6 @@ setProgress(prev => [...prev, { type: 'error', message: errorMsg }]);
       return;
     }
 
-    setConsoleOpen(true);
-    setProgress([]);
     setError(null);
     setLoading(true);
 
@@ -1713,7 +2274,7 @@ setProgress(prev => [...prev, { type: 'error', message: errorMsg }]);
     eventSource.onmessage = (event) => {
       try {
         const eventData = JSON.parse(event.data);
-        setProgress(prev => [...prev, eventData]);
+        console.log(eventData.message || eventData);
 
         // Anlık istatistik güncellemesi için yeni eklenen bölüm
         if (eventData.type === 'progress' && eventData.total_areas !== undefined && eventData.total_branches !== undefined) {
@@ -1758,26 +2319,6 @@ setProgress(prev => [...prev, { type: 'error', message: errorMsg }]);
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
         <h1>meslek.meb (alan-dal-ders) dosyalar</h1>
         
-        {/* Console Toggle Button */}
-        <button
-          onClick={() => setConsoleOpen(!consoleOpen)}
-          style={{
-            padding: "10px 20px",
-            background: "#343a40",
-            color: "white",
-            border: "none",
-            borderRadius: "5px",
-            fontSize: "14px",
-            fontWeight: "bold",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px"
-          }}
-        >
-          <span style={{ fontSize: "16px" }}>⚡</span>
-          Console
-        </button>
       </div>
       
       {/* Yeni Tek Satır İş Akışı */}
@@ -2022,129 +2563,6 @@ setProgress(prev => [...prev, { type: 'error', message: errorMsg }]);
         </div>
       )}
 
-      {/* Sliding Console Panel */}
-      <div
-        style={{
-          position: "fixed",
-          top: 0,
-          right: consoleOpen ? "0" : "-400px",
-          width: "400px",
-          height: "100vh",
-          background: "#1e1e1e",
-          color: "#ffffff",
-          transition: "right 0.3s ease",
-          zIndex: 1000,
-          display: "flex",
-          flexDirection: "column",
-          boxShadow: consoleOpen ? "-5px 0 15px rgba(0,0,0,0.3)" : "none"
-        }}
-      >
-        {/* Console Header */}
-        <div style={{
-          padding: "15px 20px",
-          background: "#2d2d2d",
-          borderBottom: "1px solid #444",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center"
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <span style={{ fontSize: "16px" }}>⚡</span>
-            <h3 style={{ margin: 0, color: "#ffffff" }}>Console</h3>
-          </div>
-          <button
-            onClick={() => setConsoleOpen(false)}
-            style={{
-              background: "transparent",
-              border: "none",
-              color: "#ffffff",
-              fontSize: "18px",
-              cursor: "pointer",
-              padding: "5px"
-            }}
-          >
-            ×
-          </button>
-        </div>
-
-        {/* Console Content */}
-        <div style={{
-          textAlign: "left",
-          flex: 1,
-          padding: "10px",
-          overflowY: "auto",
-          fontFamily: "Consolas, 'Courier New', monospace",
-          fontSize: "12px",
-          lineHeight: "1.4"
-        }}>
-          {initialLoading && (
-            <div style={{ color: "#00ff00", marginBottom: "5px" }}>
-              › Önbellek kontrol ediliyor...
-            </div>
-          )}
-          {error && (
-            <div style={{ color: "#ff4444", fontWeight: "bold", marginBottom: "5px" }}>
-              ✗ HATA: {error}
-            </div>
-          )}
-          {progress.map((p, index) => {
-            // Hata mesajından alan_adi ve rar_filename çıkarılabiliyorsa buton ekle
-            let retryButton = null;
-            if (p.type === 'error' && p.message) {
-              const match = p.message.match(/^\[([^\]]+)\].+?([^\s]+\.rar|[^\s]+\.zip)/i);
-              if (match) {
-                const alan_adi = match[1];
-                const rar_filename = match[2];
-                retryButton = (
-                  <button
-                    style={{
-                      marginLeft: 8,
-                      fontSize: 10,
-                      padding: "2px 6px",
-                      background: "#444",
-                      color: "#fff",
-                      border: "1px solid #666",
-                      borderRadius: "3px",
-                      cursor: "pointer"
-                    }}
-                    onClick={async () => {
-                      try {
-                        const res = await fetch("http://localhost:5001/api/dbf-retry-extract", {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ alan_adi, rar_filename })
-                        });
-                        const result = await res.json();
-                        setProgress(prev => [...prev, result]);
-                      } catch (e) {
-                        setProgress(prev => [...prev, { type: "error", message: "Tekrar deneme isteği başarısız: " + e.message }]);
-                      }
-                    }}
-                  >
-                    Tekrar Dene
-                  </button>
-                );
-              }
-            }
-
-            const messageColor = p.type === 'error' ? '#ff4444' :
-                               p.type === 'warning' ? '#ffbb33' :
-                               p.type === 'success' ? '#00C851' :
-                               p.type === 'done' ? '#00C851' :
-                               '#00BFFF';
-
-            if (p.type === 'province_summary') {
-              return (
-                <div key={index} style={{ marginBottom: '10px', whiteSpace: 'pre-wrap', color: messageColor }}>
-                  <div>{`İl          : ${p.province_name} ${p.province_progress}`}</div>
-                  <div>{`Alan Sayısı : ${p.alan_sayisi_province}/${p.alan_sayisi_total_province}`}</div>
-                  <div>{`Dal Sayısı  : ${p.dal_sayisi_province} (Toplam: ${p.dal_sayisi_total_so_far})`}</div>
-                </div>
-              )
-            }
-          })}
-        </div>
-      </div>
 
       {initialLoading ? (
         <div style={{ textAlign: 'center', padding: '50px', fontSize: '18px' }}>
@@ -2162,21 +2580,15 @@ setProgress(prev => [...prev, { type: 'error', message: errorMsg }]);
             />
           </div>
 
-          {/* Düzenleme Kenar Çubuğu */}
+          {/* Düzenleme Kenar Çubuğu - Birleşik Split Screen */}
           <CourseEditSidebar
             course={editingSidebar.course}
             isOpen={editingSidebar.isOpen}
             onClose={handleCloseSidebar}
             onSave={handleSaveCourse}
             onShowPDF={handleShowPDF}
-          />
-
-          {/* PDF Görüntüleyici Kenar Çubuğu - Bağımsız */}
-          <PDFViewerSidebar
             pdfUrl={pdfSidebar.url}
-            isOpen={pdfSidebar.isOpen}
-            onClose={handleClosePDFSidebar}
-            courseTitle={pdfSidebar.title}
+            pdfTitle={pdfSidebar.title}
           />
         </>
       )}
