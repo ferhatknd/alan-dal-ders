@@ -7,6 +7,11 @@ from datetime import datetime
 from abc import ABC, abstractmethod
 from typing import Dict, List, Any, Optional
 
+try:
+    from .utils import extract_archive, scan_directory_for_archives, scan_directory_for_pdfs, with_database
+except ImportError:
+    from utils import extract_archive, scan_directory_for_archives, scan_directory_for_pdfs, with_database
+
 # ===========================
 # MODULAR REFACTORED CLASSES
 # ===========================
@@ -1218,5 +1223,227 @@ def oku_dbf(file_path):
             "ogrenme_birimleri_detayi": [],
             "uygulama_faaliyetleri": []
         }
+
+
+# ===========================
+# DBF ARCHIVE PROCESSING WORKFLOW
+# ===========================
+
+@with_database
+def process_dbf_archives_and_read(cursor, dbf_root_dir="data/dbf"):
+    """
+    DBF klasörlerindeki arşiv dosyalarını açar ve PDF'leri okur.
+    SSE ile progress mesajları yayınlar.
+    
+    Args:
+        cursor: Database cursor
+        dbf_root_dir: DBF dosyalarının bulunduğu ana dizin
+        
+    Yields:
+        Dict: Progress mesajları
+    """
+    try:
+        if not os.path.exists(dbf_root_dir):
+            yield {"type": "error", "message": f"DBF dizini bulunamadı: {dbf_root_dir}"}
+            return
+        
+        # 1. Arşiv dosyalarını tara
+        yield {"type": "status", "message": "DBF arşiv dosyaları taranıyor..."}
+        archives = scan_directory_for_archives(dbf_root_dir)
+        
+        if not archives:
+            yield {"type": "warning", "message": "Açılacak arşiv dosyası bulunamadı"}
+            return
+        
+        yield {"type": "status", "message": f"{len(archives)} arşiv dosyası bulundu"}
+        
+        # 2. Arşiv dosyalarını aç
+        extracted_count = 0
+        for archive in archives:
+            archive_path = archive["path"]
+            archive_name = archive["name"]
+            archive_dir = os.path.dirname(archive_path)
+            
+            try:
+                yield {"type": "status", "message": f"Açılıyor: {archive_name}"}
+                extract_archive(archive_path, archive_dir)
+                extracted_count += 1
+                yield {"type": "progress", "message": f"Açıldı: {archive_name} ✅"}
+                
+            except Exception as e:
+                yield {"type": "error", "message": f"Açma hatası ({archive_name}): {e}"}
+                continue
+        
+        yield {"type": "success", "message": f"Toplam {extracted_count} arşiv dosyası açıldı"}
+        
+        # 3. PDF dosyalarını tara
+        yield {"type": "status", "message": "Açılmış klasörlerde PDF dosyaları taranıyor..."}
+        pdfs = scan_directory_for_pdfs(dbf_root_dir)
+        
+        if not pdfs:
+            yield {"type": "warning", "message": "Okunacak PDF dosyası bulunamadı"}
+            return
+        
+        yield {"type": "status", "message": f"{len(pdfs)} PDF dosyası bulundu"}
+        
+        # 4. PDF dosyalarını oku ve işle
+        processed_count = 0
+        success_count = 0
+        
+        for pdf in pdfs:
+            pdf_path = pdf["path"]
+            pdf_name = pdf["name"]
+            relative_path = pdf["relative_path"]
+            
+            try:
+                yield {"type": "status", "message": f"İşleniyor: {relative_path}"}
+                
+                # PDF'yi oku ve analiz et
+                result = oku_dbf(pdf_path)
+                
+                if result and result.get("metadata", {}).get("status") == "success":
+                    success_count += 1
+                    
+                    # Burada istersen veritabanına kaydetme işlemini ekleyebilirsin
+                    # save_dbf_results_to_database(cursor, result, pdf_path)
+                    
+                    yield {"type": "progress", "message": f"Başarılı: {pdf_name} ✅"}
+                else:
+                    yield {"type": "warning", "message": f"Kısmi başarı: {pdf_name} ⚠️"}
+                
+                processed_count += 1
+                
+            except Exception as e:
+                yield {"type": "error", "message": f"İşlem hatası ({pdf_name}): {e}"}
+                processed_count += 1
+                continue
+        
+        # 5. Özet rapor
+        yield {"type": "success", "message": f"İşlem tamamlandı!"}
+        yield {"type": "info", "message": f"Toplam {processed_count} PDF işlendi"}
+        yield {"type": "info", "message": f"Başarılı: {success_count}, Sorunlu: {processed_count - success_count}"}
+        yield {"type": "done", "message": "DBF arşiv işleme tamamlandı"}
+        
+    except Exception as e:
+        yield {"type": "error", "message": f"Genel hata: {e}"}
+
+
+def extract_all_dbf_archives(dbf_root_dir="data/dbf"):
+    """
+    Tüm DBF arşiv dosyalarını açar (SSE olmadan, standalone).
+    
+    Args:
+        dbf_root_dir: DBF dosyalarının bulunduğu ana dizin
+        
+    Returns:
+        Dict: İşlem sonucu
+    """
+    try:
+        if not os.path.exists(dbf_root_dir):
+            return {"success": False, "error": f"DBF dizini bulunamadı: {dbf_root_dir}"}
+        
+        # Arşiv dosyalarını tara
+        archives = scan_directory_for_archives(dbf_root_dir)
+        
+        if not archives:
+            return {"success": False, "error": "Açılacak arşiv dosyası bulunamadı"}
+        
+        # Arşiv dosyalarını aç
+        extracted_count = 0
+        errors = []
+        
+        for archive in archives:
+            archive_path = archive["path"]
+            archive_name = archive["name"]
+            archive_dir = os.path.dirname(archive_path)
+            
+            try:
+                print(f"Açılıyor: {archive_name}")
+                extract_archive(archive_path, archive_dir)
+                extracted_count += 1
+                print(f"✅ Açıldı: {archive_name}")
+                
+            except Exception as e:
+                error_msg = f"Açma hatası ({archive_name}): {e}"
+                errors.append(error_msg)
+                print(f"❌ {error_msg}")
+                continue
+        
+        return {
+            "success": True,
+            "extracted_count": extracted_count,
+            "total_archives": len(archives),
+            "errors": errors
+        }
+        
+    except Exception as e:
+        return {"success": False, "error": f"Genel hata: {e}"}
+
+
+def process_all_dbf_pdfs(dbf_root_dir="data/dbf"):
+    """
+    Tüm DBF PDF dosyalarını okur ve işler (SSE olmadan, standalone).
+    
+    Args:
+        dbf_root_dir: DBF dosyalarının bulunduğu ana dizin
+        
+    Returns:
+        Dict: İşlem sonucu ve okunan veriler
+    """
+    try:
+        if not os.path.exists(dbf_root_dir):
+            return {"success": False, "error": f"DBF dizini bulunamadı: {dbf_root_dir}"}
+        
+        # PDF dosyalarını tara
+        pdfs = scan_directory_for_pdfs(dbf_root_dir)
+        
+        if not pdfs:
+            return {"success": False, "error": "Okunacak PDF dosyası bulunamadı"}
+        
+        # PDF dosyalarını işle
+        processed_data = []
+        processed_count = 0
+        success_count = 0
+        errors = []
+        
+        for pdf in pdfs:
+            pdf_path = pdf["path"]
+            pdf_name = pdf["name"]
+            relative_path = pdf["relative_path"]
+            
+            try:
+                print(f"İşleniyor: {relative_path}")
+                
+                # PDF'yi oku ve analiz et
+                result = oku_dbf(pdf_path)
+                
+                if result and result.get("metadata", {}).get("status") == "success":
+                    success_count += 1
+                    processed_data.append(result)
+                    print(f"✅ Başarılı: {pdf_name}")
+                else:
+                    print(f"⚠️ Kısmi başarı: {pdf_name}")
+                    processed_data.append(result)
+                
+                processed_count += 1
+                
+            except Exception as e:
+                error_msg = f"İşlem hatası ({pdf_name}): {e}"
+                errors.append(error_msg)
+                print(f"❌ {error_msg}")
+                processed_count += 1
+                continue
+        
+        return {
+            "success": True,
+            "processed_count": processed_count,
+            "success_count": success_count,
+            "total_pdfs": len(pdfs),
+            "errors": errors,
+            "data": processed_data
+        }
+        
+    except Exception as e:
+        return {"success": False, "error": f"Genel hata: {e}"}
 
 

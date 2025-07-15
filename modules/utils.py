@@ -444,3 +444,106 @@ def with_database_json(func: Callable) -> Callable:
             return jsonify(error_response), 500
     
     return wrapper
+
+
+# ====== Archive Extraction Utilities ======
+
+def extract_archive(archive_path, extract_dir):
+    """
+    RAR veya ZIP dosyasını açar. Dosya tipini otomatik algılar.
+    Merkezi arşiv açma fonksiyonu.
+    
+    Args:
+        archive_path: Açılacak arşiv dosyasının yolu
+        extract_dir: Dosyaların çıkarılacağı dizin
+        
+    Raises:
+        Exception: Arşiv açılamadığında hata fırlatır
+    """
+    import rarfile
+    import zipfile
+    
+    try:
+        with open(archive_path, "rb") as f:
+            magic = f.read(4)
+        
+        is_rar = magic == b"Rar!"
+        is_zip = magic == b"PK\x03\x04"
+        
+        if is_rar:
+            with rarfile.RarFile(archive_path) as rf:
+                rf.extractall(extract_dir)
+        elif is_zip:
+            with zipfile.ZipFile(archive_path) as zf:
+                zf.extractall(extract_dir)
+        else:
+            raise Exception(f"Desteklenmeyen dosya formatı (magic: {magic})")
+    except Exception as e:
+        raise Exception(f"Arşiv açılırken hata: {e}")
+
+
+def scan_directory_for_archives(root_dir, file_extensions=('.rar', '.zip')):
+    """
+    Belirtilen dizinde arşiv dosyalarını tarar.
+    
+    Args:
+        root_dir: Taranacak ana dizin
+        file_extensions: Aranacak dosya uzantıları
+        
+    Returns:
+        List[Dict]: Bulunan arşiv dosyaları listesi
+        Format: [{"path": "dosya_yolu", "name": "dosya_adi", "dir": "klasor_adi"}]
+    """
+    archives = []
+    
+    if not os.path.exists(root_dir):
+        return archives
+    
+    for item in os.listdir(root_dir):
+        item_path = os.path.join(root_dir, item)
+        if not os.path.isdir(item_path):
+            continue
+        
+        for fname in os.listdir(item_path):
+            if fname.lower().endswith(file_extensions):
+                archive_path = os.path.join(item_path, fname)
+                archives.append({
+                    "path": archive_path,
+                    "name": fname,
+                    "dir": item
+                })
+    
+    return archives
+
+
+def scan_directory_for_pdfs(root_dir, file_extensions=('.pdf', '.docx')):
+    """
+    Belirtilen dizinde PDF/DOCX dosyalarını tarar.
+    
+    Args:
+        root_dir: Taranacak ana dizin  
+        file_extensions: Aranacak dosya uzantıları
+        
+    Returns:
+        List[Dict]: Bulunan PDF dosyaları listesi
+        Format: [{"path": "dosya_yolu", "name": "dosya_adi", "relative_path": "relative_yol"}]
+    """
+    pdfs = []
+    
+    if not os.path.exists(root_dir):
+        return pdfs
+    
+    # Recursive search
+    for root, dirs, files in os.walk(root_dir):
+        for file in files:
+            if file.lower().endswith(file_extensions):
+                file_path = os.path.join(root, file)
+                relative_path = os.path.relpath(file_path, root_dir)
+                
+                pdfs.append({
+                    "path": file_path,
+                    "name": file,
+                    "relative_path": relative_path
+                })
+    
+    return pdfs

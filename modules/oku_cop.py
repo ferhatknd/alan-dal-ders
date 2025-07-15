@@ -7,7 +7,7 @@ import sys
 import random
 
 try:
-    from .utils import normalize_to_title_case_tr, with_database
+    from .utils import normalize_to_title_case_tr, with_database, scan_directory_for_pdfs
 except ImportError:
     import os
     import sys
@@ -15,7 +15,7 @@ except ImportError:
     parent_dir = os.path.abspath(os.path.join(current_dir, ".."))
     if parent_dir not in sys.path:
         sys.path.insert(0, parent_dir)
-    from modules.utils import normalize_to_title_case_tr, with_database
+    from modules.utils import normalize_to_title_case_tr, with_database, scan_directory_for_pdfs
 
 # ------------- YARDIMCI FONKSİYONLAR ------------- #
 
@@ -544,19 +544,162 @@ def save_cop_results_to_db(cursor, result: Dict[str, Any]) -> int:
     print(f"   ✅ Veritabanı kaydı tamamlandı: {saved_count} ders kaydedildi")
     return saved_count
 
+# ------------- COP PROCESSING WORKFLOW FONKSİYONLARI ------------- #
+
+def process_all_cop_pdfs(cop_root_dir="data/cop"):
+    """
+    Standalone COP PDF işleme fonksiyonu.
+    Tüm COP klasörlerini tarar ve PDF'leri işler.
+    
+    Args:
+        cop_root_dir: COP PDF'lerinin bulunduğu ana dizin
+        
+    Returns:
+        Dict: İşlem sonuçları
+    """
+    print(f"🔍 COP PDF tarama başlatılıyor: {cop_root_dir}")
+    
+    if not os.path.exists(cop_root_dir):
+        print(f"❌ COP dizini bulunamadı: {cop_root_dir}")
+        return {"error": "COP dizini bulunamadı", "processed": 0}
+    
+    # Merkezi scan_directory_for_pdfs fonksiyonunu kullan
+    pdf_files = scan_directory_for_pdfs(cop_root_dir, file_extensions=('.pdf',))
+    
+    if not pdf_files:
+        print(f"📂 '{cop_root_dir}' dizininde PDF bulunamadı.")
+        return {"processed": 0, "message": "PDF bulunamadı"}
+    
+    print(f"📄 {len(pdf_files)} COP PDF bulundu. İşleniyor...")
+    
+    processed_count = 0
+    success_count = 0
+    error_count = 0
+    
+    for pdf_info in pdf_files:
+        try:
+            pdf_path = pdf_info["path"]
+            print(f"\n🔍 İşleniyor: {pdf_info['relative_path']}")
+            
+            result = oku_cop_pdf_file(pdf_path)
+            
+            if result and "hata" not in result:
+                # Veritabanına kaydet
+                saved_count = save_cop_results_to_db(result)
+                if saved_count > 0:
+                    success_count += 1
+                    print(f"✅ Başarılı: {pdf_info['name']} ({saved_count} ders kaydedildi)")
+                else:
+                    error_count += 1
+                    print(f"⚠️ Veri kaydedilemedi: {pdf_info['name']}")
+            else:
+                error_count += 1
+                error_msg = result.get("hata", "Bilinmeyen hata") if result else "İşleme hatası"
+                print(f"❌ Hata: {pdf_info['name']} - {error_msg}")
+            
+            processed_count += 1
+            
+        except Exception as e:
+            error_count += 1
+            print(f"❌ İşleme hatası ({pdf_info['name']}): {e}")
+    
+    print(f"\n🎯 COP İşleme Tamamlandı:")
+    print(f"   📊 Toplam işlenen: {processed_count}")
+    print(f"   ✅ Başarılı: {success_count}")
+    print(f"   ❌ Hatalı: {error_count}")
+    
+    return {
+        "processed": processed_count,
+        "success": success_count,
+        "errors": error_count,
+        "total_pdfs": len(pdf_files)
+    }
+
+@with_database
+def process_cop_directories_and_read(cursor, cop_root_dir="data/cop"):
+    """
+    SSE-enabled COP PDF işleme workflow'u.
+    Progress mesajları yield eder.
+    
+    Args:
+        cursor: Database cursor (decorator tarafından sağlanır)
+        cop_root_dir: COP PDF'lerinin bulunduğu ana dizin
+        
+    Yields:
+        Dict: Progress mesajları
+    """
+    yield {'type': 'status', 'message': f'COP PDF tarama başlatılıyor: {cop_root_dir}'}
+    
+    if not os.path.exists(cop_root_dir):
+        yield {'type': 'error', 'message': f'COP dizini bulunamadı: {cop_root_dir}'}
+        return
+    
+    # 1. PDF dosyalarını tara
+    yield {'type': 'status', 'message': 'COP PDF dosyaları taranıyor...'}
+    pdf_files = scan_directory_for_pdfs(cop_root_dir, file_extensions=('.pdf',))
+    
+    if not pdf_files:
+        yield {'type': 'warning', 'message': f'{cop_root_dir} dizininde PDF bulunamadı.'}
+        return
+    
+    yield {'type': 'status', 'message': f'{len(pdf_files)} COP PDF bulundu.'}
+    
+    # 2. PDF'leri işle
+    processed_count = 0
+    success_count = 0
+    error_count = 0
+    total_pdfs = len(pdf_files)
+    
+    for pdf_info in pdf_files:
+        try:
+            pdf_path = pdf_info["path"]
+            relative_path = pdf_info["relative_path"]
+            
+            yield {'type': 'progress', 'message': f'İşleniyor: {relative_path}', 'progress': processed_count / total_pdfs}
+            
+            result = oku_cop_pdf_file(pdf_path)
+            
+            if result and "hata" not in result:
+                # Veritabanına kaydet
+                saved_count = save_cop_results_to_db(result)
+                if saved_count > 0:
+                    success_count += 1
+                    yield {'type': 'success', 'message': f'Başarılı: {pdf_info["name"]} ({saved_count} ders kaydedildi)'}
+                else:
+                    error_count += 1
+                    yield {'type': 'warning', 'message': f'Veri kaydedilemedi: {pdf_info["name"]}'}
+            else:
+                error_count += 1
+                error_msg = result.get("hata", "Bilinmeyen hata") if result else "İşleme hatası"
+                yield {'type': 'error', 'message': f'Hata: {pdf_info["name"]} - {error_msg}'}
+            
+            processed_count += 1
+            
+        except Exception as e:
+            error_count += 1
+            yield {'type': 'error', 'message': f'İşleme hatası ({pdf_info["name"]}): {e}'}
+    
+    # 3. Özet rapor
+    yield {'type': 'status', 'message': f'COP İşleme Tamamlandı: {processed_count} işlendi, {success_count} başarılı, {error_count} hatalı'}
+    yield {'type': 'done', 'message': f'Tüm COP PDF\'leri işlendi. Toplam: {total_pdfs}, Başarılı: {success_count}'}
+
 # ------------- KOMUT SATIRI GİRİŞ NOKTASI ------------- #
 
 def oku_tum_pdfler(root_dir: str = ".") -> None:
     """
-    root_dir içindeki tüm .pdf dosyalarını tarar, bilgileri terminale basar.
+    root_dir içindeki tüm .pdf dosyalarını merkezi tarama fonksiyonu ile tarar.
     """
-    pdf_files = [os.path.join(root_dir, f) for f in os.listdir(root_dir) if f.lower().endswith(".pdf")]
+    # Merkezi scan_directory_for_pdfs fonksiyonunu kullan
+    pdf_files = scan_directory_for_pdfs(root_dir, file_extensions=('.pdf',))
+    
     if not pdf_files:
         print(f"📂 '{root_dir}' dizininde PDF bulunamadı.")
         return
 
     print(f"📄 {len(pdf_files)} PDF bulundu. İşleniyor...")
-    for pdf_path in pdf_files:
+    for pdf_info in pdf_files:
+        pdf_path = pdf_info["path"]
+        print(f"🔍 İşleniyor: {pdf_info['relative_path']}")
         result = oku_cop_pdf_file(pdf_path)
         # JSON çıktısı kaldırıldı - sadece terminal özeti gösteriliyor
         print("-" * 80)
