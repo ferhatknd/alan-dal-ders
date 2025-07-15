@@ -17,15 +17,15 @@ from contextlib import redirect_stdout, redirect_stderr
 from modules.oku_dbf import oku_dbf
 
 # Yeni modülleri import et
-from modules.getir_dbf import getir_dbf, download_and_extract_dbf_with_progress, retry_extract_all_files_with_progress, retry_extract_file
-from modules.getir_cop import download_all_cop_pdfs_workflow
+from modules.getir_dbf import getir_dbf, download_and_extract_dbf_with_progress, get_dbf
+from modules.getir_cop import get_cop
 # from modules.oku_cop import oku_cop_pdf as new_oku_cop_pdf, save_cop_results_to_db as new_save_cop_results_to_db
 from modules.getir_dm import getir_dm
 from modules.getir_bom import getir_bom
 from modules.getir_dal import getir_dal_with_db_integration
 
 # Database utilities from utils.py
-from modules.utils import with_database_json, find_or_create_database, get_or_create_alan
+from modules.utils import with_database_json, find_or_create_database, get_or_create_alan, normalize_to_title_case_tr, normalize_alan_adi, merge_cop_urls
 
 app = Flask(__name__)
 # CORS'u etkinleştirerek localhost:3000 gibi farklı bir porttan gelen
@@ -187,101 +187,57 @@ def process_pdf():
     return Response(generate(), mimetype='text/event-stream')
 
 # DBF rar dosyalarını indirip açan ve ilerleme mesajı gönderen yeni endpoint
-@app.route('/api/dbf-download-extract')
-def api_dbf_download_extract():
-    """
-    DBF rar dosyalarını indirir, açar ve adım adım ilerleme mesajı gönderir (SSE).
-    """
-    def generate():
-        yield f"data: {json.dumps({'type': 'status', 'message': 'DBF linkleri toplanıyor...'})}\n\n"
-        dbf_data = getir_dbf()
-        yield f"data: {json.dumps({'type': 'status', 'message': 'İndirme ve açma işlemi başlıyor...'})}\n\n"
-        for msg in download_and_extract_dbf_with_progress(dbf_data):
-            yield f"data: {json.dumps(msg)}\n\n"
-            time.sleep(0.05)
-        yield f"data: {json.dumps({'type': 'done', 'message': 'Tüm işlemler tamamlandı.'})}\n\n"
-
-        # DBF eşleştirme artık veritabanı seviyesinde yapılıyor, eski script kaldırıldı
-
-    return Response(generate(), mimetype='text/event-stream')
-
-# Tüm indirilen DBF dosyalarını tekrar açmak için endpoint
-@app.route('/api/dbf-retry-extract-all')
-def api_dbf_retry_extract_all():
-    """
-    dbf/ altındaki tüm alan klasörlerindeki .rar ve .zip dosyalarını tekrar açar (SSE).
-    """
-    def generate():
-        for msg in retry_extract_all_files_with_progress():
-            yield f"data: {json.dumps(msg)}\n\n"
-            time.sleep(0.05)
-        yield f"data: {json.dumps({'type': 'done', 'message': 'Tüm indirilen dosyalar için tekrar açma işlemi tamamlandı.'})}\n\n"
-
-    return Response(generate(), mimetype='text/event-stream')
-
-# Belirli bir DBF dosyasını tekrar açmak için endpoint
-@app.route('/api/dbf-retry-extract', methods=['POST'])
-def api_dbf_retry_extract():
-    """
-    Belirli bir DBF dosyasını tekrar açar (hem rar hem zip destekler).
-    """
-    data = request.get_json()
-    alan_adi = data.get("alan_adi")
-    rar_filename = data.get("rar_filename")
-    if not alan_adi or not rar_filename:
-        return jsonify({"type": "error", "message": "alan_adi ve rar_filename zorunlu"}), 400
-    result = retry_extract_file(alan_adi, rar_filename)
-    return jsonify(result)
-
-# DBF eşleştirme işlemi - artık veritabanı seviyesinde yapılıyor
-@app.route('/api/dbf-match-refresh', methods=['POST'])
-def api_dbf_match_refresh():
-    """
-    DBF eşleştirme işlemini veritabanı seviyesinde yapar.
-    """
-    try:
-        # Veritabanında DBF eşleştirme işlemleri burada yapılabilir
-        # Şu an için basit bir başarı mesajı döndürüyoruz
-        return jsonify({"type": "done", "message": "DBF eşleştirme artık veritabanı seviyesinde yapılmaktadır."})
-    except Exception as e:
-        return jsonify({"type": "error", "message": f"DBF eşleştirme hatası: {e}"}), 500
-
-# Yeni API endpointleri
 @app.route('/api/get-dbf')
-@with_database_json
-def api_get_dbf(cursor):
+def api_get_dbf():
     """
-    DBF (Ders Bilgi Formu) verilerini çeker ve veritabanına kaydeder.
+    DBF (Ders Bilgi Formu) verilerini çeker, veritabanına kaydeder ve dosyaları indirir.
+    İlerlemeyi SSE ile anlık olarak gönderir.
     """
-    try:
-        result = getir_dbf()
-        
-        # Veritabanına kaydet
-        updated_count = save_dbf_data_to_db(cursor, result)
-        
-        return {
-            "data": result,
-            "message": f"{updated_count} alan DBF bilgisi güncellendi",
-            "updated_count": updated_count
-        }
+    def generate():
+        try:
+            # 1. DBF linklerini çek
+            yield f"data: {json.dumps({'type': 'status', 'message': 'DBF linkleri MEB sitesinden çekiliyor...'})}\n\n"
+            dbf_data = getir_dbf()
+            yield f"data: {json.dumps({'type': 'status', 'message': f'{sum(len(alanlar) for alanlar in dbf_data.values())} alan için DBF linkleri bulundu.'})}\n\n"
             
-    except Exception as e:
-        return {"error": str(e)}
+            # 2. URL'leri veritabanına kaydet
+            yield f"data: {json.dumps({'type': 'status', 'message': 'URLler veritabanına kaydediliyor...'})}\n\n"
+            try:
+                from modules.getir_dbf import save_dbf_urls_to_database
+                save_result = save_dbf_urls_to_database()
+                if save_result and save_result.get('success'):
+                    count = save_result.get('count', 0)
+                    yield f"data: {json.dumps({'type': 'success', 'message': f'{count} alan için URLler veritabanına kaydedildi.'})}\n\n"
+                else:
+                    yield f"data: {json.dumps({'type': 'warning', 'message': 'URL kaydetme işlemi tamamlanamadı.'})}\n\n"
+            except Exception as e:
+                yield f"data: {json.dumps({'type': 'error', 'message': f'URL kaydetme hatası: {str(e)}'})}\n\n"
+            
+            # 3. Dosyaları indir (açma işlemi geçici olarak durduruldu)
+            yield f"data: {json.dumps({'type': 'status', 'message': 'DBF dosyaları indiriliyor (açma işlemi geçici olarak durduruldu)...'})}\n\n"
+            
+            # get_dbf fonksiyonu HTML parsing'i dahili olarak yapıyor ve JSON üretiyor
+            for msg in get_dbf():
+                yield f"data: {json.dumps(msg)}\n\n"
+                time.sleep(0.05)
+            
+            yield f"data: {json.dumps({'type': 'done', 'message': 'DBF işlemleri tamamlandı: Linkler çekildi, veritabanına kaydedildi ve dosyalar indirildi.'})}\n\n"
+            
+        except Exception as e:
+            yield f"data: {json.dumps({'type': 'error', 'message': f'DBF işlemi hatası: {str(e)}'})}\n\n"
+    
+    return Response(generate(), mimetype='text/event-stream')
 
 @app.route('/api/get-cop')
-@with_database_json
-def api_get_cop(cursor):
+def api_get_cop():
     """
     ÇÖP linklerini çeker ve veritabanına kaydeder.
     İlerlemeyi SSE ile anlık olarak gönderir.
     """
     def generate():
         try:
-            # download_all_cop_pdfs_workflow artık HTML parsing'i dahili olarak yapıyor
-            from modules.getir_cop import download_all_cop_pdfs_workflow
-            
-            # Fonksiyon artık internal olarak linkleri çekiyor ve alanları kontrol ediyor
-            for message in download_all_cop_pdfs_workflow():
+            # get_cop fonksiyonu HTML parsing'i dahili olarak yapıyor ve JSON üretiyor
+            for message in get_cop():
                 yield f"data: {json.dumps(message)}\n\n"
                 time.sleep(0.05)
         except Exception as e:
@@ -980,126 +936,6 @@ def save_single_course(cursor, course):
     except Exception as e:
         raise Exception(f"Ders kaydı hatası: {str(e)}")
 
-def normalize_alan_adi(alan_adi):
-    """
-    Alan adını normalize eder - büyük/küçük harf sorununu çözer.
-    """
-    if not alan_adi:
-        return "Belirtilmemiş"
-    
-    # Normalize edilmiş alan adı: İlk harf büyük, geri kalan kelimeler ilk harfi büyük
-    normalized = alan_adi.strip()
-    
-    # Yaygın normalizations
-    replacements = {
-        'AİLE VE TÜKETİCİ HİZMETLERİ': 'Aile ve Tüketici Hizmetleri',
-        'ADALET': 'Adalet',
-        'BİLİŞİM TEKNOLOJİLERİ': 'Bilişim Teknolojileri',
-        'METAL TEKNOLOJİSİ': 'Metal Teknolojisi',
-        'ELEKTRİK ELEKTRONİK TEKNOLOJİSİ': 'Elektrik Elektronik Teknolojisi',
-        'MAKİNE TEKNOLOJİSİ': 'Makine Teknolojisi',
-        'İNŞAAT TEKNOLOJİSİ': 'İnşaat Teknolojisi',
-        'ULAŞTIRMA': 'Ulaştırma',
-        'ENERJİ': 'Enerji',
-        'ÇEVRE': 'Çevre',
-        'TARIM': 'Tarım',
-        'HAYVANCILIK': 'Hayvancılık',
-        'GIDA': 'Gıda',
-        'TEKSTİL GİYİM AYAKKABI': 'Tekstil Giyim Ayakkabı',
-        'KIMYA': 'Kimya',
-        'CAM SERAMIK': 'Cam Seramik',
-        'AĞAÇ': 'Ağaç',
-        'KAĞIT MATBAA': 'Kağıt Matbaa',
-        'DERİ': 'Deri',
-        'FİNANS SİGORTACILIK': 'Finans Sigortacılık',
-        'PAZARLAMA VE SATIŞ': 'Pazarlama ve Satış',
-        'LOJİSTİK': 'Lojistik',
-        'TURİZM': 'Turizm',
-        'SPOR': 'Spor',
-        'SANAT VE TASARIM': 'Sanat ve Tasarım',
-        'İLETİŞİM': 'İletişim',
-        'DİN HİZMETLERİ': 'Din Hizmetleri'
-    }
-    
-    # Önce exact match kontrol et
-    if normalized.upper() in replacements:
-        return replacements[normalized.upper()]
-    
-    # Manuel replacement yoksa, title case yap
-    return normalized.title()
-
-def get_or_create_alan(cursor, alan_adi, meb_alan_id=None, cop_url=None, dbf_urls=None):
-    """
-    Alan kaydı bulur veya oluşturur. 
-    ÇÖP URL'leri JSON formatında birleştirir.
-    Alan adını normalize eder.
-    """
-    normalized_alan_adi = normalize_alan_adi(alan_adi)
-    
-    cursor.execute("SELECT id, cop_url FROM temel_plan_alan WHERE alan_adi = ?", (normalized_alan_adi,))
-    result = cursor.fetchone()
-    
-    if result:
-        alan_id, existing_cop_url = result
-        
-        # Mevcut ÇÖP URL'leri ile yeni URL'i birleştir
-        if cop_url:
-            updated_cop_urls = merge_cop_urls(existing_cop_url, cop_url)
-            cursor.execute("""
-                UPDATE temel_plan_alan 
-                SET cop_url = ? 
-                WHERE id = ?
-            """, (updated_cop_urls, alan_id))
-        
-        return alan_id
-    else:
-        # DBF URLs'i JSON string olarak sakla
-        dbf_urls_json = json.dumps(dbf_urls) if dbf_urls else None
-        
-        # ÇÖP URL'ini JSON formatında sakla
-        cop_url_json = json.dumps({}) if not cop_url else json.dumps({"default": cop_url})
-        
-        cursor.execute("""
-            INSERT INTO temel_plan_alan (alan_adi, meb_alan_id, cop_url, dbf_urls) 
-            VALUES (?, ?, ?, ?)
-        """, (normalized_alan_adi, meb_alan_id, cop_url_json, dbf_urls_json))
-        return cursor.lastrowid
-
-def merge_cop_urls(existing_cop_url, new_cop_url):
-    """
-    Mevcut ÇÖP URL'leri ile yeni URL'i birleştirir.
-    JSON formatında saklar.
-    """
-    try:
-        # Mevcut URL'leri parse et
-        if existing_cop_url:
-            if existing_cop_url.startswith('{'):
-                # Zaten JSON formatında
-                existing_urls = json.loads(existing_cop_url)
-            else:
-                # Eski format (string), JSON'a çevir
-                existing_urls = {"default": existing_cop_url}
-        else:
-            existing_urls = {}
-        
-        # Yeni URL'i ekle (sınıf bazında unique key oluştur)
-        if new_cop_url:
-            # URL'den sınıf bilgisini çıkarmaya çalış
-            sinif_match = re.search(r'cop(\d+)', new_cop_url)
-            if sinif_match:
-                sinif = sinif_match.group(1)
-                existing_urls[f"sinif_{sinif}"] = new_cop_url
-            else:
-                # Sınıf bulunamazsa generic key kullan
-                existing_urls[f"url_{len(existing_urls) + 1}"] = new_cop_url
-        
-        return json.dumps(existing_urls)
-        
-    except Exception as e:
-        print(f"ÇÖP URL merge hatası: {e}")
-        # Hata durumunda yeni URL'i kullan
-        return json.dumps({"default": new_cop_url}) if new_cop_url else "{}"
-
 def get_or_create_dal(cursor, dal_adi, alan_id):
     """Dal kaydı bulur veya oluşturur."""
     cursor.execute("SELECT id FROM temel_plan_dal WHERE dal_adi = ?", (dal_adi,))
@@ -1448,32 +1284,6 @@ def save_cop_parsed_data_to_db(cursor, parsed_data, alan_adi, sinif, cop_url):
     
     return saved_count
 
-def normalize_ders_adi(ders_adi):
-    """
-    Ders adını eşleştirme için normalize eder.
-    """
-    if not ders_adi:
-        return ""
-    
-    # Türkçe karakterleri normale çevir ve büyük harfe çevir
-    replacements = {
-        'ç': 'c', 'ğ': 'g', 'ı': 'i', 'ö': 'o', 'ş': 's', 'ü': 'u',
-        'Ç': 'C', 'Ğ': 'G', 'İ': 'I', 'Ö': 'O', 'Ş': 'S', 'Ü': 'U'
-    }
-    
-    normalized = ders_adi.upper().strip()
-    for tr_char, en_char in replacements.items():
-        normalized = normalized.replace(tr_char, en_char)
-    
-    # Fazla boşlukları temizle
-    normalized = ' '.join(normalized.split())
-    
-    # Yaygın kısaltmaları düzenle
-    normalized = normalized.replace('ATOLYESI', 'ATOLYE')
-    normalized = normalized.replace('TEKNOLOJISI', 'TEKNOLOJI')
-    normalized = normalized.replace('ATÖLYESI', 'ATOLYE')
-    
-    return normalized
 
 def find_matching_ders(cursor, dbf_ders_adi, sinif=None):
     """
@@ -1482,7 +1292,7 @@ def find_matching_ders(cursor, dbf_ders_adi, sinif=None):
     if not dbf_ders_adi:
         return []
     
-    normalized_dbf = normalize_ders_adi(dbf_ders_adi)
+    normalized_dbf = normalize_to_title_case_tr(dbf_ders_adi)
     
     # Önce tam eşleşme ara
     if sinif:
@@ -1515,7 +1325,7 @@ def find_matching_ders(cursor, dbf_ders_adi, sinif=None):
     partial_matches = []
     
     for course_id, course_name in all_courses:
-        normalized_course = normalize_ders_adi(course_name)
+        normalized_course = normalize_to_title_case_tr(course_name)
         course_words = set(normalized_course.split())
         
         # Ortak kelime sayısı
@@ -1630,12 +1440,10 @@ def workflow_step_3():
     """
     def generate():
         try:
-            # getir_dbf modülünden fonksiyonu kullan (henüz güncellenmedi)
+            # get_dbf fonksiyonu ile DBF verileri işleniyor
             yield f"data: {json.dumps({'type': 'status', 'message': 'Adım 3: DBF verileri işleniyor...'})}\n\n"
-            dbf_data = getir_dbf()
-            yield f"data: {json.dumps({'type': 'status', 'message': 'DBF dosyaları indiriliyor ve açılıyor...'})}\n\n"
             
-            for msg in download_and_extract_dbf_with_progress(dbf_data):
+            for msg in get_dbf():
                 yield f"data: {json.dumps(msg)}\n\n"
                 time.sleep(0.05)
                 
@@ -1726,8 +1534,7 @@ def workflow_full():
                 # Diğer adımlar için basitleştirilmiş versiyonlar
                 elif step_endpoint == '/api/workflow-step-3':
                     yield f"data: {json.dumps({'type': 'status', 'message': 'DBF verileri işleniyor...'})}\n\n"
-                    dbf_data = getir_dbf()
-                    for msg in download_and_extract_dbf_with_progress(dbf_data):
+                    for msg in get_dbf():
                         yield f"data: {json.dumps(msg)}\n\n"
                         time.sleep(0.05)
                 elif step_endpoint == '/api/workflow-step-4':
