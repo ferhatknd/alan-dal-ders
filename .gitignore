@@ -52,3 +52,6 @@ test_*
 *.tmp
 *.bak
 *.old
+
+# veritabanı
+data/temel_plan.db

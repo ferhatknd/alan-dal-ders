@@ -1278,31 +1278,46 @@ function App() {
   }, []);
 
   // Kategori veri çekme fonksiyonları
-  const fetchDbf = async () => {
+  const fetchDbf = useCallback(() => {
+    if (loading || catLoading) return;
+
     setCatLoading("dbf");
     setCatError("");
-    
-    // Console'u aç ve mesaj yazdır
     setConsoleOpen(true);
     setProgress(prev => [...prev, { type: 'status', message: 'DBF verileri çekiliyor...' }]);
-    
-    try {
-      const res = await fetch("http://localhost:5001/api/get-dbf");
-      if (!res.ok) throw new Error("DBF verisi alınamadı");
-      const json = await res.json();
-      
-      setProgress(prev => [...prev, { type: 'success', message: `DBF: ${json.updated_count || 0} alan güncellendi` }]);
-      
-      // Disk dosyalarından gerçek istatistikleri yükle
-      await loadStatistics();
-      
-    } catch (e) {
-      setCatError("DBF: " + e.message);
-      setProgress(prev => [...prev, { type: 'error', message: 'DBF hatası: ' + e.message }]);
-    } finally {
+
+    const eventSource = new EventSource("http://localhost:5001/api/get-dbf");
+
+    eventSource.onmessage = (event) => {
+      try {
+        const eventData = JSON.parse(event.data);
+        setProgress(prev => [...prev, eventData]);
+        if (eventData.type === "done" || eventData.type === "error") {
+          setCatLoading("");
+          loadStatistics(); // İstatistikleri yeniden yükle
+          eventSource.close();
+        }
+      } catch (e) {
+        const errorMsg = "Gelen DBF verisi işlenemedi: " + e.message;
+        setCatError(errorMsg);
+        setProgress(prev => [...prev, { type: 'error', message: errorMsg }]);
+        setCatLoading("");
+        eventSource.close();
+      }
+    };
+
+    eventSource.onerror = (err) => {
+      const errorMsg = "DBF indirme bağlantı hatası veya sunucu yanıt vermiyor.";
+      setCatError(errorMsg);
+      setProgress(prev => [...prev, { type: 'error', message: errorMsg }]);
       setCatLoading("");
-    }
-  };
+      eventSource.close();
+    };
+
+    return () => {
+      eventSource.close();
+    };
+  }, [loading, catLoading, loadStatistics]);
   const fetchCop = useCallback(() => {
     if (loading || catLoading) return;
 
@@ -2054,6 +2069,7 @@ setProgress(prev => [...prev, { type: 'error', message: errorMsg }]);
 
         {/* Console Content */}
         <div style={{
+          textAlign: "left",
           flex: 1,
           padding: "10px",
           overflowY: "auto",
@@ -2120,20 +2136,12 @@ setProgress(prev => [...prev, { type: 'error', message: errorMsg }]);
             if (p.type === 'province_summary') {
               return (
                 <div key={index} style={{ marginBottom: '10px', whiteSpace: 'pre-wrap', color: messageColor }}>
-                  <div>{`İl      : ${p.province_name} ${p.province_progress}`}</div>
-                  <div>{`Alan Sayısı: ${p.alan_sayisi_province}/${p.alan_sayisi_total_province}`}</div>
-                  <div>{`Dal Sayısı : ${p.dal_sayisi_province} (Toplam: ${p.dal_sayisi_total_so_far})`}</div>
+                  <div>{`İl          : ${p.province_name} ${p.province_progress}`}</div>
+                  <div>{`Alan Sayısı : ${p.alan_sayisi_province}/${p.alan_sayisi_total_province}`}</div>
+                  <div>{`Dal Sayısı  : ${p.dal_sayisi_province} (Toplam: ${p.dal_sayisi_total_so_far})`}</div>
                 </div>
               )
             }
-
-            return (
-              <div key={index} style={{ color: messageColor, marginBottom: '5px', whiteSpace: 'pre-wrap' }}>
-                <span style={{ marginRight: '5px' }}>›</span>
-                {p.message}
-                {retryButton}
-              </div>
-            );
           })}
         </div>
       </div>
