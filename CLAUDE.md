@@ -1,6 +1,8 @@
-# 🤖 CLAUDE.md - MEB Mesleki Eğitim Veri İşleme Projesi Kılavuzu
+# 🤖 CLAUDE.md - MEB Mesleki Eğitim Veri İşleme Projesi - Birleşik Kılavuz
 
-Bu dosya, Claude Code için MEB Mesleki Eğitim Veri İşleme ve Veritabanı Projesinin kapsamlı teknik kılavuzudur. Proje mantığını koruyarak her seferinde hata yapmaktan kaçınmak için tüm kritik bilgileri içerir.
+Bu dosya, Claude Code için MEB Mesleki Eğitim Veri İşleme ve Veritabanı Projesinin kapsamlı birleşik kılavuzudur. README.md, is_akisi.md ve teknik detayların tümünü içerir. Proje mantığını koruyarak her seferinde hata yapmaktan kaçınmak için tüm kritik bilgileri içerir.
+
+**Son Güncelleme**: 2025-07-15
 
 ## 🎯 Proje Genel Bakış
 
@@ -20,21 +22,36 @@ Alan (Area) → Dal (Field) → Ders (Course) → Öğrenme Birimi (Learning Uni
 
 ## 📁 Kritik Dosya Yapısı
 
-### 🔧 Core Modüller (modules/ klasörü)
+### 🔧 Core Backend Dosyaları
+- **`server.py`** - Ana Flask sunucusu, tüm API endpoint'leri, veritabanı işlemleri ve **istatistik sistemi**
+
+### 📊 Backend Modülleri (modules/ klasörü)
 - **`modules/oku_dbf.py`** - ⭐ **YENİDEN ADLANDIRILDI**: DBF PDF parsing ve içerik analizi (eski: oku.py)
 - **`modules/getir_dbf.py`** - Ders Bilgi Formları (DBF) verilerini çeker, RAR/ZIP dosyalarını indirir ve açar
-- **`modules/oku_cop.py`** - ⭐ **YENİ**: COP (Çerçeve Öğretim Programı) PDF parsing ve analiz modülü - Tamamen yeniden yazıldı
+- **`modules/getir_cop.py`** - ⭐ **GÜNCEL**: ÇÖP (Çerçeve Öğretim Programı) linklerini çeker ve utils.py ile indirir
+- **`modules/oku_cop.py`** - ⭐ **YENİ**: COP PDF parsing ve analiz modülü - Tamamen yeniden yazıldı
 - **`modules/getir_cop_oku_local.py`** - ⭐ **YENİ**: Yerel PDF dosyalarını test etmek için standalone ÇÖP okuma modülü
 - **`modules/getir_dm.py`** - Ders Materyalleri (DM) verilerini çeker
 - **`modules/getir_bom.py`** - Bireysel Öğrenme Materyalleri (BÖM) verilerini çeker
 - **`modules/getir_dal.py`** - Alan-Dal ilişkilerini çeker
-- **`modules/utils.py`** - Yardımcı fonksiyonlar, Türkçe karakter normalizasyonu ve **PDF cache yönetimi**
+- **`modules/utils.py`** - Yardımcı fonksiyonlar, Türkçe karakter normalizasyonu ve **merkezi PDF cache yönetimi**
 
-### 🌐 Ana Dosyalar
-- **`server.py`** - Ana Flask sunucusu, tüm API endpoint'leri, veritabanı işlemleri ve **istatistik sistemi**
+### 🌐 Frontend Dosyaları
 - **`src/App.js`** - ⭐ **YENİLENDİ**: Tek satır workflow UI, console panel, JSON popup'sız tasarım
+- **`src/App.css`** - Ana stil dosyası
+- **`package.json`** - Node.js bağımlılıkları ve scriptler
+- **`src/index.js`** - React uygulaması entry point
+- **`src/setupProxy.js`** - CORS proxy ayarları
+- **`src/reportWebVitals.js`** - Performance monitoring
+
+### 🗂️ Veri ve Veritabanı
 - **`data/temel_plan.db`** - SQLite veritabanı dosyası
 - **`data/schema.sql`** - Veritabanı schema dosyası
+- **`data/`** - JSON cache dosyaları, veritabanı ve schema dosyaları
+  - `dbf/` - İndirilen DBF dosyaları (alan klasörleri halinde)
+  - `cop/` - ÇÖP PDF dosyaları
+  - `dm/` - Ders Materyali dosyaları
+  - `bom/` - BÖM dosyaları
 
 ### 🐛 Debug ve Test Araçları
 - **`debug_gida_table.py`** - PDF tablo yapısını detaylı analiz eden debug script
@@ -88,22 +105,180 @@ temel_plan_ders_dal
 ## 🔄 Aşamalı İş Akışı
 
 ### 🚀 Adım 1: Temel Veri Çekme
-- **Verileri Çek:** MEB sitesinden ana veri çekme
-- **DBF Getir:** Ders Bilgi Formu linklerini çek (`modules/getir_dbf.py`)
-- **ÇÖP Getir:** Çerçeve Öğretim Programı linklerini çek (`modules/getir_cop.py`)
-- **DM Getir:** Ders Materyali linklerini çek (`modules/getir_dm.py`)
-- **BÖM Getir:** Bireysel Öğrenme Materyali linklerini çek (`modules/getir_bom.py`)
-- **Dal Getir:** Alan-Dal ilişkilerini çek (`modules/getir_dal.py`)
 
-### 📄 Adım 2: PDF İşleme ve Analiz
-- **DBF İndir ve Aç:** RAR/ZIP dosyalarını otomatik işle
-- **ÇÖP PDF'lerini İşle:** PDF içeriklerini analiz et ve veritabanına kaydet
-- **Tüm PDF'leri Tekrar İşle:** Başarısız işlemleri yeniden dene
+**Dosya**: `modules/getir_dal.py`
+**Fonksiyon**: `getir_dal_with_db_integration()`
 
-### 💾 Adım 3: Veritabanı Güncellemeleri
+**Amaç**: Türkiye'deki tüm illerdeki okullara göre mesleki eğitim alanları ve dallarını toplar.
+
+**İşlem Akışı**:
+
+1. **İl Listesi Çekme**
+   - Endpoint: `https://mtegm.meb.gov.tr/kurumlar/api/getIller.php`
+   - Türkiye'deki 81 il bilgisini çeker
+
+2. **Alan Listesi Çekme** (Her il için)
+   - Endpoint: `https://mtegm.meb.gov.tr/kurumlar/api/getAlanlar.php`
+   - POST data: `{"k_ilid": il_id}`
+   - Her ilin mesleki eğitim alanlarını çeker
+
+3. **Dal Listesi Çekme** (Her alan için)
+   - Endpoint: `https://mtegm.meb.gov.tr/kurumlar/api/getDallar.php`
+   - POST data: `{"k_ilid": il_id, "alan": alan_value}`
+   - Her alanın alt dallarını çeker
+
+4. **Veri Standardizasyonu**
+   - `utils.normalize_to_title_case_tr()` ile Türkçe metin normalizasyonu
+   - Tekrar eden alan/dal kontrolü
+
+5. **Veritabanı Kaydetme**
+   - `temel_plan_alan` tablosuna alanlar
+   - `temel_plan_dal` tablosuna dallar (alan_id ile ilişkili)
+   - Benzersizlik kontrolü ile duplicate önleme
+
+6. **Dosya Organizasyonu**
+   - `data/alan/{alan_adi}/dallar/dallar.json` yapısında yedek dosyalar
+   - Her alan için klasör yapısı oluşturma
+
+**Çıktılar**:
+- Veritabanında alan/dal kayıtları
+- `data/getir_dal_sonuc.json` yedek dosyası
+- `data/alan/` klasör yapısı
+
+**Performans**:
+- 81 il × ortalama 15 alan × ortalama 8 dal ≈ 10,000 API çağrısı
+- Rate limiting: 0.3s/dal, 1.5s/il
+- Session yönetimi ile çerez korunumu
+
+### 📄 Adım 2: Çerçeve Öğretim Programı (ÇÖP) İşleme - İki Modüllü Sistem
+
+**Ana Modüller**:
+- **`modules/getir_cop.py`** - ÇÖP linklerini çeker ve utils.py ile indirir
+- **`modules/oku_cop.py`** - İndirilen PDF'leri okur ve analiz eder
+
+**İşlem Akışı**:
+
+#### 2A. ÇÖP Linkleri ve İndirme (`getir_cop.py`)
+
+1. **MEB Alan ID Güncelleme**
+   - `update_meb_alan_ids()` fonksiyonu ile MEB'den alan ID'leri çeker
+   - Veritabanındaki alanları MEB sistemi ile eşleştirir
+   - `temel_plan_alan.meb_alan_id` sütununu günceller
+
+2. **ÇÖP URL Tarama** (Paralel işlem)
+   - Endpoint: `https://meslek.meb.gov.tr/cercevelistele.aspx`
+   - Her sınıf için (9, 10, 11, 12) ÇÖP listesi çeker
+   - BeautifulSoup ile HTML ayrıştırma
+   - PDF linklerini ve güncelleme yıllarını çıkarır
+
+3. **Merkezi PDF İndirme**
+   - `utils.py`'deki `download_and_cache_pdf()` fonksiyonu kullanılır
+   - `data/cop/{ID:02d}_{alan_adi}/` formatında ID bazlı klasör yapısı
+   - **Dosya adı değiştirilmez** (orijinal MEB dosya adı korunur)
+   - Mevcut dosya kontrolü (gereksiz indirmeleri önleme)
+
+4. **Metadata Kaydetme**
+   - Her alan için `cop_metadata.json` dosyası
+   - ÇÖP bilgileri `temel_plan_alan.cop_url` sütununda JSON format
+
+#### 2B. ÇÖP PDF Okuma ve Analiz (`oku_cop.py`)
+
+1. **PDF İçerik Analizi**
+   - `oku_cop_pdf_file()` ana parsing fonksiyonu
+   - `pdfplumber` ile PDF metin çıkarma
+   - Encoding-safe Türkçe karakter işleme
+
+2. **Alan-Dal-Ders İlişkisi Çıkarma**:
+   - **Tablo Başlığı Tabanlı Alan/Dal Tespiti**: HAFTALIK DERS ÇİZELGESİ başlıklarından okuma
+   - **Adjacent Column Search**: Header-data mismatch'leri için ±2 sütun arama algoritması
+   - **MESLEK DERSLERİ Tablolarından**: Ders listesi, sınıf ve ders saati çıkarma
+   - **Smart Filtering**: TOPLAM ve REHBERLİK satırları otomatik filtreleme
+
+3. **Veritabanı Entegrasyonu**
+   - `save_cop_results_to_db()` fonksiyonu
+   - Çıkarılan ders bilgileri `temel_plan_ders` tablosuna eklenir
+   - `temel_plan_ders_dal` ilişki tablosu güncellenir
+   - Otomatik dal oluşturma (gerekirse)
+
+4. **Toplu İşleme**
+   - `oku_tum_pdfler()` dizindeki tüm PDF'leri işler
+   - Real-time progress reporting
+   - Clickable output: Terminal'de tıklanabilir PDF yolları
+
+**Çıktılar**:
+- İndirilmiş ÇÖP PDF dosyaları (`data/cop/` klasöründe)
+- Veritabanında ders kayıtları
+- `data/getir_cop_sonuc.json` yedek dosyası
+- Alan bazında metadata dosyaları
+
+**Performans**:
+- 4 sınıf × 50 alan ≈ 200 PDF dosyası
+- Paralel indirme (ThreadPoolExecutor)
+- PDF okuma: pdfplumber kütüphanesi
+- Memory efficient: geçici dosya kullanımı
+
+### 💾 Adım 3: DBF (Ders Bilgi Formu) İşleme
+
+**Dosya**: `modules/getir_dbf.py`
+**Amaç**: Ders Bilgi Formu (DBF) verilerini çeker, indirip açar ve içeriklerini analiz eder.
+
+**Kaynak URL**: `https://meslek.meb.gov.tr/dbflistele.aspx`
+
+**İşlem Akışı**:
+
+1. **DBF Link Çekme**
+   - `getir_dbf(siniflar)` - DBF linklerini çeker
+   - Sınıf bazında (9, 10, 11, 12) alan-DBF matrisi
+
+2. **Dosya İndirme ve Açma**
+   - `download_and_extract_dbf()` - İndirir ve açar
+   - RAR/ZIP otomatik açma (`rarfile`, `zipfile`)
+   - Progress tracking ile SSE desteği
+   - Retry mekanizması
+
+3. **İçerik Analizi** (⭐ **YENİ**)
+   - `scan_dbf_files_and_extract_courses()` - İçerik analizi
+   - `extract_course_name_from_dbf()` - PDF'den ders adı (⭐ **YENİ**)
+   - **YENİ**: PDF içeriğinden gerçek ders adı çıkarma (fuzzy matching yerine)
+
+4. **Dosya Organizasyonu**
+```
+data/dbf/
+├── {ID:02d}_{Alan_Adi}/
+│   ├── alan.rar (orijinal)
+│   ├── alan/ (açılmış)
+│   │   ├── 9.SINIF/
+│   │   ├── 10.SINIF/
+│   │   └── 11.SINIF/
+```
+
+### 💾 Adım 4: Veritabanı Güncellemeleri
 - **DBF Eşleştir:** İndirilen dosyalarle dersleri eşleştir
-- **Ders Saatlerini Güncelle:** DBF'lerden ders saati bilgilerini çıkar
+- **Ders Saatlerini Güncelle:** DBF'lerden ders saati bilgilerini çıkar (`modules/oku_dbf.py`)
 - **Veritabanına Aktar:** Düzenlenmiş dersleri kaydet
+
+## 📊 Ek Veri Modülleri
+
+### DM (Ders Materyali) İşleme
+**Dosya**: `modules/getir_dm.py`
+**Kaynak URL**: 
+- `https://meslek.meb.gov.tr/cercevelistele.aspx` (Alan listesi)
+- `https://meslek.meb.gov.tr/dmgoster.aspx` (DM listesi)
+
+**Kritik Mantık**:
+- Sınıf → Alan → Ders hiyerarşisi
+- Dinamik alan ID'lerini HTML'den çıkarma
+- Fuzzy matching ile veritabanı eşleştirmesi
+
+### BÖM (Bireysel Öğrenme Materyali) İşleme
+**Dosya**: `modules/getir_bom.py`
+**Kaynak URL**: `https://meslek.meb.gov.tr/moduller`
+
+**Kritik Özellikler**:
+- ASP.NET form işleme (ViewState yönetimi)
+- 3 aşamalı form gönderimi (Ana sayfa → Alan seç → Ders seç)
+- Paralel işleme (5 worker)
+- Session yönetimi
 
 ## 📋 Modül Detayları ve Kritik Bilgiler
 
@@ -208,110 +383,8 @@ data/dbf/
 - `scan_dbf_files_and_extract_courses()` - İçerik analizi (YENİ)
 - `extract_course_name_from_dbf()` - PDF'den ders adı (YENİ)
 
-### 3. 📄 getir_dm.py
 
-**Amaç:** Ders Materyali (DM) verilerini çeker.
 
-**Kaynak URL:** 
-- `https://meslek.meb.gov.tr/cercevelistele.aspx` (Alan listesi)
-- `https://meslek.meb.gov.tr/dmgoster.aspx` (DM listesi)
-
-**Veri Yapısı:**
-```python
-{
-    "9": {
-        "Bilişim Teknolojileri": [
-            {"isim": "Ders Adı", "sinif": "9. Sınıf", "link": "PDF URL"}
-        ]
-    }
-}
-```
-
-**Dosya Organizasyonu:** ⭐ **YENİ ID Sistemi**
-```
-data/dm/
-├── {ID:02d}_-_{Alan_Adi}/
-│   ├── sinif_9/
-│   │   └── {ders_id:03d}_-_{Ders_Adi}.pdf
-│   ├── sinif_10/
-│   └── dm_metadata.json
-
-Örnek:
-├── 03_-_Bilişim_Teknolojileri/
-│   ├── sinif_9/
-│   │   ├── 001_-_Programlama_Temelleri.pdf
-│   │   └── 002_-_Bilgisayar_Donanım.pdf
-│   └── dm_metadata.json
-```
-
-**Kritik Mantık:**
-- Sınıf → Alan → Ders hiyerarşisi
-- Dinamik alan ID'lerini HTML'den çıkarma
-- Fuzzy matching ile veritabanı eşleştirmesi
-
-### 4. 📄 getir_bom.py
-
-**Amaç:** Bireysel Öğrenme Materyali (BÖM) verilerini çeker.
-
-**Kaynak URL:** `https://meslek.meb.gov.tr/moduller`
-
-**Kritik Özellikler:**
-- ASP.NET form işleme (ViewState yönetimi)
-- 3 aşamalı form gönderimi (Ana sayfa → Alan seç → Ders seç)
-- Paralel işleme (5 worker)
-- Session yönetimi
-
-**Veri Yapısı:**
-```python
-{
-    "04": {  # Alan ID
-        "dersler": [
-            {
-                "ders_adi": "Ders Adı",
-                "moduller": [{"isim": "Modül", "link": "PDF URL"}]
-            }
-        ]
-    }
-}
-```
-
-**Dosya Organizasyonu:** ⭐ **YENİ ID Sistemi**
-```
-data/bom/
-├── {ID:02d}_-_{Alan_Adi}/
-│   ├── {ders_id:03d}_-_{Ders_Adi}/
-│   │   ├── {modul_01}.pdf
-│   │   ├── {modul_02}.pdf
-│   │   └── modül_listesi.json
-│   ├── bom_metadata.json
-│   └── alan_bilgileri.json
-
-Örnek:
-├── 04_-_Biyomedikal_Cihaz_Teknolojileri/
-│   ├── 015_-_Medikal_Cihaz_Bakım/
-│   │   ├── Modül_01_Temel_Bilgiler.pdf
-│   │   ├── Modül_02_Uygulama.pdf
-│   │   └── modül_listesi.json
-│   └── bom_metadata.json
-```
-
-### 5. 📄 getir_dal.py
-
-**Amaç:** Alan-Dal ilişkilerini MEB'in AJAX sisteminden çeker.
-
-**Kaynak URL:** `https://mtegm.meb.gov.tr/kurumlar/`
-
-**Kritik Özellikler:**
-- 81 il bazında tarama
-- AJAX istekleri (JSON response)
-- Session yönetimi
-- Rate limiting (0.3s-1.5s arası)
-- Benzersiz alan-dal kombinasyonları
-
-**API Endpoint'leri:**
-- `/api/getIller.php` - İl listesi
-- `/api/getAlanlar.php` - Alan listesi
-- `/api/getDallar.php` - Dal listesi
 
 ### 6. 📄 oku_dbf.py ⭐ **YENİDEN ADLANDIRILDI**
 
@@ -365,31 +438,31 @@ result = oku_cop_pdf_file("test.pdf")
 - `download_and_cache_pdf(url, cache_type, alan_adi, additional_info)` - Organize PDF cache sistemi
 - `get_temp_pdf_path(url)` - Geçici dosya yolu oluşturma
 
-**Cache Yapısı:** ⭐ **YENİ ID Bazlı Organizasyon**
+**Cache Yapısı:** ⭐ **GÜNCEL ID Bazlı Organizasyon**
 ```
 data/
 ├── cop/     # Çerçeve Öğretim Programları
-│   └── {ID:02d}_-_{alan_adi}/
-│       └── cop_{sinif}_sinif_{yil}.pdf
+│   └── {ID:02d}_{alan_adi}/
+│       └── [orijinal_dosya_adi].pdf
 ├── dbf/     # Ders Bilgi Formları  
-│   └── {ID:02d}_-_{alan_adi}/
+│   └── {ID:02d}_{alan_adi}/
 │       └── {alan}_dbf_package.rar
 ├── dm/      # Ders Materyalleri
-│   └── {ID:02d}_-_{alan_adi}/
+│   └── {ID:02d}_{alan_adi}/
 │       └── sinif_{sinif}/
-│           └── {ders_id:03d}_-_{ders_adi}.pdf
+│           └── {ders_id:03d}_{ders_adi}.pdf
 └── bom/     # Bireysel Öğrenme Materyalleri
-    └── {ID:02d}_-_{alan_adi}/
-        └── {ders_id:03d}_-_{ders_adi}/
+    └── {ID:02d}_{alan_adi}/
+        └── {ders_id:03d}_{ders_adi}/
             └── {modul}.pdf
 
 Örnek:
-├── 03_-_Bilişim_Teknolojileri/
-│   ├── cop_9_sinif_2023.pdf
+├── 03_Bilişim_Teknolojileri/
+│   ├── bilisim_teknolojileri_cop_9_sinif.pdf
 │   ├── sinif_9/
-│   │   ├── 001_-_Programlama_Temelleri.pdf
-│   │   └── 002_-_Bilgisayar_Donanım.pdf
-│   └── 001_-_Programlama_Temelleri/
+│   │   ├── 001_Programlama_Temelleri.pdf
+│   │   └── 002_Bilgisayar_Donanım.pdf
+│   └── 001_Programlama_Temelleri/
 │       ├── Modül_01_Temel_Kavramlar.pdf
 │       └── Modül_02_Uygulama.pdf
 ```
@@ -400,31 +473,137 @@ data/
 - Otomatik cache kontrolü
 - Güvenli dosya adlandırma
 
-## 🔌 API Endpoints
+## 🔌 API Endpoints - Detaylı Referans
 
-### Veri Çekme
-- `GET /api/get-cached-data` - Önbellekteki verileri getir
-- `GET /api/scrape-to-db` - MEB'den veri çek ve DB'ye kaydet (SSE)
-- `POST /api/process-pdf` - PDF dosyasını işle (SSE)
+### 📥 Temel Veri Çekme
+- **`GET /api/get-cached-data`** - Önbellekteki JSON verilerini getir
+  - Response: Tüm modüllerin cache dosyalarından toplanan veriler
+  - Headers: `application/json`
+  
+- **`GET /api/scrape-to-db`** - MEB'den veri çek ve DB'ye kaydet
+  - Method: Server-Sent Events (SSE)
+  - Response: Real-time progress updates
+  - Headers: `text/event-stream`
+  
+- **`POST /api/process-pdf`** - PDF dosyasını işle
+  - Method: Server-Sent Events (SSE) 
+  - Body: `{"pdf_path": "/path/to/file.pdf"}`
+  - Response: PDF işleme progress updates
 
-### Kategorik Veri
-- `GET /api/get-dbf` - DBF verilerini getir
-- `GET /api/get-cop` - ÇÖP verilerini getir  
-- `GET /api/get-dm` - DM verilerini getir
-- `GET /api/get-bom` - BÖM verilerini getir
+### 📊 Kategorik Veri Endpoint'leri
+- **`GET /api/get-dbf`** - DBF (Ders Bilgi Formu) verilerini getir
+  - Response: DBF linkları, dosya durumları, alan organizasyonu
+  - Cache: `data/getir_dbf_sonuc.json`
+  
+- **`GET /api/get-cop`** - ÇÖP (Çerçeve Öğretim Programı) verilerini getir
+  - Response: ÇÖP PDF linkları, sınıf-alan matrisi
+  - Cache: `data/getir_cop_sonuc.json`
+  
+- **`GET /api/get-dm`** - DM (Ders Materyali) verilerini getir
+  - Response: Ders materyali PDF linkları, sınıf-alan-ders hiyerarşisi
+  - Cache: `data/getir_dm_sonuc.json`
+  
+- **`GET /api/get-bom`** - BÖM (Bireysel Öğrenme Materyali) verilerini getir
+  - Response: BÖM modülleri, alan-ders-modül organizasyonu
+  - Cache: `data/getir_bom_sonuc.json`
+  
+- **`GET /api/get-dal`** - Alan-Dal ilişkilerini getir
+  - Response: 81 il bazında alan-dal matrisi
+  - Cache: `data/getir_dal_sonuc.json`
 
-### ⭐ **YENİ**: İstatistik Sistemi
-- `GET /api/get-statistics` - Gerçek zamanlı istatistikler (database + disk dosyaları)
+### 📈 İstatistik ve Monitoring
+- **`GET /api/get-statistics`** - ⭐ **YENİ**: Gerçek zamanlı sistem istatistikleri
+  - Response: Database kayıt sayıları + disk dosya sayıları
+  - Real-time: Veritabanı sorguları + dosya sistemi taraması
+  - Format:
+    ```json
+    {
+      "database": {
+        "alanlar": 58,
+        "dallar": 180,
+        "dersler": 800
+      },
+      "files": {
+        "dbf_files": 245,
+        "cop_files": 89,
+        "dm_files": 456
+      }
+    }
+    ```
 
-### PDF ve DBF İşlemleri
-- `GET /api/dbf-download-extract` - DBF dosyalarını indir/aç (SSE)
-- `GET /api/dbf-retry-extract-all` - Tüm DBF'leri tekrar aç (SSE)
-- `POST /api/process-cop-pdfs` - ÇÖP PDF'lerini işle (SSE)
-- `POST /api/update-ders-saatleri-from-dbf` - DBF'lerden ders saatlerini güncelle (SSE)
+### 🔄 PDF ve DBF İşleme Operasyonları
+- **`GET /api/dbf-download-extract`** - DBF dosyalarını toplu indir ve aç
+  - Method: Server-Sent Events (SSE)
+  - Process: RAR/ZIP indirme → Açma → Klasörleme
+  - Response: Real-time download/extract progress
+  
+- **`GET /api/dbf-retry-extract-all`** - Başarısız DBF'leri tekrar aç
+  - Method: Server-Sent Events (SSE)
+  - Process: Açılmamış dosyaları yeniden işleme
+  - Retry Logic: Exponential backoff
+  
+- **`POST /api/process-cop-pdfs`** - ÇÖP PDF'lerini analiz et ve DB'ye kaydet
+  - Method: Server-Sent Events (SSE)
+  - Body: `{"action": "process_all" | "process_failed"}`
+  - Process: PDF okuma → İçerik analizi → Veritabanı kaydetme
+  - Uses: `modules/oku_cop.py`
+  
+- **`POST /api/update-ders-saatleri-from-dbf`** - DBF'lerden ders saatlerini güncelle
+  - Method: Server-Sent Events (SSE)
+  - Process: DBF PDF okuma → Ders saati çıkarma → DB güncelleme
+  - Uses: `modules/oku_dbf.py`
 
-### Veritabanı
-- `POST /api/dbf-match-refresh` - DBF eşleştirmesini güncelle
-- `POST /api/export-to-database` - Düzenlenmiş dersleri DB'ye aktar
+### 🗄️ Veritabanı Yönetimi
+- **`POST /api/dbf-match-refresh`** - DBF-Ders eşleştirmesini güncelle
+  - Body: Manual eşleştirme kuralları
+  - Process: Fuzzy matching → Manuel override → DB update
+  
+- **`POST /api/export-to-database`** - Düzenlenmiş dersleri veritabanına aktar
+  - Body: Cleaned/processed ders veriler
+  - Process: Validation → Conflict resolution → Bulk insert
+  - Transaction: ACID compliant
+
+### 🔧 İş Akışı Entegrasyonu
+
+**Adım 1 - Temel Veri:**
+```bash
+/api/get-dal          # Alan-Dal çekme
+/api/get-cop          # ÇÖP linklerini çekme  
+/api/get-dbf          # DBF linklerini çekme
+/api/get-dm           # DM linklerini çekme
+/api/get-bom          # BÖM linklerini çekme
+```
+
+**Adım 2 - PDF İşleme:**
+```bash
+/api/dbf-download-extract     # DBF indir/aç
+/api/process-cop-pdfs         # ÇÖP analiz et
+/api/update-ders-saatleri     # Ders saatleri
+```
+
+**Adım 3 - DB Güncellemeleri:**
+```bash
+/api/dbf-match-refresh        # Eşleştirme
+/api/export-to-database       # DB'ye aktar
+/api/get-statistics           # Sonuç kontrolü
+```
+
+### 🚨 Error Handling
+
+Tüm endpoint'ler standardize error response kullanır:
+```json
+{
+  "success": false,
+  "error": "Error message",
+  "error_type": "validation|network|processing|database",
+  "timestamp": "2025-07-15T10:30:00Z"
+}
+```
+
+**SSE Error Format:**
+```
+data: {"type": "error", "message": "Error description", "error_type": "network"}
+```
 
 ## 🚨 Kritik Hatalardan Kaçınma Kuralları
 
@@ -439,8 +618,9 @@ data/
 ### 2. UI Tasarımı ⭐ **YENİ KURAL**
 - **ASLA** JSON popup/display ekranları ekleme
 - Tüm veri gösterimleri console panel'de olmalı
-- Button istatistikleri database + disk dosyalarından otomatik yüklenmeli
+- Button istatistikleri database + disk dosyalarından otomatik yüklenmeli (`/api/get-statistics`)
 - Real-time logging için SSE kullan
+- Aşamalı iş akışı UI ile organize edilmiş 3-adımlı süreç
 
 ### 3. Veritabanı İşlemleri
 - **ASLA** veritabanı dosyasını silme
@@ -498,6 +678,74 @@ CSS3 (responsive)
 Server-Sent Events (SSE)
 ```
 
+## 🏗️ Sistem Mimarisi Detayları
+
+Proje **3 temel katmandan** oluşur:
+
+1. **🔧 Backend (Flask + SQLite):** Veri çekme, PDF işleme ve veritabanı yönetimi
+2. **🌐 Frontend (React):** Aşamalı iş akışı ile kullanıcı arayüzü  
+3. **📊 Veritabanı (SQLite):** Hiyerarşik eğitim verilerinin yapılandırılmış saklanması
+
+### Hiyerarşik Veri Yapısı
+```
+Alan (Area) → Dal (Field) → Ders (Course) → Öğrenme Birimi (Learning Unit) → Konu (Topic) → Kazanım (Achievement)
+```
+
+## 🚀 Kurulum ve Çalıştırma
+
+### Gereksinimler
+- Python 3.8+
+- Node.js 16+
+- SQLite3
+
+### 1. Backend Kurulumu
+```bash
+# Python sanal ortam oluştur
+python -m venv venv
+source venv/bin/activate  # macOS/Linux
+# venv\Scripts\activate   # Windows
+
+# Bağımlılıkları yükle
+pip install -r requirements.txt
+
+# Flask sunucusu başlat
+python server.py
+```
+
+### 2. Frontend Kurulumu
+```bash
+# Node.js bağımlılıklarını yükle
+npm install
+
+# React dev server başlat
+npm start
+```
+
+## 📊 Veri Akışı
+
+```mermaid
+graph TD
+    A[MEB Sitesi] --> B[getir_* Modülleri]
+    B --> C[JSON Cache]
+    B --> D[SQLite Veritabanı]
+    C --> E[React Frontend]
+    D --> E
+    F[PDF Dosyaları] --> G[oku_*.py]
+    G --> D
+    E --> H[Kullanıcı İşlemleri]
+    H --> I[SSE Real-time Updates]
+```
+
+## 🎯 Çekilen Veri Türleri
+
+- **🏢 Alanlar:** Mesleki eğitim alanları (58 alan)
+- **🎓 Dallar:** Meslek dalları (alan başına 1-8 dal)
+- **📚 Dersler:** Ders listesi ve detayları
+- **📄 DBF:** Ders Bilgi Formları (RAR/ZIP dosyaları)
+- **📋 ÇÖP:** Çerçeve Öğretim Programları (PDF dosyaları)
+- **📖 DM:** Ders Materyalleri (PDF linkleri)
+- **📚 BÖM:** Bireysel Öğrenme Materyalleri
+
 ## 📈 Performans ve İstatistikler
 
 ### Veri Hacmi
@@ -513,6 +761,31 @@ Server-Sent Events (SSE)
 - **DM Çekme**: ~30 saniye
 - **BÖM Çekme**: ~45 saniye (ASP.NET karmaşıklığı)
 - **Dal Çekme**: ~5 dakika (81 il taraması)
+
+## 🏆 Özellikler
+
+- ✅ **Real-time Progress:** SSE ile canlı işlem takibi
+- ✅ **Aşamalı İş Akışı:** Organize edilmiş 3-adımlı süreç  
+- ✅ **Otomatik PDF İşleme:** Batch PDF analizi
+- ✅ **Hata Toleransı:** Başarısız işlemler için retry mekanizması
+- ✅ **Veritabanı Tabanlı:** SQLite ile yapılandırılmış veri saklama
+- ✅ **Responsive UI:** Modern ve kullanıcı dostu arayüz
+- ✅ **Önbellekleme:** Hızlı veri erişimi için cache sistemi
+
+## 🔧 Teknoloji Yığını
+
+**Backend:**
+- Python 3.8+
+- Flask (Web framework)
+- SQLite3 (Veritabanı)
+- Requests + BeautifulSoup4 (Web scraping)
+- pdfplumber (PDF parsing)
+
+**Frontend:**
+- React 18
+- Modern JavaScript (ES6+)
+- CSS3 (Responsive design)
+- Server-Sent Events (Real-time updates)
 
 ## 🔄 Sık Kullanılan İşlemler
 
@@ -593,13 +866,49 @@ with sqlite3.connect('data/temel_plan.db') as conn:
 - [ ] Memory optimization
 - [ ] Caching strategies
 
-## 📝 Son Notlar
+## 🚨 Önemli Notlar
 
-- **MEB Sistem Değişiklikleri**: Site yapısı değişirse modüller güncellenmeli
+- DBF dosyaları büyük boyutlu olabilir, indirme süresi değişkendir
+- PDF işleme CPU yoğun operasyon, zaman alabilir
+- MEB sitesi yapısı değişirse veri çekme modülleri güncelleme gerektirebilir
+- Veritabanı dosyası (`data/temel_plan.db`) otomatik oluşturulur
 - **Session Yönetimi**: Özellikle BÖM ve Dal modülleri için kritik
 - **PDF Validation**: Dosya bütünlüğü kontrolü önemli
 - **Error Recovery**: Network hatalarında robust retry mekanizması
 
+## 🔗 İlişkisel Yapı
+
+```
+Alan (1) ←→ (N) Dal ←→ (M) Ders ←→ (N) Öğrenme Birimi ←→ (N) Konu ←→ (N) Kazanım
+     ↓              ↓         ↓              ↓              ↓         ↓
+   58 Alan      ~180 Dal   ~800 Ders     ~2000 Birim    ~5000 Konu  ~8000 Kazanım
+```
+
+## 🔄 Otomatik Database Kurulumu
+
+Proje **otomatik migration sistemi** ile çalışır:
+
+1. **İlk Çalıştırma**: `python server.py` komutu ile sunucu başlatıldığında
+2. **Otomatik Schema**: `data/schema.sql` dosyasından tüm tablolar otomatik oluşturulur
+3. **Migration Tracking**: `schema_migrations` tablosu ile versiyon takibi
+4. **Güvenli Güncellemeler**: `IF NOT EXISTS` ile çakışma önlenir
+
+```bash
+# Sunucuyu başlat - Database otomatik kurulur
+python server.py
+
+# Çıktı örneği:
+# ✅ Database initialized successfully: data/temel_plan.db
+# 📊 Current schema version: 1
+```
+
+## 📄 Lisans
+
+Bu proje MIT Lisansı altında lisanslanmıştır.
+
 ---
+
+🔗 **MEB Kaynak:** https://meslek.meb.gov.tr/  
+📧 **Destek:** Projeyle ilgili sorular için issue açabilirsiniz
 
 📊 **Bu CLAUDE.md dosyası, projenin tüm kritik bilgilerini içerir ve Claude Code'un tutarlı çalışması için tasarlanmıştır.**
