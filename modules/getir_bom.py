@@ -7,9 +7,9 @@ import json
 import time
 from pathlib import Path
 try:
-    from .utils import normalize_to_title_case_tr
+    from .utils import normalize_to_title_case_tr, sanitize_filename_tr
 except ImportError:
-    from utils import normalize_to_title_case_tr
+    from utils import normalize_to_title_case_tr, sanitize_filename_tr
 
 # Doğru URL: https://meslek.meb.gov.tr/moduller (debug ile doğrulandı)
 BASE_BOM_URL = "https://meslek.meb.gov.tr/moduller"
@@ -68,18 +68,13 @@ def get_ders_ids_from_db():
         print(f"Veritabanı ders bilgileri çekme hatası: {e}")
         return {}
 
-def normalize_bom_area_name(html_area_name):
-    """
-    HTML'den gelen alan adını utils.py standardına göre normalize eder.
-    """
-    return normalize_to_title_case_tr(html_area_name)
 
 def find_matching_area_id_for_bom(html_area_name, db_areas):
     """
     HTML'den gelen alan adını veritabanındaki alanlarla eşleştirir (BOM için).
     Returns: (alan_id, matched_name) veya (None, None)
     """
-    normalized_html_name = normalize_bom_area_name(html_area_name)
+    normalized_html_name = normalize_to_title_case_tr(html_area_name)
     
     # Tam eşleşme kontrolü
     if normalized_html_name in db_areas:
@@ -97,11 +92,9 @@ def find_matching_area_id_for_bom(html_area_name, db_areas):
 def sanitize_filename_bom(name):
     """
     Dosya/klasör ismi olarak kullanılabilir hale getir (BOM için).
+    utils.py'deki merkezi sanitize_filename_tr fonksiyonunu kullanır.
     """
-    name = name.replace(" ", "_")
-    import re
-    name = re.sub(r"[^\w\-_.()]", "", name)
-    return name
+    return sanitize_filename_tr(name)
 
 def get_alanlar(sinif_kodu="9"):
     params = {"sinif_kodu": sinif_kodu, "kurum_id": "1"}
@@ -356,7 +349,7 @@ def getir_bom_with_db_integration(siniflar=["9", "10", "11", "12"]):
                 
                 if bom_data and bom_data.get("dersler"):
                     # Alan adını normalize et ve veritabanında olup olmadığını kontrol et
-                    normalized_area_name = normalize_bom_area_name(alan_adi)
+                    normalized_area_name = normalize_to_title_case_tr(alan_adi)
                     
                     # Hem orijinal hem normalize edilmiş isimle kontrol et
                     if alan_adi in db_areas or normalized_area_name in db_areas:
