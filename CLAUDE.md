@@ -2,7 +2,7 @@
 
 Bu dosya, Claude Code için MEB Mesleki Eğitim Veri İşleme ve Veritabanı Projesinin kapsamlı birleşik kılavuzudur. README.md, is_akisi.md ve teknik detayların tümünü içerir. Proje mantığını koruyarak her seferinde hata yapmaktan kaçınmak için tüm kritik bilgileri içerir.
 
-**Son Güncelleme**: 2025-07-15
+**Son Güncelleme**: 2025-07-15 (Fonksiyon standardizasyonu: get_cop() ve get_dbf() güncellemeleri)
 
 ## 🎯 Proje Genel Bakış
 
@@ -28,8 +28,8 @@ Alan (Area) → Dal (Field) → Ders (Course) → Öğrenme Birimi (Learning Uni
 
 ### 📊 Backend Modülleri (modules/ klasörü)
 - **`modules/oku_dbf.py`** - ⭐ **YENİDEN ADLANDIRILDI**: DBF PDF parsing ve içerik analizi (eski: oku.py)
-- **`modules/getir_dbf.py`** - Ders Bilgi Formları (DBF) verilerini çeker, RAR/ZIP dosyalarını indirir ve açar
-- **`modules/getir_cop.py`** - ⭐ **GÜNCEL**: ÇÖP (Çerçeve Öğretim Programı) linklerini çeker ve utils.py ile indirir
+- **`modules/getir_dbf.py`** - ⭐ **STANDARDİZE**: `get_dbf()` fonksiyonu ile DBF verilerini çeker, RAR/ZIP indirir (açmaz), `data/get_dbf.json` üretir ve `dbf_urls` sütununa JSON kaydeder
+- **`modules/getir_cop.py`** - ⭐ **STANDARDİZE**: `get_cop()` fonksiyonu ile ÇÖP verilerini çeker, PDF indirir (açmaz), `data/get_cop.json` üretir ve `cop_url` sütununa JSON kaydeder
 - **`modules/oku_cop.py`** - ⭐ **YENİ**: COP PDF parsing ve analiz modülü - Tamamen yeniden yazıldı
 - **`modules/getir_cop_oku_local.py`** - ⭐ **YENİ**: Yerel PDF dosyalarını test etmek için standalone ÇÖP okuma modülü
 - **`modules/getir_dm.py`** - Ders Materyalleri (DM) verilerini çeker
@@ -48,6 +48,8 @@ Alan (Area) → Dal (Field) → Ders (Course) → Öğrenme Birimi (Learning Uni
 ### 🗂️ Veri ve Veritabanı
 - **`data/temel_plan.db`** - SQLite veritabanı dosyası
 - **`data/schema.sql`** - Veritabanı schema dosyası
+- **`data/get_cop.json`** - ⭐ **YENİ**: COP verilerinin JSON çıktısı
+- **`data/get_dbf.json`** - ⭐ **YENİ**: DBF verilerinin JSON çıktısı
 - **`data/`** - JSON cache dosyaları, veritabanı ve schema dosyaları
   - `dbf/` - İndirilen DBF dosyaları (alan klasörleri halinde)
   - `cop/` - ÇÖP PDF dosyaları
@@ -66,8 +68,8 @@ temel_plan_alan
 ├── id (INTEGER PRIMARY KEY)
 ├── alan_adi (TEXT NOT NULL)
 ├── meb_alan_id (TEXT)
-├── cop_url (TEXT) - ÇÖP URL'leri (JSON format)
-├── dbf_urls (TEXT) - DBF URL'leri (JSON format)
+├── cop_url (TEXT) - ÇÖP URL'leri (JSON format) ⭐ STANDARDİZE
+├── dbf_urls (TEXT) - DBF URL'leri (JSON format) ⭐ YENİ
 ├── created_at, updated_at (TIMESTAMP)
 
 -- 2. DALLAR (Meslek Dalları)
@@ -83,7 +85,7 @@ temel_plan_ders
 ├── ders_adi (TEXT NOT NULL)
 ├── sinif (INTEGER) - Sınıf seviyesi (9, 10, 11, 12)
 ├── ders_saati (INTEGER NOT NULL DEFAULT 0)
-├── amac (TEXT) - DBF PDF ten okunan dersin amacı metni
+├── amac (TEXT) - DBF PDF'ten okunan dersin amacı metni
 ├── dm_url (TEXT) - Ders Materyali PDF URL'si
 ├── dbf_url (TEXT) - DBF yerel dosya yolu
 ├── bom_url (TEXT) - BÖM URL'si
@@ -97,7 +99,7 @@ temel_plan_ders_dal
 ├── created_at (TIMESTAMP)
 
 -- Diğer tablolar: temel_plan_ogrenme_birimi, temel_plan_konu, 
--- temel_plan_kazanim, temel_plan_arac, temel_plan_olcme, vb. bunların hepsi DBF PDF ten oku_dbf.py ile alınır.
+-- temel_plan_kazanim, temel_plan_arac, temel_plan_olcme, vb. bunların hepsi DBF PDF'ten oku_dbf.py ile alınır.
 ```
 
 ## 🔄 Aşamalı İş Akışı
@@ -150,15 +152,12 @@ temel_plan_ders_dal
 - Rate limiting: 0.3s/dal, 1.5s/il
 - Session yönetimi ile çerez korunumu
 
-### 📄 Adım 2: Çerçeve Öğretim Programı (ÇÖP) İşleme - İki Modüllü Sistem
+### 📄 Adım 2: Çerçeve Öğretim Programı (ÇÖP) İşleme - ⭐ STANDARDİZE
 
-**Ana Modüller**:
-- **`modules/getir_cop.py`** - ÇÖP linklerini çeker ve utils.py ile indirir
-- **`modules/oku_cop.py`** - İndirilen PDF'leri okur ve analiz eder
+**Ana Modül**: `modules/getir_cop.py`
+**Ana Fonksiyon**: `get_cop()` ⭐ **YENİ İSİM** (eski: `download_all_cop_pdfs_workflow()`)
 
 **İşlem Akışı**:
-
-#### 2A. ÇÖP Linkleri ve İndirme (`getir_cop.py`)
 
 1. **MEB Alan ID Güncelleme**
    - `update_meb_alan_ids()` fonksiyonu ile MEB'den alan ID'leri çeker
@@ -180,35 +179,12 @@ temel_plan_ders_dal
 4. **Metadata Kaydetme**
    - Her alan için `cop_metadata.json` dosyası
    - ÇÖP bilgileri `temel_plan_alan.cop_url` sütununda JSON format
-
-#### 2B. ÇÖP PDF Okuma ve Analiz (`oku_cop.py`)
-
-1. **PDF İçerik Analizi**
-   - `oku_cop_pdf_file()` ana parsing fonksiyonu
-   - `pdfplumber` ile PDF metin çıkarma
-   - Encoding-safe Türkçe karakter işleme
-
-2. **Alan-Dal-Ders İlişkisi Çıkarma**:
-   - **Tablo Başlığı Tabanlı Alan/Dal Tespiti**: HAFTALIK DERS ÇİZELGESİ başlıklarından okuma
-   - **Adjacent Column Search**: Header-data mismatch'leri için ±2 sütun arama algoritması
-   - **MESLEK DERSLERİ Tablolarından**: Ders listesi, sınıf ve ders saati çıkarma
-   - **Smart Filtering**: TOPLAM ve REHBERLİK satırları otomatik filtreleme
-
-3. **Veritabanı Entegrasyonu**
-   - `save_cop_results_to_db()` fonksiyonu
-   - Çıkarılan ders bilgileri `temel_plan_ders` tablosuna eklenir
-   - `temel_plan_ders_dal` ilişki tablosu güncellenir
-   - Otomatik dal oluşturma (gerekirse)
-
-4. **Toplu İşleme**
-   - `oku_tum_pdfler()` dizindeki tüm PDF'leri işler
-   - Real-time progress reporting
-   - Clickable output: Terminal'de tıklanabilir PDF yolları
+   - ⭐ **YENİ**: `data/get_cop.json` çıktı dosyası
 
 **Çıktılar**:
 - İndirilmiş ÇÖP PDF dosyaları (`data/cop/` klasöründe)
-- Veritabanında ders kayıtları
-- `data/getir_cop_sonuc.json` yedek dosyası
+- Veritabanında `cop_url` sütununa JSON formatında URL'ler
+- `data/get_cop.json` JSON çıktı dosyası ⭐ **YENİ**
 - Alan bazında metadata dosyaları
 
 **Performans**:
@@ -217,10 +193,12 @@ temel_plan_ders_dal
 - PDF okuma: pdfplumber kütüphanesi
 - Memory efficient: geçici dosya kullanımı
 
-### 💾 Adım 3: DBF (Ders Bilgi Formu) İşleme
+### 💾 Adım 3: DBF (Ders Bilgi Formu) İşleme - ⭐ STANDARDİZE
 
-**Dosya**: `modules/getir_dbf.py`
-**Amaç**: Ders Bilgi Formu (DBF) verilerini çeker, indirip açar ve içeriklerini analiz eder.
+**Ana Modül**: `modules/getir_dbf.py`
+**Ana Fonksiyon**: `get_dbf()` ⭐ **YENİ İSİM** (eski: `download_dbf_without_extract_with_progress()`)
+
+**Amaç**: Ders Bilgi Formu (DBF) verilerini çeker, indirip (açmaz) ve içeriklerini analiz eder.
 
 **Kaynak URL**: `https://meslek.meb.gov.tr/dbflistele.aspx`
 
@@ -230,30 +208,32 @@ temel_plan_ders_dal
    - `getir_dbf(siniflar)` - DBF linklerini çeker
    - Sınıf bazında (9, 10, 11, 12) alan-DBF matrisi
 
-2. **Dosya İndirme ve Açma**
-   - `download_and_extract_dbf()` - İndirir ve açar
-   - RAR/ZIP otomatik açma (`rarfile`, `zipfile`)
+2. **Dosya İndirme (Açmaz)**
+   - RAR/ZIP dosyalarını indirir
    - Progress tracking ile SSE desteği
    - Retry mekanizması
+   - **Açma işlemi kaldırıldı** (oku_dbf.py'ye taşındı)
 
-3. **İçerik Analizi** (⭐ **YENİ**)
-   - `scan_dbf_files_and_extract_courses()` - İçerik analizi
-   - `extract_course_name_from_dbf()` - PDF'den ders adı (⭐ **YENİ**)
-   - **YENİ**: PDF içeriğinden gerçek ders adı çıkarma (fuzzy matching yerine)
+3. **URL'leri Veritabanına Kaydetme** ⭐ **YENİ**
+   - `dbf_urls` sütununa JSON formatında URL'ler
+   - Alan bazında sınıf URL'leri gruplandırılır
+   - Protokol alan handling ile otomatik alan oluşturma
 
 4. **Dosya Organizasyonu**
 ```
 data/dbf/
 ├── {ID:02d}_{Alan_Adi}/
 │   ├── alan.rar (orijinal)
-│   ├── alan/ (açılmış)
-│   │   ├── 9.SINIF/
-│   │   ├── 10.SINIF/
-│   │   └── 11.SINIF/
+│   └── (açma işlemi kaldırıldı)
 ```
 
+**Çıktılar**:
+- İndirilmiş DBF RAR/ZIP dosyaları
+- Veritabanında `dbf_urls` sütununa JSON formatında URL'ler ⭐ **YENİ**
+- `data/get_dbf.json` JSON çıktı dosyası ⭐ **YENİ**
+
 ### 💾 Adım 4: Veritabanı Güncellemeleri
-- **DBF Eşleştir:** İndirilen dosyalarle dersleri eşleştir
+- **DBF Eşleştir:** İndirilen dosyalarla dersleri eşleştir
 - **Ders Saatlerini Güncelle:** DBF'lerden ders saati bilgilerini çıkar (`modules/oku_dbf.py`)
 - **Veritabanına Aktar:** Düzenlenmiş dersleri kaydet
 
@@ -301,136 +281,37 @@ data/dbf/
 - `oku_cop_pdf_file(pdf_path)` - ⭐ **YENİ**: Ana parsing fonksiyonu
 - `oku_tum_pdfler(root_dir)` - Toplu PDF işleme
 
-**🔧 Kritik İyileştirmeler:**
+### 2. 📄 getir_dbf.py - ⭐ **STANDARDİZE**
 
-**1. Alan/Dal Tespiti:**
-```python
-# Eski: İçindekiler bölümünden (güvenilmez)
-# Yeni: HAFTALIK DERS ÇİZELGESİ üstündeki başlıklardan
-"KUYUMCULUK TEKNOLOJİSİ ALANI"     → Alan: Kuyumculuk Teknolojisi  
-"(TAKI İMALATI DALI)"              → Dal: Takı İmalatı
-```
+**Amaç:** DBF verilerini çeker, indirir (açmaz) ve JSON formatında veritabanına kaydeder.
 
-**2. Adjacent Column Search:**
-```python
-# Header detection: DERSLER sütunu index 3'te
-# Data rows: Ders adları index 2'de
-# Çözüm: ±2 offset ile arama [0, -1, 1, -2, 2]
-```
+**Ana Fonksiyon**: `get_dbf()` ⭐ **YENİ İSİM** (eski: `download_dbf_without_extract_with_progress()`)
 
-**3. Encoding-Safe MESLEK DERSLERİ:**
-```python
-if ("MESLEK DERSLERİ" in kategori_cell or 
-    "MESLEKİ DERSLER" in kategori_cell or
-    "MESLEK DERSLER" in kategori_cell or
-    "MESLEK" in kategori_cell and ("DERS" in kategori_cell)):
-```
+**🔧 Kritik Özellikler:**
+- **Protokol Alan Desteği**: " - Protokol" formatını handle eder
+- **Otomatik Alan Oluşturma**: Eksik alanları otomatik oluşturur
+- **JSON Çıktı**: `data/get_dbf.json` dosyası üretir
+- **Veritabanı Entegrasyonu**: `dbf_urls` sütununa JSON formatında URL'ler
 
-**4. Smart Filtering:**
-```python
-# Ders olmayan satırları filtrele
-if ("TOPLAM" in potential_upper or 
-    "REHBERLİK" in potential_upper and "YÖNLENDİRME" in potential_upper):
-    continue  # Atla
-```
+**Protokol Alan Fonksiyonları:**
+- `is_protocol_area(alan_adi)` - Protokol alan tespiti
+- `get_base_area_name(protocol_name)` - ⭐ **DÜZELTİLDİ**: " - Protokol" formatını regex ile kaldırır
+- `handle_protocol_area(cursor, alan_adi, alan_id)` - Protokol alan işleme
+- `link_courses_to_protocol_area(cursor, base_area_id, protocol_area_id)` - Ders bağlantı kopyalama
 
-**📊 Performans Sonuçları:**
-- **gemi_11**: 0 → 28 ders (+∞% iyileştirme)
-- **bilisim_12**: 0 → 21 ders (+∞% iyileştirme)  
-- **kuyumculuk_10**: 0 → 12 ders (+∞% iyileştirme)
-- **gida_12**: 0 → 17 ders (+∞% iyileştirme)
+### 3. 📄 getir_cop.py - ⭐ **STANDARDİZE**
 
-**🎯 Output Formatı:**
-```
-🎯 SONUÇLAR ÖZET:
-   📁 PDF: data/cop/kuyumculuk_10/kuyumculuk_10_cop_program.pdf
-   📚 Alan Adı: Kuyumculuk Teknolojisi
-   🏭 Dal Sayısı: 1
-   📖 Toplam Ders Sayısı: 12
-```
+**Amaç:** ÇÖP verilerini çeker, indirir (açmaz) ve JSON formatında veritabanına kaydeder.
 
-### 2. 📄 getir_dbf.py
+**Ana Fonksiyon**: `get_cop()` ⭐ **YENİ İSİM** (eski: `download_all_cop_pdfs_workflow()`)
 
-**Amaç:** Ders Bilgi Formu (DBF) verilerini çeker, indirip açar ve içeriklerini analiz eder.
+**🔧 Kritik Özellikler:**
+- **Otomatik Alan Oluşturma**: Eksik alanları otomatik oluşturur
+- **JSON Çıktı**: `data/get_cop.json` dosyası üretir
+- **Veritabanı Entegrasyonu**: `cop_url` sütununa JSON formatında URL'ler
+- **PDF İndirme**: Dosyaları indirir ama açmaz
 
-**Kaynak URL:** `https://meslek.meb.gov.tr/dbflistele.aspx`
-
-**Dosya Organizasyonu:**
-```
-data/dbf/
-├── {ID:02d}_-_{Alan_Adi}/
-│   ├── alan.rar (orijinal)
-│   ├── alan/ (açılmış)
-│   │   ├── 9.SINIF/
-│   │   ├── 10.SINIF/
-│   │   └── 11.SINIF/
-
-Örnek:
-├── 01_-_Adalet/
-├── 03_-_Bilişim_Teknolojileri/
-└── 04_-_Biyomedikal_Cihaz_Teknolojileri/
-```
-
-**Kritik Özellikler:**
-- RAR/ZIP otomatik açma (`rarfile`, `zipfile`)
-- **YENİ**: PDF içeriğinden gerçek ders adı çıkarma (fuzzy matching yerine)
-- Progress tracking ile SSE desteği
-- Retry mekanizması
-
-**Ana Fonksiyonlar:**
-- `getir_dbf(siniflar)` - DBF linklerini çeker
-- `download_and_extract_dbf()` - İndirir ve açar
-- `scan_dbf_files_and_extract_courses()` - İçerik analizi (YENİ)
-- `extract_course_name_from_dbf()` - PDF'den ders adı (YENİ)
-
-
-
-
-### 6. 📄 oku_dbf.py ⭐ **YENİDEN ADLANDIRILDI**
-
-**Amaç:** DBF PDF parsing ve içerik analizi (eski: oku.py).
-
-**🔧 Kritik İyileştirmeler:**
-- **Daha İyi Amaç Çıkarma**: `_is_valid_amac_content()` ile 10+ kelime validasyonu
-- **Kazanım Eşleştirme Düzeltmesi**: Newline karakterleri için robust handling
-- **Temizlik**: Kullanılmayan fonksiyonlar kaldırıldı, sadece DBF işleme odaklı
-
-**Desteklenen Formatlar:**
-- PDF (`pdfplumber`)
-- DOCX (`python-docx`)
-
-**Ana Fonksiyonlar:**
-- `oku_dbf()` - Ana DBF parsing fonksiyonu (eski: oku)
-- `extract_ders_adi()` - Dosyadan ders adını çıkarır
-- `extract_text_from_pdf()` - PDF metin çıkarma
-- `extract_text_from_docx()` - DOCX metin çıkarma
-
-### 7. 📄 getir_cop_oku_local.py ⭐ **YENİ**
-
-**Amaç:** Yerel PDF dosyalarını test etmek için standalone ÇÖP okuma modülü.
-
-**Özellikler:**
-- Kök dizindeki PDF dosyalarını otomatik tarar
-- `modules/getir_cop_oku.py`'deki fonksiyonları kullanır (kod tekrarı yok)
-- Stand-alone çalışma desteği (import hatası durumunda sys.path yönetimi)
-- Terminal çıktısında detaylı analiz sonuçları
-
-**Ana Fonksiyonlar:**
-- `extract_alan_dal_ders_from_cop_file(pdf_path)` - Yerel PDF'den veri çıkarma
-- `oku_cop_pdf_file(pdf_path)` - Tek PDF dosyasını okuma
-- `oku_tum_pdfler(root_dir)` - Dizindeki tüm PDF'leri toplu okuma
-
-**Kullanım:**
-```bash
-# Script olarak çalıştırma
-python modules/getir_cop_oku_local.py
-
-# Modül olarak kullanma
-from modules.getir_cop_oku_local import oku_cop_pdf_file
-result = oku_cop_pdf_file("test.pdf")
-```
-
-### 8. 📄 utils.py - PDF Cache Yönetimi ⭐ **YENİ**
+### 4. 📄 utils.py - PDF Cache Yönetimi ⭐ **YENİ**
 
 **Amaç:** Merkezi PDF indirme ve cache yönetimi sistemi.
 
@@ -455,25 +336,9 @@ data/
     └── {ID:02d}_{alan_adi}/
         └── {ders_id:03d}_{ders_adi}/
             └── {modul}.pdf
-
-Örnek:
-├── 03_Bilişim_Teknolojileri/
-│   ├── bilisim_teknolojileri_cop_9_sinif.pdf
-│   ├── sinif_9/
-│   │   ├── 001_Programlama_Temelleri.pdf
-│   │   └── 002_Bilgisayar_Donanım.pdf
-│   └── 001_Programlama_Temelleri/
-│       ├── Modül_01_Temel_Kavramlar.pdf
-│       └── Modül_02_Uygulama.pdf
 ```
 
-**Avantajları:**
-- Kod tekrarı önleme
-- Organize dosya yapısı
-- Otomatik cache kontrolü
-- Güvenli dosya adlandırma
-
-### 9. 📄 Database Connection Decorators ⭐ **YENİ**
+### 5. 📄 Database Connection Decorators ⭐ **YENİ**
 
 **Amaç:** Merkezi database connection yönetimi ve kod tekrarını önleme.
 
@@ -501,23 +366,6 @@ def my_function(cursor, param1, param2):
     return {"success": True}
 ```
 
-**3. Standardize Error Handling:**
-```python
-# CLAUDE.md uyumlu format
-{
-  "success": false,
-  "error": "Error message",
-  "error_type": "database", 
-  "timestamp": "2025-07-15T10:30:00Z"
-}
-```
-
-**📊 Performans İyileştirmesi:**
-- **Öncesi**: 32 tekrarlı database connection pattern
-- **Sonrası**: Tek decorator ile merkezi yönetim
-- **Row Factory**: `sqlite3.Row` ile dict-style access
-- **Auto-commit**: Transaction yönetimi dahili
-
 ## 🔌 API Endpoints - Detaylı Referans
 
 ### 📥 Temel Veri Çekme
@@ -529,21 +377,17 @@ def my_function(cursor, param1, param2):
   - Method: Server-Sent Events (SSE)
   - Response: Real-time progress updates
   - Headers: `text/event-stream`
-  
-- **`POST /api/process-pdf`** - PDF dosyasını işle
-  - Method: Server-Sent Events (SSE) 
-  - Body: `{"pdf_path": "/path/to/file.pdf"}`
-  - Response: PDF işleme progress updates
 
 ### 📊 Kategorik Veri Endpoint'leri
-- **`GET /api/get-dbf`** - DBF (Ders Bilgi Formu) verilerini getir
-  - Response: DBF linkları, dosya durumları, alan organizasyonu
-  - Cache: `data/getir_dbf_sonuc.json`
-  
-- **`GET /api/get-cop`** - ÇÖP (Çerçeve Öğretim Programı) linklerini çeker ve veritabanına kaydeder
+- **`GET /api/get-dbf`** - ⭐ **STANDARDİZE**: DBF verilerini `get_dbf()` fonksiyonu ile çeker
   - Method: Server-Sent Events (SSE)
   - Response: Real-time progress updates
-  - Process: MEB'den ÇÖP linklerini çeker → URL'leri veritabanına JSON formatında kaydeder → PDF'leri indirir
+  - Process: HTML parsing → JSON kaydet → DBF indir (açmaz) → `data/get_dbf.json` üret
+  
+- **`GET /api/get-cop`** - ⭐ **STANDARDİZE**: ÇÖP verilerini `get_cop()` fonksiyonu ile çeker
+  - Method: Server-Sent Events (SSE)
+  - Response: Real-time progress updates
+  - Process: HTML parsing → JSON kaydet → PDF indir (açmaz) → `data/get_cop.json` üret
   
 - **`GET /api/get-dm`** - DM (Ders Materyali) verilerini getir
   - Response: Ders materyali PDF linkları, sınıf-alan-ders hiyerarşisi
@@ -583,11 +427,6 @@ def my_function(cursor, param1, param2):
   - Process: RAR/ZIP indirme → Açma → Klasörleme
   - Response: Real-time download/extract progress
   
-- **`GET /api/dbf-retry-extract-all`** - Başarısız DBF'leri tekrar aç
-  - Method: Server-Sent Events (SSE)
-  - Process: Açılmamış dosyaları yeniden işleme
-  - Retry Logic: Exponential backoff
-  
 - **`GET /api/oku-cop`** - ÇÖP PDF'lerini analiz et ve DB'ye kaydet
   - Method: Server-Sent Events (SSE)
   - Process: PDF okuma → İçerik analizi → Veritabanı kaydetme
@@ -608,51 +447,33 @@ def my_function(cursor, param1, param2):
   - Process: Validation → Conflict resolution → Bulk insert
   - Transaction: ACID compliant
 
-### 🔧 İş Akışı Entegrasyonu
-
-**Adım 1 - Temel Veri:**
-```bash
-/api/get-dal          # Alan-Dal çekme
-/api/get-cop          # ÇÖP linklerini çekme ve veritabanına kaydetme
-/api/get-dbf          # DBF linklerini çekme
-/api/get-dm           # DM linklerini çekme
-/api/get-bom          # BÖM linklerini çekme
-```
-
-**Adım 2 - PDF İşleme:**
-```bash
-/api/oku-cop                  # ÇÖP PDF lerini okur
-/api/dbf-download-extract     # DBF indir/aç
-/api/update-ders-saatleri     # Ders saatleri
-```
-
-**Adım 3 - DB Güncellemeleri:**
-```bash
-/api/dbf-match-refresh        # Eşleştirme
-/api/export-to-database       # DB'ye aktar
-/api/get-statistics           # Sonuç kontrolü
-```
-
-### 🚨 Error Handling
-
-Tüm endpoint'ler standardize error response kullanır:
-```json
-{
-  "success": false,
-  "error": "Error message",
-  "error_type": "validation|network|processing|database",
-  "timestamp": "2025-07-15T10:30:00Z"
-}
-```
-
-**SSE Error Format:**
-```
-data: {"type": "error", "message": "Error description", "error_type": "network"}
-```
-
 ## 🚨 Kritik Hatalardan Kaçınma Kuralları
 
-### 1. Database Connection ⭐ **YENİ KURAL**
+### 1. Fonksiyon İsimleri ⭐ **YENİ KURAL**
+- **ASLA** eski fonksiyon isimlerini kullanma
+- **MUTLAKA** yeni standardize edilmiş fonksiyon isimlerini kullan:
+  ```python
+  # ✅ Doğru - Yeni standardize isimler
+  from modules.getir_cop import get_cop
+  from modules.getir_dbf import get_dbf
+  
+  # ❌ Yanlış - Eski isimler
+  from modules.getir_cop import download_all_cop_pdfs_workflow
+  from modules.getir_dbf import download_dbf_without_extract_with_progress
+  ```
+
+### 2. JSON Çıktı Dosyaları ⭐ **YENİ KURAL**
+- **Her iki fonksiyon da JSON üretir**:
+  - `get_cop()` → `data/get_cop.json`
+  - `get_dbf()` → `data/get_dbf.json`
+- **Dosya formatı**: Alan bazında sınıf URL'leri
+
+### 3. Veritabanı Sütunları ⭐ **YENİ KURAL**
+- **COP**: `cop_url` sütununa JSON formatında URL'ler (mevcut)
+- **DBF**: `dbf_urls` sütununa JSON formatında URL'ler (yeni)
+- **Her iki sütun da JSON string formatında saklanır**
+
+### 4. Database Connection ⭐ **YENİ KURAL**
 - **ASLA** manuel `sqlite3.connect()` kullanma
 - **MUTLAKA** `utils.py`'deki decorator'ları kullan:
   ```python
@@ -668,228 +489,68 @@ data: {"type": "error", "message": "Error description", "error_type": "network"}
   def my_function(cursor, params):
       cursor.execute("INSERT...")
       return result
-  
-  # ❌ Yanlış - Manuel connection
-  with sqlite3.connect(db_path) as conn:
-      cursor = conn.cursor()
   ```
 
-### 2. Modül İsimleri ⭐ **GÜNCELLENDİ**
-- ⚠️ **`oku.py` artık `oku_dbf.py` oldu!**
-- Import'larda doğru modül adını kullan:
-  ```python
-  from modules.oku_dbf import oku_dbf, extract_ders_adi  # ✅ Doğru
-  from modules.oku import oku  # ❌ Eski, artık yok
-  ```
+### 5. Protokol Alan İşleme ⭐ **DÜZELTİLDİ**
+- **get_base_area_name()** fonksiyonu artık " - Protokol" formatını doğru handle eder
+- **Regex tabanlı temizleme** ile tüm protokol varyasyonları desteklenir
+- **Protokol alanları otomatik olarak base alanlara bağlanır**
 
-### 3. UI Tasarımı ⭐ **YENİ KURAL**
+### 6. Dosya İndirme vs Açma ⭐ **YENİ KURAL**
+- **COP**: PDF dosyalarını indirir, açmaz
+- **DBF**: RAR/ZIP dosyalarını indirir, açmaz
+- **Açma işlemi**: `oku_dbf.py` ve `oku_cop.py` modüllerinde
+
+### 7. UI Tasarımı ⭐ **YENİ KURAL**
 - **ASLA** JSON popup/display ekranları ekleme
 - Tüm veri gösterimleri console panel'de olmalı
 - Button istatistikleri database + disk dosyalarından otomatik yüklenmeli (`/api/get-statistics`)
 - Real-time logging için SSE kullan
 - Aşamalı iş akışı UI ile organize edilmiş 3-adımlı süreç
 
-### 4. Veritabanı İşlemleri
-- **ASLA** veritabanı dosyasını silme
-- Migration'ları `schema.sql`'den uygula
-- `IF NOT EXISTS` kullan
-- Transaction'ları `with sqlite3.connect()` ile yönet
-
-### 5. PDF İşleme
-- Content-based matching kullan (fuzzy matching yerine)
-- `modules/oku_dbf.py`'yi DBF PDF okuma için kullan (eski: oku.py)
-- Encoding: `UTF-8` ile dosya okuma/yazma
-
-### 6. Error Handling
-- Her API çağrısında try-catch kullan
-- SSE mesajlarında error type belirt
-- Timeout değerlerini koru (10-20 saniye)
-
-### 7. Dosya Yolları
-- **ASLA** hard-coded path kullanma
-- `os.path.join()` ile platform-agnostic yollar
-- `data/` klasörü yapısını koru
-
-## 🔧 Geliştirme Ortamı
-
-### Python Bağımlılıkları
-```python
-# Core
-flask
-sqlite3 (built-in)
-requests
-beautifulsoup4
-
-# PDF İşleme
-pdfplumber
-python-docx
-
-# Archive İşleme
-rarfile
-zipfile (built-in)
-
-# Utilities
-fuzzywuzzy  # (optional, legacy)
-```
-
-### Frontend
-```javascript
-// React
-react
-react-dom
-
-// Styling
-CSS3 (responsive)
-
-// Real-time
-Server-Sent Events (SSE)
-```
-
-## 🏗️ Sistem Mimarisi Detayları
-
-Proje **3 temel katmandan** oluşur:
-
-1. **🔧 Backend (Flask + SQLite):** Veri çekme, PDF işleme ve veritabanı yönetimi
-2. **🌐 Frontend (React):** Aşamalı iş akışı ile kullanıcı arayüzü  
-3. **📊 Veritabanı (SQLite):** Hiyerarşik eğitim verilerinin yapılandırılmış saklanması
-
-### Hiyerarşik Veri Yapısı
-```
-Alan (Area) → Dal (Field) → Ders (Course) → Öğrenme Birimi (Learning Unit) → Konu (Topic) → Kazanım (Achievement)
-```
-
-## 🚀 Kurulum ve Çalıştırma
-
-### Gereksinimler
-- Python 3.8+
-- Node.js 16+
-- SQLite3
-
-### 1. Backend Kurulumu
-```bash
-# Python sanal ortam oluştur
-python -m venv venv
-source venv/bin/activate  # macOS/Linux
-# venv\Scripts\activate   # Windows
-
-# Bağımlılıkları yükle
-pip install -r requirements.txt
-
-# Flask sunucusu başlat
-python server.py
-```
-
-### 2. Frontend Kurulumu
-```bash
-# Node.js bağımlılıklarını yükle
-npm install
-
-# React dev server başlat
-npm start
-```
-
-## 📊 Veri Akışı
-
-```mermaid
-graph TD
-    A[MEB Sitesi] --> B[getir_* Modülleri]
-    B --> C[JSON Cache]
-    B --> D[SQLite Veritabanı]
-    C --> E[React Frontend]
-    D --> E
-    F[PDF Dosyaları] --> G[oku_*.py]
-    G --> D
-    E --> H[Kullanıcı İşlemleri]
-    H --> I[SSE Real-time Updates]
-```
-
-## 🎯 Çekilen Veri Türleri
-
-- **🏢 Alanlar:** Mesleki eğitim alanları (58 alan)
-- **🎓 Dallar:** Meslek dalları (alan başına 1-8 dal)
-- **📚 Dersler:** Ders listesi ve detayları
-- **📄 DBF:** Ders Bilgi Formları (RAR/ZIP dosyaları)
-- **📋 ÇÖP:** Çerçeve Öğretim Programları (PDF dosyaları)
-- **📖 DM:** Ders Materyalleri (PDF linkleri)
-- **📚 BÖM:** Bireysel Öğrenme Materyalleri
-
-## 📈 Performans ve İstatistikler
-
-### Veri Hacmi
-- **58 Meslek Alanı**
-- **~180 Dal**
-- **~800 Ders**
-- **~2000 DBF dosyası**
-- **~1200 BÖM modülü**
-
-### Performans Metrikleri
-- **DBF İndirme**: ~50 MB/dakika
-- **ÇÖP İşleme**: ~4 saniye (paralel)
-- **DM Çekme**: ~30 saniye
-- **BÖM Çekme**: ~45 saniye (ASP.NET karmaşıklığı)
-- **Dal Çekme**: ~5 dakika (81 il taraması)
-
-## 🏆 Özellikler
-
-- ✅ **Real-time Progress:** SSE ile canlı işlem takibi
-- ✅ **Aşamalı İş Akışı:** Organize edilmiş 3-adımlı süreç  
-- ✅ **Otomatik PDF İşleme:** Batch PDF analizi
-- ✅ **Hata Toleransı:** Başarısız işlemler için retry mekanizması
-- ✅ **Veritabanı Tabanlı:** SQLite ile yapılandırılmış veri saklama
-- ✅ **Responsive UI:** Modern ve kullanıcı dostu arayüz
-- ✅ **Önbellekleme:** Hızlı veri erişimi için cache sistemi
-
-## 🔧 Teknoloji Yığını
-
-**Backend:**
-- Python 3.8+
-- Flask (Web framework)
-- SQLite3 (Veritabanı)
-- Requests + BeautifulSoup4 (Web scraping)
-- pdfplumber (PDF parsing)
-
-**Frontend:**
-- React 18
-- Modern JavaScript (ES6+)
-- CSS3 (Responsive design)
-- Server-Sent Events (Real-time updates)
-
 ## 🔄 Sık Kullanılan İşlemler
 
-### COP PDF Analizi ⭐ **YENİ SİSTEM**
+### Yeni Standardize Fonksiyonlar ⭐ **YENİ**
 ```python
-# Yeni oku_cop.py modülü ile yerel PDF analizi
-from modules.oku_cop import oku_cop_pdf_file, oku_tum_pdfler
+# Yeni standardize edilmiş fonksiyonlar
+from modules.getir_cop import get_cop
+from modules.getir_dbf import get_dbf
 
-# Tek PDF dosyası analizi
-result = oku_cop_pdf_file("./data/cop/kuyumculuk_10/kuyumculuk_10_cop_program.pdf")
+# Her iki fonksiyon da aynı pattern'i izler
+# HTML parse → JSON kaydet → İndir (açmaz) → JSON dosyası üret
+for message in get_cop():
+    print(message)
 
-# Dizindeki tüm PDF'leri analiz et
-oku_tum_pdfler("./data/cop/bilisim_12/")
-
-# Komut satırından kullanım
-python modules/oku_cop.py "./data/cop/gemi_11/"
-python modules/oku_cop.py random  # Rastgele dizin seç
+for message in get_dbf():
+    print(message)
 ```
 
-### Veri Çekme
+### JSON Çıktı Kontrol ⭐ **YENİ**
 ```python
-# Tüm veri tiplerini çek (eski sistem)
-from modules.getir_dbf import getir_dbf
-from modules.getir_dm import getir_dm
-from modules.getir_bom import getir_bom
-from modules.getir_dal import main as getir_dal
+import json
 
-dbf_data = getir_dbf()
-dm_data = getir_dm()
-bom_data = getir_bom()
+# COP verileri
+with open('data/get_cop.json', 'r', encoding='utf-8') as f:
+    cop_data = json.load(f)
+
+# DBF verileri
+with open('data/get_dbf.json', 'r', encoding='utf-8') as f:
+    dbf_data = json.load(f)
+
+# Her iki dosya da aynı format: {alan_adi: {sinif_key: url}}
 ```
 
-### PDF İşleme
+### Veritabanı JSON Sütun Erişimi ⭐ **YENİ**
 ```python
-from modules.oku_dbf import extract_ders_adi
+import json
 
-ders_adi = extract_ders_adi("/path/to/dbf/file.pdf")
+# COP URL'leri
+cursor.execute("SELECT cop_url FROM temel_plan_alan WHERE alan_adi = ?", (alan_adi,))
+cop_urls = json.loads(cursor.fetchone()['cop_url'])
+
+# DBF URL'leri
+cursor.execute("SELECT dbf_urls FROM temel_plan_alan WHERE alan_adi = ?", (alan_adi,))
+dbf_urls = json.loads(cursor.fetchone()['dbf_urls'])
 ```
 
 ### PDF Cache Yönetimi ⭐ **YENİ**
@@ -926,23 +587,15 @@ def my_function(cursor, param):
     return {"success": True}
 ```
 
-### Veritabanı Güncelleme
-```python
-import sqlite3
-
-with sqlite3.connect('data/temel_plan.db') as conn:
-    cursor = conn.cursor()
-    # SQL işlemleri
-    conn.commit()
-```
-
-## 🚀 Gelecek Geliştirmeler
+## 🎯 Gelecek Geliştirmeler
 
 ### Planlanan Özellikler
 - [ ] Incremental updates
 - [ ] PDF content validation
 - [ ] Auto-retry with exponential backoff
 - [x] Content-based DBF matching ✅
+- [x] Fonksiyon standardizasyonu ✅
+- [x] Protokol alan düzeltmeleri ✅
 - [ ] Real-time monitoring
 
 ### Optimizasyon Alanları
@@ -953,11 +606,12 @@ with sqlite3.connect('data/temel_plan.db') as conn:
 
 ## 🚨 Önemli Notlar
 
-- DBF dosyaları büyük boyutlu olabilir, indirme süresi değişkendir
-- PDF işleme CPU yoğun operasyon, zaman alabilir
-- MEB sitesi yapısı değişirse veri çekme modülleri güncelleme gerektirebilir
-- Veritabanı dosyası (`data/temel_plan.db`) otomatik oluşturulur
-- **Session Yönetimi**: Özellikle BÖM ve Dal modülleri için kritik
+- **Fonksiyon İsimleri**: `get_cop()` ve `get_dbf()` kullanın, eski isimleri kullanmayın
+- **JSON Çıktıları**: Her iki fonksiyon da `data/` klasöründe JSON dosyası üretir
+- **Veritabanı Sütunları**: `cop_url` ve `dbf_urls` sütunları JSON formatında URL'ler içerir
+- **Dosya İndirme**: Her iki fonksiyon da indirir ama açmaz
+- **Protokol Alanları**: " - Protokol" formatı artık doğru handle edilir
+- **Database Decorators**: `@with_database` ve `@with_database_json` kullanın
 - **PDF Validation**: Dosya bütünlüğü kontrolü önemli
 - **Error Recovery**: Network hatalarında robust retry mekanizması
 
