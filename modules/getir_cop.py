@@ -173,107 +173,128 @@ def getir_cop_links():
         
     return all_links
 
-@with_database
-def download_all_cop_pdfs_workflow(cursor):
+def get_cop():
     """
-    Workflow to download all COP PDFs and add missing Alans to the DB.
-    Always performs HTML parsing to check for new areas.
-    Groups URLs by alan and saves them in JSON format.
-    Yields progress messages.
+    ÇÖP (Çerçeve Öğretim Programı) linklerini çeker ve işler.
+    HTML parsing ile yeni alanları kontrol eder.
+    URL'leri JSON formatında gruplar ve veritabanına kaydeder.
+    PDF dosyalarını indirir (açmaz).
+    data/get_cop.json çıktı dosyası üretir.
+    Progress mesajları yield eder.
     """
+    # Database connection handling
+    db_path = find_or_create_database()
+    if not db_path:
+        yield {'type': 'error', 'message': 'Database not found'}
+        return
+    
     try:
-        # Her seferinde HTML parsing yaparak yeni alanları kontrol et
-        yield {'type': 'status', 'message': 'MEB sitesinden güncel ÇÖP linkleri çekiliyor...'}
-        
-        try:
-            all_cops = getir_cop_links()
-            yield {'type': 'status', 'message': f'{len(all_cops)} adet ÇÖP linki bulundu.'}
-        except Exception as e:
-            yield {'type': 'error', 'message': f'ÇÖP linkleri çekilirken hata: {str(e)}'}
-            return
-        
-        total_cops = len(all_cops)
-        yield {'type': 'status', 'message': f'{total_cops} adet ÇÖP linki işlenecek.'}
-        
-        # Alan bazında URL'leri grupla
-        alan_cop_urls = {}
-        for cop_info in all_cops:
-            alan_adi = cop_info.get('alan_adi')
-            cop_url = cop_info.get('link')
-            sinif = cop_info.get('sinif')
-            meb_alan_id = cop_info.get('meb_alan_id')
+        with sqlite3.connect(db_path) as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
             
-            if not alan_adi or not cop_url or not sinif:
-                continue
-                
-            if alan_adi not in alan_cop_urls:
-                alan_cop_urls[alan_adi] = {
-                    'meb_alan_id': meb_alan_id,
-                    'urls': {}
-                }
+            # Her seferinde HTML parsing yaparak yeni alanları kontrol et
+            yield {'type': 'status', 'message': 'MEB sitesinden güncel ÇÖP linkleri çekiliyor...'}
             
-            # Sınıf bazında URL'leri kaydet
-            alan_cop_urls[alan_adi]['urls'][f'sinif_{sinif}'] = cop_url
-        
-        yield {'type': 'status', 'message': f'{len(alan_cop_urls)} alan için URL\'ler gruplandı.'}
-        
-        # ÖNCE: Tüm URL'leri veritabanına kaydet (PDF indirme durumundan bağımsız)
-        yield {'type': 'status', 'message': 'URL\'ler veritabanına kaydediliyor...'}
-        
-        import json
-        saved_alan_count = 0
-        for alan_adi, alan_info in alan_cop_urls.items():
             try:
-                meb_alan_id = alan_info['meb_alan_id']
-                cop_urls_json = alan_info['urls']
-                
-                # URL'leri JSON formatında kaydet
-                cop_urls_json_string = json.dumps(cop_urls_json)
-                get_or_create_alan(cursor, alan_adi, meb_alan_id=meb_alan_id, cop_url=cop_urls_json_string)
-                
-                saved_alan_count += 1
-                yield {'type': 'progress', 'message': f'URL kaydedildi: {alan_adi} ({len(cop_urls_json)} sınıf)', 'progress': saved_alan_count / len(alan_cop_urls)}
-                
+                all_cops = getir_cop_links()
+                yield {'type': 'status', 'message': f'{len(all_cops)} adet ÇÖP linki bulundu.'}
             except Exception as e:
-                yield {'type': 'error', 'message': f'URL kaydetme hatası ({alan_adi}): {e}'}
-                continue
-        
-        yield {'type': 'success', 'message': f'✅ {saved_alan_count} alan için URL\'ler veritabanına kaydedildi.'}
-        
-        # SONRA: PDF indirme işlemi (isteğe bağlı)
-        yield {'type': 'status', 'message': 'PDF dosyaları kontrol ediliyor...'}
-        
-        processed_count = 0
-        for alan_adi, alan_info in alan_cop_urls.items():
-            try:
-                meb_alan_id = alan_info['meb_alan_id']
-                cop_urls_json = alan_info['urls']
+                yield {'type': 'error', 'message': f'ÇÖP linkleri çekilirken hata: {str(e)}'}
+                return
+            
+            total_cops = len(all_cops)
+            yield {'type': 'status', 'message': f'{total_cops} adet ÇÖP linki işlenecek.'}
+            
+            # Alan bazında URL'leri grupla
+            alan_cop_urls = {}
+            for cop_info in all_cops:
+                alan_adi = cop_info.get('alan_adi')
+                cop_url = cop_info.get('link')
+                sinif = cop_info.get('sinif')
+                meb_alan_id = cop_info.get('meb_alan_id')
                 
-                # PDF'leri MEB ID bazlı klasör yapısında indir/kontrol et
-                for sinif_key, cop_url in cop_urls_json.items():
-                    try:
-                        # MEB ID bazlı klasör yapısı: data/cop/{meb_alan_id}_{alan_adi}/
-                        file_path = download_and_cache_pdf(
-                            cop_url, 
-                            "cop", 
-                            alan_adi=alan_adi, 
-                            additional_info=None,  # Dosya adını değiştirme
-                            meb_alan_id=meb_alan_id
-                        )
-                        if file_path:
-                            yield {'type': 'success', 'message': f'PDF hazır: {os.path.basename(file_path)}'}
-                        else:
-                            yield {'type': 'warning', 'message': f'PDF indirme başarısız: {alan_adi} {sinif_key}'}
-                    except Exception as e:
-                        yield {'type': 'error', 'message': f'PDF kontrol hatası ({alan_adi} {sinif_key}): {e}'}
+                if not alan_adi or not cop_url or not sinif:
+                    continue
+                    
+                if alan_adi not in alan_cop_urls:
+                    alan_cop_urls[alan_adi] = {
+                        'meb_alan_id': meb_alan_id,
+                        'urls': {}
+                    }
                 
-                processed_count += 1
-                
-            except Exception as e:
-                yield {'type': 'error', 'message': f'PDF işleme hatası ({alan_adi}): {e}'}
-                continue
+                # Sınıf bazında URL'leri kaydet
+                alan_cop_urls[alan_adi]['urls'][f'sinif_{sinif}'] = cop_url
+            
+            yield {'type': 'status', 'message': f'{len(alan_cop_urls)} alan için URL\'ler gruplandı.'}
+            
+            # ÖNCE: Tüm URL'leri veritabanına kaydet (PDF indirme durumundan bağımsız)
+            yield {'type': 'status', 'message': 'URL\'ler veritabanına kaydediliyor...'}
+            
+            import json
+            saved_alan_count = 0
+            for alan_adi, alan_info in alan_cop_urls.items():
+                try:
+                    meb_alan_id = alan_info['meb_alan_id']
+                    cop_urls_json = alan_info['urls']
+                    
+                    # URL'leri JSON formatında kaydet
+                    cop_urls_json_string = json.dumps(cop_urls_json)
+                    get_or_create_alan(cursor, alan_adi, meb_alan_id=meb_alan_id, cop_url=cop_urls_json_string)
+                    conn.commit()  # Commit after each update
+                    
+                    saved_alan_count += 1
+                    yield {'type': 'progress', 'message': f'URL kaydedildi: {alan_adi} ({len(cop_urls_json)} sınıf)', 'progress': saved_alan_count / len(alan_cop_urls)}
+                    
+                except Exception as e:
+                    yield {'type': 'error', 'message': f'URL kaydetme hatası ({alan_adi}): {e}'}
+                    continue
+            
+            yield {'type': 'success', 'message': f'✅ {saved_alan_count} alan için URL\'ler veritabanına kaydedildi.'}
+            
+            # SONRA: PDF indirme işlemi (isteğe bağlı)
+            yield {'type': 'status', 'message': 'PDF dosyaları kontrol ediliyor...'}
+            
+            processed_count = 0
+            for alan_adi, alan_info in alan_cop_urls.items():
+                try:
+                    meb_alan_id = alan_info['meb_alan_id']
+                    cop_urls_json = alan_info['urls']
+                    
+                    # PDF'leri MEB ID bazlı klasör yapısında indir/kontrol et
+                    for sinif_key, cop_url in cop_urls_json.items():
+                        try:
+                            # MEB ID bazlı klasör yapısı: data/cop/{meb_alan_id}_{alan_adi}/
+                            file_path = download_and_cache_pdf(
+                                cop_url, 
+                                "cop", 
+                                alan_adi=alan_adi, 
+                                additional_info=None,  # Dosya adını değiştirme
+                                meb_alan_id=meb_alan_id
+                            )
+                            if file_path:
+                                yield {'type': 'success', 'message': f'PDF hazır: {os.path.basename(file_path)}'}
+                            else:
+                                yield {'type': 'warning', 'message': f'PDF indirme başarısız: {alan_adi} {sinif_key}'}
+                        except Exception as e:
+                            yield {'type': 'error', 'message': f'PDF kontrol hatası ({alan_adi} {sinif_key}): {e}'}
+                    
+                    processed_count += 1
+                    
+                except Exception as e:
+                    yield {'type': 'error', 'message': f'PDF işleme hatası ({alan_adi}): {e}'}
+                    continue
 
-        yield {'type': 'done', 'message': f'Tüm ÇÖP dosyaları işlendi. {len(alan_cop_urls)} alan için URL\'ler veritabanına kaydedildi.'}
+            # JSON çıktı dosyası oluştur
+            output_filename = "data/get_cop.json"
+            try:
+                with open(output_filename, 'w', encoding='utf-8') as f:
+                    json.dump(alan_cop_urls, f, ensure_ascii=False, indent=2)
+                yield {'type': 'success', 'message': f'ÇÖP verileri kaydedildi: {output_filename}'}
+            except Exception as e:
+                yield {'type': 'error', 'message': f'JSON dosyası kaydedilemedi: {e}'}
+
+            yield {'type': 'done', 'message': f'Tüm ÇÖP dosyaları işlendi. {len(alan_cop_urls)} alan için URL\'ler veritabanına kaydedildi.'}
 
     except Exception as e:
         yield {'type': 'error', 'message': f'ÇÖP indirme iş akışında genel hata: {str(e)}'}
@@ -282,5 +303,5 @@ def download_all_cop_pdfs_workflow(cursor):
 # Bu dosya doğrudan çalıştırıldığında test amaçlı kullanılabilir.
 if __name__ == '__main__':
     print("ÇÖP PDF İndirme ve DB Ekleme Testi Başlatılıyor...")
-    for message in download_all_cop_pdfs_workflow():
+    for message in get_cop():
         print(f"[{message.get('type', 'log').upper()}] {message.get('message', '')}")
