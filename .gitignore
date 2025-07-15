@@ -4,6 +4,7 @@
 /node_modules
 /.pnp
 .pnp.js
+.env
 
 # testing
 /coverage
@@ -36,14 +37,14 @@ data/dbf
 data/dm
 
 # Analiz sonuç dosyaları
-kelime_arama_sonuclari.json
-pdf_structure_analysis.json
-ogrenme_birimleri_extraction_result.json
 oku_sonuc.json
 
-# Örnek PDF dosyaları
+# Arşiv ve Dökümanlar
 *.pdf
-!data/alan-dal-listesi-2023.pdf
+*.doc
+*.docx
+*.rar
+*.zip
 
 # Geçici ve debug dosyaları
 debug_*

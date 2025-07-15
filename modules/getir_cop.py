@@ -1,505 +1,286 @@
 """
-modules/getir_cop.py - ÇÖP (Çerçeve Öğretim Programları) İndirme ve Veritabanı Entegrasyonu
+modules/getir_cop.py - ÇÖP (Çerçeve Öğretim Programı) İndirme Modülü
 
-Bu modül:
-1. MEB sitesinden ÇÖP verilerini çeker (getir_cop)
-2. PDF'leri indirir ve cache'ler  
-3. modules/oku_cop.py ile PDF analizi yapar
-4. Sonuçları veritabanına kaydeder
-
-ÖNEMLİ: PDF okuma işlemleri modules/oku_cop.py tarafından yapılır.
+Bu modül, MEB sitesinden Çerçeve Öğretim Programı (ÇÖP) PDF'lerinin
+linklerini çeker, dosyaları `utils.py` kullanarak indirir ve bu süreçte
+veritabanında eksik olan alanları ekler.
 """
 
 import os
-import re
-import json
-import requests
 import sqlite3
-from typing import Dict, List, Any, Optional
-from .utils import normalize_to_title_case_tr, download_and_cache_pdf, get_temp_pdf_path
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import requests
+from bs4 import BeautifulSoup
+from .utils import normalize_to_title_case_tr, find_or_create_database, get_or_create_alan, download_and_cache_pdf, with_database
+import re
 
 
-def extract_alan_dal_ders_from_cop_pdf(pdf_url: str, cache: bool = True) -> tuple[Optional[str], List[str], Dict[str, List[str]]]:
+def update_meb_alan_ids():
     """
-    COP PDF'sinden alan, dal ve ders bilgilerini çıkar - modules/oku_cop.py kullanıyor
+    MEB'den alan ID'lerini çeker ve veritabanını günceller.
+    cercevelistele.aspx sayfasındaki select dropdown'dan alan ID'lerini çıkarır.
+    """
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9,tr;q=0.8',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1'
+    }
     
-    Args:
-        pdf_url: PDF URL'si  
-        cache: True ise PDF'yi kalıcı olarak cache'le, False ise geçici kullan
-    """
-    try:
-        # Önce alan adını tahmin et (cache için)
-        estimated_alan = pdf_url.split('/')[-1].replace('.pdf', '').replace('_cop', '')
-        
-        # PDF'yi indir (cache veya geçici)
-        if cache:
-            pdf_path = download_and_cache_pdf(pdf_url, 'cop', estimated_alan, 'cop_program')
-            temp_file = False
-        else:
-            pdf_path = get_temp_pdf_path(pdf_url)
-            response = requests.get(pdf_url)
-            response.raise_for_status()
-            with open(pdf_path, 'wb') as f:
-                f.write(response.content)
-            temp_file = True
-        
-        if not pdf_path:
-            return None, [], {}
-        
-        # Yeni oku_cop.py modülünü kullan
-        from modules.oku_cop import oku_cop_pdf_file
-        result = oku_cop_pdf_file(pdf_path)
-        
-        # Geçici dosyayı temizle
-        if temp_file:
-            try:
-                os.remove(pdf_path)
-            except:
-                pass
-        
-        if not result or 'alan_bilgileri' not in result:
-            return None, [], {}
-        
-        alan_bilgileri = result['alan_bilgileri']
-        alan_adi = alan_bilgileri.get('alan_adi')
-        dal_ders_listesi = alan_bilgileri.get('dal_ders_listesi', [])
-        
-        # Eski format için dönüştür
-        dallar = [dal_info['dal_adi'] for dal_info in dal_ders_listesi]
-        dal_ders_mapping = {dal_info['dal_adi']: dal_info['dersler'] for dal_info in dal_ders_listesi}
-        
-        return alan_adi, dallar, dal_ders_mapping
-        
-    except Exception as e:
-        print(f"COP PDF okuma hatası: {e}")
-        return None, [], {}
-
-
-def oku_cop_pdf(pdf_url: str) -> Dict[str, Any]:
-    """
-    COP PDF'sinden alan, dal ve ders bilgilerini çıkar ve JSON formatında döndür - modules/oku_cop.py kullanıyor
-    """
-    try:
-        alan_adi, dallar, dal_ders_mapping = extract_alan_dal_ders_from_cop_pdf(pdf_url)
-        
-        if not alan_adi:
-            return {
-                'alan_bilgileri': {},
-                'metadata': {
-                    'pdf_url': pdf_url,
-                    'status': 'error',
-                    'error_message': 'Alan adı bulunamadı'
-                }
-            }
-        
-        # Dal-ders yapısını oluştur
-        dal_ders_listesi = []
-        
-        for dal in dallar:
-            matched_dersler = dal_ders_mapping.get(dal, [])
-            dal_info = {
-                'dal_adi': dal,
-                'dersler': matched_dersler,
-                'ders_sayisi': len(matched_dersler)
-            }
-            dal_ders_listesi.append(dal_info)
-        
-        # Toplam ders sayısını hesapla
-        toplam_ders_sayisi = sum(len(info['dersler']) for info in dal_ders_listesi)
-        
-        # Sonuç yapısını oluştur
-        result = {
-            'alan_bilgileri': {
-                'alan_adi': alan_adi,
-                'dal_sayisi': len(dallar),
-                'toplam_ders_sayisi': toplam_ders_sayisi,
-                'dal_ders_listesi': dal_ders_listesi
-            },
-            'metadata': {
-                'pdf_url': pdf_url,
-                'status': 'success',
-                'extraction_date': json.dumps(dict(), default=str)
-            }
-        }
-        
-        return result
-        
-    except Exception as e:
-        return {
-            'alan_bilgileri': {},
-            'metadata': {
-                'pdf_url': pdf_url,
-                'status': 'error',
-                'error_message': str(e)
-            }
-        }
-
-
-def is_cop_pdf_url(url: str) -> bool:
-    """
-    Verilen URL'nin COP PDF URL'si olup olmadığını kontrol et
-    """
-    return 'meslek.meb.gov.tr' in url and 'cop' in url and url.endswith('.pdf')
-
-
-def normalize_cop_area_name(html_area_name: str) -> str:
-    """
-    HTML'den gelen alan adını utils.py standardına göre normalize eder.
-    """
-    return normalize_to_title_case_tr(html_area_name)
-
-
-def find_matching_area_id_for_cop(html_area_name: str, db_areas: Dict[str, int]) -> tuple[Optional[int], Optional[str]]:
-    """
-    HTML'den gelen alan adını veritabanındaki alanlarla eşleştirir (COP için).
-    Returns: (alan_id, matched_name) veya (None, None)
-    """
-    normalized_html_name = normalize_cop_area_name(html_area_name)
-    
-    # Tam eşleşme kontrolü
-    if normalized_html_name in db_areas:
-        return db_areas[normalized_html_name], normalized_html_name
-    
-    # Kısıtlı benzerlik kontrolü
-    normalized_html = normalized_html_name.lower().strip()
-    for db_name, area_id in db_areas.items():
-        db_normalized = db_name.lower().strip()
-        
-        # Sadece uzunluk farkı ±2 karakter olan durumlar
-        if (abs(len(normalized_html) - len(db_normalized)) <= 2 and
-            (normalized_html in db_normalized or db_normalized in normalized_html)):
-            print(f"COP Sınırlı eşleşme: '{html_area_name}' -> '{db_name}' (ID: {area_id})")
-            return area_id, db_name
-    
-    print(f"COP Eşleşme bulunamadı: '{html_area_name}' (normalize: '{normalized_html_name}')")
-    return None, None
-
-
-def get_areas_from_db_for_cop(db_path: str) -> Dict[str, int]:
-    """
-    Veritabanından alan ID ve adlarını çeker (COP için).
-    Returns: dict {alan_adi: alan_id}
-    """
-    if not os.path.exists(db_path):
-        print(f"Veritabanı bulunamadı: {db_path}")
-        return {}
+    alan_id_map = {}  # {alan_adi: meb_alan_id}
     
     try:
-        with sqlite3.connect(db_path) as conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT id, alan_adi FROM temel_plan_alan ORDER BY alan_adi")
-            results = cursor.fetchall()
-            return {alan_adi: alan_id for alan_id, alan_adi in results}
-    except Exception as e:
-        print(f"Veritabanı okuma hatası: {e}")
-        return {}
-
-
-def save_cop_results_to_db(cop_results: Dict[str, Any], db_path: str, meb_alan_id: str = None) -> bool:
-    """
-    COP okuma sonuçlarını veritabanına kaydet
-    
-    Args:
-        cop_results: COP PDF okuma sonuçları
-        db_path: Veritabanı dosya yolu
-        meb_alan_id: MEB'in standart alan ID'si (örn: "04")
-    """
-    try:
-        alan_bilgileri = cop_results.get('alan_bilgileri', {})
-        alan_adi = alan_bilgileri.get('alan_adi')
-        dal_ders_listesi = alan_bilgileri.get('dal_ders_listesi', [])
-        
-        if not alan_adi or not dal_ders_listesi:
-            print("COP sonuçları eksik, veritabanına kaydedilemiyor")
-            return False
-        
-        # Veritabanından alan bilgilerini al
-        db_areas = get_areas_from_db_for_cop(db_path)
-        if not db_areas:
-            print("Veritabanından alan bilgileri alınamadı")
-            return False
-        
-        # Alan ID'sini bul (fuzzy matching ile)
-        area_id, _ = find_matching_area_id_for_cop(alan_adi, db_areas)
-        
-        if not area_id:
-            print(f"Alan '{alan_adi}' veritabanında bulunamadı - önce Adım 1'ı çalıştırın")
-            return False
-        
-        with sqlite3.connect(db_path) as conn:
-            cursor = conn.cursor()
-            
-            # MEB alan ID'sini güncelle (eğer sağlandıysa)
-            if meb_alan_id:
-                cursor.execute(
-                    "UPDATE temel_plan_alan SET meb_alan_id = ? WHERE id = ?",
-                    (meb_alan_id, area_id)
-                )
-                print(f"✅ MEB alan ID güncellendi: {alan_adi} -> {meb_alan_id}")
-            
-            # Dal-ders ilişkilerini kaydet
-            for dal_info in dal_ders_listesi:
-                dal_adi = dal_info.get('dal_adi')
-                dersler = dal_info.get('dersler', [])
-                
-                # Dal ID'sini bul veya oluştur
-                cursor.execute(
-                    "SELECT id FROM temel_plan_dal WHERE dal_adi = ? AND alan_id = ?",
-                    (dal_adi, area_id)
-                )
-                dal_result = cursor.fetchone()
-                
-                if dal_result:
-                    dal_id = dal_result[0]
-                else:
-                    cursor.execute(
-                        "INSERT INTO temel_plan_dal (dal_adi, alan_id) VALUES (?, ?)",
-                        (dal_adi, area_id)
-                    )
-                    dal_id = cursor.lastrowid
-                
-                # Dersleri kaydet
-                for ders_adi in dersler:
-                    if isinstance(ders_adi, str) and ders_adi.strip():
-                        # Ders var mı kontrol et
-                        cursor.execute(
-                            "SELECT id FROM temel_plan_ders WHERE ders_adi = ?",
-                            (ders_adi,)
-                        )
-                        ders_result = cursor.fetchone()
-                        
-                        if ders_result:
-                            ders_id = ders_result[0]
-                        else:
-                            cursor.execute(
-                                "INSERT INTO temel_plan_ders (ders_adi) VALUES (?)",
-                                (ders_adi,)
-                            )
-                            ders_id = cursor.lastrowid
-                        
-                        # Ders-dal ilişkisini kaydet
-                        cursor.execute(
-                            "INSERT OR IGNORE INTO temel_plan_ders_dal (ders_id, dal_id) VALUES (?, ?)",
-                            (ders_id, dal_id)
-                        )
-            
-            conn.commit()
-            print(f"COP sonuçları başarıyla veritabanına kaydedildi: {alan_adi}")
-            return True
-            
-    except Exception as e:
-        print(f"COP veritabanı kaydetme hatası: {e}")
-        return False
-
-
-def get_alan_ids(sinif_kodu="9"):
-    """
-    MEB sitesinden alan ID'lerini çeker (ÇÖP için).
-    getir_dm.py'deki mantığı kullanır.
-    
-    Args:
-        sinif_kodu (str): Sınıf kodu (default: "9")
-    
-    Returns:
-        list: [{"id": "04", "isim": "Bilişim Teknolojileri"}, ...]
-    """
-    try:
+        # cercevelistele.aspx sayfasından alan dropdown'unu çek
         url = "https://meslek.meb.gov.tr/cercevelistele.aspx"
-        params = {"sinif_kodu": sinif_kodu, "kurum_id": "1"}
+        params = {"sinif_kodu": "9", "kurum_id": "1"}
         
-        response = requests.get(url, params=params, timeout=15)
+        response = requests.get(url, params=params, headers=headers, timeout=45)
         response.raise_for_status()
         response.encoding = 'utf-8'
         
-        from bs4 import BeautifulSoup
         soup = BeautifulSoup(response.text, 'html.parser')
         
-        # Alan dropdown'ını bul (getir_dm.py'deki mantığı kullan)
-        select_element = soup.find('select', id="ContentPlaceHolder1_drpalansec")
-        if not select_element:
-            print(f"Alan dropdown bulunamadı (sınıf {sinif_kodu})")
-            return []
+        # Select dropdown'daki option'ları bul
+        # Örnek: <option value="01">Adalet</option>
+        select = soup.find('select', {'name': re.compile(r'.*drpalansec.*')})
+        if select:
+            options = select.find_all('option')
+            for option in options:
+                value = option.get('value', '').strip()
+                text = option.get_text(strip=True)
+                # Boş option'ları ve "Alanlar" başlığını atla
+                if value and text and value != '' and text != 'Alanlar' and value != '00':
+                    alan_id_map[text] = value
+                    print(f"📋 {text} -> MEB ID: {value}")
         
-        alanlar = []
-        for option in select_element.find_all('option'):
-            alan_id = option.get('value', '').strip()
-            alan_adi = option.text.strip()
-            
-            # Geçerli alan ID'lerini filtrele
-            if alan_id and alan_id not in ("00", "0"):
-                alanlar.append({"id": alan_id, "isim": alan_adi})
+        return alan_id_map
+                                
+    except Exception as e:
+        print(f"❌ MEB Alan ID güncelleme hatası: {e}")
+        return {}
+
+def get_alan_cop_links_from_specific_page(sinif_kodu="9", alan_id="08"):
+    """
+    Belirli bir alan ID'si için ÇÖP PDF linkini çeker.
+    """
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9,tr;q=0.8',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1'
+    }
+    
+    try:
+        url = "https://meslek.meb.gov.tr/cercevegoster.aspx"
+        params = {"kurum_id": "1", "sinif_kodu": sinif_kodu, "alan_id": alan_id}
         
-        print(f"✅ {sinif_kodu}. sınıf için {len(alanlar)} alan ID'si çekildi")
-        return alanlar
+        response = requests.get(url, params=params, headers=headers, timeout=45)
+        response.raise_for_status()
+        response.encoding = 'utf-8'
+        
+        soup = BeautifulSoup(response.text, 'html.parser')
+        
+        # PDF linkini bul
+        pdf_links = soup.find_all('a', href=lambda x: x and x.endswith('.pdf') and f'cop{sinif_kodu}' in x)
+        
+        if pdf_links:
+            href = pdf_links[0].get('href', '')
+            if href:
+                full_url = f"https://meslek.meb.gov.tr/{href}"
+                return full_url
+        
+        return None
         
     except Exception as e:
-        print(f"Alan ID çekme hatası (sınıf {sinif_kodu}): {e}")
-        return []
+        print(f"❌ Alan ID {alan_id} için ÇÖP linki çekilirken hata: {e}")
+        return None
 
+def get_alan_cop_links(sinif_kodu="9"):
+    """
+    Tüm alanlar için ÇÖP PDF linklerini çeker.
+    Önce dropdown'dan alan ID'lerini alır, sonra her alan için PDF linkini çeker.
+    """
+    alan_cop_map = {}
+    
+    # Önce MEB alan ID'lerini çek
+    meb_alan_ids = update_meb_alan_ids()
+    
+    print(f"🔍 {len(meb_alan_ids)} alan için ÇÖP linkleri çekiliyor...")
+    
+    for alan_adi, meb_alan_id in meb_alan_ids.items():
+        # Her alan için PDF linkini çek
+        pdf_url = get_alan_cop_links_from_specific_page(sinif_kodu, meb_alan_id)
+        
+        if pdf_url:
+            alan_cop_map[alan_adi] = {
+                'url': pdf_url,
+                'meb_alan_id': meb_alan_id
+            }
+            print(f"📋 {alan_adi} (ID: {meb_alan_id}) -> {pdf_url}")
+        else:
+            print(f"❌ {alan_adi} (ID: {meb_alan_id}) için PDF bulunamadı")
+    
+    print(f"✅ {sinif_kodu}. sınıf için {len(alan_cop_map)} alan bulundu")
+    return alan_cop_map
 
-def getir_cop(siniflar=["9", "10", "11", "12"]):
+def getir_cop_links():
     """
-    MEB sitesinden ÇÖP (Çerçeve Öğretim Programı) verilerini çeker.
-    Alan ID'lerini de döndürür.
-    
-    Args:
-        siniflar (list): Çekilecek sınıflar listesi
-    
-    Returns:
-        dict: {"cop_data": {sınıf: {alan: {link, yil}}}, "alan_ids": {sınıf: [alan_id_listesi]}}
+    Tüm sınıflar için ÇÖP linklerini paralel olarak çeker.
+    Alan ID'lerini dropdown'dan eşleştirir.
     """
-    import time
-    from bs4 import BeautifulSoup
+    all_links = []
+    siniflar = ["9", "10", "11", "12"]
     
-    all_cop_data = {}
-    all_alan_ids = {}
+    # Önce MEB alan ID'lerini çek
+    print("📋 MEB Alan ID'leri çek...")
+    meb_alan_ids = update_meb_alan_ids()
     
-    for sinif_kodu in siniflar:
-        try:
-            print(f"📄 {sinif_kodu}. sınıf ÇÖP verileri çekiliyor...")
-            
-            # HTML sayfasını çek
-            url = "https://meslek.meb.gov.tr/cercevelistele.aspx"
-            params = {"sinif_kodu": sinif_kodu, "kurum_id": "1"}
-            
-            response = requests.get(url, params=params, timeout=15)
-            response.raise_for_status()
-            response.encoding = 'utf-8'
-            
-            soup = BeautifulSoup(response.text, 'html.parser')
-            
-            # Alan ID'lerini çek
-            alan_ids = get_alan_ids(sinif_kodu)
-            all_alan_ids[sinif_kodu] = alan_ids
-            
-            # ÇÖP linklerini çek
-            cop_data = {}
-            table = soup.find('table', {'class': 'cerceve-table'})
-            
-            if table:
-                rows = table.find_all('tr')[1:]  # Header'ı atla
-                
-                for row in rows:
-                    cells = row.find_all('td')
-                    if len(cells) >= 3:
-                        alan_cell = cells[0]
-                        cop_cell = cells[1] if len(cells) > 1 else None
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        future_to_sinif = {executor.submit(get_alan_cop_links, sinif): sinif for sinif in siniflar}
+        for future in as_completed(future_to_sinif):
+            sinif = future_to_sinif[future]
+            try:
+                data = future.result()
+                for alan_adi, link_data in data.items():
+                    if isinstance(link_data, dict):
+                        # MEB alan ID'sini dropdown'dan eşleştir
+                        meb_alan_id = meb_alan_ids.get(alan_adi)
                         
-                        # Alan adı
-                        alan_adi = alan_cell.get_text(strip=True)
-                        
-                        if cop_cell and alan_adi:
-                            # ÇÖP linkini bul
-                            cop_link = cop_cell.find('a')
-                            if cop_link:
-                                cop_url = cop_link.get('href', '')
-                                if cop_url and cop_url.endswith('.pdf'):
-                                    # Tam URL'yi oluştur
-                                    if not cop_url.startswith('http'):
-                                        cop_url = f"https://meslek.meb.gov.tr{cop_url}"
-                                    
-                                    # Yıl bilgisini çıkar (URL'den)
-                                    year_match = re.search(r'cop(\d{2})', cop_url)
-                                    year = f"20{year_match.group(1)}" if year_match else "2023"
-                                    
-                                    cop_data[alan_adi] = {
-                                        'link': cop_url,
-                                        'guncelleme_yili': year
-                                    }
-            
-            all_cop_data[sinif_kodu] = cop_data
-            print(f"✅ {sinif_kodu}. sınıf ÇÖP verileri çekildi: {len(cop_data)} alan")
-            
-            # Rate limiting
-            time.sleep(0.5)
-            
-        except Exception as e:
-            print(f"❌ {sinif_kodu}. sınıf ÇÖP verileri çekilemedi: {e}")
-            all_cop_data[sinif_kodu] = {}
-            all_alan_ids[sinif_kodu] = []
-    
-    return {
-        "cop_data": all_cop_data,
-        "alan_ids": all_alan_ids
-    }
+                        all_links.append({
+                            'alan_adi': alan_adi, 
+                            'link': link_data['url'], 
+                            'sinif': sinif,
+                            'meb_alan_id': meb_alan_id
+                        })
+                    else:
+                        # Backward compatibility için string link desteği
+                        meb_alan_id = meb_alan_ids.get(alan_adi)
+                        all_links.append({
+                            'alan_adi': alan_adi, 
+                            'link': link_data, 
+                            'sinif': sinif,
+                            'meb_alan_id': meb_alan_id
+                        })
+            except Exception as exc:
+                print(f'❌ {sinif}. sınıf ÇÖP linkleri çekilirken hata oluştu: {exc}')
 
+    if not all_links:
+        raise Exception("MEB sitesinden hiçbir ÇÖP linki alınamadı. Siteye erişim veya yapısal bir değişiklik olabilir.")
+        
+    return all_links
 
-def getir_cop_with_db_integration():
+@with_database
+def download_all_cop_pdfs_workflow(cursor):
     """
-    ÇÖP verilerini çeker ve doğrudan veritabanına entegre eder.
-    Alan ID'lerini de işler ve veritabanına kaydeder.
-    SSE mesajları ile progress tracking sağlar.
+    Workflow to download all COP PDFs and add missing Alans to the DB.
+    Always performs HTML parsing to check for new areas.
+    Groups URLs by alan and saves them in JSON format.
+    Yields progress messages.
     """
     try:
-        yield {"type": "status", "message": "ÇÖP verileri çekiliyor..."}
+        # Her seferinde HTML parsing yaparak yeni alanları kontrol et
+        yield {'type': 'status', 'message': 'MEB sitesinden güncel ÇÖP linkleri çekiliyor...'}
         
-        # ÇÖP verilerini çek (alan ID'leri dahil)
-        cop_and_ids = getir_cop()
-        
-        if not cop_and_ids or not cop_and_ids.get('cop_data'):
-            yield {"type": "error", "message": "ÇÖP verileri çekilemedi"}
+        try:
+            all_cops = getir_cop_links()
+            yield {'type': 'status', 'message': f'{len(all_cops)} adet ÇÖP linki bulundu.'}
+        except Exception as e:
+            yield {'type': 'error', 'message': f'ÇÖP linkleri çekilirken hata: {str(e)}'}
             return
         
-        cop_data = cop_and_ids.get('cop_data', {})
-        alan_ids_data = cop_and_ids.get('alan_ids', {})
+        total_cops = len(all_cops)
+        yield {'type': 'status', 'message': f'{total_cops} adet ÇÖP linki işlenecek.'}
         
-        yield {"type": "status", "message": f"ÇÖP verileri çekildi: {len(cop_data)} sınıf"}
-        yield {"type": "status", "message": f"Alan ID'leri çekildi: {len(alan_ids_data)} sınıf"}
-        
-        # Veritabanı yolunu bul
-        db_path = "data/temel_plan.db"
-        if not os.path.exists(db_path):
-            yield {"type": "error", "message": "Veritabanı bulunamadı"}
-            return
-        
-        # Alan ID eşleştirme haritası oluştur
-        alan_id_mapping = {}
-        for sinif, alan_list in alan_ids_data.items():
-            for alan_info in alan_list:
-                alan_adi = alan_info.get('isim', '').strip()
-                alan_id = alan_info.get('id', '').strip()
-                if alan_adi and alan_id:
-                    # Normalize et
-                    normalized_name = normalize_cop_area_name(alan_adi)
-                    alan_id_mapping[normalized_name] = alan_id
-        
-        yield {"type": "status", "message": f"Alan ID eşleştirme haritası oluşturuldu: {len(alan_id_mapping)} alan"}
-        
-        # Her sınıf için ÇÖP verilerini işle
-        total_processed = 0
-        for sinif, alanlar in cop_data.items():
-            yield {"type": "status", "message": f"{sinif}. sınıf ÇÖP verileri işleniyor..."}
+        # Alan bazında URL'leri grupla
+        alan_cop_urls = {}
+        for cop_info in all_cops:
+            alan_adi = cop_info.get('alan_adi')
+            cop_url = cop_info.get('link')
+            sinif = cop_info.get('sinif')
+            meb_alan_id = cop_info.get('meb_alan_id')
             
-            for alan_adi, info in alanlar.items():
-                cop_url = info.get('link', '')
-                if cop_url:
-                    yield {"type": "status", "message": f"İşleniyor: {alan_adi} ({sinif}. sınıf)"}
-                    
-                    # Alan ID'sini bul
-                    normalized_alan_adi = normalize_cop_area_name(alan_adi)
-                    meb_alan_id = alan_id_mapping.get(normalized_alan_adi)
-                    
-                    # ÇÖP PDF'sini işle ve veritabanına kaydet
+            if not alan_adi or not cop_url or not sinif:
+                continue
+                
+            if alan_adi not in alan_cop_urls:
+                alan_cop_urls[alan_adi] = {
+                    'meb_alan_id': meb_alan_id,
+                    'urls': {}
+                }
+            
+            # Sınıf bazında URL'leri kaydet
+            alan_cop_urls[alan_adi]['urls'][f'sinif_{sinif}'] = cop_url
+        
+        yield {'type': 'status', 'message': f'{len(alan_cop_urls)} alan için URL\'ler gruplandı.'}
+        
+        # ÖNCE: Tüm URL'leri veritabanına kaydet (PDF indirme durumundan bağımsız)
+        yield {'type': 'status', 'message': 'URL\'ler veritabanına kaydediliyor...'}
+        
+        import json
+        saved_alan_count = 0
+        for alan_adi, alan_info in alan_cop_urls.items():
+            try:
+                meb_alan_id = alan_info['meb_alan_id']
+                cop_urls_json = alan_info['urls']
+                
+                # URL'leri JSON formatında kaydet
+                cop_urls_json_string = json.dumps(cop_urls_json)
+                get_or_create_alan(cursor, alan_adi, meb_alan_id=meb_alan_id, cop_url=cop_urls_json_string)
+                
+                saved_alan_count += 1
+                yield {'type': 'progress', 'message': f'URL kaydedildi: {alan_adi} ({len(cop_urls_json)} sınıf)', 'progress': saved_alan_count / len(alan_cop_urls)}
+                
+            except Exception as e:
+                yield {'type': 'error', 'message': f'URL kaydetme hatası ({alan_adi}): {e}'}
+                continue
+        
+        yield {'type': 'success', 'message': f'✅ {saved_alan_count} alan için URL\'ler veritabanına kaydedildi.'}
+        
+        # SONRA: PDF indirme işlemi (isteğe bağlı)
+        yield {'type': 'status', 'message': 'PDF dosyaları kontrol ediliyor...'}
+        
+        processed_count = 0
+        for alan_adi, alan_info in alan_cop_urls.items():
+            try:
+                meb_alan_id = alan_info['meb_alan_id']
+                cop_urls_json = alan_info['urls']
+                
+                # PDF'leri MEB ID bazlı klasör yapısında indir/kontrol et
+                for sinif_key, cop_url in cop_urls_json.items():
                     try:
-                        cop_result = oku_cop_pdf(cop_url)
-                        if cop_result and cop_result.get('metadata', {}).get('status') == 'success':
-                            # Veritabanına kaydet (meb_alan_id ile birlikte)
-                            saved = save_cop_results_to_db(cop_result, db_path, meb_alan_id)
-                            if saved:
-                                status_msg = f"✅ {alan_adi} başarıyla kaydedildi"
-                                if meb_alan_id:
-                                    status_msg += f" (MEB ID: {meb_alan_id})"
-                                yield {"type": "status", "message": status_msg}
-                                total_processed += 1
-                            else:
-                                yield {"type": "error", "message": f"❌ {alan_adi} kaydedilemedi"}
+                        # MEB ID bazlı klasör yapısı: data/cop/{meb_alan_id}_{alan_adi}/
+                        file_path = download_and_cache_pdf(
+                            cop_url, 
+                            "cop", 
+                            alan_adi=alan_adi, 
+                            additional_info=None,  # Dosya adını değiştirme
+                            meb_alan_id=meb_alan_id
+                        )
+                        if file_path:
+                            yield {'type': 'success', 'message': f'PDF hazır: {os.path.basename(file_path)}'}
                         else:
-                            yield {"type": "error", "message": f"❌ {alan_adi} PDF'si işlenemedi"}
+                            yield {'type': 'warning', 'message': f'PDF indirme başarısız: {alan_adi} {sinif_key}'}
                     except Exception as e:
-                        yield {"type": "error", "message": f"❌ {alan_adi} hatası: {str(e)}"}
-        
-        yield {"type": "status", "message": f"ÇÖP işleme tamamlandı. {total_processed} alan başarıyla işlendi."}
-        yield {"type": "done", "message": "ÇÖP veritabanı entegrasyonu tamamlandı"}
-        
+                        yield {'type': 'error', 'message': f'PDF kontrol hatası ({alan_adi} {sinif_key}): {e}'}
+                
+                processed_count += 1
+                
+            except Exception as e:
+                yield {'type': 'error', 'message': f'PDF işleme hatası ({alan_adi}): {e}'}
+                continue
+
+        yield {'type': 'done', 'message': f'Tüm ÇÖP dosyaları işlendi. {len(alan_cop_urls)} alan için URL\'ler veritabanına kaydedildi.'}
+
     except Exception as e:
-        yield {"type": "error", "message": f"ÇÖP entegrasyon hatası: {str(e)}"}
+        yield {'type': 'error', 'message': f'ÇÖP indirme iş akışında genel hata: {str(e)}'}
+
+
+# Bu dosya doğrudan çalıştırıldığında test amaçlı kullanılabilir.
+if __name__ == '__main__':
+    print("ÇÖP PDF İndirme ve DB Ekleme Testi Başlatılıyor...")
+    for message in download_all_cop_pdfs_workflow():
+        print(f"[{message.get('type', 'log').upper()}] {message.get('message', '')}")

@@ -4,7 +4,7 @@ import json
 import time
 import os
 import requests
-import subprocess
+# import subprocess  # Unused
 import io
 import sys
 import sqlite3
@@ -18,10 +18,14 @@ from modules.oku_dbf import oku_dbf
 
 # Yeni modülleri import et
 from modules.getir_dbf import getir_dbf, download_and_extract_dbf_with_progress, retry_extract_all_files_with_progress, retry_extract_file
-from modules.getir_cop import oku_cop_pdf as new_oku_cop_pdf, save_cop_results_to_db as new_save_cop_results_to_db
-from modules.getir_cop import getir_cop
+from modules.getir_cop import download_all_cop_pdfs_workflow
+# from modules.oku_cop import oku_cop_pdf as new_oku_cop_pdf, save_cop_results_to_db as new_save_cop_results_to_db
 from modules.getir_dm import getir_dm
 from modules.getir_bom import getir_bom
+from modules.getir_dal import getir_dal_with_db_integration
+
+# Database utilities from utils.py
+from modules.utils import with_database_json, find_or_create_database, get_or_create_alan
 
 app = Flask(__name__)
 # CORS'u etkinleştirerek localhost:3000 gibi farklı bir porttan gelen
@@ -31,103 +35,101 @@ CORS(app)
 CACHE_FILE = "data/scraped_data.json"
 
 @app.route('/api/get-cached-data')
-def get_cached_data():
+@with_database_json
+def get_cached_data(cursor):
     """
     Veritabanından UI için uygun formatta veri döndürür.
     """
     try:
-        db_path = find_or_create_database()
-        if not db_path:
-            return jsonify({})
+        # Alanları al
+        cursor.execute("""
+            SELECT id, alan_adi, cop_url 
+            FROM temel_plan_alan 
+            ORDER BY alan_adi
+        """)
+        alanlar_raw = cursor.fetchall()
         
-        with sqlite3.connect(db_path) as conn:
-            cursor = conn.cursor()
+        if not alanlar_raw:
+            return {}
+        
+        # UI formatında alan verisi oluştur
+        alanlar = {}
+        ortak_alan_indeksi = {}
+        
+        for row in alanlar_raw:
+            alan_id, alan_adi, cop_url = row['id'], row['alan_adi'], row['cop_url']
             
-            # Alanları al
+            # Alan için dersleri al (dal üzerinden bağlantı)
             cursor.execute("""
-                SELECT id, alan_adi, cop_url 
-                FROM temel_plan_alan 
-                ORDER BY alan_adi
-            """)
-            alanlar_raw = cursor.fetchall()
+                SELECT DISTINCT d.ders_adi, d.sinif, d.dm_url, d.dbf_url
+                FROM temel_plan_ders d
+                JOIN temel_plan_ders_dal dd ON d.id = dd.ders_id
+                JOIN temel_plan_dal dal ON dd.dal_id = dal.id
+                WHERE dal.alan_id = ?
+                ORDER BY d.ders_adi, d.sinif
+            """, (alan_id,))
+            dersler_raw = cursor.fetchall()
             
-            if not alanlar_raw:
-                return jsonify({})
-            
-            # UI formatında alan verisi oluştur
-            alanlar = {}
-            ortak_alan_indeksi = {}
-            
-            for alan_id, alan_adi, cop_url in alanlar_raw:
-                # Alan için dersleri al (dal üzerinden bağlantı)
-                cursor.execute("""
-                    SELECT DISTINCT d.ders_adi, d.sinif, d.dm_url, d.dbf_url
-                    FROM temel_plan_ders d
-                    JOIN temel_plan_ders_dal dd ON d.id = dd.ders_id
-                    JOIN temel_plan_dal dal ON dd.dal_id = dal.id
-                    WHERE dal.alan_id = ?
-                    ORDER BY d.ders_adi, d.sinif
-                """, (alan_id,))
-                dersler_raw = cursor.fetchall()
+            # Dersleri UI formatında grupla
+            dersler = {}
+            for ders_row in dersler_raw:
+                ders_adi, sinif, dm_url, dbf_url = ders_row['ders_adi'], ders_row['sinif'], ders_row['dm_url'], ders_row['dbf_url']
+                if dm_url and dm_url not in dersler:
+                    dersler[dm_url] = {
+                        'isim': ders_adi,
+                        'siniflar': [],
+                        'dbf_pdf_path': dbf_url
+                    }
                 
-                # Dersleri UI formatında grupla
-                dersler = {}
-                for ders_adi, sinif, dm_url, dbf_url in dersler_raw:
-                    if dm_url and dm_url not in dersler:
-                        dersler[dm_url] = {
-                            'isim': ders_adi,
-                            'siniflar': [],
-                            'dbf_pdf_path': dbf_url
-                        }
-                    
-                    if dm_url and sinif and sinif not in dersler[dm_url]['siniflar']:
-                        dersler[dm_url]['siniflar'].append(str(sinif))
-                
-                # Alan verisini oluştur
-                alanlar[str(alan_id)] = {
-                    'isim': alan_adi,
-                    'dersler': dersler,
-                    'cop_bilgileri': {
-                        '9': {'link': cop_url, 'guncelleme_yili': '2024'}
-                    } if cop_url else {},
-                    'dbf_bilgileri': {}
-                }
+                if dm_url and sinif and sinif not in dersler[dm_url]['siniflar']:
+                    dersler[dm_url]['siniflar'].append(str(sinif))
             
-            # UI beklediği format
-            result = {
-                'alanlar': alanlar,
-                'ortak_alan_indeksi': ortak_alan_indeksi
+            # Alan verisini oluştur
+            alanlar[str(alan_id)] = {
+                'isim': alan_adi,
+                'dersler': dersler,
+                'cop_bilgileri': {
+                    '9': {'link': cop_url, 'guncelleme_yili': '2024'}
+                } if cop_url else {},
+                'dbf_bilgileri': {}
             }
-            
-            return jsonify(result)
-            
+        
+        # UI beklediği format
+        result = {
+            'alanlar': alanlar,
+            'ortak_alan_indeksi': ortak_alan_indeksi
+        }
+        
+        return result
+        
     except Exception as e:
         print(f"Cache data error: {e}")
         # Fallback: eski JSON dosyası varsa onu dön
         if os.path.exists(CACHE_FILE):
             try:
                 with open(CACHE_FILE, 'r', encoding='utf-8') as f:
-                    return jsonify(json.load(f))
+                    return json.load(f)
             except:
                 pass
         
-        return jsonify({})
+        return {}
 
-@app.route('/api/scrape-stream')
-def scrape_stream():
-    """
-    Veri çekme işlemini başlatır ve sonuçları Server-Sent Events (SSE)
-    protokolü üzerinden anlık olarak istemciye gönderir.
-    """
-    def generate():
-        # scrape_data bir generator olduğu için, her yield edilen veriyi alıp
-        # SSE formatına uygun şekilde istemciye gönderiyoruz.
-        for data_chunk in scrape_data():
-            # Format: "data: <json_verisi>\n\n"
-            yield f"data: {json.dumps(data_chunk)}\n\n"
-            time.sleep(0.05) # İstemcinin veriyi işlemesi için küçük bir bekleme
-
-    return Response(generate(), mimetype='text/event-stream')
+# DISABLED: scrape_data() fonksiyonu tanımlı değil
+# @app.route('/api/scrape-stream')
+# def scrape_stream():
+#     """
+#     Veri çekme işlemini başlatır ve sonuçları Server-Sent Events (SSE)
+#     protokolü üzerinden anlık olarak istemciye gönderir.
+#     """
+#     def generate():
+#         # scrape_data bir generator olduğu için, her yield edilen veriyi alıp
+#         # SSE formatına uygun şekilde istemciye gönderiyoruz.
+#         for data_chunk in scrape_data():
+#             # Format: "data: <json_verisi>\n\n"
+#             yield f"data: {json.dumps(data_chunk)}\n\n"
+#             time.sleep(0.05) # İstemcinin veriyi işlemesi için küçük bir bekleme
+# 
+#     return Response(generate(), mimetype='text/event-stream')
 
 @app.route('/api/process-pdf', methods=['POST'])
 def process_pdf():
@@ -246,7 +248,8 @@ def api_dbf_match_refresh():
 
 # Yeni API endpointleri
 @app.route('/api/get-dbf')
-def api_get_dbf():
+@with_database_json
+def api_get_dbf(cursor):
     """
     DBF (Ders Bilgi Formu) verilerini çeker ve veritabanına kaydeder.
     """
@@ -254,50 +257,39 @@ def api_get_dbf():
         result = getir_dbf()
         
         # Veritabanına kaydet
-        db_path = find_or_create_database()
-        if db_path:
-            with sqlite3.connect(db_path) as conn:
-                cursor = conn.cursor()
-                updated_count = save_dbf_data_to_db(cursor, result)
-                conn.commit()
-                
-            return jsonify({
-                "data": result,
-                "message": f"{updated_count} alan DBF bilgisi güncellendi",
-                "updated_count": updated_count
-            })
-        else:
-            return jsonify({"data": result, "message": "Veritabanına kaydedilemedi"})
+        updated_count = save_dbf_data_to_db(cursor, result)
+        
+        return {
+            "data": result,
+            "message": f"{updated_count} alan DBF bilgisi güncellendi",
+            "updated_count": updated_count
+        }
             
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return {"error": str(e)}
 
 @app.route('/api/get-cop')
-def api_get_cop():
+@with_database_json
+def api_get_cop(cursor):
     """
-    ÇÖP (Çerçeve Öğretim Programı) verilerini çeker ve veritabanına kaydeder.
+    ÇÖP linklerini çeker ve veritabanına kaydeder.
+    İlerlemeyi SSE ile anlık olarak gönderir.
     """
-    try:
-        result = getir_cop()
-        
-        # Veritabanına kaydet
-        db_path = find_or_create_database()
-        if db_path:
-            with sqlite3.connect(db_path) as conn:
-                cursor = conn.cursor()
-                updated_count = save_cop_data_to_db(cursor, result)
-                conn.commit()
-                
-            return jsonify({
-                "data": result,
-                "message": f"{updated_count} alan ÇÖP bilgisi güncellendi",
-                "updated_count": updated_count
-            })
-        else:
-            return jsonify({"data": result, "message": "Veritabanına kaydedilemedi"})
+    def generate():
+        try:
+            # download_all_cop_pdfs_workflow artık HTML parsing'i dahili olarak yapıyor
+            from modules.getir_cop import download_all_cop_pdfs_workflow
             
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+            # Fonksiyon artık internal olarak linkleri çekiyor ve alanları kontrol ediyor
+            for message in download_all_cop_pdfs_workflow():
+                yield f"data: {json.dumps(message)}\n\n"
+                time.sleep(0.05)
+        except Exception as e:
+            error_message = {'type': 'error', 'message': f'ÇÖP linkleri çekilirken hata oluştu: {str(e)}'}
+            yield f"data: {json.dumps(error_message)}\n\n"
+
+    return Response(generate(), mimetype='text/event-stream')
+
 
 @app.route('/api/get-dm')
 def api_get_dm():
@@ -354,7 +346,8 @@ def api_get_bom():
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/get-statistics')
-def get_statistics():
+@with_database_json
+def get_statistics(cursor):
     """
     Veritabanı ve dosya sisteminden istatistikleri toplar ve döndürür.
     """
@@ -366,26 +359,22 @@ def get_statistics():
 
     try:
         # 1. Veritabanından istatistikleri al
-        db_path = find_or_create_database()
-        if db_path and os.path.exists(db_path):
-            with sqlite3.connect(db_path) as conn:
-                cursor = conn.cursor()
-                cursor.execute("SELECT COUNT(id) FROM temel_plan_alan")
-                stats["alan"] = cursor.fetchone()[0]
-                
-                cursor.execute("SELECT COUNT(id) FROM temel_plan_dal")
-                stats["dal"] = cursor.fetchone()[0]
-                
-                cursor.execute("SELECT COUNT(id) FROM temel_plan_ders")
-                stats["ders"] = cursor.fetchone()[0]
+        cursor.execute("SELECT COUNT(id) FROM temel_plan_alan")
+        stats["alan"] = cursor.fetchone()[0]
+        
+        cursor.execute("SELECT COUNT(id) FROM temel_plan_dal")
+        stats["dal"] = cursor.fetchone()[0]
+        
+        cursor.execute("SELECT COUNT(id) FROM temel_plan_ders")
+        stats["ders"] = cursor.fetchone()[0]
 
-                # dbf_okunan: ders saati 0'dan büyük olan dersler
-                cursor.execute("SELECT COUNT(id) FROM temel_plan_ders WHERE ders_saati > 0")
-                stats["dbf_okunan"] = cursor.fetchone()[0]
+        # dbf_okunan: ders saati 0'dan büyük olan dersler
+        cursor.execute("SELECT COUNT(id) FROM temel_plan_ders WHERE ders_saati > 0")
+        stats["dbf_okunan"] = cursor.fetchone()[0]
 
-                # cop_okunan: bir dala bağlı olan dersler
-                cursor.execute("SELECT COUNT(DISTINCT ders_id) FROM temel_plan_ders_dal")
-                stats["cop_okunan"] = cursor.fetchone()[0]
+        # cop_okunan: bir dala bağlı olan dersler
+        cursor.execute("SELECT COUNT(DISTINCT ders_id) FROM temel_plan_ders_dal")
+        stats["cop_okunan"] = cursor.fetchone()[0]
 
         # 2. Dosya sisteminden istatistikleri al
         data_dir = "data"
@@ -407,48 +396,42 @@ def get_statistics():
             stats["dm_pdf"] = count_files_in_dir(os.path.join(data_dir, "dm"), ['.pdf'])
             stats["bom_pdf"] = count_files_in_dir(os.path.join(data_dir, "bom"), ['.pdf'])
 
+        return stats
+
     except Exception as e:
         print(f"İstatistik alınırken hata oluştu: {e}")
-        return jsonify({"error": str(e)}), 500
-
-    return jsonify(stats)
+        return {"error": str(e)}
 
 @app.route('/api/alan-dal-options')
-def get_alan_dal_options():
+@with_database_json
+def get_alan_dal_options(cursor):
     """
     Dropdown'lar için alan ve dal seçeneklerini döndürür.
     """
     try:
-        db_path = find_or_create_database()
-        if not db_path:
-            return jsonify({"alanlar": [], "dallar": {}})
+        # Alanları al (COP URL'leri ile birlikte)
+        cursor.execute("SELECT id, alan_adi, cop_url FROM temel_plan_alan ORDER BY alan_adi")
+        alanlar = [{"id": row[0], "adi": row[1], "cop_url": row[2]} for row in cursor.fetchall()]
         
-        with sqlite3.connect(db_path) as conn:
-            cursor = conn.cursor()
-            
-            # Alanları al
-            cursor.execute("SELECT id, alan_adi FROM temel_plan_alan ORDER BY alan_adi")
-            alanlar = [{"id": row[0], "adi": row[1]} for row in cursor.fetchall()]
-            
-            # Her alan için dalları al
-            dallar = {}
-            for alan in alanlar:
-                cursor.execute("""
-                    SELECT id, dal_adi 
-                    FROM temel_plan_dal 
-                    WHERE alan_id = ? 
-                    ORDER BY dal_adi
-                """, (alan["id"],))
-                dallar[alan["id"]] = [{"id": row[0], "adi": row[1]} for row in cursor.fetchall()]
-            
-            return jsonify({
-                "alanlar": alanlar,
-                "dallar": dallar
-            })
-            
+        # Her alan için dalları al
+        dallar = {}
+        for alan in alanlar:
+            cursor.execute("""
+                SELECT id, dal_adi 
+                FROM temel_plan_dal 
+                WHERE alan_id = ? 
+                ORDER BY dal_adi
+            """, (alan["id"],))
+            dallar[alan["id"]] = [{"id": row[0], "adi": row[1]} for row in cursor.fetchall()]
+        
+        return {
+            "alanlar": alanlar,
+            "dallar": dallar
+        }
+        
     except Exception as e:
         print(f"Alan-Dal seçenekleri alınırken hata: {e}")
-        return jsonify({"error": str(e)}), 500
+        return {"error": str(e)}
 
 @app.route('/api/table-data')
 def get_table_data():
@@ -654,189 +637,76 @@ def copy_course():
         print(f"Ders kopyalama hatası: {e}")
         return jsonify({"error": str(e)}), 500
 
-@app.route('/api/process-cop-pdfs')
-def api_process_cop_pdfs():
+@app.route('/api/oku-cop')
+def api_oku_cop():
     """
-    ÇÖP PDF'lerini oku.py ile işleyip alan-dal-ders ilişkisini çıkarır ve veritabanına kaydeder.
-    Alan bazında sadece ilk ÇÖP'ten ders bilgilerini alır, diğerlerini URL olarak saklar.
+    ÇÖP PDF'lerini işleyip alan-dal-ders ilişkilerini çıkararak veritabanına kaydeder.
     """
     def generate():
         try:
-            # İlk olarak ÇÖP verilerini çek
-            yield f"data: {json.dumps({'type': 'status', 'message': 'ÇÖP verileri çekiliyor...'})}\n\n"
-            cop_data = getir_cop()
-            
-            if not cop_data:
-                yield f"data: {json.dumps({'type': 'error', 'message': 'ÇÖP verileri çekilemedi'})}\\n\\n"
+            # ÇÖP klasörünü kontrol et
+            cop_folder = "data/cop"
+            if not os.path.exists(cop_folder):
+                yield f"data: {json.dumps({'type': 'error', 'message': 'ÇÖP klasörü bulunamadı. Önce ÇÖP dosyalarını indirin.'})}\n\n"
                 return
             
-            # Veritabanını bul/oluştur
-            db_path = find_or_create_database()
-            if not db_path:
-                yield f"data: {json.dumps({'type': 'error', 'message': 'Veritabanı bulunamadı veya oluşturulamadı'})}\\n\\n"
+            yield f"data: {json.dumps({'type': 'status', 'message': 'ÇÖP PDF dosyaları taranıyor...'})}\n\n"
+            
+            # ÇÖP PDF dosyalarını bul
+            cop_files = []
+            for root, dirs, files in os.walk(cop_folder):
+                for file in files:
+                    if file.lower().endswith('.pdf'):
+                        cop_files.append(os.path.join(root, file))
+            
+            if not cop_files:
+                yield f"data: {json.dumps({'type': 'error', 'message': 'ÇÖP PDF dosyası bulunamadı.'})}\n\n"
                 return
             
-            # Alan bazında ÇÖP'leri grupla
-            alan_cop_mapping = group_cops_by_alan(cop_data)
-            yield f"data: {json.dumps({'type': 'status', 'message': f'{len(alan_cop_mapping)} farklı alan tespit edildi'})}\\n\\n"
+            yield f"data: {json.dumps({'type': 'status', 'message': f'{len(cop_files)} ÇÖP PDF dosyası bulundu. İşleniyor...'})}\n\n"
+            
+            # oku_cop modülünü import et
+            from modules.oku_cop import oku_cop_pdf_file, save_cop_results_to_db
             
             total_processed = 0
-            total_saved = 0
+            total_courses = 0
             
-            with sqlite3.connect(db_path) as conn:
-                cursor = conn.cursor()
-                
-                # Her alan için işlem yap
-                for alan_adi, cop_list in alan_cop_mapping.items():
-                    try:
-                        yield f"data: {json.dumps({'type': 'status', 'message': f'{alan_adi} alanı işleniyor ({len(cop_list)} ÇÖP dosyası)...'})}\\n\\n"
+            # Database işlemleri artık @with_database decorator ile otomatik yönetiliyor
+            
+            for cop_file in cop_files:
+                try:
+                    yield f"data: {json.dumps({'type': 'status', 'message': f'{os.path.basename(cop_file)} işleniyor...'})}\n\n"
+                    
+                    # PDF'yi oku_cop.py ile işle
+                    result = oku_cop_pdf_file(cop_file)
+                    
+                    if result:
+                        # Sonuçları veritabanına kaydet (@with_database decorator ile)
+                        saved_count = save_cop_results_to_db(result)
+                        total_courses += saved_count
                         
-                        # İlk ÇÖP'ten ders bilgilerini al
-                        first_cop = cop_list[0]
-                        cop_url = first_cop['url']
-                        sinif = first_cop['sinif']
-                        
-                        # PDF'yi kalıcı klasöre indir
-                        local_pdf_path = download_cop_to_folder(cop_url, alan_adi, sinif)
-                        if not local_pdf_path:
-                            yield f"data: {json.dumps({'type': 'error', 'message': f'{alan_adi}: ÇÖP PDF indirilemedi'})}\\n\\n"
-                            continue
-                        
-                        # YENİ SİSTEM: getir_cop_oku.py ile işle
-                        # PDF'yi yeni sistem ile analiz et
-                        cop_result = new_oku_cop_pdf(cop_url)
-                        
-                        # Debug: PDF okuma sonucunu kontrol et
-                        if cop_result:
-                            metadata = cop_result.get('metadata', {})
-                            status = metadata.get('status', 'unknown')
-                            yield f"data: {json.dumps({'type': 'info', 'message': f'{alan_adi}: PDF okuma durumu - {status}'})}\n\n"
-                            
-                            alan_bilgileri = cop_result.get('alan_bilgileri', {})
-                            dal_ders_listesi = alan_bilgileri.get('dal_ders_listesi', [])
-                            
-                            yield f"data: {json.dumps({'type': 'info', 'message': f'{alan_adi}: {len(dal_ders_listesi)} dal bulundu'})}\n\n"
-                        
-                        # Veritabanına kaydet
-                        if cop_result and cop_result.get('metadata', {}).get('status') == 'success':
-                            saved = new_save_cop_results_to_db(cop_result, db_path)
-                            saved_count = 1 if saved else 0
+                        if saved_count > 0:
+                            yield f"data: {json.dumps({'type': 'success', 'message': f'{os.path.basename(cop_file)}: {saved_count} ders bilgisi çıkarıldı'})}\n\n"
                         else:
-                            saved_count = 0
-                            yield f"data: {json.dumps({'type': 'warning', 'message': f'{alan_adi}: PDF işlenemedi veya veri çıkarılamadı'})}\n\n"
-                        total_saved += saved_count
+                            yield f"data: {json.dumps({'type': 'warning', 'message': f'{os.path.basename(cop_file)}: Ders bilgisi çıkarılamadı'})}\n\n"
+                    else:
+                        yield f"data: {json.dumps({'type': 'warning', 'message': f'{os.path.basename(cop_file)}: İşlenemedi'})}\n\n"
+                    
+                    total_processed += 1
+                    
+                    # Progress update
+                    if total_processed % 5 == 0:
+                        yield f"data: {json.dumps({'type': 'info', 'message': f'{total_processed}/{len(cop_files)} dosya işlendi...'})}\n\n"
                         
-                        # Diğer ÇÖP'leri indir ve URL olarak ekle
-                        for i, other_cop in enumerate(cop_list[1:], 1):
-                            other_url = other_cop['url']
-                            other_sinif = other_cop['sinif']
-                            
-                            # Diğer ÇÖP'leri de kalıcı klasöre indir
-                            other_pdf_path = download_cop_to_folder(other_url, alan_adi, other_sinif)
-                            if other_pdf_path:
-                                yield f"data: {json.dumps({'type': 'info', 'message': f'{alan_adi}: {i+1}. ÇÖP ({other_sinif}. sınıf) indirildi'})}\\n\\n"
-                            
-                            # Alan zaten var, sadece URL'i merge et
-                            get_or_create_alan(cursor, alan_adi, None, other_url, None)
-                        
-                        conn.commit()
-                        total_processed += 1
-                        yield f"data: {json.dumps({'type': 'success', 'message': f'{alan_adi}: {saved_count} ders kaydedildi, {len(cop_list)} ÇÖP URL birleştirildi'})}\\n\\n"
-                            
-                    except Exception as e:
-                        yield f"data: {json.dumps({'type': 'error', 'message': f'{alan_adi} işlenirken hata: {str(e)}'})}\\n\\n"
+                except Exception as e:
+                    yield f"data: {json.dumps({'type': 'error', 'message': f'{os.path.basename(cop_file)} işlenirken hata: {str(e)}'})}\n\n"
             
-            yield f"data: {json.dumps({'type': 'done', 'message': f'İşlem tamamlandı! {total_processed} alan işlendi, toplam {total_saved} ders kaydedildi.'})}\\n\\n"
+            yield f"data: {json.dumps({'type': 'done', 'message': f'İşlem tamamlandı! {total_processed} ÇÖP PDF dosyası işlendi, {total_courses} ders bilgisi çıkarıldı.'})}\n\n"
             
         except Exception as e:
-            yield f"data: {json.dumps({'type': 'error', 'message': f'Genel hata: {str(e)}'})}\\n\\n"
+            yield f"data: {json.dumps({'type': 'error', 'message': f'Genel hata: {str(e)}'})}\n\n"
     
     return Response(generate(), mimetype='text/event-stream')
-
-def download_cop_to_folder(cop_url, alan_adi, sinif):
-    """
-    ÇÖP PDF'ini data/cop_files/{alan_adi}/ klasörüne indirir.
-    Dosya zaten varsa indirme yapmaz.
-    """
-    try:
-        # Klasör yapısını oluştur
-        cop_folder = os.path.join("data", "cop_files", normalize_folder_name(alan_adi))
-        os.makedirs(cop_folder, exist_ok=True)
-        
-        # Dosya adını oluştur
-        filename = cop_url.split('/')[-1]
-        file_path = os.path.join(cop_folder, filename)
-        
-        # Dosya zaten varsa indirme yap
-        if os.path.exists(file_path):
-            print(f"ÇÖP dosyası zaten mevcut: {file_path}")
-            return file_path
-        
-        # PDF'yi indir
-        print(f"ÇÖP PDF indiriliyor: {cop_url}")
-        response = requests.get(cop_url, timeout=30)
-        response.raise_for_status()
-        
-        # Dosyayı kaydet
-        with open(file_path, 'wb') as f:
-            f.write(response.content)
-        
-        print(f"ÇÖP PDF kaydedildi: {file_path}")
-        return file_path
-        
-    except requests.RequestException as e:
-        print(f"ÇÖP PDF indirme hatası {cop_url}: {e}")
-        return None
-    except Exception as e:
-        print(f"ÇÖP dosya kaydetme hatası: {e}")
-        return None
-
-def normalize_folder_name(alan_adi):
-    """
-    Alan adını klasör adı için uygun hale getirir.
-    """
-    # Türkçe karakterleri değiştir
-    replacements = {
-        'ç': 'c', 'Ç': 'C',
-        'ğ': 'g', 'Ğ': 'G', 
-        'ı': 'i', 'I': 'I',
-        'İ': 'I', 'i': 'i',
-        'ö': 'o', 'Ö': 'O',
-        'ş': 's', 'Ş': 'S',
-        'ü': 'u', 'Ü': 'U'
-    }
-    
-    normalized = alan_adi
-    for tr_char, en_char in replacements.items():
-        normalized = normalized.replace(tr_char, en_char)
-    
-    # Geçersiz karakterleri temizle
-    normalized = re.sub(r'[^\w\s-]', '', normalized)
-    normalized = re.sub(r'[-\s]+', '_', normalized)
-    
-    return normalized.strip('_')
-
-def group_cops_by_alan(cop_data):
-    """
-    ÇÖP verilerini alan adına göre gruplar.
-    Her alan için birden fazla sınıf ÇÖP'ü olabilir.
-    """
-    alan_mapping = {}
-    
-    for sinif, sinif_data in cop_data.items():
-        for alan_adi, cop_info in sinif_data.items():
-            cop_url = cop_info.get('link', '')
-            if cop_url:
-                if alan_adi not in alan_mapping:
-                    alan_mapping[alan_adi] = []
-                
-                alan_mapping[alan_adi].append({
-                    'url': cop_url,
-                    'sinif': sinif,
-                    'guncelleme_yili': cop_info.get('guncelleme_yili', '')
-                })
-    
-    return alan_mapping
 
 @app.route('/api/update-ders-saatleri-from-dbf')
 def api_update_ders_saatleri_from_dbf():
@@ -1873,8 +1743,9 @@ def workflow_full():
                         yield f"data: {json.dumps(message)}\n\n"
                         time.sleep(0.05)
                 elif step_endpoint == '/api/workflow-step-2':
-                    cop_data = getir_cop_links()
-                    yield f"data: {json.dumps({'type': 'success', 'message': f'ÇÖP verileri çekildi: {len(cop_data.get("cop_data", {}))} sınıf'})}\n\n"
+                    cop_data = getir_cop()
+                    cop_count = len(cop_data.get('cop_data', {}))
+                    yield f"data: {json.dumps({'type': 'success', 'message': f'ÇÖP verileri çekildi: {cop_count} sınıf'})}\n\n"
                 # Diğer adımlar için basitleştirilmiş versiyonlar
                 elif step_endpoint == '/api/workflow-step-3':
                     yield f"data: {json.dumps({'type': 'status', 'message': 'DBF verileri işleniyor...'})}\n\n"
@@ -1908,6 +1779,27 @@ def workflow_full():
         except Exception as e:
             yield f"data: {json.dumps({'type': 'error', 'message': f'İş akışı hatası: {str(e)}'})}\n\n"
     
+    return Response(generate(), mimetype='text/event-stream')
+
+@app.route('/api/scrape-alan-dal')
+def scrape_alan_dal():
+    """
+    Veri çekme (scraping) işlemini başlatır ve ilerlemeyi
+    Server-Sent Events (SSE) ile anlık olarak gönderir.
+    getir_dal.py içerisindeki ana fonksiyonu tetikler.
+    """
+    def generate():
+        try:
+            # getir_dal_with_db_integration bir generator'dır.
+            # Her yield edilen mesajı alıp SSE formatında gönderiyoruz.
+            for message in getir_dal_with_db_integration():
+                yield f"data: {json.dumps(message)}\n\n"
+                time.sleep(0.05)  # İstemcinin veriyi işlemesi için küçük bir bekleme
+        except Exception as e:
+            # Hata durumunda istemciye bir hata mesajı gönder
+            error_message = {'type': 'error', 'message': f'Bir hata oluştu: {str(e)}'}
+            yield f"data: {json.dumps(error_message)}\n\n"
+
     return Response(generate(), mimetype='text/event-stream')
 
 if __name__ == '__main__':

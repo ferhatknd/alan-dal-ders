@@ -7,7 +7,7 @@ import sys
 import random
 
 try:
-    from .utils import normalize_to_title_case_tr
+    from .utils import normalize_to_title_case_tr, with_database
 except ImportError:
     import os
     import sys
@@ -15,7 +15,7 @@ except ImportError:
     parent_dir = os.path.abspath(os.path.join(current_dir, ".."))
     if parent_dir not in sys.path:
         sys.path.insert(0, parent_dir)
-    from modules.utils import normalize_to_title_case_tr
+    from modules.utils import normalize_to_title_case_tr, with_database
 
 # ------------- YARDIMCI FONKSİYONLAR ------------- #
 
@@ -332,7 +332,7 @@ def oku_cop_pdf_file(pdf_path: str) -> Dict[str, Any]:
 
     try:
         with pdfplumber.open(pdf_path) as pdf:
-            print(f"\n▶︎ {os.path.basename(pdf_path)} işleniyor...")
+            print(f"\n▶︎ {pdf_path} işleniyor...")
             # 1. Alan ve Dalları "Tablo başlıkları"ndan al
             alan_adi, dallar = extract_alan_dal_from_table_headers(pdf)
             # print(f"   DEBUG: oku_cop_pdf_file - extract_alan_dal_from_toc sonrası alan_adi: {alan_adi}") # Too verbose
@@ -427,6 +427,123 @@ def oku_cop_pdf_file(pdf_path: str) -> Dict[str, Any]:
         },
     }
 
+# ------------- VERİTABANI ENTEGRASYONU ------------- #
+
+@with_database
+def save_cop_results_to_db(cursor, result: Dict[str, Any]) -> int:
+    """
+    oku_cop_pdf_file() sonuçlarını veritabanına kaydeder.
+    Returns: Kaydedilen ders sayısı
+    """
+    print(f"   💾 Veritabanına kaydetme başlatıldı...")
+    
+    if not result or "alan_bilgileri" not in result:
+        print(f"   ❌ Result veya alan_bilgileri eksik")
+        return 0
+    
+    alan_bilgileri = result["alan_bilgileri"]
+    alan_adi = alan_bilgileri.get("alan_adi", "")
+    dal_ders_listesi = alan_bilgileri.get("dal_ders_listesi", [])
+    
+    if not alan_adi or not dal_ders_listesi:
+        print(f"   ❌ Alan adı veya dal-ders listesi eksik. Alan: {alan_adi}, Dal sayısı: {len(dal_ders_listesi)}")
+        return 0
+    
+    print(f"   📊 Kaydedilecek: Alan='{alan_adi}', Dal sayısı={len(dal_ders_listesi)}")
+    saved_count = 0
+    
+    try:
+        # Alan kaydı/bulma (duplicate check)
+        cursor.execute("SELECT id FROM temel_plan_alan WHERE alan_adi = ?", (alan_adi,))
+        alan_result = cursor.fetchone()
+        
+        if alan_result:
+            alan_id = alan_result['id']
+            print(f"  ↻ Mevcut alan kullanılıyor: {alan_adi}")
+        else:
+            cursor.execute("INSERT INTO temel_plan_alan (alan_adi) VALUES (?)", (alan_adi,))
+            alan_id = cursor.lastrowid
+            print(f"  ➕ Yeni alan eklendi: {alan_adi}")
+        
+        # Dal ve ders kayıtları
+        for dal_info in dal_ders_listesi:
+            dal_adi = dal_info.get("dal_adi", "")
+            dersler = dal_info.get("dersler", [])
+            
+            if not dal_adi or not dersler:
+                continue
+            
+            # Dal kaydı/bulma (duplicate check)
+            cursor.execute("SELECT id FROM temel_plan_dal WHERE dal_adi = ? AND alan_id = ?", (dal_adi, alan_id))
+            dal_result = cursor.fetchone()
+            
+            if dal_result:
+                dal_id = dal_result['id']
+                print(f"    ↻ Mevcut dal kullanılıyor: {dal_adi}")
+            else:
+                cursor.execute("INSERT INTO temel_plan_dal (dal_adi, alan_id) VALUES (?, ?)", (dal_adi, alan_id))
+                dal_id = cursor.lastrowid
+                print(f"    ➕ Yeni dal eklendi: {dal_adi}")
+            
+            # Ders kayıtları
+            for ders in dersler:
+                ders_adi = ders.get("ders_adi", "")
+                sinif_raw = ders.get("sinif", 0)
+                saat = ders.get("saat", 0)
+                
+                # Sınıf bilgisini integer'a çevir
+                sinif = 0
+                if isinstance(sinif_raw, str):
+                    # "11. Sınıf" -> 11
+                    import re
+                    match = re.search(r'(\d+)', sinif_raw)
+                    if match:
+                        sinif = int(match.group(1))
+                elif isinstance(sinif_raw, int):
+                    sinif = sinif_raw
+                
+                if not ders_adi or sinif <= 0:
+                    continue
+                
+                # Ders kaydı/bulma (duplicate check - sadece ders_adi kontrolü)
+                cursor.execute("""
+                    SELECT id FROM temel_plan_ders 
+                    WHERE ders_adi = ?
+                """, (ders_adi,))
+                ders_result = cursor.fetchone()
+                
+                if ders_result:
+                    ders_id = ders_result['id']
+                    # Ders saati güncelle (0 ise veya yeni değer daha büyükse)
+                    cursor.execute("""
+                        UPDATE temel_plan_ders 
+                        SET ders_saati = ? 
+                        WHERE id = ? AND (ders_saati = 0 OR ders_saati < ?)
+                    """, (saat, ders_id, saat))
+                    print(f"      ↻ Mevcut ders atlandı (zaten var): {ders_adi}")
+                else:
+                    cursor.execute("""
+                        INSERT INTO temel_plan_ders (ders_adi, sinif, ders_saati) 
+                        VALUES (?, ?, ?)
+                    """, (ders_adi, sinif, saat))
+                    ders_id = cursor.lastrowid
+                    print(f"      ➕ Yeni ders eklendi: {ders_adi} ({sinif}. sınıf, {saat} saat)")
+                
+                # Ders-Dal ilişkisi
+                cursor.execute("""
+                    INSERT OR IGNORE INTO temel_plan_ders_dal (ders_id, dal_id) 
+                    VALUES (?, ?)
+                """, (ders_id, dal_id))
+                
+                saved_count += 1
+    
+    except Exception as e:
+        print(f"   ❌ ÇÖP veri kayıt hatası: {e}")
+        return 0
+    
+    print(f"   ✅ Veritabanı kaydı tamamlandı: {saved_count} ders kaydedildi")
+    return saved_count
+
 # ------------- KOMUT SATIRI GİRİŞ NOKTASI ------------- #
 
 def oku_tum_pdfler(root_dir: str = ".") -> None:
@@ -451,6 +568,7 @@ if __name__ == "__main__":
             base_cop_dir = os.path.join(os.path.dirname(__file__), '..', 'data', 'cop')
             try:
                 subdirectories = [d for d in os.listdir(base_cop_dir) if os.path.isdir(os.path.join(base_cop_dir, d))]
+                subdirectories.sort()  # Alfabetik sıralama
                 if not subdirectories:
                     print(f"📂 '{base_cop_dir}' içinde okunacak alt dizin bulunamadı.")
                 else:

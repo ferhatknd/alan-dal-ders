@@ -49,11 +49,11 @@ const PDFViewerSidebar = ({ pdfUrl, isOpen, onClose, courseTitle }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="pdf-viewer-sidebar">
+    <div className="pdf-viewer-sidebar-independent">
       <div className="pdf-sidebar-overlay" onClick={onClose}></div>
       <div className="pdf-sidebar-content">
         <div className="pdf-sidebar-header">
-          <h3>Ders Materyali (DM)</h3>
+          <h3>PDF Viewer</h3>
           <button className="close-btn" onClick={onClose}>×</button>
         </div>
         <div className="pdf-course-info">
@@ -83,7 +83,7 @@ const PDFViewerSidebar = ({ pdfUrl, isOpen, onClose, courseTitle }) => {
             src={pdfUrl}
             width="100%"
             height="100%"
-            title="Ders Materyali PDF Viewer"
+            title="PDF Viewer"
             frameBorder="0"
             onLoad={handleIframeLoad}
             onError={handleIframeError}
@@ -91,6 +91,79 @@ const PDFViewerSidebar = ({ pdfUrl, isOpen, onClose, courseTitle }) => {
           />
         </div>
       </div>
+    </div>
+  );
+};
+
+// COP Dropdown Bileşeni
+const CopDropdown = ({ copUrls, onSelectCop }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  
+  if (!copUrls || Object.keys(copUrls).length === 0) {
+    return null;
+  }
+  
+  const copList = Object.entries(copUrls).map(([key, url]) => ({
+    label: key.includes('sinif_') ? `${key.split('_')[1]}. Sınıf` : key,
+    url: url,
+    key: key
+  }));
+  
+  return (
+    <div className="cop-dropdown" style={{ position: 'relative', display: 'inline-block' }}>
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        style={{
+          padding: '8px 12px',
+          background: '#007bff',
+          color: 'white',
+          border: 'none',
+          borderRadius: '4px',
+          cursor: 'pointer',
+          fontSize: '12px',
+          fontWeight: 'bold'
+        }}
+      >
+        ÇÖP PDF ({copList.length}) {isOpen ? '▲' : '▼'}
+      </button>
+      {isOpen && (
+        <div style={{
+          position: 'absolute',
+          top: '100%',
+          left: 0,
+          background: 'white',
+          border: '1px solid #ccc',
+          borderRadius: '4px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+          zIndex: 1000,
+          minWidth: '140px'
+        }}>
+          {copList.map(item => (
+            <button
+              key={item.key}
+              onClick={() => {
+                onSelectCop(item.url, `ÇÖP - ${item.label}`);
+                setIsOpen(false);
+              }}
+              style={{
+                display: 'block',
+                width: '100%',
+                padding: '8px 12px',
+                background: 'none',
+                border: 'none',
+                textAlign: 'left',
+                cursor: 'pointer',
+                fontSize: '12px',
+                borderBottom: '1px solid #f0f0f0'
+              }}
+              onMouseOver={(e) => e.target.style.background = '#f8f9fa'}
+              onMouseOut={(e) => e.target.style.background = 'none'}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
@@ -111,13 +184,24 @@ const CourseEditSidebar = ({ course, isOpen, onClose, onSave, onShowPDF }) => {
   
   const [alanDalOptions, setAlanDalOptions] = useState({ alanlar: [], dallar: {} });
   const [pdfPreview, setPdfPreview] = useState({ isOpen: false, url: '', title: '' });
+  const [copUrls, setCopUrls] = useState({});
 
   // Alan-Dal seçeneklerini yükle
   useEffect(() => {
     if (isOpen) {
       fetch('http://localhost:5001/api/alan-dal-options')
         .then(res => res.json())
-        .then(data => setAlanDalOptions(data))
+        .then(data => {
+          setAlanDalOptions(data);
+          // Parse all COP URLs when data is loaded
+          if (data.alanlar) {
+            const allCopUrls = parseAllCopUrls(data.alanlar);
+            // Set initial COP URLs based on current alan_id
+            if (editData.alan_id && allCopUrls[editData.alan_id]) {
+              setCopUrls(allCopUrls[editData.alan_id]);
+            }
+          }
+        })
         .catch(err => console.error('Alan-Dal seçenekleri yüklenirken hata:', err));
     }
   }, [isOpen]);
@@ -186,9 +270,45 @@ const CourseEditSidebar = ({ course, isOpen, onClose, onSave, onShowPDF }) => {
     setPdfPreview({ isOpen: false, url: '', title: '' });
   };
 
-  // Alan değiştiğinde dal listesini güncelle
+  // Parse all COP URLs from alanlar data
+  const parseAllCopUrls = (alanlarData) => {
+    const copUrlsMap = {};
+    alanlarData.forEach(alan => {
+      if (alan.cop_url) {
+        try {
+          const copData = JSON.parse(alan.cop_url);
+          copUrlsMap[alan.id] = copData;
+        } catch (e) {
+          // If not JSON, treat as single URL
+          copUrlsMap[alan.id] = { 'cop_url': alan.cop_url };
+        }
+      }
+    });
+    return copUrlsMap;
+  };
+
+  // Alan değiştiğinde dal listesini güncelle ve COP URLs'leri parse et
   const handleAlanChange = (alanId) => {
     setEditData(prev => ({ ...prev, alan_id: alanId, dal_id: '' }));
+    
+    // Parse COP URLs for the selected alan
+    const selectedAlan = alanDalOptions.alanlar.find(alan => alan.id === parseInt(alanId));
+    if (selectedAlan && selectedAlan.cop_url) {
+      try {
+        const copData = JSON.parse(selectedAlan.cop_url);
+        setCopUrls(copData);
+      } catch (e) {
+        // If not JSON, treat as single URL
+        setCopUrls({ 'cop_url': selectedAlan.cop_url });
+      }
+    } else {
+      setCopUrls({});
+    }
+  };
+
+  // Handle COP PDF selection
+  const handleCopSelect = (pdfUrl, title) => {
+    onShowPDF(pdfUrl, title);
   };
 
   console.log('CourseEditSidebar render:', { isOpen, course });
@@ -221,16 +341,23 @@ const CourseEditSidebar = ({ course, isOpen, onClose, onSave, onShowPDF }) => {
           <div className="sidebar-body">
             {/* Alan-Dal Seçimi */}
             <div className="form-section">
-              <MaterialTextField
-                label="Alan"
-                value={editData.alan_id}
-                onChange={(value) => handleAlanChange(value)}
-                select={true}
-                options={alanDalOptions.alanlar.map(alan => ({
-                  value: alan.id,
-                  label: alan.adi
-                }))}
-              />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <MaterialTextField
+                  label="Alan"
+                  value={editData.alan_id}
+                  onChange={(value) => handleAlanChange(value)}
+                  select={true}
+                  options={alanDalOptions.alanlar.map(alan => ({
+                    value: alan.id,
+                    label: alan.adi
+                  }))}
+                />
+                
+                <CopDropdown 
+                  copUrls={copUrls} 
+                  onSelectCop={handleCopSelect}
+                />
+              </div>
               
               <MaterialTextField
                 label="Dal"
@@ -945,53 +1072,7 @@ const DataTable = ({ tableData, searchTerm, onCourseEdit }) => {
         </thead>
         <tbody>
           {sortedData.map((row, index) => (
-            <tr key={`${row.alan_id}-${row.dal_id}-${row.ders_id || 'empty'}-${index}`}>
-              <td>{row.alan_adi || '-'}</td>
-              <td>{row.dal_adi || '-'}</td>
-              <td>{row.ders_adi || '-'}</td>
-              <td>{row.sinif || '-'}</td>
-              <td>{row.ders_saati || 0}</td>
-              <td>
-                {row.dm_url ? (
-                  <a href={row.dm_url} target="_blank" rel="noopener noreferrer" className="ders-link">
-                    📄 DM
-                  </a>
-                ) : (
-                  "-"
-                )}
-              </td>
-              <td>
-                {row.dbf_url ? (
-                  <a href={row.dbf_url} target="_blank" rel="noopener noreferrer" className="dbf-link">
-                    📄 DBF
-                  </a>
-                ) : (
-                  "-"
-                )}
-              </td>
-              <td>
-                {row.bom_url ? (
-                  <a href={row.bom_url} target="_blank" rel="noopener noreferrer" className="bom-link">
-                    📄 BOM
-                  </a>
-                ) : (
-                  "-"
-                )}
-              </td>
-              <td>
-                {row.ders_id ? (
-                  <button 
-                    className="edit-btn" 
-                    onClick={() => onCourseEdit && onCourseEdit(row)}
-                    title="Düzenle"
-                  >
-                    ✏️
-                  </button>
-                ) : (
-                  "-"
-                )}
-              </td>
-            </tr>
+            <tr key={`${row.alan_id}-${row.dal_id}-${row.ders_id || 'empty'}-${index}`}><td>{row.alan_adi || '-'}</td><td>{row.dal_adi || '-'}</td><td>{row.ders_adi || '-'}</td><td>{row.sinif || '-'}</td><td>{row.ders_saati || 0}</td><td>{row.dm_url ? (<a href={row.dm_url} target="_blank" rel="noopener noreferrer" className="ders-link">📄 DM</a>) : ("-")}</td><td>{row.dbf_url ? (<a href={row.dbf_url} target="_blank" rel="noopener noreferrer" className="dbf-link">📄 DBF</a>) : ("-")}</td><td>{row.bom_url ? (<a href={row.bom_url} target="_blank" rel="noopener noreferrer" className="bom-link">📄 BOM</a>) : ("-")}</td><td>{row.ders_id ? (<button className="edit-btn" onClick={() => onCourseEdit && onCourseEdit(row)}title="Düzenle">✏️</button>) : ("-")}</td></tr>
           ))}
         </tbody>
       </table>
@@ -1039,6 +1120,10 @@ function App() {
   // DBF rar indir/aç state'leri
   const [dbfUnrarLoading, setDbfUnrarLoading] = useState(false);
   const [dbfUnrarError, setDbfUnrarError] = useState("");
+  
+  // COP ve DBF okuma state'leri
+  const [copProcessing, setCopProcessing] = useState(false);
+  const [dbfProcessing, setDbfProcessing] = useState(false);
 
   // Debouncing efekti: Kullanıcı yazmayı bıraktıktan 300ms sonra arama terimini günceller.
   useEffect(() => {
@@ -1071,7 +1156,7 @@ function App() {
         const tableDataResponse = await response.json();
         setTableData(tableDataResponse);
         setProgress(prev => [...prev, { 
-          message: `${tableDataResponse.length} ders veritabanından yüklendi.`, 
+          message: `${tableDataResponse.length} ders veritabanından yüklendi.`,
           type: 'done' 
         }]);
       } else {
@@ -1218,32 +1303,46 @@ function App() {
       setCatLoading("");
     }
   };
-  const fetchCop = async () => {
+  const fetchCop = useCallback(() => {
+    if (loading || catLoading) return;
+
     setCatLoading("cop");
     setCatError("");
-    
-    // Console'u aç ve mesaj yazdır
     setConsoleOpen(true);
-    setProgress(prev => [...prev, { type: 'status', message: 'ÇÖP verileri çekiliyor...' }]);
-    
-    try {
-      const res = await fetch("http://localhost:5001/api/get-cop");
-      if (!res.ok) throw new Error("ÇÖP verisi alınamadı");
-      const json = await res.json();
-      setCopData(json);
-      
-      setProgress(prev => [...prev, { type: 'success', message: `ÇÖP: ${json.updated_count || 0} alan güncellendi` }]);
-      
-      // Disk dosyalarından gerçek istatistikleri yükle
-      await loadStatistics();
-      
-    } catch (e) {
-      setCatError("ÇÖP: " + e.message);
-      setProgress(prev => [...prev, { type: 'error', message: 'ÇÖP hatası: ' + e.message }]);
-    } finally {
+    setProgress(prev => [...prev, { type: 'status', message: 'ÇÖP linkleri çekiliyor...' }]);
+
+    const eventSource = new EventSource("http://localhost:5001/api/get-cop");
+
+    eventSource.onmessage = (event) => {
+      try {
+        const eventData = JSON.parse(event.data);
+        setProgress(prev => [...prev, eventData]);
+        if (eventData.type === "done" || eventData.type === "error") {
+          setCatLoading("");
+          loadStatistics(); // İstatistikleri yeniden yükle
+          eventSource.close();
+        }
+      } catch (e) {
+        const errorMsg = "Gelen indirme verisi işlenemedi: " + e.message;
+        setCatError(errorMsg);
+        setProgress(prev => [...prev, { type: 'error', message: errorMsg }]);
+        setCatLoading("");
+        eventSource.close();
+      }
+    };
+
+    eventSource.onerror = (err) => {
+      const errorMsg = "ÇÖP indirme bağlantı hatası veya sunucu yanıt vermiyor.";
+      setCatError(errorMsg);
+setProgress(prev => [...prev, { type: 'error', message: errorMsg }]);
       setCatLoading("");
-    }
-  };
+      eventSource.close();
+    };
+
+    return () => {
+      eventSource.close();
+    };
+  }, [loading, catLoading, loadStatistics]);
   const fetchDm = async () => {
     setCatLoading("dm");
     setCatError("");
@@ -1492,10 +1591,12 @@ function App() {
 
     setProgress([]);
     setError(null);
+    setCopProcessing(true);
+    setConsoleOpen(true);
     // Reset COP read count
     setStats(prev => ({ ...prev, cop_okunan: 0 }));
 
-    const eventSource = new EventSource('http://localhost:5001/api/process-cop-pdfs');
+    const eventSource = new EventSource('http://localhost:5001/api/oku-cop');
 
     eventSource.onmessage = (event) => {
       const eventData = JSON.parse(event.data);
@@ -1513,12 +1614,16 @@ function App() {
       setProgress(prev => [...prev, eventData]);
 
       if (eventData.type === 'done') {
+        setCopProcessing(false);
         eventSource.close();
+        setProgress(prev => [...prev, { type: 'success', message: 'ÇÖP işleme tamamlandı. Tablo güncelleniyor...' }]);
+        loadTableData(); // Tabloyu yeniden yükle
       }
     };
 
     eventSource.onerror = () => {
       setError("ÇÖP PDF işleme sırasında bir hata oluştu. Sunucu bağlantısı kesilmiş olabilir.");
+      setCopProcessing(false);
       eventSource.close();
     };
 
@@ -1535,6 +1640,8 @@ function App() {
 
     setProgress([]);
     setError(null);
+    setDbfProcessing(true);
+    setConsoleOpen(true);
     // Reset DBF read count
     setStats(prev => ({ ...prev, dbf_okunan: 0 }));
 
@@ -1556,12 +1663,16 @@ function App() {
       setProgress(prev => [...prev, eventData]);
 
       if (eventData.type === 'done') {
+        setDbfProcessing(false);
         eventSource.close();
+        setProgress(prev => [...prev, { type: 'success', message: 'DBF işleme tamamlandı. Tablo güncelleniyor...' }]);
+        loadTableData(); // Tabloyu yeniden yükle
       }
     };
 
     eventSource.onerror = () => {
       setError("DBF ders saati güncelleme sırasında bir hata oluştu. Sunucu bağlantısı kesilmiş olabilir.");
+      setDbfProcessing(false);
       eventSource.close();
     };
 
@@ -1569,6 +1680,63 @@ function App() {
       eventSource.close();
     };
   }, []);
+
+  const handleGetirAlanDal = useCallback(() => {
+    if (loading) return;
+    
+    if (stats.alan > 0 && !window.confirm('Veritabanında zaten alan/dal verisi mevcut. Yine de yeniden çekmek ve mevcut verileri güncellemek istiyor musunuz?')) {
+      return;
+    }
+
+    setConsoleOpen(true);
+    setProgress([]);
+    setError(null);
+    setLoading(true);
+
+    const eventSource = new EventSource('http://localhost:5001/api/scrape-alan-dal');
+
+    eventSource.onmessage = (event) => {
+      try {
+        const eventData = JSON.parse(event.data);
+        setProgress(prev => [...prev, eventData]);
+
+        // Anlık istatistik güncellemesi için yeni eklenen bölüm
+        if (eventData.type === 'progress' && eventData.total_areas !== undefined && eventData.total_branches !== undefined) {
+          setStats(prevStats => ({
+            ...prevStats,
+            alan: eventData.total_areas,
+            dal: eventData.total_branches
+          }));
+        }
+
+        if (eventData.type === 'done') {
+          loadStatistics(); // Son ve en doğru istatistikleri veritabanından çek
+          loadTableData(); // Tabloyu yeniden yükle
+          eventSource.close();
+          setLoading(false);
+        }
+        if (eventData.type === 'error') {
+          setError(eventData.message || "Bilinmeyen bir hata oluştu.");
+          setLoading(false);
+          eventSource.close();
+        }
+      } catch (e) {
+          setError("Gelen veri işlenemedi: " + e.message);
+          setLoading(false);
+          eventSource.close();
+      }
+    };
+
+    eventSource.onerror = (err) => {
+      setError("Veri akışı sırasında bir hata oluştu. Sunucu bağlantısı kesilmiş olabilir.");
+      eventSource.close();
+      setLoading(false);
+    };
+
+    return () => {
+      eventSource.close();
+    };
+  }, [loading, stats.alan, loadStatistics, loadTableData]);
   
   return (
     <div className="App">
@@ -1616,31 +1784,7 @@ function App() {
         }}>
           {/* 1. Getir Alan ve Dal */}
           <button
-            onClick={async () => {
-              setProgress([]);
-              setError(null);
-              setLoading(true);
-              try {
-                const response = await fetch('http://localhost:5001/api/get-dal');
-                const result = await response.json();
-                
-                // İstatistikleri güncelle
-                if (result.alanlar && result.dallar) {
-                  setStats(prev => ({ 
-                    ...prev, 
-                    alan: result.alanlar.length || 0,
-                    dal: result.dallar.length || 0
-                  }));
-                }
-                
-                setProgress(prev => [...prev, { type: 'done', message: 'Alan-Dal verileri başarıyla çekildi' }]);
-                await loadStatistics(); // Veritabanından güncel istatistikleri yükle
-              } catch (e) {
-                setProgress(prev => [...prev, { type: 'error', message: 'Alan-Dal çekme hatası: ' + e.message }]);
-              } finally {
-                setLoading(false);
-              }
-            }}
+            onClick={handleGetirAlanDal}
             disabled={loading}
             style={{
               width: "140px",
@@ -1773,7 +1917,7 @@ function App() {
           {/* 6. Oku COP */}
           <button
             onClick={handleProcessCopPdfs}
-            disabled={loading}
+            disabled={loading || copProcessing}
             style={{
               width: "140px",
               height: "80px",
@@ -1783,7 +1927,7 @@ function App() {
               borderRadius: "8px",
               fontSize: "11px",
               fontWeight: "bold",
-              cursor: loading ? "not-allowed" : "pointer",
+              cursor: (loading || copProcessing) ? "not-allowed" : "pointer",
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
@@ -1799,7 +1943,7 @@ function App() {
           {/* 7. Oku DBF */}
           <button
             onClick={handleUpdateDersSaatleri}
-            disabled={loading}
+            disabled={loading || dbfProcessing}
             style={{
               width: "140px",
               height: "80px",
@@ -1809,7 +1953,7 @@ function App() {
               borderRadius: "8px",
               fontSize: "11px",
               fontWeight: "bold",
-              cursor: loading ? "not-allowed" : "pointer",
+              cursor: (loading || dbfProcessing) ? "not-allowed" : "pointer",
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
@@ -1825,9 +1969,18 @@ function App() {
 
         {/* Durum Göstergeleri */}
         <div style={{ textAlign: "center", padding: "10px", background: "#e9ecef", borderRadius: "5px" }}>
-          {(catLoading || loading) && (
+          {(catLoading || loading || copProcessing || dbfProcessing) && (
             <div style={{ color: "#007bff", fontWeight: "bold" }}>
-              ⏳ İşlem devam ediyor: {catLoading || "genel işlem"}...
+              ⏳ İşlem devam ediyor: {
+                catLoading === "dbf" ? "DBF verileri çekiliyor" :
+                catLoading === "cop" ? "ÇÖP PDF'leri indiriliyor" :
+                catLoading === "dm" ? "DM verileri çekiliyor" :
+                catLoading === "bom" ? "BOM verileri çekiliyor" :
+                copProcessing ? "ÇÖP PDF'leri okunuyor" :
+                dbfProcessing ? "DBF dosyaları okunuyor" :
+                loading ? "Alan-Dal verileri çekiliyor" :
+                "İşlem"
+              }...
             </div>
           )}
           {catError && <div style={{ color: "#dc3545", fontWeight: "bold" }}>❌ Hata: {catError}</div>}
@@ -1922,7 +2075,7 @@ function App() {
             // Hata mesajından alan_adi ve rar_filename çıkarılabiliyorsa buton ekle
             let retryButton = null;
             if (p.type === 'error' && p.message) {
-              const match = p.message.match(/^\[([^\]]+)\].*?([^\s\/]+\.rar|[^\s\/]+\.zip)/i);
+              const match = p.message.match(/^\[([^\]]+)\].+?([^\s]+\.rar|[^\s]+\.zip)/i);
               if (match) {
                 const alan_adi = match[1];
                 const rar_filename = match[2];
@@ -1952,94 +2105,73 @@ function App() {
                       }
                     }}
                   >
-                    Retry
+                    Tekrar Dene
                   </button>
                 );
               }
             }
 
-            const timestamp = new Date().toLocaleTimeString();
-            const getColor = () => {
-              switch(p.type) {
-                case 'error': return '#ff4444';
-                case 'warning': return '#ffaa00';
-                case 'done': return '#00ff00';
-                case 'success': return '#00ff00';
-                default: return '#cccccc';
-              }
-            };
+            const messageColor = p.type === 'error' ? '#ff4444' :
+                               p.type === 'warning' ? '#ffbb33' :
+                               p.type === 'success' ? '#00C851' :
+                               p.type === 'done' ? '#00C851' :
+                               '#00BFFF';
 
-            const getPrefix = () => {
-              switch(p.type) {
-                case 'error': return '✗';
-                case 'warning': return '⚠';
-                case 'done': return '✓';
-                case 'success': return '✓';
-                default: return '›';
-              }
-            };
+            if (p.type === 'province_summary') {
+              return (
+                <div key={index} style={{ marginBottom: '10px', whiteSpace: 'pre-wrap', color: messageColor }}>
+                  <div>{`İl      : ${p.province_name} ${p.province_progress}`}</div>
+                  <div>{`Alan Sayısı: ${p.alan_sayisi_province}/${p.alan_sayisi_total_province}`}</div>
+                  <div>{`Dal Sayısı : ${p.dal_sayisi_province} (Toplam: ${p.dal_sayisi_total_so_far})`}</div>
+                </div>
+              )
+            }
 
             return (
-              <div key={index} style={{
-                color: getColor(),
-                marginBottom: "3px",
-                wordWrap: "break-word"
-              }}>
-                <span style={{ color: "#888", fontSize: "10px" }}>[{timestamp}] </span>
-                <span>{getPrefix()} {p.message}</span>
+              <div key={index} style={{ color: messageColor, marginBottom: '5px', whiteSpace: 'pre-wrap' }}>
+                <span style={{ marginRight: '5px' }}>›</span>
+                {p.message}
                 {retryButton}
-                {p.estimation && (
-                  <div style={{ color: "#888", fontSize: "10px", marginLeft: "60px" }}>
-                    └ {p.estimation}
-                  </div>
-                )}
               </div>
             );
           })}
-          
-          {progress.length === 0 && !initialLoading && !error && (
-            <div style={{ color: "#888", fontStyle: "italic" }}>
-              › Console ready. Run operations to see logs...
-            </div>
-          )}
-        </div>
-
-        {/* Console Footer */}
-        <div style={{
-          padding: "10px",
-          background: "#2d2d2d",
-          borderTop: "1px solid #444",
-          fontSize: "10px",
-          color: "#888"
-        }}>
-          {progress.length} log entries
         </div>
       </div>
 
-
-      {/* Veri görüntüleme alanı - Sadece Tablo Görünümü */}
-      {!initialLoading && tableData.length > 0 && (
-        <div className="data-display">
-          <DataTable tableData={tableData} searchTerm={debouncedTerm} onCourseEdit={handleCourseEdit} />
+      {initialLoading ? (
+        <div style={{ textAlign: 'center', padding: '50px', fontSize: '18px' }}>
+          Yükleniyor...
         </div>
+      ) : (
+        <>
+          {/* Ana İçerik */}
+          <div className="main-content">
+            {/* Sadece DataTable gösterilecek */}
+            <DataTable 
+              tableData={tableData}
+              searchTerm={debouncedTerm}
+              onCourseEdit={handleCourseEdit}
+            />
+          </div>
+
+          {/* Düzenleme Kenar Çubuğu */}
+          <CourseEditSidebar
+            course={editingSidebar.course}
+            isOpen={editingSidebar.isOpen}
+            onClose={handleCloseSidebar}
+            onSave={handleSaveCourse}
+            onShowPDF={handleShowPDF}
+          />
+
+          {/* PDF Görüntüleyici Kenar Çubuğu - Bağımsız */}
+          <PDFViewerSidebar
+            pdfUrl={pdfSidebar.url}
+            isOpen={pdfSidebar.isOpen}
+            onClose={handleClosePDFSidebar}
+            courseTitle={pdfSidebar.title}
+          />
+        </>
       )}
-
-      {/* Course Edit Sidebar */}
-      <CourseEditSidebar
-        course={editingSidebar.course}
-        isOpen={editingSidebar.isOpen}
-        onClose={handleCloseSidebar}
-        onSave={handleSaveCourse}
-        onShowPDF={handleShowPDF}
-      />
-
-      {/* PDF Viewer Sidebar */}
-      <PDFViewerSidebar
-        pdfUrl={pdfSidebar.url}
-        isOpen={pdfSidebar.isOpen}
-        onClose={handleClosePDFSidebar}
-        courseTitle={pdfSidebar.title}
-      />
     </div>
   );
 }

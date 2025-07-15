@@ -661,6 +661,17 @@ mark {
 }
 
 /* PDF Viewer Sidebar Styles */
+/* PDF Viewer Sidebar - Independent */
+.pdf-viewer-sidebar-independent {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1200; /* Higher z-index than edit sidebar */
+}
+
+/* PDF Viewer Sidebar (legacy) */
 .pdf-viewer-sidebar {
   position: fixed;
   top: 0;

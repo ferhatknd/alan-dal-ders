@@ -24,6 +24,7 @@ Alan (Area) → Dal (Field) → Ders (Course) → Öğrenme Birimi (Learning Uni
 
 ### 🔧 Core Backend Dosyaları
 - **`server.py`** - Ana Flask sunucusu, tüm API endpoint'leri, veritabanı işlemleri ve **istatistik sistemi**
+  - ⭐ **YENİ**: Merkezi database connection decorator sistemi kullanıyor
 
 ### 📊 Backend Modülleri (modules/ klasörü)
 - **`modules/oku_dbf.py`** - ⭐ **YENİDEN ADLANDIRILDI**: DBF PDF parsing ve içerik analizi (eski: oku.py)
@@ -34,7 +35,7 @@ Alan (Area) → Dal (Field) → Ders (Course) → Öğrenme Birimi (Learning Uni
 - **`modules/getir_dm.py`** - Ders Materyalleri (DM) verilerini çeker
 - **`modules/getir_bom.py`** - Bireysel Öğrenme Materyalleri (BÖM) verilerini çeker
 - **`modules/getir_dal.py`** - Alan-Dal ilişkilerini çeker
-- **`modules/utils.py`** - Yardımcı fonksiyonlar, Türkçe karakter normalizasyonu ve **merkezi PDF cache yönetimi**
+- **`modules/utils.py`** - ⭐ **GÜNCELLENDİ**: Yardımcı fonksiyonlar, Türkçe karakter normalizasyonu, **merkezi PDF cache yönetimi** ve **database connection decorators**
 
 ### 🌐 Frontend Dosyaları
 - **`src/App.js`** - ⭐ **YENİLENDİ**: Tek satır workflow UI, console panel, JSON popup'sız tasarım
@@ -54,10 +55,7 @@ Alan (Area) → Dal (Field) → Ders (Course) → Öğrenme Birimi (Learning Uni
   - `bom/` - BÖM dosyaları
 
 ### 🐛 Debug ve Test Araçları
-- **`debug_gida_table.py`** - PDF tablo yapısını detaylı analiz eden debug script
-- **`debug_meslek_dersleri.py`** - MESLEK DERSLERİ kategori algılama test aracı
-- **`debug_cop_system.py`** - ⭐ **YENİ**: COP sistemi kapsamlı debug aracı, PDF indirme/okuma/veritabanı testleri
-- **`*.pdf`** (kök dizin) - Test için kullanılan sample PDF dosyaları
+- **`test.py`** - DBF PDF tablo yapısını detaylı analiz eden debug script
 
 ## 🗄️ Veritabanı Yapısı (SQLite)
 
@@ -85,7 +83,7 @@ temel_plan_ders
 ├── ders_adi (TEXT NOT NULL)
 ├── sinif (INTEGER) - Sınıf seviyesi (9, 10, 11, 12)
 ├── ders_saati (INTEGER NOT NULL DEFAULT 0)
-├── amac (TEXT)
+├── amac (TEXT) - DBF PDF ten okunan dersin amacı metni
 ├── dm_url (TEXT) - Ders Materyali PDF URL'si
 ├── dbf_url (TEXT) - DBF yerel dosya yolu
 ├── bom_url (TEXT) - BÖM URL'si
@@ -99,7 +97,7 @@ temel_plan_ders_dal
 ├── created_at (TIMESTAMP)
 
 -- Diğer tablolar: temel_plan_ogrenme_birimi, temel_plan_konu, 
--- temel_plan_kazanim, temel_plan_arac, temel_plan_olcme, vb.
+-- temel_plan_kazanim, temel_plan_arac, temel_plan_olcme, vb. bunların hepsi DBF PDF ten oku_dbf.py ile alınır.
 ```
 
 ## 🔄 Aşamalı İş Akışı
@@ -112,6 +110,8 @@ temel_plan_ders_dal
 **Amaç**: Türkiye'deki tüm illerdeki okullara göre mesleki eğitim alanları ve dallarını toplar.
 
 **İşlem Akışı**:
+
+İşler öncelikle getir_dal.py ile başlar. Bu modül aşağıdaki işlemler ile Alan ve Dal bilgilerini çeker.
 
 1. **İl Listesi Çekme**
    - Endpoint: `https://mtegm.meb.gov.tr/kurumlar/api/getIller.php`
@@ -146,7 +146,7 @@ temel_plan_ders_dal
 - `data/alan/` klasör yapısı
 
 **Performans**:
-- 81 il × ortalama 15 alan × ortalama 8 dal ≈ 10,000 API çağrısı
+- 81 il × ortalama 50 alan × ortalama 3 dal ≈ 12,000 API çağrısı
 - Rate limiting: 0.3s/dal, 1.5s/il
 - Session yönetimi ile çerez korunumu
 
@@ -473,6 +473,51 @@ data/
 - Otomatik cache kontrolü
 - Güvenli dosya adlandırma
 
+### 9. 📄 Database Connection Decorators ⭐ **YENİ**
+
+**Amaç:** Merkezi database connection yönetimi ve kod tekrarını önleme.
+
+**Yeni Fonksiyonlar:**
+- `@with_database_json` - Flask endpoint'leri için decorator
+- `@with_database` - Genel fonksiyonlar için decorator  
+- `find_or_create_database()` - Otomatik database/schema kurulumu
+
+**🔧 Kritik Özellikler:**
+
+**1. Flask Endpoint Decorator:**
+```python
+@app.route('/api/endpoint')
+@with_database_json
+def my_endpoint(cursor):
+    cursor.execute("SELECT * FROM table")
+    return {"data": cursor.fetchall()}  # Otomatik JSON response
+```
+
+**2. Genel Fonksiyon Decorator:**
+```python
+@with_database
+def my_function(cursor, param1, param2):
+    cursor.execute("INSERT INTO table VALUES (?, ?)", (param1, param2))
+    return {"success": True}
+```
+
+**3. Standardize Error Handling:**
+```python
+# CLAUDE.md uyumlu format
+{
+  "success": false,
+  "error": "Error message",
+  "error_type": "database", 
+  "timestamp": "2025-07-15T10:30:00Z"
+}
+```
+
+**📊 Performans İyileştirmesi:**
+- **Öncesi**: 32 tekrarlı database connection pattern
+- **Sonrası**: Tek decorator ile merkezi yönetim
+- **Row Factory**: `sqlite3.Row` ile dict-style access
+- **Auto-commit**: Transaction yönetimi dahili
+
 ## 🔌 API Endpoints - Detaylı Referans
 
 ### 📥 Temel Veri Çekme
@@ -495,9 +540,10 @@ data/
   - Response: DBF linkları, dosya durumları, alan organizasyonu
   - Cache: `data/getir_dbf_sonuc.json`
   
-- **`GET /api/get-cop`** - ÇÖP (Çerçeve Öğretim Programı) verilerini getir
-  - Response: ÇÖP PDF linkları, sınıf-alan matrisi
-  - Cache: `data/getir_cop_sonuc.json`
+- **`GET /api/get-cop`** - ÇÖP (Çerçeve Öğretim Programı) linklerini çeker ve veritabanına kaydeder
+  - Method: Server-Sent Events (SSE)
+  - Response: Real-time progress updates
+  - Process: MEB'den ÇÖP linklerini çeker → URL'leri veritabanına JSON formatında kaydeder → PDF'leri indirir
   
 - **`GET /api/get-dm`** - DM (Ders Materyali) verilerini getir
   - Response: Ders materyali PDF linkları, sınıf-alan-ders hiyerarşisi
@@ -542,9 +588,8 @@ data/
   - Process: Açılmamış dosyaları yeniden işleme
   - Retry Logic: Exponential backoff
   
-- **`POST /api/process-cop-pdfs`** - ÇÖP PDF'lerini analiz et ve DB'ye kaydet
+- **`GET /api/oku-cop`** - ÇÖP PDF'lerini analiz et ve DB'ye kaydet
   - Method: Server-Sent Events (SSE)
-  - Body: `{"action": "process_all" | "process_failed"}`
   - Process: PDF okuma → İçerik analizi → Veritabanı kaydetme
   - Uses: `modules/oku_cop.py`
   
@@ -568,7 +613,7 @@ data/
 **Adım 1 - Temel Veri:**
 ```bash
 /api/get-dal          # Alan-Dal çekme
-/api/get-cop          # ÇÖP linklerini çekme  
+/api/get-cop          # ÇÖP linklerini çekme ve veritabanına kaydetme
 /api/get-dbf          # DBF linklerini çekme
 /api/get-dm           # DM linklerini çekme
 /api/get-bom          # BÖM linklerini çekme
@@ -576,8 +621,8 @@ data/
 
 **Adım 2 - PDF İşleme:**
 ```bash
+/api/oku-cop                  # ÇÖP PDF lerini okur
 /api/dbf-download-extract     # DBF indir/aç
-/api/process-cop-pdfs         # ÇÖP analiz et
 /api/update-ders-saatleri     # Ders saatleri
 ```
 
@@ -607,7 +652,29 @@ data: {"type": "error", "message": "Error description", "error_type": "network"}
 
 ## 🚨 Kritik Hatalardan Kaçınma Kuralları
 
-### 1. Modül İsimleri ⭐ **GÜNCELLENDİ**
+### 1. Database Connection ⭐ **YENİ KURAL**
+- **ASLA** manuel `sqlite3.connect()` kullanma
+- **MUTLAKA** `utils.py`'deki decorator'ları kullan:
+  ```python
+  # ✅ Doğru - Flask endpoint'leri için
+  @app.route('/api/endpoint')
+  @with_database_json
+  def my_endpoint(cursor):
+      cursor.execute("SELECT * FROM table")
+      return {"data": cursor.fetchall()}
+  
+  # ✅ Doğru - Genel fonksiyonlar için
+  @with_database
+  def my_function(cursor, params):
+      cursor.execute("INSERT...")
+      return result
+  
+  # ❌ Yanlış - Manuel connection
+  with sqlite3.connect(db_path) as conn:
+      cursor = conn.cursor()
+  ```
+
+### 2. Modül İsimleri ⭐ **GÜNCELLENDİ**
 - ⚠️ **`oku.py` artık `oku_dbf.py` oldu!**
 - Import'larda doğru modül adını kullan:
   ```python
@@ -615,30 +682,30 @@ data: {"type": "error", "message": "Error description", "error_type": "network"}
   from modules.oku import oku  # ❌ Eski, artık yok
   ```
 
-### 2. UI Tasarımı ⭐ **YENİ KURAL**
+### 3. UI Tasarımı ⭐ **YENİ KURAL**
 - **ASLA** JSON popup/display ekranları ekleme
 - Tüm veri gösterimleri console panel'de olmalı
 - Button istatistikleri database + disk dosyalarından otomatik yüklenmeli (`/api/get-statistics`)
 - Real-time logging için SSE kullan
 - Aşamalı iş akışı UI ile organize edilmiş 3-adımlı süreç
 
-### 3. Veritabanı İşlemleri
+### 4. Veritabanı İşlemleri
 - **ASLA** veritabanı dosyasını silme
 - Migration'ları `schema.sql`'den uygula
 - `IF NOT EXISTS` kullan
 - Transaction'ları `with sqlite3.connect()` ile yönet
 
-### 4. PDF İşleme
+### 5. PDF İşleme
 - Content-based matching kullan (fuzzy matching yerine)
 - `modules/oku_dbf.py`'yi DBF PDF okuma için kullan (eski: oku.py)
 - Encoding: `UTF-8` ile dosya okuma/yazma
 
-### 4. Error Handling
+### 6. Error Handling
 - Her API çağrısında try-catch kullan
 - SSE mesajlarında error type belirt
 - Timeout değerlerini koru (10-20 saniye)
 
-### 5. Dosya Yolları
+### 7. Dosya Yolları
 - **ASLA** hard-coded path kullanma
 - `os.path.join()` ile platform-agnostic yollar
 - `data/` klasörü yapısını koru
@@ -839,6 +906,24 @@ file_path = download_and_cache_pdf(
 
 # Geçici dosya
 temp_path = get_temp_pdf_path("https://example.com/test.pdf")
+```
+
+### Database İşlemleri ⭐ **YENİ**
+```python
+from modules.utils import with_database_json, with_database
+
+# Flask endpoint için
+@app.route('/api/endpoint')
+@with_database_json
+def my_endpoint(cursor):
+    cursor.execute("SELECT * FROM table")
+    return {"data": cursor.fetchall()}
+
+# Genel fonksiyon için
+@with_database
+def my_function(cursor, param):
+    cursor.execute("INSERT INTO table VALUES (?)", (param,))
+    return {"success": True}
 ```
 
 ### Veritabanı Güncelleme

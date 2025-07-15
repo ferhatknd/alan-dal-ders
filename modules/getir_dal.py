@@ -4,7 +4,7 @@ import time
 import os
 import sqlite3
 from pathlib import Path
-from .utils import normalize_to_title_case_tr
+from .utils import normalize_to_title_case_tr, with_database
 
 # requests.Session() kullanarak çerezleri ve oturum bilgilerini yönetiyoruz
 session = requests.Session()
@@ -182,7 +182,8 @@ def find_or_create_database():
     
     return db_path
 
-def save_area_and_branches_to_db(area_name, branches, db_path):
+@with_database
+def save_area_and_branches_to_db(cursor, area_name, branches):
     """
     Bir alanı ve dallarını veritabanına kaydeder.
     """
@@ -190,40 +191,38 @@ def save_area_and_branches_to_db(area_name, branches, db_path):
         # Alan adını normalize et
         normalized_area_name = normalize_to_title_case_tr(area_name)
         
-        with sqlite3.connect(db_path) as conn:
-            cursor = conn.cursor()
-            
-            # Alan adına göre alan varsa ID'sini al
+        # Alan adına göre alan varsa ID'sini al
+        cursor.execute(
+            "SELECT id FROM temel_plan_alan WHERE alan_adi = ?",
+            (normalized_area_name,)
+        )
+        result = cursor.fetchone()
+        
+        if result:
+            area_id = result[0]
+        else:
             cursor.execute(
-                "SELECT id FROM temel_plan_alan WHERE alan_adi = ?",
+                "INSERT INTO temel_plan_alan (alan_adi) VALUES (?)",
                 (normalized_area_name,)
             )
-            result = cursor.fetchone()
-            
-            if result:
-                area_id = result[0]
-            else:
+            area_id = cursor.lastrowid
+        
+        # Dalları ekle (yineleme kontrolü ile)
+        for branch_name in branches:
+            if branch_name.strip():  # Boş dal adlarını atla
                 cursor.execute(
-                    "INSERT INTO temel_plan_alan (alan_adi) VALUES (?)",
-                    (normalized_area_name,)
+                    "SELECT id FROM temel_plan_dal WHERE dal_adi = ? AND alan_id = ?",
+                    (branch_name, area_id)
                 )
-                area_id = cursor.lastrowid
-            
-            # Dalları ekle (yineleme kontrolü ile)
-            for branch_name in branches:
-                if branch_name.strip():  # Boş dal adlarını atla
+                if not cursor.fetchone():
                     cursor.execute(
-                        "SELECT id FROM temel_plan_dal WHERE dal_adi = ? AND alan_id = ?",
+                        "INSERT INTO temel_plan_dal (dal_adi, alan_id) VALUES (?, ?)",
                         (branch_name, area_id)
                     )
-                    if not cursor.fetchone():
-                        cursor.execute(
-                            "INSERT INTO temel_plan_dal (dal_adi, alan_id) VALUES (?, ?)",
-                            (branch_name, area_id)
-                        )
-            
-            conn.commit()
-            return area_id
+        
+        # @with_database dekoratörü commit işlemini otomatik halleder.
+        # Return ifadesi döngünün dışına taşındı.
+        return area_id
             
     except Exception as e:
         print(f"Veritabanı kayıt hatası ({area_name}): {e}")
@@ -270,25 +269,18 @@ def getir_dal_with_db_integration():
         new_areas_in_province = 0
         new_branches_in_province = 0
         
-        # İl başlangıç mesajı
-        yield {
-            'type': 'province_start',
-            'province_name': province_name.upper(),
-            'province_progress': f"({processed_provinces}/{total_provinces})"
-        }
-        
         areas = get_areas_for_province(str(province_id))
         
         if not areas:
             # Alan bulunamasa bile ilerleme logunu göster
             yield {
-                'type': 'progress',
+                'type': 'province_summary',
                 'province_name': province_name.upper(),
                 'province_progress': f"({processed_provinces}/{total_provinces})",
-                'new_areas': 0,
-                'total_areas': total_areas_found,
-                'new_branches': 0,
-                'total_branches': total_branches_found
+                'alan_sayisi_province': 0,
+                'alan_sayisi_total_province': 0,
+                'dal_sayisi_province': 0,
+                'dal_sayisi_total_so_far': total_branches_found
             }
             time.sleep(1.5) # Sunucuyu yormamak için bekleme
             continue # Sonraki ile geç
@@ -307,28 +299,30 @@ def getir_dal_with_db_integration():
             }
             
             if area_name not in unique_areas_with_branches:
-                branches = get_branches_for_area(str(province_id), area_value)
+                branches_or_none = get_branches_for_area(str(province_id), area_value)
                 
-                if branches is not None:
-                    unique_areas_with_branches[area_name] = branches
-                    new_areas_in_province += 1
-                    new_branches_in_province += len(branches)
-                    
-                    # Dal işleme mesajı
-                    yield {
-                        'type': 'branches_processing',
-                        'branches_count': len(branches),
-                        'total_branches': new_branches_in_province
-                    }
-                    
-                    # Veritabanına kaydet
-                    area_id = save_area_and_branches_to_db(area_name, branches, db_path)
-                    
-                    if not area_id:
-                        yield {'type': 'warning', 'message': f"Alan '{area_name}' veritabanına kaydedilemedi"}
-                else:
-                    unique_areas_with_branches[area_name] = []
-                    yield {'type': 'warning', 'message': f"Alan '{area_name}' için dal bilgisi çekilemedi"}
+                # Hata durumunda (None) boş liste ata, yoksa gelen listeyi kullan
+                branches = branches_or_none if branches_or_none is not None else []
+                
+                if branches_or_none is None:
+                    yield {'type': 'warning', 'message': f"'{area_name}' için dal bilgisi çekilemedi, yine de alan kaydedilecek."}
+
+                unique_areas_with_branches[area_name] = branches
+                new_areas_in_province += 1
+                new_branches_in_province += len(branches)
+                
+                # Dal işleme mesajı
+                yield {
+                    'type': 'branches_processing',
+                    'branches_count': len(branches),
+                    'total_branches': new_branches_in_province
+                }
+                
+                # Her durumda alanı ve dalları (boş olsa bile) kaydet
+                area_id = save_area_and_branches_to_db(area_name, branches)
+                
+                if not area_id:
+                    yield {'type': 'warning', 'message': f"Alan '{area_name}' veritabanına kaydedilemedi"}
                 
                 time.sleep(0.3)
         
@@ -336,13 +330,13 @@ def getir_dal_with_db_integration():
         total_branches_found += new_branches_in_province
 
         yield {
-            'type': 'progress',
+            'type': 'province_summary',
             'province_name': province_name.upper(),
             'province_progress': f"({processed_provinces}/{total_provinces})",
-            'new_areas': new_areas_in_province,
-            'total_areas': total_areas_found,
-            'new_branches': new_branches_in_province,
-            'total_branches': total_branches_found
+            'alan_sayisi_province': new_areas_in_province,
+            'alan_sayisi_total_province': len(areas),
+            'dal_sayisi_province': new_branches_in_province,
+            'dal_sayisi_total_so_far': total_branches_found
         }
 
         time.sleep(1.5)  # Her ilin işlenmesi arasında daha uzun bir gecikme
@@ -375,18 +369,21 @@ def main():
         elif message['type'] == 'done':
             print(f"🎉 {message['message']}")
             break
-        elif message['type'] == 'province_start':
-            print(f"\n🏛️  İl: {message['province_name']} {message['province_progress']}")
+        elif message['type'] == 'province_summary':
+            print(f"İl      : {message['province_name']} {message['province_progress']}")
+            print(f"Alan Sayısı: {message['alan_sayisi_province']}/{message['alan_sayisi_total_province']}")
+            print(f"Dal Sayısı : {message['dal_sayisi_province']} (Toplam: {message['dal_sayisi_total_so_far']})\n")
         elif message['type'] == 'area_processing':
-            print(f"  📋 Alan: {message['area_name']} {message['area_progress']}")
+            # Bu mesaj tipini artık ana konsolda göstermeyebiliriz, isteğe bağlı.
+            # print(f"  📋 Alan: {message['area_name']} {message['area_progress']}")
+            pass
         elif message['type'] == 'branches_processing':
-            print(f"    🌿 {message['branches_count']} dal bulundu (Toplam: {message['total_branches']})")
-        elif message['type'] == 'progress':
-            print(f"✅ {message['province_name']} tamamlandı!")
-            print(f"   Yeni Alan: {message['new_areas']} (Toplam: {message['total_areas']})")
-            print(f"   Yeni Dal: {message['new_branches']} (Toplam: {message['total_branches']})\n")
+            # Bu da daha detaylı bir log, ana konsolda göstermeyebiliriz.
+            # print(f"    🌿 {message['branches_count']} dal bulundu (Toplam: {message['total_branches']})")
+            pass
         else:
             print(f"ℹ️  {message['message']}")
+
 
 if __name__ == "__main__":
     main()
