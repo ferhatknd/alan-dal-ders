@@ -413,6 +413,43 @@ def get_statistics():
 
     return jsonify(stats)
 
+@app.route('/api/alan-dal-options')
+def get_alan_dal_options():
+    """
+    Dropdown'lar için alan ve dal seçeneklerini döndürür.
+    """
+    try:
+        db_path = find_or_create_database()
+        if not db_path:
+            return jsonify({"alanlar": [], "dallar": {}})
+        
+        with sqlite3.connect(db_path) as conn:
+            cursor = conn.cursor()
+            
+            # Alanları al
+            cursor.execute("SELECT id, alan_adi FROM temel_plan_alan ORDER BY alan_adi")
+            alanlar = [{"id": row[0], "adi": row[1]} for row in cursor.fetchall()]
+            
+            # Her alan için dalları al
+            dallar = {}
+            for alan in alanlar:
+                cursor.execute("""
+                    SELECT id, dal_adi 
+                    FROM temel_plan_dal 
+                    WHERE alan_id = ? 
+                    ORDER BY dal_adi
+                """, (alan["id"],))
+                dallar[alan["id"]] = [{"id": row[0], "adi": row[1]} for row in cursor.fetchall()]
+            
+            return jsonify({
+                "alanlar": alanlar,
+                "dallar": dallar
+            })
+            
+    except Exception as e:
+        print(f"Alan-Dal seçenekleri alınırken hata: {e}")
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/api/table-data')
 def get_table_data():
     """
@@ -518,7 +555,7 @@ def update_table_row():
             return jsonify({"error": "Veritabanı bulunamadı"}), 500
         
         # Güncelleme alanlarını hazırla
-        allowed_fields = ['ders_adi', 'sinif', 'ders_saati', 'dm_url', 'dbf_url', 'bom_url']
+        allowed_fields = ['ders_adi', 'sinif', 'ders_saati', 'amac', 'dm_url', 'dbf_url', 'bom_url']
         set_clauses = []
         values = []
         
@@ -551,6 +588,70 @@ def update_table_row():
             
     except Exception as e:
         print(f"Ders güncelleme hatası: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/copy-course', methods=['POST'])
+def copy_course():
+    """
+    Bir dersi farklı alan/dal'a kopyalar.
+    """
+    try:
+        data = request.get_json()
+        source_ders_id = data.get('source_ders_id')
+        target_alan_id = data.get('target_alan_id')
+        target_dal_id = data.get('target_dal_id')
+        new_ders_data = data.get('ders_data', {})
+        
+        if not all([source_ders_id, target_alan_id, target_dal_id]):
+            return jsonify({"error": "Kaynak ders, hedef alan ve dal gerekli"}), 400
+        
+        db_path = find_or_create_database()
+        if not db_path:
+            return jsonify({"error": "Veritabanı bulunamadı"}), 500
+        
+        with sqlite3.connect(db_path) as conn:
+            cursor = conn.cursor()
+            
+            # Kaynak dersi al
+            cursor.execute("SELECT * FROM temel_plan_ders WHERE id = ?", (source_ders_id,))
+            source_ders = cursor.fetchone()
+            
+            if not source_ders:
+                return jsonify({"error": "Kaynak ders bulunamadı"}), 404
+            
+            # Yeni ders oluştur
+            cursor.execute("""
+                INSERT INTO temel_plan_ders (
+                    ders_adi, sinif, ders_saati, amac, dm_url, dbf_url, bom_url
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (
+                new_ders_data.get('ders_adi', source_ders[1]),
+                new_ders_data.get('sinif', source_ders[2]),
+                new_ders_data.get('ders_saati', source_ders[3]),
+                new_ders_data.get('amac', source_ders[4]),
+                new_ders_data.get('dm_url', source_ders[5]),
+                new_ders_data.get('dbf_url', source_ders[6]),
+                new_ders_data.get('bom_url', source_ders[7])
+            ))
+            
+            new_ders_id = cursor.lastrowid
+            
+            # Yeni ders-dal ilişkisi oluştur
+            cursor.execute("""
+                INSERT INTO temel_plan_ders_dal (ders_id, dal_id)
+                VALUES (?, ?)
+            """, (new_ders_id, target_dal_id))
+            
+            conn.commit()
+            
+            return jsonify({
+                "success": True,
+                "message": "Ders başarıyla kopyalandı",
+                "new_ders_id": new_ders_id
+            })
+            
+    except Exception as e:
+        print(f"Ders kopyalama hatası: {e}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/process-cop-pdfs')

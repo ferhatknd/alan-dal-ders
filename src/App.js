@@ -101,12 +101,26 @@ const CourseEditSidebar = ({ course, isOpen, onClose, onSave, onShowPDF }) => {
     ders_adi: '',
     sinif: '',
     ders_saati: '',
-    alan_adi: '',
-    dal_adi: '',
+    alan_id: '',
+    dal_id: '',
     dm_url: '',
     dbf_url: '',
-    bom_url: ''
+    bom_url: '',
+    amac: ''
   });
+  
+  const [alanDalOptions, setAlanDalOptions] = useState({ alanlar: [], dallar: {} });
+  const [pdfPreview, setPdfPreview] = useState({ isOpen: false, url: '', title: '' });
+
+  // Alan-Dal seçeneklerini yükle
+  useEffect(() => {
+    if (isOpen) {
+      fetch('http://localhost:5001/api/alan-dal-options')
+        .then(res => res.json())
+        .then(data => setAlanDalOptions(data))
+        .catch(err => console.error('Alan-Dal seçenekleri yüklenirken hata:', err));
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (course && isOpen) {
@@ -115,11 +129,12 @@ const CourseEditSidebar = ({ course, isOpen, onClose, onSave, onShowPDF }) => {
         ders_adi: course.ders_adi || '',
         sinif: course.sinif || '',
         ders_saati: course.ders_saati || '',
-        alan_adi: course.alan_adi || '',
-        dal_adi: course.dal_adi || '',
+        alan_id: course.alan_id || '',
+        dal_id: course.dal_id || '',
         dm_url: course.dm_url || '',
         dbf_url: course.dbf_url || '',
-        bom_url: course.bom_url || ''
+        bom_url: course.bom_url || '',
+        amac: course.amac || ''
       });
     }
   }, [course, isOpen]);
@@ -128,25 +143,52 @@ const CourseEditSidebar = ({ course, isOpen, onClose, onSave, onShowPDF }) => {
     setEditData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleArrayAdd = (field, value) => {
-    if (value.trim()) {
-      setEditData(prev => ({
-        ...prev,
-        [field]: [...prev[field], value.trim()]
-      }));
-    }
-  };
-
-  const handleArrayRemove = (field, index) => {
-    setEditData(prev => ({
-      ...prev,
-      [field]: prev[field].filter((_, i) => i !== index)
-    }));
-  };
-
   const handleSave = () => {
     onSave(editData);
     onClose();
+  };
+
+  const handleCopy = async () => {
+    if (!editData.alan_id || !editData.dal_id) {
+      alert('Kopyalamak için hedef alan ve dal seçiniz');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:5001/api/copy-course', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          source_ders_id: course.ders_id,
+          target_alan_id: editData.alan_id,
+          target_dal_id: editData.dal_id,
+          ders_data: editData
+        })
+      });
+
+      const result = await response.json();
+      if (response.ok) {
+        alert('Ders başarıyla kopyalandı!');
+        onClose();
+      } else {
+        alert('Hata: ' + result.error);
+      }
+    } catch (error) {
+      alert('Kopyalama hatası: ' + error.message);
+    }
+  };
+
+  const openPdfPreview = (url, title) => {
+    setPdfPreview({ isOpen: true, url, title });
+  };
+
+  const closePdfPreview = () => {
+    setPdfPreview({ isOpen: false, url: '', title: '' });
+  };
+
+  // Alan değiştiğinde dal listesini güncelle
+  const handleAlanChange = (alanId) => {
+    setEditData(prev => ({ ...prev, alan_id: alanId, dal_id: '' }));
   };
 
   console.log('CourseEditSidebar render:', { isOpen, course });
@@ -154,117 +196,131 @@ const CourseEditSidebar = ({ course, isOpen, onClose, onSave, onShowPDF }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="course-edit-sidebar">
-      <div className="sidebar-overlay" onClick={onClose}></div>
-      <div className="sidebar-content">
-        <div className="sidebar-header">
-          <h3>Ders Bilgilerini Düzenle</h3>
-          <div className="header-buttons">
-            {editData.dm_url && (
-              <button 
-                className="pdf-view-btn" 
-                onClick={() => onShowPDF && onShowPDF(editData.dm_url, editData.ders_adi)}
-                title="Ders Materyali PDF'i görüntüle"
-              >
-                📄 DM Görüntüle
-              </button>
-            )}
+    <>
+      <div className="course-edit-sidebar">
+        <div className="sidebar-overlay" onClick={onClose}></div>
+        <div className="sidebar-content">
+          <div className="sidebar-header">
+            <div className="header-title">
+              <h3>{editData.ders_adi || 'Ders Adı'}</h3>
+              <div className="pdf-links">
+                {editData.dm_url && (
+                  <button onClick={() => openPdfPreview(editData.dm_url, 'DM')}>DM</button>
+                )}
+                {editData.dbf_url && (
+                  <button onClick={() => openPdfPreview(editData.dbf_url, 'DBF')}>DBF</button>
+                )}
+                {editData.bom_url && (
+                  <button onClick={() => openPdfPreview(editData.bom_url, 'BOM')}>BOM</button>
+                )}
+              </div>
+            </div>
             <button className="close-btn" onClick={onClose}>×</button>
           </div>
-        </div>
-        
-        <div className="sidebar-body">
-          <div className="form-section">
-            <h4>Temel Bilgiler</h4>
-            <div className="form-group">
-              <label>Ders Adı:</label>
-              <input
-                type="text"
+          
+          <div className="sidebar-body">
+            {/* Alan-Dal Seçimi */}
+            <div className="form-section">
+              <MaterialTextField
+                label="Alan"
+                value={editData.alan_id}
+                onChange={(value) => handleAlanChange(value)}
+                select={true}
+                options={alanDalOptions.alanlar.map(alan => ({
+                  value: alan.id,
+                  label: alan.adi
+                }))}
+              />
+              
+              <MaterialTextField
+                label="Dal"
+                value={editData.dal_id}
+                onChange={(value) => handleInputChange('dal_id', value)}
+                select={true}
+                disabled={!editData.alan_id}
+                options={editData.alan_id ? (alanDalOptions.dallar[editData.alan_id] || []).map(dal => ({
+                  value: dal.id,
+                  label: dal.adi
+                })) : []}
+              />
+            </div>
+
+            {/* Ders Adı */}
+            <div className="form-section">
+              <MaterialTextField
+                label="Ders Adı"
                 value={editData.ders_adi}
-                onChange={(e) => handleInputChange('ders_adi', e.target.value)}
+                onChange={(value) => handleInputChange('ders_adi', value)}
+                type="text"
               />
             </div>
-            <div className="form-group">
-              <label>Sınıf:</label>
-              <input
-                type="number"
+
+            {/* Sınıf Seçimi */}
+            <div className="form-section">
+              <MaterialTextField
+                label="Sınıf"
                 value={editData.sinif}
-                onChange={(e) => handleInputChange('sinif', e.target.value)}
-                min="9"
-                max="12"
-                placeholder="Sınıf (örn: 10)"
+                onChange={(value) => handleInputChange('sinif', parseInt(value))}
+                select={true}
+                options={[9, 10, 11, 12].map(sinif => ({
+                  value: sinif,
+                  label: `${sinif}. Sınıf`
+                }))}
               />
             </div>
-            <div className="form-group">
-              <label>Ders Saati (Haftalık):</label>
-              <input
-                type="number"
+
+            {/* Ders Saati Seçimi */}
+            <div className="form-section">
+              <MaterialTextField
+                label="Ders Saati (Haftalık)"
                 value={editData.ders_saati}
-                onChange={(e) => handleInputChange('ders_saati', e.target.value)}
-                min="0"
-                placeholder="Ders saati (örn: 4)"
+                onChange={(value) => handleInputChange('ders_saati', parseInt(value))}
+                select={true}
+                options={[1, 2, 3, 4, 5, 6, 7, 8].map(saat => ({
+                  value: saat,
+                  label: `${saat} Saat`
+                }))}
               />
             </div>
-            <div className="form-group">
-              <label>Alan Adı:</label>
-              <input
-                type="text"
-                value={editData.alan_adi}
-                readOnly
-                style={{backgroundColor: '#f8f9fa'}}
-                title="Alan adı değiştirilemez"
-              />
-            </div>
-            <div className="form-group">
-              <label>Dal Adı:</label>
-              <input
-                type="text"
-                value={editData.dal_adi}
-                readOnly
-                style={{backgroundColor: '#f8f9fa'}}
-                title="Dal adı değiştirilemez"
+
+            {/* Dersin Amacı */}
+            <div className="form-section">
+              <MaterialTextField
+                label="Dersin Amacı"
+                value={editData.amac}
+                onChange={(value) => handleInputChange('amac', value)}
+                multiline={true}
+                rows={4}
               />
             </div>
           </div>
 
-          <div className="form-section">
-            <h4>Dosya URL'leri</h4>
-            <div className="form-group">
-              <label>DM URL (Ders Materyali):</label>
-              <input
-                type="url"
-                value={editData.dm_url}
-                onChange={(e) => handleInputChange('dm_url', e.target.value)}
-                placeholder="Ders Materyali PDF URL'si"
-              />
-            </div>
-            <div className="form-group">
-              <label>DBF URL (Ders Bilgi Formu):</label>
-              <input
-                type="url"
-                value={editData.dbf_url}
-                onChange={(e) => handleInputChange('dbf_url', e.target.value)}
-                placeholder="DBF PDF URL'si"
-              />
-            </div>
-            <div className="form-group">
-              <label>BOM URL (Bireysel Öğrenme Materyali):</label>
-              <input
-                type="url"
-                value={editData.bom_url}
-                onChange={(e) => handleInputChange('bom_url', e.target.value)}
-                placeholder="BOM PDF URL'si"
-              />
-            </div>
+          <div className="sidebar-footer">
+            <button className="btn-cancel" onClick={onClose}>İptal</button>
+            <button className="btn-copy" onClick={handleCopy}>Kopyala</button>
+            <button className="btn-save" onClick={handleSave}>Kaydet</button>
           </div>
-        </div>
-
-        <div className="sidebar-footer">
-          <button className="btn-cancel" onClick={onClose}>İptal</button>
-          <button className="btn-save" onClick={handleSave}>Kaydet</button>
         </div>
       </div>
-    </div>
+
+      {/* PDF Preview Sidebar */}
+      {pdfPreview.isOpen && (
+        <div className="pdf-preview-sidebar">
+          <div className="pdf-preview-content">
+            <div className="pdf-preview-header">
+              <h4>{pdfPreview.title} Preview</h4>
+              <button onClick={closePdfPreview}>×</button>
+            </div>
+            <iframe
+              src={pdfPreview.url}
+              width="100%"
+              height="100%"
+              title="PDF Preview"
+            />
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 
@@ -520,6 +576,77 @@ const OgrenmeBirimiInput = ({ ogrenme_birimleri, onChange }) => {
           </div>
         </div>
       ))}
+    </div>
+  );
+};
+
+// Material UI TextField komponenti
+const MaterialTextField = ({ 
+  label, 
+  value, 
+  onChange, 
+  multiline = false, 
+  rows = 1, 
+  type = 'text',
+  error = false,
+  disabled = false,
+  select = false,
+  options = []
+}) => {
+  const [focused, setFocused] = useState(false);
+  // Material UI'da label her zaman üstte olmalı - sadece focus durumuna göre stil değişir
+  const hasValue = true; // Label her zaman üstte kalacak
+  
+  const handleFocus = () => setFocused(true);
+  const handleBlur = () => setFocused(false);
+  
+  const classes = [
+    'material-textfield',
+    'always-floating', // Yeni class - label her zaman üstte
+    hasValue ? 'has-value' : '',
+    focused ? 'focused' : '',
+    error ? 'error' : '',
+    disabled ? 'disabled' : '',
+    select ? 'select' : ''
+  ].filter(Boolean).join(' ');
+
+  return (
+    <div className={classes}>
+      {select ? (
+        <select
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          disabled={disabled}
+        >
+          <option value="" disabled hidden></option>
+          {options.map(option => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      ) : multiline ? (
+        <textarea
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          rows={rows}
+          disabled={disabled}
+        />
+      ) : (
+        <input
+          type={type}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          disabled={disabled}
+        />
+      )}
+      <label>{label}</label>
     </div>
   );
 };
@@ -1244,6 +1371,7 @@ function App() {
             ders_adi: editedData.ders_adi,
             sinif: editedData.sinif,
             ders_saati: editedData.ders_saati || 0,
+            amac: editedData.amac,
             dm_url: editedData.dm_url,
             dbf_url: editedData.dbf_url,
             bom_url: editedData.bom_url
