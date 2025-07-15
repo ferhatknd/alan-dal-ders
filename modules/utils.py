@@ -30,11 +30,8 @@ def download_and_cache_pdf(url: str, cache_type: str, alan_adi: str = None, addi
         if not alan_adi:
             safe_alan_adi = url.split('/')[-2] if len(url.split('/')) > 1 else "bilinmeyen_alan"
         else:
-            # Normalize alan adı (klasör adı için)
-            safe_alan_adi = alan_adi.replace(' ', '_').replace('/', '_').replace('\\', '_')
-            # Türkçe karakterleri düzelt
-            safe_alan_adi = safe_alan_adi.replace('ç', 'c').replace('ğ', 'g').replace('ı', 'i').replace('ö', 'o').replace('ş', 's').replace('ü', 'u')
-            safe_alan_adi = safe_alan_adi.replace('Ç', 'C').replace('Ğ', 'G').replace('İ', 'I').replace('Ö', 'O').replace('Ş', 'S').replace('Ü', 'U')
+            # Merkezi sanitize fonksiyonunu kullan
+            safe_alan_adi = sanitize_filename_tr(alan_adi)
         
         # Klasör yapısı belirleme
         if meb_alan_id and cache_type in ['cop', 'dbf', 'dm', 'bom']:
@@ -82,6 +79,30 @@ def download_and_cache_pdf(url: str, cache_type: str, alan_adi: str = None, addi
     except Exception as e:
         print(f"❌ Dosya indirme hatası ({url}): {e}")
         return None
+
+
+def sanitize_filename_tr(name: str) -> str:
+    """
+    Dosya/klasör ismi olarak kullanılabilir hale getir.
+    Türkçe karakterleri normalize eder ve dosya sistemi uyumlu yapar.
+    
+    Args:
+        name: Normalize edilecek dosya/klasör adı
+        
+    Returns:
+        Güvenli dosya/klasör adı
+    """
+    if not name:
+        return "bilinmeyen_alan"
+    
+    # Normalize alan adı (klasör adı için)
+    safe_name = name.replace(' ', '_').replace('/', '_').replace('\\', '_')
+    
+    # Türkçe karakterleri düzelt
+    safe_name = safe_name.replace('ç', 'c').replace('ğ', 'g').replace('ı', 'i').replace('ö', 'o').replace('ş', 's').replace('ü', 'u')
+    safe_name = safe_name.replace('Ç', 'C').replace('Ğ', 'G').replace('İ', 'I').replace('Ö', 'O').replace('Ş', 'S').replace('Ü', 'U')
+    
+    return safe_name
 
 
 def get_temp_pdf_path(url: str) -> str:
@@ -198,8 +219,8 @@ def normalize_alan_adi(alan_adi):
     if normalized.upper() in replacements:
         return replacements[normalized.upper()]
     
-    # Manuel replacement yoksa, title case yap
-    return normalized.title()
+    # Manuel replacement yoksa, normalize_to_title_case_tr kullan
+    return normalize_to_title_case_tr(normalized)
 
 def get_or_create_alan(cursor, alan_adi, meb_alan_id=None, cop_url=None, dbf_urls=None):
     """
