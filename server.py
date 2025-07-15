@@ -447,53 +447,30 @@ def get_table_data():
         with sqlite3.connect(db_path) as conn:
             cursor = conn.cursor()
             
-            # Tüm verileri birleştirme (alan-dal-ders hiyerarşisi)
+            # Sadece dersi olan alan-dal kombinasyonlarını getir
             cursor.execute("""
-                WITH combined_data AS (
-                    -- Alan-Dal kombinasyonları (ders olmasa bile)
-                    SELECT 
-                        a.id as alan_id,
-                        a.alan_adi,
-                        d.id as dal_id,
-                        d.dal_adi,
-                        NULL as ders_id,
-                        NULL as ders_adi,
-                        NULL as sinif,
-                        0 as ders_saati,
-                        NULL as dm_url,
-                        NULL as dbf_url,
-                        NULL as bom_url
-                    FROM temel_plan_alan a
-                    LEFT JOIN temel_plan_dal d ON d.alan_id = a.id
-                    
-                    UNION ALL
-                    
-                    -- Tüm dersler (alan-dal ilişkisi olsun olmasın)
-                    SELECT 
-                        COALESCE(a.id, -1) as alan_id,
-                        COALESCE(a.alan_adi, 'Atanmamış') as alan_adi,
-                        COALESCE(d.id, -1) as dal_id,
-                        COALESCE(d.dal_adi, 'Atanmamış') as dal_adi,
-                        ders.id as ders_id,
-                        ders.ders_adi,
-                        ders.sinif,
-                        COALESCE(ders.ders_saati, 0) as ders_saati,
-                        ders.dm_url,
-                        ders.dbf_url,
-                        ders.bom_url
-                    FROM temel_plan_ders ders
-                    LEFT JOIN temel_plan_ders_dal dd ON ders.id = dd.ders_id
-                    LEFT JOIN temel_plan_dal d ON dd.dal_id = d.id
-                    LEFT JOIN temel_plan_alan a ON d.alan_id = a.id
-                )
-                SELECT * FROM combined_data
+               SELECT 
+                   a.id as alan_id,  -- Ekledik
+                   a.alan_adi,
+                   d.id as dal_id,  -- Ekledik
+                   d.dal_adi,
+                   ders.id as ders_id,  -- Ekledik
+                   ders.ders_adi,
+                   ders.sinif,
+                   ders.ders_saati,
+                   ders.dm_url,
+                   ders.dbf_url,
+                   ders.bom_url
+                FROM 
+                   temel_plan_alan a
+                   INNER JOIN temel_plan_dal d ON d.alan_id = a.id
+                   INNER JOIN temel_plan_ders_dal dd ON dd.dal_id = d.id
+                   INNER JOIN temel_plan_ders ders ON ders.id = dd.ders_id
                 ORDER BY 
-                    CASE WHEN alan_adi = 'Atanmamış' THEN 1 ELSE 0 END,
-                    alan_adi, 
-                    CASE WHEN dal_adi = 'Atanmamış' THEN 1 ELSE 0 END,
-                    dal_adi, 
-                    ders_adi, 
-                    sinif
+                   a.alan_adi, 
+                   d.dal_adi, 
+                   ders.ders_adi, 
+                   ders.sinif
             """)
             
             rows = cursor.fetchall()
@@ -501,11 +478,11 @@ def get_table_data():
             table_data = []
             for row in rows:
                 table_data.append({
-                    'alan_id': row[0],
+                    'alan_id': row[0],    # Sıra numarası güncellendi
                     'alan_adi': row[1],
-                    'dal_id': row[2], 
+                    'dal_id': row[2],    # Sıra numarası güncellendi
                     'dal_adi': row[3],
-                    'ders_id': row[4],
+                    'ders_id': row[4],    # Sıra numarası güncellendi
                     'ders_adi': row[5],
                     'sinif': row[6],
                     'ders_saati': row[7],
