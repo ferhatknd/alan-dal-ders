@@ -413,6 +413,146 @@ def get_statistics():
 
     return jsonify(stats)
 
+@app.route('/api/table-data')
+def get_table_data():
+    """
+    React frontend için düz tablo verisi döndürür.
+    Alan, Dal, Ders, Sınıf, Saat, DM, DBF, BOM sütunları ile.
+    """
+    try:
+        db_path = find_or_create_database()
+        if not db_path:
+            return jsonify([])
+        
+        with sqlite3.connect(db_path) as conn:
+            cursor = conn.cursor()
+            
+            # Tüm verileri birleştirme (alan-dal-ders hiyerarşisi)
+            cursor.execute("""
+                WITH combined_data AS (
+                    -- Alan-Dal kombinasyonları (ders olmasa bile)
+                    SELECT 
+                        a.id as alan_id,
+                        a.alan_adi,
+                        d.id as dal_id,
+                        d.dal_adi,
+                        NULL as ders_id,
+                        NULL as ders_adi,
+                        NULL as sinif,
+                        0 as ders_saati,
+                        NULL as dm_url,
+                        NULL as dbf_url,
+                        NULL as bom_url
+                    FROM temel_plan_alan a
+                    LEFT JOIN temel_plan_dal d ON d.alan_id = a.id
+                    
+                    UNION ALL
+                    
+                    -- Tüm dersler (alan-dal ilişkisi olsun olmasın)
+                    SELECT 
+                        COALESCE(a.id, -1) as alan_id,
+                        COALESCE(a.alan_adi, 'Atanmamış') as alan_adi,
+                        COALESCE(d.id, -1) as dal_id,
+                        COALESCE(d.dal_adi, 'Atanmamış') as dal_adi,
+                        ders.id as ders_id,
+                        ders.ders_adi,
+                        ders.sinif,
+                        COALESCE(ders.ders_saati, 0) as ders_saati,
+                        ders.dm_url,
+                        ders.dbf_url,
+                        ders.bom_url
+                    FROM temel_plan_ders ders
+                    LEFT JOIN temel_plan_ders_dal dd ON ders.id = dd.ders_id
+                    LEFT JOIN temel_plan_dal d ON dd.dal_id = d.id
+                    LEFT JOIN temel_plan_alan a ON d.alan_id = a.id
+                )
+                SELECT * FROM combined_data
+                ORDER BY 
+                    CASE WHEN alan_adi = 'Atanmamış' THEN 1 ELSE 0 END,
+                    alan_adi, 
+                    CASE WHEN dal_adi = 'Atanmamış' THEN 1 ELSE 0 END,
+                    dal_adi, 
+                    ders_adi, 
+                    sinif
+            """)
+            
+            rows = cursor.fetchall()
+            
+            table_data = []
+            for row in rows:
+                table_data.append({
+                    'alan_id': row[0],
+                    'alan_adi': row[1],
+                    'dal_id': row[2], 
+                    'dal_adi': row[3],
+                    'ders_id': row[4],
+                    'ders_adi': row[5],
+                    'sinif': row[6],
+                    'ders_saati': row[7],
+                    'dm_url': row[8],
+                    'dbf_url': row[9],
+                    'bom_url': row[10]
+                })
+            
+            return jsonify(table_data)
+            
+    except Exception as e:
+        print(f"Tablo verisi alınırken hata oluştu: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/update-table-row', methods=['POST'])
+def update_table_row():
+    """
+    Tablodaki bir satırı (ders) günceller.
+    """
+    try:
+        data = request.get_json()
+        ders_id = data.get('ders_id')
+        updates = data.get('updates', {})
+        
+        if not ders_id:
+            return jsonify({"error": "ders_id gerekli"}), 400
+        
+        db_path = find_or_create_database()
+        if not db_path:
+            return jsonify({"error": "Veritabanı bulunamadı"}), 500
+        
+        # Güncelleme alanlarını hazırla
+        allowed_fields = ['ders_adi', 'sinif', 'ders_saati', 'dm_url', 'dbf_url', 'bom_url']
+        set_clauses = []
+        values = []
+        
+        for field, value in updates.items():
+            if field in allowed_fields:
+                set_clauses.append(f"{field} = ?")
+                values.append(value)
+        
+        if not set_clauses:
+            return jsonify({"error": "Güncellenecek geçerli alan bulunamadı"}), 400
+        
+        values.append(ders_id)  # WHERE koşulu için
+        
+        with sqlite3.connect(db_path) as conn:
+            cursor = conn.cursor()
+            
+            sql = f"UPDATE temel_plan_ders SET {', '.join(set_clauses)} WHERE id = ?"
+            cursor.execute(sql, values)
+            
+            if cursor.rowcount == 0:
+                return jsonify({"error": "Ders bulunamadı"}), 404
+            
+            conn.commit()
+            
+            return jsonify({
+                "success": True,
+                "message": f"Ders başarıyla güncellendi",
+                "updated_count": cursor.rowcount
+            })
+            
+    except Exception as e:
+        print(f"Ders güncelleme hatası: {e}")
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/api/process-cop-pdfs')
 def api_process_cop_pdfs():
     """
@@ -1024,7 +1164,7 @@ def get_or_create_dal(cursor, dal_adi, alan_id):
         return cursor.lastrowid
 
 def create_ders(cursor, course):
-    """Ders kaydı oluşturur."""
+    """Ders kaydı oluşturur veya mevcut ders ID'sini döner."""
     # Ders saati değerini düzgün şekilde handle et
     haftalik_ders_saati = course.get('haftalik_ders_saati', '')
     if haftalik_ders_saati and str(haftalik_ders_saati).isdigit():
@@ -1033,13 +1173,27 @@ def create_ders(cursor, course):
         # ÇÖP'te ders saati bilgisi yoksa 0 varsayılan değeri kullan
         ders_saati = 0
     
+    ders_adi = course.get('ders_adi', '')
+    sinif = int(course.get('sinif', 0)) if course.get('sinif') else None
+    
+    # Önce mevcut dersi kontrol et
+    cursor.execute("""
+        SELECT id FROM temel_plan_ders 
+        WHERE ders_adi = ? AND sinif = ?
+    """, (ders_adi, sinif))
+    
+    existing = cursor.fetchone()
+    if existing:
+        return existing[0]  # Mevcut ders ID'sini döner
+    
+    # Yeni ders oluştur
     cursor.execute("""
         INSERT INTO temel_plan_ders (
             ders_adi, sinif, ders_saati, amac, dm_url, dbf_url, bom_url
         ) VALUES (?, ?, ?, ?, ?, ?, ?)
     """, (
-        course.get('ders_adi', ''),
-        int(course.get('sinif', 0)) if course.get('sinif') else None,
+        ders_adi,
+        sinif,
         ders_saati,  # NOT NULL hatası engellemek için 0 kullan
         course.get('amaç', ''),
         course.get('dm_url', ''),  # Ders Materyali URL'si

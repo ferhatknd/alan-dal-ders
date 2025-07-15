@@ -40,7 +40,8 @@ CREATE TABLE IF NOT EXISTS temel_plan_ders (
     dbf_url TEXT, -- Ders Bilgi Formu PDF yerel dosya yolu
     bom_url TEXT, -- Bireysel Öğrenme Materyali URL'si
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(ders_adi, sinif) -- Aynı ders + sınıf kombinasyonu önleme
 );
 
 -- =============================================================================

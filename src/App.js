@@ -97,35 +97,29 @@ const PDFViewerSidebar = ({ pdfUrl, isOpen, onClose, courseTitle }) => {
 
 const CourseEditSidebar = ({ course, isOpen, onClose, onSave, onShowPDF }) => {
   const [editData, setEditData] = useState({
+    ders_id: '',
     ders_adi: '',
     sinif: '',
-    tum_siniflar: [],
-    haftalik_ders_saati: '',
-    amaç: '',
+    ders_saati: '',
     alan_adi: '',
     dal_adi: '',
-    ders_amaclari: [],
-    arac_gerec: [],
-    olcme_degerlendirme: [],
-    ogrenme_birimleri: [],
-    dbf_url: ''
+    dm_url: '',
+    dbf_url: '',
+    bom_url: ''
   });
 
   useEffect(() => {
     if (course && isOpen) {
       setEditData({
-        ders_adi: course.dersIsim || '',
-        sinif: course.sinif || '', // Tek seçilen sınıf
-        tum_siniflar: course.siniflar || [], // Tüm sınıflar referans için
-        haftalik_ders_saati: '',
-        amaç: '',
-        alan_adi: course.alanIsim || '',
-        dal_adi: '',
-        ders_amaclari: [],
-        arac_gerec: [],
-        olcme_degerlendirme: [],
-        ogrenme_birimleri: [],
-        dbf_url: course.dersLink || '' // Bu aslında DM URL'si, ama mevcut yapı için koruyoruz
+        ders_id: course.ders_id || '',
+        ders_adi: course.ders_adi || '',
+        sinif: course.sinif || '',
+        ders_saati: course.ders_saati || '',
+        alan_adi: course.alan_adi || '',
+        dal_adi: course.dal_adi || '',
+        dm_url: course.dm_url || '',
+        dbf_url: course.dbf_url || '',
+        bom_url: course.bom_url || ''
       });
     }
   }, [course, isOpen]);
@@ -166,13 +160,13 @@ const CourseEditSidebar = ({ course, isOpen, onClose, onSave, onShowPDF }) => {
         <div className="sidebar-header">
           <h3>Ders Bilgilerini Düzenle</h3>
           <div className="header-buttons">
-            {editData.dbf_url && (
+            {editData.dm_url && (
               <button 
                 className="pdf-view-btn" 
-                onClick={() => onShowPDF && onShowPDF(editData.dbf_url, editData.ders_adi)}
+                onClick={() => onShowPDF && onShowPDF(editData.dm_url, editData.ders_adi)}
                 title="Ders Materyali PDF'i görüntüle"
               >
-                📄 PDF Görüntüle
+                📄 DM Görüntüle
               </button>
             )}
             <button className="close-btn" onClick={onClose}>×</button>
@@ -192,39 +186,23 @@ const CourseEditSidebar = ({ course, isOpen, onClose, onSave, onShowPDF }) => {
             </div>
             <div className="form-group">
               <label>Sınıf:</label>
-              <div className="sinif-selection">
-                {editData.tum_siniflar.length > 1 ? (
-                  <div className="sinif-buttons">
-                    <p className="sinif-info">Bu ders {editData.tum_siniflar.join(', ')}. sınıflarda okutulmaktadır. Hangi sınıf için düzenliyorsunuz?</p>
-                    {editData.tum_siniflar.map(sinif => (
-                      <button
-                        key={sinif}
-                        type="button"
-                        className={`sinif-btn ${editData.sinif === sinif ? 'active' : ''}`}
-                        onClick={() => handleInputChange('sinif', sinif)}
-                      >
-                        {sinif}. Sınıf
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <input
-                    type="number"
-                    value={editData.sinif}
-                    onChange={(e) => handleInputChange('sinif', e.target.value)}
-                    min="9"
-                    max="12"
-                    placeholder="Sınıf (örn: 10)"
-                  />
-                )}
-              </div>
-            </div>
-            <div className="form-group">
-              <label>Haftalık Ders Saati:</label>
               <input
                 type="number"
-                value={editData.haftalik_ders_saati}
-                onChange={(e) => handleInputChange('haftalik_ders_saati', e.target.value)}
+                value={editData.sinif}
+                onChange={(e) => handleInputChange('sinif', e.target.value)}
+                min="9"
+                max="12"
+                placeholder="Sınıf (örn: 10)"
+              />
+            </div>
+            <div className="form-group">
+              <label>Ders Saati (Haftalık):</label>
+              <input
+                type="number"
+                value={editData.ders_saati}
+                onChange={(e) => handleInputChange('ders_saati', e.target.value)}
+                min="0"
+                placeholder="Ders saati (örn: 4)"
               />
             </div>
             <div className="form-group">
@@ -232,7 +210,9 @@ const CourseEditSidebar = ({ course, isOpen, onClose, onSave, onShowPDF }) => {
               <input
                 type="text"
                 value={editData.alan_adi}
-                onChange={(e) => handleInputChange('alan_adi', e.target.value)}
+                readOnly
+                style={{backgroundColor: '#f8f9fa'}}
+                title="Alan adı değiştirilemez"
               />
             </div>
             <div className="form-group">
@@ -240,70 +220,41 @@ const CourseEditSidebar = ({ course, isOpen, onClose, onSave, onShowPDF }) => {
               <input
                 type="text"
                 value={editData.dal_adi}
-                onChange={(e) => handleInputChange('dal_adi', e.target.value)}
-              />
-            </div>
-            <div className="form-group">
-              <label>Dersin Amacı:</label>
-              <textarea
-                value={editData.amaç}
-                onChange={(e) => handleInputChange('amaç', e.target.value)}
-                rows={4}
+                readOnly
+                style={{backgroundColor: '#f8f9fa'}}
+                title="Dal adı değiştirilemez"
               />
             </div>
           </div>
 
           <div className="form-section">
-            <h4>Araç-Gereç</h4>
-            <ArrayInput
-              items={editData.arac_gerec}
-              onAdd={(value) => handleArrayAdd('arac_gerec', value)}
-              onRemove={(index) => handleArrayRemove('arac_gerec', index)}
-              placeholder="Araç-gereç ekle..."
-            />
-          </div>
-
-          <div className="form-section">
-            <h4>Ders Amaçları</h4>
-            <ArrayInput
-              items={editData.ders_amaclari}
-              onAdd={(value) => handleArrayAdd('ders_amaclari', value)}
-              onRemove={(index) => handleArrayRemove('ders_amaclari', index)}
-              placeholder="Ders amacı ekle..."
-            />
-          </div>
-
-          <div className="form-section">
-            <h4>Ölçme ve Değerlendirme</h4>
-            <ArrayInput
-              items={editData.olcme_degerlendirme}
-              onAdd={(value) => handleArrayAdd('olcme_degerlendirme', value)}
-              onRemove={(index) => handleArrayRemove('olcme_degerlendirme', index)}
-              placeholder="Ölçme yöntemi ekle..."
-            />
-          </div>
-
-          <div className="form-section">
-            <h4>Öğrenme Birimleri (Üniteler)</h4>
-            <OgrenmeBirimiInput
-              ogrenme_birimleri={editData.ogrenme_birimleri}
-              onChange={(value) => handleInputChange('ogrenme_birimleri', value)}
-            />
-          </div>
-
-          <div className="form-section">
-            <h4>Ders Materyali URL</h4>
+            <h4>Dosya URL'leri</h4>
             <div className="form-group">
-              <label>DM URL (Ders Materyali PDF):</label>
+              <label>DM URL (Ders Materyali):</label>
+              <input
+                type="url"
+                value={editData.dm_url}
+                onChange={(e) => handleInputChange('dm_url', e.target.value)}
+                placeholder="Ders Materyali PDF URL'si"
+              />
+            </div>
+            <div className="form-group">
+              <label>DBF URL (Ders Bilgi Formu):</label>
               <input
                 type="url"
                 value={editData.dbf_url}
                 onChange={(e) => handleInputChange('dbf_url', e.target.value)}
-                placeholder="Ders Materyali PDF URL'si (dmgoster.aspx'den)"
+                placeholder="DBF PDF URL'si"
               />
-              <small style={{color: '#666', fontSize: '12px'}}>
-                Not: Bu alan şu an "dbf_url" adında ama aslında Ders Materyali URL'sini içeriyor
-              </small>
+            </div>
+            <div className="form-group">
+              <label>BOM URL (Bireysel Öğrenme Materyali):</label>
+              <input
+                type="url"
+                value={editData.bom_url}
+                onChange={(e) => handleInputChange('bom_url', e.target.value)}
+                placeholder="BOM PDF URL'si"
+              />
             </div>
           </div>
         </div>
@@ -573,48 +524,167 @@ const OgrenmeBirimiInput = ({ ogrenme_birimleri, onChange }) => {
   );
 };
 
-const DataTable = ({ data, searchTerm, onCourseEdit, copData }) => {
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+// Filtre dropdown komponenti
+const FilterDropdown = ({ 
+  column, 
+  isOpen, 
+  onToggle, 
+  onClear, 
+  searchTerm, 
+  onSearchChange, 
+  filteredItems, 
+  selectedValues, 
+  onFilterChange, 
+  displayName 
+}) => {
+  if (!isOpen) return null;
 
-  const flattenedData = useMemo(() => {
-    if (!data || !data.alanlar) return [];
+  return (
+    <div style={{
+      position: 'absolute',
+      top: '100%',
+      left: '0',
+      right: '0',
+      background: 'white',
+      border: '1px solid #ddd',
+      borderRadius: '4px',
+      zIndex: 1000,
+      maxHeight: '300px',
+      overflowY: 'auto',
+      padding: '8px',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+    }}>
+      <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <strong style={{ fontSize: '12px' }}>{displayName} Filtresi</strong>
+        <div>
+          <button 
+            onClick={onClear}
+            style={{ fontSize: '10px', padding: '2px 4px', marginRight: '4px', background: '#f8f9fa', border: '1px solid #ddd', cursor: 'pointer' }}
+          >
+            Temizle
+          </button>
+          <button 
+            onClick={onToggle}
+            style={{ fontSize: '10px', padding: '2px 4px', background: '#f8f9fa', border: '1px solid #ddd', cursor: 'pointer' }}
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+      
+      {/* Arama kutusu */}
+      <input
+        type="text"
+        placeholder={`${displayName} ara...`}
+        value={searchTerm}
+        onChange={(e) => onSearchChange(e.target.value)}
+        style={{
+          width: '100%',
+          padding: '4px 8px',
+          fontSize: '11px',
+          border: '1px solid #ddd',
+          borderRadius: '3px',
+          marginBottom: '8px'
+        }}
+        autoFocus
+        onClick={(e) => e.stopPropagation()}
+      />
+      
+      {filteredItems.map(([value, count]) => (
+        <div key={value} style={{ marginBottom: '4px', fontSize: '11px' }}>
+          <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={selectedValues.includes(String(value))}
+              onChange={(e) => onFilterChange(String(value), e.target.checked)}
+              style={{ marginRight: '6px' }}
+            />
+            <span>{value || 'Boş'} ({count})</span>
+          </label>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const DataTable = ({ tableData, searchTerm, onCourseEdit }) => {
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+  const [selectedFilters, setSelectedFilters] = useState({
+    alan_adi: [],
+    dal_adi: [],
+    ders_adi: [],
+    sinif: [],
+    ders_saati: []
+  });
+  const [showFilters, setShowFilters] = useState({
+    alan_adi: false,
+    dal_adi: false,
+    ders_adi: false,
+    sinif: false,
+    ders_saati: false
+  });
+  const [filterSearchTerms, setFilterSearchTerms] = useState({
+    alan_adi: '',
+    dal_adi: '',
+    ders_adi: '',
+    sinif: '',
+    ders_saati: ''
+  });
+
+  // Sütun değerlerini ve sayılarını hesapla
+  const columnStats = useMemo(() => {
+    if (!tableData || !Array.isArray(tableData)) return {};
     
-    const rows = [];
-    Object.entries(data.alanlar).forEach(([alanId, alan]) => {
-      if (alan.dersler) {
-        Object.entries(alan.dersler).forEach(([dersLink, ders]) => {
-          const ortakAlanIds = (data.ortak_alan_indeksi?.[dersLink] || []).filter(id => id !== alanId);
-          const ortakAlanNames = ortakAlanIds.map(id => data.alanlar[id]?.isim || `ID: ${id}`);
-          
-          // Her sınıf için ayrı satır oluştur
-          ders.siniflar.forEach(sinif => {
-            rows.push({
-              alanId,
-              alanIsim: alan.isim,
-              dersIsim: ders.isim,
-              sinif: sinif, // Tek sınıf olarak
-              siniflar: ders.siniflar, // Orijinal tüm sınıflar array'i
-              dersLink,
-              dbfPdfPath: ders.dbf_pdf_path,
-              ortakAlanlar: ortakAlanNames.join(', ') || '-',
-              ortakAlanSayisi: ortakAlanNames.length,
-              uniqueKey: `${alanId}-${dersLink}-${sinif}` // Unique key for React
-            });
-          });
-        });
-      }
+    const stats = {};
+    ['alan_adi', 'dal_adi', 'ders_adi', 'sinif', 'ders_saati'].forEach(column => {
+      const counts = {};
+      const uniqueValues = new Set();
+      
+      tableData.forEach(row => {
+        const value = row[column];
+        if (value !== null && value !== undefined && value !== '') {
+          counts[value] = (counts[value] || 0) + 1;
+          uniqueValues.add(value);
+        }
+      });
+      
+      stats[column] = {
+        uniqueCount: uniqueValues.size,
+        items: Object.entries(counts)
+          .sort((a, b) => b[1] - a[1]) // Sayıya göre sırala
+          // 20 limit kaldırıldı - tümü gösterilecek
+      };
     });
-    return rows;
-  }, [data]);
+    
+    return stats;
+  }, [tableData]);
 
   const filteredData = useMemo(() => {
-    if (!searchTerm.trim()) return flattenedData;
-    const term = searchTerm.trim().toLowerCase();
-    return flattenedData.filter(row => 
-      row.alanIsim.toLowerCase().includes(term) ||
-      row.dersIsim.toLowerCase().includes(term)
-    );
-  }, [flattenedData, searchTerm]);
+    if (!tableData || !Array.isArray(tableData)) return [];
+    
+    let filtered = tableData;
+    
+    // Metin arama filtresi
+    if (searchTerm.trim()) {
+      const term = searchTerm.trim().toLowerCase();
+      filtered = filtered.filter(row => 
+        (row.alan_adi && row.alan_adi.toLowerCase().includes(term)) ||
+        (row.dal_adi && row.dal_adi.toLowerCase().includes(term)) ||
+        (row.ders_adi && row.ders_adi.toLowerCase().includes(term))
+      );
+    }
+    
+    // Çoklu seçim filtreleri
+    Object.entries(selectedFilters).forEach(([column, selectedValues]) => {
+      if (selectedValues.length > 0) {
+        filtered = filtered.filter(row => 
+          selectedValues.includes(String(row[column]))
+        );
+      }
+    });
+    
+    return filtered;
+  }, [tableData, searchTerm, selectedFilters]);
 
   const sortedData = useMemo(() => {
     if (!sortConfig.key) return filteredData;
@@ -641,6 +711,66 @@ const DataTable = ({ data, searchTerm, onCourseEdit, copData }) => {
     return sortConfig.direction === 'asc' ? '↑' : '↓';
   };
 
+  const toggleFilter = (column) => {
+    setShowFilters(prev => ({
+      ...prev,
+      [column]: !prev[column]
+    }));
+    // Açılırken arama terimini temizle
+    if (!showFilters[column]) {
+      setFilterSearchTerms(prev => ({
+        ...prev,
+        [column]: ''
+      }));
+    }
+  };
+
+  const handleFilterChange = (column, value, checked) => {
+    setSelectedFilters(prev => ({
+      ...prev,
+      [column]: checked 
+        ? [...prev[column], value]
+        : prev[column].filter(v => v !== value)
+    }));
+  };
+
+  const clearFilters = (column) => {
+    setSelectedFilters(prev => ({
+      ...prev,
+      [column]: []
+    }));
+  };
+
+  const handleFilterSearch = (column, searchTerm) => {
+    setFilterSearchTerms(prev => ({
+      ...prev,
+      [column]: searchTerm
+    }));
+  };
+
+  // Filtrelenmiş dropdown öğelerini hesapla
+  const getFilteredItems = (column) => {
+    if (!columnStats[column]?.items) return [];
+    
+    const searchTerm = filterSearchTerms[column].toLowerCase();
+    if (!searchTerm) return columnStats[column].items;
+    
+    return columnStats[column].items.filter(([value]) => 
+      value.toString().toLowerCase().includes(searchTerm)
+    );
+  };
+
+  const getColumnDisplayName = (column) => {
+    const names = {
+      alan_adi: 'Alan',
+      dal_adi: 'Dal', 
+      ders_adi: 'Ders',
+      sinif: 'Sınıf',
+      ders_saati: 'Saat'
+    };
+    return names[column] || column;
+  };
+
   return (
     <div className="data-table-container">
       <div style={{ marginBottom: '10px' }}>
@@ -649,79 +779,90 @@ const DataTable = ({ data, searchTerm, onCourseEdit, copData }) => {
       <table className="comprehensive-data-table">
         <thead>
           <tr>
-            <th onClick={() => handleSort('alanIsim')} style={{ cursor: 'pointer' }}>
-              Alan {getSortIcon('alanIsim')}
-            </th>
-            <th onClick={() => handleSort('dersIsim')} style={{ cursor: 'pointer' }}>
-              Ders Adı {getSortIcon('dersIsim')}
-            </th>
-            <th onClick={() => handleSort('sinif')} style={{ cursor: 'pointer' }}>
-              Sınıfı {getSortIcon('sinif')}
-            </th>
-            <th>Ders Materyali (DM)</th>
-            <th>DBF PDF</th>
-            <th onClick={() => handleSort('ortakAlanSayisi')} style={{ cursor: 'pointer' }}>
-              Okutulduğu Diğer Alanlar {getSortIcon('ortakAlanSayisi')}
-            </th>
+            {['alan_adi', 'dal_adi', 'ders_adi', 'sinif', 'ders_saati'].map(column => (
+              <th key={column} onClick={() => handleSort(column)} style={{ cursor: 'pointer', position: 'relative' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span>
+                    {getColumnDisplayName(column)} {getSortIcon(column)}
+                    <span style={{ fontSize: '11px', color: '#666', marginLeft: '4px' }}>
+                      ({columnStats[column]?.uniqueCount || 0})
+                    </span>
+                  </span>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); toggleFilter(column); }}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '12px' }}
+                    title="Filtrele"
+                  >
+                    🔽
+                  </button>
+                </div>
+                <FilterDropdown
+                  column={column}
+                  isOpen={showFilters[column]}
+                  onToggle={() => toggleFilter(column)}
+                  onClear={() => clearFilters(column)}
+                  searchTerm={filterSearchTerms[column]}
+                  onSearchChange={(term) => handleFilterSearch(column, term)}
+                  filteredItems={getFilteredItems(column)}
+                  selectedValues={selectedFilters[column]}
+                  onFilterChange={(value, checked) => handleFilterChange(column, value, checked)}
+                  displayName={getColumnDisplayName(column)}
+                />
+              </th>
+            ))}
+            <th>DM</th>
+            <th>DBF</th>
+            <th>BOM</th>
             <th>İşlemler</th>
           </tr>
         </thead>
         <tbody>
-          {sortedData.map((row) => (
-            <tr key={row.uniqueKey}>
+          {sortedData.map((row, index) => (
+            <tr key={`${row.alan_id}-${row.dal_id}-${row.ders_id || 'empty'}-${index}`}>
+              <td>{row.alan_adi || '-'}</td>
+              <td>{row.dal_adi || '-'}</td>
+              <td>{row.ders_adi || '-'}</td>
+              <td>{row.sinif || '-'}</td>
+              <td>{row.ders_saati || 0}</td>
               <td>
-                {row.alanIsim}
-                {copData && copData[row.alanIsim] && (
-                  <a
-                    href={copData[row.alanIsim]}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title="Çerçeve Öğretim Programı (ÇÖP) PDF"
-                    style={{ marginLeft: 6, fontSize: 16, verticalAlign: 'middle' }}
-                  >
-                    📄 ÇÖP
-                  </a>
-                )}
-              </td>
-              <td>{row.dersIsim}</td>
-              <td>
-                <span className="sinif-badge">{row.sinif}. Sınıf</span>
-                {row.siniflar.length > 1 && (
-                  <small className="other-classes">
-                    (Ayrıca: {row.siniflar.filter(s => s !== row.sinif).join(', ')})
-                  </small>
-                )}
-              </td>
-              <td>
-                <a href={row.dersLink} target="_blank" rel="noopener noreferrer" className="ders-link">
-                  DM PDF
-                </a>
-              </td>
-              <td>
-                {row.dbfPdfPath ? (
-                  <a
-                    href={`file://${row.dbfPdfPath}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="dbf-link"
-                  >
-                    {row.dbfPdfPath.split('/').pop()}
+                {row.dm_url ? (
+                  <a href={row.dm_url} target="_blank" rel="noopener noreferrer" className="ders-link">
+                    📄 DM
                   </a>
                 ) : (
                   "-"
                 )}
               </td>
-              <td className="ortak-alanlar-cell">
-                {row.ortakAlanlar}
+              <td>
+                {row.dbf_url ? (
+                  <a href={row.dbf_url} target="_blank" rel="noopener noreferrer" className="dbf-link">
+                    📄 DBF
+                  </a>
+                ) : (
+                  "-"
+                )}
               </td>
               <td>
-                <button 
-                  className="edit-btn" 
-                  onClick={() => onCourseEdit && onCourseEdit(row)}
-                  title="Düzenle"
-                >
-                  ✏️
-                </button>
+                {row.bom_url ? (
+                  <a href={row.bom_url} target="_blank" rel="noopener noreferrer" className="bom-link">
+                    📄 BOM
+                  </a>
+                ) : (
+                  "-"
+                )}
+              </td>
+              <td>
+                {row.ders_id ? (
+                  <button 
+                    className="edit-btn" 
+                    onClick={() => onCourseEdit && onCourseEdit(row)}
+                    title="Düzenle"
+                  >
+                    ✏️
+                  </button>
+                ) : (
+                  "-"
+                )}
               </td>
             </tr>
           ))}
@@ -735,6 +876,7 @@ const DataTable = ({ data, searchTerm, onCourseEdit, copData }) => {
 
 function App() {  
   const [data, setData] = useState(null);
+  const [tableData, setTableData] = useState([]); // ⭐ New: Database table data
   const [loading, setLoading] = useState(false); // isScraping yerine
   const [initialLoading, setInitialLoading] = useState(true); // Sayfa ilk yüklenirken
   const [error, setError] = useState(null);
@@ -794,6 +936,26 @@ function App() {
     }
   }, []);
 
+  // ⭐ New: Veritabanından tablo verilerini yükle
+  const loadTableData = useCallback(async () => {
+    try {
+      const response = await fetch('http://localhost:5001/api/table-data');
+      if (response.ok) {
+        const tableDataResponse = await response.json();
+        setTableData(tableDataResponse);
+        setProgress(prev => [...prev, { 
+          message: `${tableDataResponse.length} ders veritabanından yüklendi.`, 
+          type: 'done' 
+        }]);
+      } else {
+        console.error("Tablo verisi yüklenemedi:", response.statusText);
+      }
+    } catch (e) {
+      console.error("Tablo verisi yükleme hatası:", e);
+      setError(`Tablo verisi yüklenemedi: ${e.message}`);
+    }
+  }, []);
+
   // Önbellekteki veriyi ve istatistikleri çeken birleşik fonksiyon
   const fetchCachedData = useCallback(async (isInitialLoad = false) => {
     if (isInitialLoad) setInitialLoading(true);
@@ -809,15 +971,16 @@ function App() {
       } else if (isInitialLoad) {
         setProgress([{ message: "Önbellek boş. Verileri çekmek için butona tıklayın.", type: 'info' }]);
       }
-      // Her zaman istatistikleri yükle
+      // Her zaman istatistikleri ve tablo verilerini yükle
       await loadStatistics();
+      await loadTableData();
     } catch (e) {
       console.error("Önbellek verisi çekme hatası:", e);
       setError(`Önbellek verisi çekilemedi. Backend sunucusunun çalıştığından emin olun. Hata: ${e.message}`);
     } finally {
       if (isInitialLoad) setInitialLoading(false);
     }
-  }, [loadStatistics]);
+  }, [loadStatistics, loadTableData]);
 
   // Sayfa ilk yüklendiğinde veriyi çek
   useEffect(() => {
@@ -1067,16 +1230,49 @@ function App() {
 
   // Workflow step handler removed - using individual module functions now
 
-  const handleSaveCourse = useCallback((editedData) => {
-    const courseKey = `${editedData.alan_adi}-${editedData.ders_adi}-${editedData.sinif}`;
-    setEditedCourses(prev => new Map(prev.set(courseKey, editedData)));
-    
-    // Show success message
-    setProgress(prev => [...prev, { 
-      type: 'success', 
-      message: `"${editedData.ders_adi}" dersi düzenlendi ve kaydedildi.` 
-    }]);
-  }, []);
+  const handleSaveCourse = useCallback(async (editedData) => {
+    try {
+      // ⭐ New: Save directly to database via API
+      const response = await fetch('http://localhost:5001/api/update-table-row', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ders_id: editedData.ders_id,
+          updates: {
+            ders_adi: editedData.ders_adi,
+            sinif: editedData.sinif,
+            ders_saati: editedData.ders_saati || 0,
+            dm_url: editedData.dm_url,
+            dbf_url: editedData.dbf_url,
+            bom_url: editedData.bom_url
+          }
+        })
+      });
+
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error || 'Sunucu hatası');
+      }
+
+      // Show success message
+      setProgress(prev => [...prev, { 
+        type: 'success', 
+        message: `"${editedData.ders_adi}" dersi başarıyla güncellendi.` 
+      }]);
+
+      // Reload table data to reflect changes
+      await loadTableData();
+      
+    } catch (error) {
+      setProgress(prev => [...prev, { 
+        type: 'error', 
+        message: `Ders güncelleme hatası: ${error.message}` 
+      }]);
+    }
+  }, [loadTableData]);
 
   const handleExportToDatabase = useCallback(async () => {
     if (editedCourses.size === 0) {
@@ -1511,11 +1707,11 @@ function App() {
       </div>
 
       {/* Arama Kutusu */}
-      {!initialLoading && data && (
+      {!initialLoading && tableData.length > 0 && (
         <div className="search-bar" style={{ marginBottom: '20px', textAlign: 'center' }}>
           <input
             type="text"
-            placeholder="Filtrelemek için alan adı girin..."
+            placeholder="Alan, dal veya ders adına göre filtrele..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{
@@ -1694,9 +1890,9 @@ function App() {
 
 
       {/* Veri görüntüleme alanı - Sadece Tablo Görünümü */}
-      {!initialLoading && data && (
+      {!initialLoading && tableData.length > 0 && (
         <div className="data-display">
-          <DataTable data={data} searchTerm={debouncedTerm} onCourseEdit={handleCourseEdit} copData={copMapping} />
+          <DataTable tableData={tableData} searchTerm={debouncedTerm} onCourseEdit={handleCourseEdit} />
         </div>
       )}
 
