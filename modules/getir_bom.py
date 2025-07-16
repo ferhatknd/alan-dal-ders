@@ -244,6 +244,7 @@ def get_bom_for_alan(alan_id, alan_adi, session):
 def download_and_save_bom_pdf(area_name, modul_link, modul_adi, ders_adi, db_areas=None):
     """
     BOM PDF'ini indirir ve data/bom/{ID}-{alan_adi}/ klasörüne kaydeder.
+    Ders klasörü oluşturulmaz, tüm dosyalar direkt alan klasörüne kaydedilir.
     """
     try:
         # Veritabanından alan bilgilerini al (eğer daha önce alınmamışsa)
@@ -264,15 +265,14 @@ def download_and_save_bom_pdf(area_name, modul_link, modul_adi, ders_adi, db_are
             bom_dir = Path(BOM_ROOT_DIR) / safe_area_name
             print(f"  BOM ID bulunamadı, eski format kullanılıyor: {area_name}")
         
-        # Ders alt klasörü oluştur
-        safe_ders_adi = sanitize_filename_bom(ders_adi)
-        ders_dir = bom_dir / safe_ders_adi
-        ders_dir.mkdir(parents=True, exist_ok=True)
+        # Ana alan klasörünü oluştur (ders alt klasörü oluşturulmaz)
+        bom_dir.mkdir(parents=True, exist_ok=True)
         
-        # Dosya adını oluştur
+        # Dosya adını oluştur - ders adı ile birlikte
+        safe_ders_adi = sanitize_filename_bom(ders_adi)
         safe_modul_adi = sanitize_filename_bom(modul_adi)
-        pdf_filename = f"{safe_modul_adi}.pdf"
-        pdf_path = ders_dir / pdf_filename
+        pdf_filename = f"{safe_ders_adi}_{safe_modul_adi}.pdf"
+        pdf_path = bom_dir / pdf_filename
         
         # Eğer dosya zaten mevcutsa atla
         if pdf_path.exists():

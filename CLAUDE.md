@@ -2,7 +2,7 @@
 
 Bu dosya, Claude Code için MEB Mesleki Eğitim Veri İşleme ve Veritabanı Projesinin kapsamlı birleşik kılavuzudur. README.md, is_akisi.md ve teknik detayların tümünü içerir. Proje mantığını koruyarak her seferinde hata yapmaktan kaçınmak için tüm kritik bilgileri içerir.
 
-**Son Güncelleme**: 2025-07-16 (JSON URL format standardizasyonu + Duplicate dal kontrolü eklendi)
+**Son Güncelleme**: 2025-07-16 (JSON URL format standardizasyonu + Duplicate dal kontrolü eklendi + BOM dizin yapısı sadeleştirildi)
 
 ## 🎯 Proje Genel Bakış
 
@@ -319,23 +319,21 @@ data/dbf/
 - `download_and_cache_pdf(url, cache_type, alan_adi, additional_info)` - Organize PDF cache sistemi
 - `get_temp_pdf_path(url)` - Geçici dosya yolu oluşturma
 
-**Cache Yapısı:** ⭐ **GÜNCEL ID Bazlı Organizasyon**
+**Cache Yapısı:** ⭐ **GÜNCEL MEB ID Bazlı Organizasyon**
 ```
 data/
 ├── cop/     # Çerçeve Öğretim Programları
-│   └── {ID:02d}_{alan_adi}/
+│   └── {meb_alan_id}_{alan_adi}/
 │       └── [orijinal_dosya_adi].pdf
 ├── dbf/     # Ders Bilgi Formları  
-│   └── {ID:02d}_{alan_adi}/
+│   └── {meb_alan_id}_{alan_adi}/
 │       └── {alan}_dbf_package.rar
 ├── dm/      # Ders Materyalleri
-│   └── {ID:02d}_{alan_adi}/
-│       └── sinif_{sinif}/
-│           └── {ders_id:03d}_{ders_adi}.pdf
+│   └── {meb_alan_id}_{alan_adi}/
+│       └── [orijinal_dosya_adi].pdf
 └── bom/     # Bireysel Öğrenme Materyalleri
-    └── {ID:02d}_{alan_adi}/
-        └── {ders_id:03d}_{ders_adi}/
-            └── {modul}.pdf
+    └── {meb_alan_id}_{alan_adi}/
+        └── {ders_adi}_{modul}.pdf
 ```
 
 ### 5. 📄 Database Connection Decorators ⭐ **YENİ**
@@ -389,9 +387,10 @@ def my_function(cursor, param1, param2):
   - Response: Real-time progress updates
   - Process: HTML parsing → JSON kaydet → PDF indir (açmaz) → `data/get_cop.json` üret
   
-- **`GET /api/get-dm`** - DM (Ders Materyali) verilerini getir
-  - Response: Ders materyali PDF linkları, sınıf-alan-ders hiyerarşisi
-  - Cache: `data/getir_dm_sonuc.json`
+- **`GET /api/get-dm`** - ⭐ **STANDARDİZE**: DM (Ders Materyali) verilerini `get_dm()` fonksiyonu ile çeker
+  - Method: Server-Sent Events (SSE)
+  - Response: Real-time progress updates
+  - Process: HTML parsing → JSON kaydet → PDF indir (açmaz) → `data/get_dm.json` üret
   
 - **`GET /api/get-bom`** - BÖM (Bireysel Öğrenme Materyali) verilerini getir
   - Response: BÖM modülleri, alan-ders-modül organizasyonu
@@ -522,6 +521,12 @@ def my_function(cursor, param1, param2):
 - **Ders-Dal İlişkisi**: `ders_id + dal_id` kontrolü ile duplicate engelleme
 - **Protokol Dalları**: Artık duplicate kontrolü yapılıyor
 
+### 10. BOM Dizin Yapısı ⭐ **YENİ KURAL**
+- **Sadeleştirilmiş Yapı**: Ders klasörü oluşturulmaz, tüm dosyalar direkt alan klasörüne kaydedilir
+- **Dosya Adlandırma**: `{ders_adi}_{modul}.pdf` formatında
+- **Alan Organizasyonu**: `{meb_alan_id}_{alan_adi}/` formatında
+- **Performans**: Daha az klasör, daha basit organizasyon
+
 ## 🔄 Sık Kullanılan İşlemler
 
 ### Yeni Standardize Fonksiyonlar ⭐ **YENİ**
@@ -634,6 +639,7 @@ def my_function(cursor, param):
 - **Dosya İndirme**: Her iki fonksiyon da indirir ama açmaz
 - **Protokol Alanları**: " - Protokol" formatı artık doğru handle edilir
 - **Duplicate Kontrolü**: ⭐ **YENİ** Alan, dal, ders ve ilişkiler için tam duplicate kontrolü
+- **BOM Dizin Yapısı**: ⭐ **YENİ** Sadeleştirilmiş yapı, ders klasörü yok, `{ders_adi}_{modul}.pdf` formatında
 - **Database Decorators**: `@with_database` ve `@with_database_json` kullanın
 - **PDF Validation**: Dosya bütünlüğü kontrolü önemli
 - **Error Recovery**: Network hatalarında robust retry mekanizması
