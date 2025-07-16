@@ -2,9 +2,6 @@ import os
 import requests
 from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import shutil
-import rarfile
-import zipfile
 import re
 import sqlite3
 try:
@@ -375,89 +372,8 @@ def get_or_create_area_for_download(cursor, alan_adi, meb_alan_ids=None):
     
     return alan_id, meb_alan_id, alan_adi
 
-@with_database
-def download_and_extract_dbf(cursor, dbf_data):
-    """
-    Her alan için ilgili RAR/ZIP dosyasını indirir ve dbf/{meb_alan_id}_{alan_adi}/ klasörüne açar.
-    Eksik alanları otomatik oluşturur.
-    """
-    if not os.path.exists(DBF_ROOT_DIR):
-        os.makedirs(DBF_ROOT_DIR)
-
-    # MEB alan ID'lerini al
-    try:
-        from .getir_cop import update_meb_alan_ids
-    except ImportError:
-        from getir_cop import update_meb_alan_ids
-    
-    meb_alan_ids = update_meb_alan_ids()
-    
-    for sinif, alanlar in dbf_data.items():
-        for alan_adi, info in alanlar.items():
-            link = info["link"]
-            
-            try:
-                # Alan ID'sini al veya oluştur
-                area_id, meb_alan_id, matched_name = get_or_create_area_for_download(cursor, alan_adi, meb_alan_ids)
-                
-                if meb_alan_id:
-                    # MEB ID bazlı klasör yapısı: {meb_alan_id}_{alan_adi}
-                    folder_name = f"{meb_alan_id}_{sanitize_filename(matched_name)}"
-                    alan_dir = os.path.join(DBF_ROOT_DIR, folder_name)
-                    print(f"[{alan_adi}] Klasör: {folder_name}")
-                else:
-                    # MEB ID yoksa database ID kullan
-                    folder_name = f"{area_id:02d}_{sanitize_filename(matched_name)}"
-                    alan_dir = os.path.join(DBF_ROOT_DIR, folder_name)
-                    print(f"[{alan_adi}] MEB ID yok, database ID kullanılıyor: {folder_name}")
-                
-            except Exception as e:
-                # Hata durumunda eski sistemi kullan
-                alan_dir = os.path.join(DBF_ROOT_DIR, sanitize_filename(alan_adi))
-                print(f"[{alan_adi}] Alan işleme hatası: {e}, eski format kullanılıyor")
-            
-            if not os.path.exists(alan_dir):
-                os.makedirs(alan_dir)
-            archive_filename = os.path.basename(link)
-            archive_path = os.path.join(alan_dir, archive_filename)
-
-            # Dosya zaten varsa atla
-            if os.path.exists(archive_path):
-                file_size = os.path.getsize(archive_path)
-                print(f"[{alan_adi}] {archive_filename} zaten mevcut ({file_size // (1024*1024)}MB) - ATLANIYOR")
-                continue
-
-            # İndir
-            print(f"[{alan_adi}] {sinif}. sınıf: {archive_filename} indiriliyor...")
-            try:
-                # Chunk-based download with timeout handling
-                with requests.get(link, stream=True, timeout=120) as r:
-                    r.raise_for_status()
-                    
-                    total_size = int(r.headers.get('content-length', 0))
-                    downloaded_size = 0
-                    
-                    with open(archive_path, "wb") as f:
-                        for chunk in r.iter_content(chunk_size=8192):
-                            if chunk:
-                                f.write(chunk)
-                                downloaded_size += len(chunk)
-                
-                print(f"[{alan_adi}] {archive_filename} indirildi ({downloaded_size // (1024*1024)}MB).")
-            except requests.exceptions.Timeout:
-                print(f"[{alan_adi}] {archive_filename} indirme timeout (120s) - dosya çok büyük olabilir")
-                continue
-            except Exception as e:
-                print(f"[{alan_adi}] {archive_filename} indirilemedi: {e}")
-                continue
-
-            # Aç
-            try:
-                print(f"[{alan_adi}] {archive_filename} açılıyor...")
-                extract_archive(archive_path, alan_dir)
-                print(f"[{alan_adi}] {archive_filename} başarıyla açıldı.")
-            except Exception as e:
-                print(f"[{alan_adi}] {archive_filename} açılamadı: {e}")
+# Bu fonksiyon kaldırıldı - unrar işlemleri artık yapılmıyor
+# Sadece get_dbf() fonksiyonu kullanılacak (indirme + URL kaydetme)
 
 @with_database
 def get_dbf(cursor, dbf_data=None):
@@ -525,10 +441,8 @@ def get_dbf(cursor, dbf_data=None):
                 yield {"type": "info", "message": msg}
                 continue
 
-            # İndir
-            msg = f"[{alan_adi}] {sinif}. sınıf: {archive_filename} indiriliyor..."
-            print(msg)
-            yield {"type": "status", "message": msg}
+            # İndir - sadece başlama mesajı göster
+            # Progress mesajları kaldırıldı
             try:
                 # Chunk-based download with progress feedback
                 with requests.get(link, stream=True, timeout=120) as r:
@@ -544,17 +458,10 @@ def get_dbf(cursor, dbf_data=None):
                                 f.write(chunk)
                                 downloaded_size += len(chunk)
                                 
-                                # Progress mesajı (her 1MB'de bir)
-                                if downloaded_size % (1024 * 1024) == 0 or downloaded_size == total_size:
-                                    if total_size > 0:
-                                        progress = (downloaded_size / total_size) * 100
-                                        progress_msg = f"[{alan_adi}] {archive_filename} indiriliyor... {progress:.1f}% ({downloaded_size // (1024*1024)}MB/{total_size // (1024*1024)}MB)"
-                                    else:
-                                        progress_msg = f"[{alan_adi}] {archive_filename} indiriliyor... {downloaded_size // (1024*1024)}MB"
-                                    
-                                    yield {"type": "progress", "message": progress_msg}
+                                # Progress mesajı kaldırıldı - sadece indirme tamamlandığında bilgi verilecek
+                                pass
                 
-                msg = f"[{alan_adi}] {archive_filename} indirildi ({downloaded_size // (1024*1024)}MB) - AÇMA İŞLEMİ ATLAND!"
+                msg = f"[{alan_adi}] {archive_filename} indirildi ({downloaded_size // (1024*1024)}MB)"
                 print(msg)
                 yield {"type": "status", "message": msg}
             except requests.exceptions.Timeout:
@@ -635,196 +542,14 @@ def get_dbf(cursor, dbf_data=None):
     
     yield {'type': 'done', 'message': f'Tüm DBF dosyaları işlendi. {len(alan_dbf_urls)} alan için URL\'ler veritabanına kaydedildi.'}
 
-@with_database
-def download_and_extract_dbf_with_progress(cursor, dbf_data):
-    """
-    Her alan için ilgili RAR/ZIP dosyasını indirir ve dbf/{meb_alan_id}_{alan_adi}/ klasörüne açar.
-    Mevcut dosyaları kontrol eder ve varsa atlar.
-    Eksik alanları otomatik oluşturur.
-    Her adımda yield ile ilerleme mesajı döndürür.
-    """
-    if not os.path.exists(DBF_ROOT_DIR):
-        os.makedirs(DBF_ROOT_DIR)
+# Bu fonksiyon kaldırıldı - unrar işlemleri artık yapılmıyor
+# Sadece get_dbf() fonksiyonu kullanılacak (indirme + URL kaydetme)
 
-    # MEB alan ID'lerini al
-    try:
-        from .getir_cop import update_meb_alan_ids
-    except ImportError:
-        from getir_cop import update_meb_alan_ids
-    
-    meb_alan_ids = update_meb_alan_ids()
+# Bu fonksiyon kaldırıldı - unrar işlemleri artık yapılmıyor
 
-    for sinif, alanlar in dbf_data.items():
-        for alan_adi, info in alanlar.items():
-            link = info["link"]
-            
-            try:
-                # Alan ID'sini al veya oluştur
-                area_id, meb_alan_id, matched_name = get_or_create_area_for_download(cursor, alan_adi, meb_alan_ids)
-                
-                if meb_alan_id:
-                    # MEB ID bazlı klasör yapısı: {meb_alan_id}_{alan_adi}
-                    folder_name = f"{meb_alan_id}_{sanitize_filename(matched_name)}"
-                    alan_dir = os.path.join(DBF_ROOT_DIR, folder_name)
-                    yield {"type": "status", "message": f"[{alan_adi}] Klasör: {folder_name}"}
-                else:
-                    # MEB ID yoksa database ID kullan
-                    folder_name = f"{area_id:02d}_{sanitize_filename(matched_name)}"
-                    alan_dir = os.path.join(DBF_ROOT_DIR, folder_name)
-                    yield {"type": "warning", "message": f"[{alan_adi}] MEB ID yok, database ID kullanılıyor: {folder_name}"}
-                
-            except Exception as e:
-                # Hata durumunda eski sistemi kullan
-                alan_dir = os.path.join(DBF_ROOT_DIR, sanitize_filename(alan_adi))
-                yield {"type": "error", "message": f"[{alan_adi}] Alan işleme hatası: {e}, eski format kullanılıyor"}
-            
-            if not os.path.exists(alan_dir):
-                os.makedirs(alan_dir)
-            archive_filename = os.path.basename(link)
-            archive_path = os.path.join(alan_dir, archive_filename)
+# Bu fonksiyon kaldırıldı - unrar işlemleri artık yapılmıyor
 
-            # Dosya zaten varsa atla
-            if os.path.exists(archive_path):
-                file_size = os.path.getsize(archive_path)
-                msg = f"[{alan_adi}] {archive_filename} zaten mevcut ({file_size // (1024*1024)}MB) - ATLANIYOR"
-                print(msg)
-                yield {"type": "info", "message": msg}
-                continue
-
-            # İndir
-            msg = f"[{alan_adi}] {sinif}. sınıf: {archive_filename} indiriliyor..."
-            print(msg)
-            yield {"type": "status", "message": msg}
-            try:
-                # Chunk-based download with progress feedback
-                with requests.get(link, stream=True, timeout=120) as r:
-                    r.raise_for_status()
-                    
-                    # Content-Length header'dan dosya boyutunu al
-                    total_size = int(r.headers.get('content-length', 0))
-                    downloaded_size = 0
-                    
-                    with open(archive_path, "wb") as f:
-                        for chunk in r.iter_content(chunk_size=8192):
-                            if chunk:
-                                f.write(chunk)
-                                downloaded_size += len(chunk)
-                                
-                                # Progress mesajı (her 1MB'de bir)
-                                if downloaded_size % (1024 * 1024) == 0 or downloaded_size == total_size:
-                                    if total_size > 0:
-                                        progress = (downloaded_size / total_size) * 100
-                                        progress_msg = f"[{alan_adi}] {archive_filename} indiriliyor... {progress:.1f}% ({downloaded_size // (1024*1024)}MB/{total_size // (1024*1024)}MB)"
-                                    else:
-                                        progress_msg = f"[{alan_adi}] {archive_filename} indiriliyor... {downloaded_size // (1024*1024)}MB"
-                                    
-                                    yield {"type": "progress", "message": progress_msg}
-                
-                msg = f"[{alan_adi}] {archive_filename} indirildi ({downloaded_size // (1024*1024)}MB)."
-                print(msg)
-                yield {"type": "status", "message": msg}
-            except requests.exceptions.Timeout:
-                msg = f"[{alan_adi}] {archive_filename} indirme timeout (120s) - dosya çok büyük olabilir"
-                print(msg)
-                yield {"type": "error", "message": msg}
-                continue
-            except requests.exceptions.RequestException as e:
-                msg = f"[{alan_adi}] {archive_filename} indirme hatası: {e}"
-                print(msg)
-                yield {"type": "error", "message": msg}
-                continue
-            except Exception as e:
-                msg = f"[{alan_adi}] {archive_filename} indirilemedi: {e}"
-                print(msg)
-                yield {"type": "error", "message": msg}
-                continue
-
-            # Aç
-            msg = f"[{alan_adi}] {archive_filename} açılıyor..."
-            print(msg)
-            yield {"type": "status", "message": msg}
-            try:
-                extract_archive(archive_path, alan_dir)
-                msg = f"[{alan_adi}] {archive_filename} başarıyla açıldı."
-                print(msg)
-                yield {"type": "status", "message": msg}
-            except Exception as e:
-                msg = f"[{alan_adi}] {archive_filename} açılamadı: {e}"
-                print(msg)
-                yield {"type": "error", "message": msg}
-
-def extract_archive(archive_path, extract_dir):
-    """
-    RAR veya ZIP dosyasını açar. Dosya tipini otomatik algılar.
-    """
-    try:
-        with open(archive_path, "rb") as f:
-            magic = f.read(4)
-        
-        is_rar = magic == b"Rar!"
-        is_zip = magic == b"PK\x03\x04"
-        
-        if is_rar:
-            with rarfile.RarFile(archive_path) as rf:
-                rf.extractall(extract_dir)
-        elif is_zip:
-            with zipfile.ZipFile(archive_path) as zf:
-                zf.extractall(extract_dir)
-        else:
-            raise Exception(f"Desteklenmeyen dosya formatı (magic: {magic})")
-    except Exception as e:
-        raise Exception(f"Arşiv açılırken hata: {e}")
-
-def retry_extract_file(alan_adi, archive_filename):
-    """
-    Belirli bir dosya için tekrar açma işlemi (hem RAR hem ZIP destekler).
-    """
-    alan_dir = os.path.join(DBF_ROOT_DIR, sanitize_filename(alan_adi))
-    archive_path = os.path.join(alan_dir, archive_filename)
-    
-    msg = f"[{alan_adi}] {archive_filename} tekrar açılıyor..."
-    print(msg)
-    try:
-        extract_archive(archive_path, alan_dir)
-        msg = f"[{alan_adi}] {archive_filename} başarıyla tekrar açıldı."
-        print(msg)
-        return {"type": "status", "message": msg}
-    except Exception as e:
-        msg = f"[{alan_adi}] {archive_filename} tekrar açılamadı: {e}"
-        print(msg)
-        return {"type": "error", "message": msg}
-
-def retry_extract_all_files_with_progress():
-    """
-    dbf/ altındaki tüm alan klasörlerindeki .rar ve .zip dosyalarını tekrar açar.
-    Her adımda yield ile ilerleme mesajı döndürür.
-    """
-    if not os.path.exists(DBF_ROOT_DIR):
-        yield {"type": "error", "message": "dbf/ dizini bulunamadı."}
-        return
-
-    for alan_klasor in os.listdir(DBF_ROOT_DIR):
-        alan_dir = os.path.join(DBF_ROOT_DIR, alan_klasor)
-        if not os.path.isdir(alan_dir):
-            continue
-        
-        for fname in os.listdir(alan_dir):
-            if fname.lower().endswith((".rar", ".zip")):
-                archive_path = os.path.join(alan_dir, fname)
-                alan_adi = alan_klasor
-                
-                msg = f"[{alan_adi}] {fname} tekrar açılıyor..."
-                print(msg)
-                yield {"type": "status", "message": msg}
-                try:
-                    extract_archive(archive_path, alan_dir)
-                    msg = f"[{alan_adi}] {fname} başarıyla tekrar açıldı."
-                    print(msg)
-                    yield {"type": "status", "message": msg}
-                except Exception as e:
-                    msg = f"[{alan_adi}] {fname} tekrar açılamadı: {e}"
-                    print(msg)
-                    yield {"type": "error", "message": msg}
+# Bu fonksiyon kaldırıldı - unrar işlemleri artık yapılmıyor
 
 def extract_course_name_from_dbf(dbf_file_path):
     """
@@ -984,12 +709,11 @@ def main():
     """
     print("Ders Bilgi Formu (DBF) Getirici")
     print("1. Veri Çek (9, 10, 11, 12. sınıflar)")
-    print("2. İndir ve Aç")
-    print("3. Yeniden Aç (Retry)")
-    print("4. DBF Dosyalarından Ders Adlarını Çıkar")
-    print("5. DBF URL'lerini Veritabanına Kaydet")
+    print("2. DBF İndir (Sadece İndirme - Açma Yok)")
+    print("3. DBF Dosyalarından Ders Adlarını Çıkar")
+    print("4. DBF URL'lerini Veritabanına Kaydet")
     
-    choice = input("Seçiminizi yapın (1-5): ").strip()
+    choice = input("Seçiminizi yapın (1-4): ").strip()
     
     if choice == "1":
         print("DBF verileri çekiliyor...")
@@ -1001,24 +725,24 @@ def main():
             print("❌ DBF verileri çekilemedi!")
     
     elif choice == "2":
-        print("DBF verileri çekiliyor...")
-        dbf_data = getir_dbf()
-        if dbf_data:
-            print("✅ DBF verileri çekildi, indirme ve açma başlıyor...")
-            for message in download_and_extract_dbf_with_progress(dbf_data):
-                print(message["message"])
-        else:
-            print("❌ DBF verileri çekilemedi!")
+        print("DBF verileri çekiliyor ve indiriliyor...")
+        for message in get_dbf():
+            msg_type = message.get("type", "info")
+            msg_text = message.get("message", "")
+            
+            if msg_type == "error":
+                print(f"❌ {msg_text}")
+            elif msg_type == "warning":
+                print(f"⚠️ {msg_text}")
+            elif msg_type == "success":
+                print(f"✅ {msg_text}")
+            elif msg_type == "done":
+                print(f"🎉 {msg_text}")
+                break
+            else:
+                print(f"ℹ️ {msg_text}")
     
     elif choice == "3":
-        print("Dosyalar yeniden açılıyor...")
-        for message in retry_extract_all_files_with_progress():
-            if message["type"] == "error":
-                print(f"🔴 {message['message']}")
-            else:
-                print(message["message"])
-    
-    elif choice == "4":
         print("DBF dosyalarından ders adları çıkarılıyor...")
         results = scan_dbf_files_and_extract_courses()
         
@@ -1041,7 +765,7 @@ def main():
         
         print(f"\n📊 Özet: {basarili_dosya}/{toplam_dosya} dosyadan ders adı çıkarıldı (%{basarili_dosya/toplam_dosya*100:.1f})")
     
-    elif choice == "5":
+    elif choice == "4":
         print("DBF URL'leri veritabanına kaydediliyor...")
         result = save_dbf_urls_to_database()
         if result and result.get("success"):

@@ -17,7 +17,7 @@ from contextlib import redirect_stdout, redirect_stderr
 from modules.oku_dbf import oku_dbf
 
 # Yeni modülleri import et
-from modules.getir_dbf import getir_dbf, download_and_extract_dbf_with_progress, get_dbf
+from modules.getir_dbf import getir_dbf, get_dbf
 from modules.getir_cop import get_cop
 # from modules.oku_cop import oku_cop_pdf as new_oku_cop_pdf, save_cop_results_to_db as new_save_cop_results_to_db
 from modules.getir_dm import get_dm
@@ -213,8 +213,8 @@ def api_get_dbf():
             except Exception as e:
                 yield f"data: {json.dumps({'type': 'error', 'message': f'URL kaydetme hatası: {str(e)}'})}\n\n"
             
-            # 3. Dosyaları indir (açma işlemi geçici olarak durduruldu)
-            yield f"data: {json.dumps({'type': 'status', 'message': 'DBF dosyaları indiriliyor (açma işlemi geçici olarak durduruldu)...'})}\n\n"
+            # 3. Dosyaları indir
+            yield f"data: {json.dumps({'type': 'status', 'message': 'DBF dosyaları indiriliyor...'})}\n\n"
             
             # get_dbf fonksiyonu HTML parsing'i dahili olarak yapıyor ve JSON üretiyor
             for msg in get_dbf():
