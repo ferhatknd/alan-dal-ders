@@ -1,4 +1,8 @@
-# 🤖 CLAUDE.md - MEB Mesleki Eğitim Veri İşleme Projesi - Birleşik Kılavuz
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## 🤖 MEB Mesleki Eğitim Veri İşleme Projesi - Birleşik Kılavuz
 
 Bu dosya, Claude Code için MEB Mesleki Eğitim Veri İşleme ve Veritabanı Projesinin kapsamlı birleşik kılavuzudur. README.md, is_akisi.md ve teknik detayların tümünü içerir. Proje mantığını koruyarak her seferinde hata yapmaktan kaçınmak için tüm kritik bilgileri içerir.
 
@@ -669,6 +673,28 @@ python server.py
 # ✅ Database initialized successfully: data/temel_plan.db
 # 📊 Current schema version: 1
 ```
+
+## 🛠️ Development Commands
+
+### Backend (Flask Server)
+- **Start server**: `python server.py` - Ana Flask sunucusu başlat
+- **Install dependencies**: `pip install -r requirements.txt`
+- **Debug DBF files**: `python test.py` - DBF PDF yapılarını analiz et
+
+### Frontend (React)
+- **Start development server**: `npm start` - React development server (port 3000)
+- **Build for production**: `npm run build` - Production build oluştur
+- **Run tests**: `npm test` - React test suite çalıştır
+- **Install dependencies**: `npm install`
+
+### Testing
+- **Backend**: `python test.py` - DBF PDF parsing test utility
+- **Frontend**: `npm test` - React component tests (Jest + React Testing Library)
+
+### Database Operations
+- **Initialize database**: Database otomatik olarak `python server.py` ile kurulur
+- **Schema updates**: `data/schema.sql` otomatik olarak uygulanır
+- **View database**: SQLite browser ile `data/temel_plan.db` dosyasını açabilirsiniz
 
 ## 📄 Lisans
 
