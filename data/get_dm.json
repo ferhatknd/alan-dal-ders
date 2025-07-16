@@ -1,1 +1,212 @@
-{}
+{
+  "Denizcilik": {
+    "9": [
+      {
+        "title": "Denizcilik Örf ve Âdetleri",
+        "pdf_url": "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/DN2024DOA0903.pdf",
+        "update_date": "12.12.2024 00:00:00",
+        "update_year": "2024",
+        "sinif": "9",
+        "alan_adi": "Denizcilik"
+      },
+      {
+        "title": "Yüzme",
+        "pdf_url": "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/DN2024YUZ0902.pdf",
+        "update_date": "12.12.2024 00:00:00",
+        "update_year": "2024",
+        "sinif": "9",
+        "alan_adi": "Denizcilik"
+      },
+      {
+        "title": "Temel Denizcilik Atölyesi",
+        "pdf_url": "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/DN2024TDA0901.pdf",
+        "update_date": "12.12.2024 00:00:00",
+        "update_year": "2024",
+        "sinif": "9",
+        "alan_adi": "Denizcilik"
+      }
+    ],
+    "12": [
+      {
+        "title": "Ahilik Kültürü ve Girişimcilik",
+        "pdf_url": "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ahilik_kulturu_ve_girisimcilik.pdf",
+        "update_date": "12.12.2024 00:00:00",
+        "update_year": "2024",
+        "sinif": "12",
+        "alan_adi": "Denizcilik"
+      },
+      {
+        "title": "Sosyal Medya",
+        "pdf_url": "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BT2024SM111226.pdf",
+        "update_date": "12.12.2024 00:00:00",
+        "update_year": "2024",
+        "sinif": "12",
+        "alan_adi": "Denizcilik"
+      },
+      {
+        "title": "Dijital Tasarım",
+        "pdf_url": "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BT2024DT111227.pdf",
+        "update_date": "12.12.2024 00:00:00",
+        "update_year": "2024",
+        "sinif": "12",
+        "alan_adi": "Denizcilik"
+      },
+      {
+        "title": "Programlama",
+        "pdf_url": "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BT2024PRG111228.pdf",
+        "update_date": "12.12.2024 00:00:00",
+        "update_year": "2024",
+        "sinif": "12",
+        "alan_adi": "Denizcilik"
+      },
+      {
+        "title": "Ahilik Kültürü ve Girişimcilik",
+        "pdf_url": "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ahilik_kulturu_ve_girisimcilik.pdf",
+        "update_date": "12.12.2024 00:00:00",
+        "update_year": "2024",
+        "sinif": "12",
+        "alan_adi": "Denizcilik"
+      }
+    ],
+    "11": [
+      {
+        "title": "Ahilik Kültürü ve Girişimcilik",
+        "pdf_url": "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/ahilik_kulturu_ve_girisimcilik.pdf",
+        "update_date": "12.12.2024 00:00:00",
+        "update_year": "2024",
+        "sinif": "11",
+        "alan_adi": "Denizcilik"
+      },
+      {
+        "title": "Sosyal Medya",
+        "pdf_url": "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BT2024SM111226.pdf",
+        "update_date": "12.12.2024 00:00:00",
+        "update_year": "2024",
+        "sinif": "11",
+        "alan_adi": "Denizcilik"
+      },
+      {
+        "title": "Dijital Tasarım",
+        "pdf_url": "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BT2024DT111227.pdf",
+        "update_date": "12.12.2024 00:00:00",
+        "update_year": "2024",
+        "sinif": "11",
+        "alan_adi": "Denizcilik"
+      },
+      {
+        "title": "Programlama",
+        "pdf_url": "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/BT2024PRG111228.pdf",
+        "update_date": "12.12.2024 00:00:00",
+        "update_year": "2024",
+        "sinif": "11",
+        "alan_adi": "Denizcilik"
+      },
+      {
+        "title": "Yabancı Dilde Güverte İşletme Uygulamaları",
+        "pdf_url": "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/DN2024YDG1111.pdf",
+        "update_date": "12.12.2024 00:00:00",
+        "update_year": "2024",
+        "sinif": "11",
+        "alan_adi": "Denizcilik"
+      },
+      {
+        "title": "Seyir ve Elektronik Seyir Atölyesi",
+        "pdf_url": "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/DN2024SES1112.pdf",
+        "update_date": "12.12.2024 00:00:00",
+        "update_year": "2024",
+        "sinif": "11",
+        "alan_adi": "Denizcilik"
+      },
+      {
+        "title": "Mekanik ve Termodinamik",
+        "pdf_url": "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/DN2024MEK1113.pdf",
+        "update_date": "12.12.2024 00:00:00",
+        "update_year": "2024",
+        "sinif": "11",
+        "alan_adi": "Denizcilik"
+      },
+      {
+        "title": "Emniyetli Makine Vardiyası Tutma",
+        "pdf_url": "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/DN2024EMV1114.pdf",
+        "update_date": "12.12.2024 00:00:00",
+        "update_year": "2024",
+        "sinif": "11",
+        "alan_adi": "Denizcilik"
+      },
+      {
+        "title": "Gemi Otomasyonu",
+        "pdf_url": "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/DN2024GOT1115.pdf",
+        "update_date": "12.12.2024 00:00:00",
+        "update_year": "2024",
+        "sinif": "11",
+        "alan_adi": "Denizcilik"
+      }
+    ],
+    "10": [
+      {
+        "title": "Yabancı Dilde Gemi Makineleri İşletme Uygulamaları",
+        "pdf_url": "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/DN2024YDM1009.pdf",
+        "update_date": "12.12.2024 00:00:00",
+        "update_year": "2024",
+        "sinif": "10",
+        "alan_adi": "Denizcilik"
+      },
+      {
+        "title": "Yabancı Dilde Güverte İşletme Uygulamaları",
+        "pdf_url": "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/DN2024YDG1010.pdf",
+        "update_date": "12.12.2024 00:00:00",
+        "update_year": "2024",
+        "sinif": "10",
+        "alan_adi": "Denizcilik"
+      },
+      {
+        "title": "Meteoroloji",
+        "pdf_url": "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/DN2024MTO1008.pdf",
+        "update_date": "12.12.2024 00:00:00",
+        "update_year": "2024",
+        "sinif": "10",
+        "alan_adi": "Denizcilik"
+      },
+      {
+        "title": "Mesleki Yabancı Dil (Denizcilik)",
+        "pdf_url": "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/DN2024MYD1005.pdf",
+        "update_date": "12.12.2024 00:00:00",
+        "update_year": "2024",
+        "sinif": "10",
+        "alan_adi": "Denizcilik"
+      },
+      {
+        "title": "Gemicilik ve Gemi Manevraları Atölyesi",
+        "pdf_url": "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/DN2024GGM1116.pdf",
+        "update_date": "12.12.2024 00:00:00",
+        "update_year": "2024",
+        "sinif": "10",
+        "alan_adi": "Denizcilik"
+      },
+      {
+        "title": "Temel Gemi Makineleri Atölyesi",
+        "pdf_url": "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/DN2024TGM1007.pdf",
+        "update_date": "12.12.2024 00:00:00",
+        "update_year": "2024",
+        "sinif": "10",
+        "alan_adi": "Denizcilik"
+      },
+      {
+        "title": "Gemi Elektroniği Atölyesi",
+        "pdf_url": "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/DN2024GEA1006.pdf",
+        "update_date": "12.12.2024 00:00:00",
+        "update_year": "2024",
+        "sinif": "10",
+        "alan_adi": "Denizcilik"
+      },
+      {
+        "title": "Denizde Emniyet",
+        "pdf_url": "https://meslek.meb.gov.tr/upload/dersmateryali/pdf/DN2024DET1004.pdf",
+        "update_date": "12.12.2024 00:00:00",
+        "update_year": "2024",
+        "sinif": "10",
+        "alan_adi": "Denizcilik"
+      }
+    ]
+  }
+}

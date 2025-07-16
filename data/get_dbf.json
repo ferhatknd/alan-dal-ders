@@ -1,0 +1,315 @@
+{
+  "Adalet": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/adalet.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/adalet.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/adalet_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/adalet.rar"
+  },
+  "Aile ve Tüketici Hizmetleri": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/aile.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/aile.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/aile_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/aile.rar"
+  },
+  "Ayakkabı ve Saraciye Teknolojisi": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/ayakkabipro.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/ayakkabipro.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/protokol_ayakkabi_2021_10.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/ayakkabipro.rar"
+  },
+  "Bilişim Teknolojileri": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/bilisim.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/bilisim.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/bilisim_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/bilisim.rar"
+  },
+  "Biyomedikal Cihaz Teknolojileri": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/biyomedikal.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/biyomedikal.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/biyomedikal_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/biyomedikal.rar"
+  },
+  "Büro Yönetimi ve Yönetici Asistanlığı": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/buro.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/buro.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/buro_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/buro.rar"
+  },
+  "Çocuk Gelişimi ve Eğitimi": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/cocukgelisimi.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/cocukgelisimi.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/cocuk_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/cocukgelisimi.rar"
+  },
+  "Denizcilik": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/denizcilikpro.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/denizcilik.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/denizcilik_protokol_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/denizcilikpro.rar"
+  },
+  "El Sanatları Teknolojisi": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/elsanat.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/elsanat.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/el_sanat_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/elsanat.rar"
+  },
+  "Elektrik-Elektronik Teknolojisi": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/elektrik.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/elektrik.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/elektrik_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/elektrik.rar"
+  },
+  "Endüstriyel Otomasyon Teknolojileri": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/endustriyel.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/endustriyel.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/endustriyel_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/endustriyel.rar"
+  },
+  "Gazetecilik": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/gazetecilik.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/gazetecilik.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/gazetecilik_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/gazetecilikpro.rar"
+  },
+  "Geleneksel Türk Sanatları": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/geleneksel.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/geleneksel.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/geleneksel_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/geleneksel.rar"
+  },
+  "Gemi Yapımı": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/gemi.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/gemi.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/gemi_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/gemi.rar"
+  },
+  "Gıda Teknolojisi": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/gida.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/gida.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/gida_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/gida.rar"
+  },
+  "Grafik ve Fotoğraf": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/grafik.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/grafik_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/grafik.rar"
+  },
+  "Güzellik Hizmetleri": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/guzellik.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/guzellik.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/guzellik_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/guzellik.rar"
+  },
+  "Halkla İlişkiler": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/halklailiskiler.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/halklailiskiler.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/halklailiskiler_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/halklailiskiler.rar"
+  },
+  "Harita-Tapu-Kadastro": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/harita.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/harita.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/harita_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/harita.rar"
+  },
+  "Hasta ve Yaşlı Hizmetleri": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/hasta.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/hasta.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/hasta_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/hasta.rar"
+  },
+  "Hayvan Yetiştiriciliği ve Sağlığı": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/hayvanyetistiriciligi.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/hayvanyetistiriciligi.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/hayvanyet_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/hayvanyetistiriciligi.rar"
+  },
+  "İnşaat Teknolojisi": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/insaat.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/insaat.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/insaat_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/insaat.rar"
+  },
+  "İtfaiyecilik ve Yangın Güvenliği": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/itfaiyecilik.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/itfaiyecilik.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/itfaiyecilik_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/itfaiyecilik.rar"
+  },
+  "Kimya Teknolojisi": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/kimya.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/kimya.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/kimya_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/kimya.rar"
+  },
+  "Konaklama ve Seyahat Hizmetleri": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/konaklamapro.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/konaklamapro.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/konaklamapro_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/konaklamapro.rar"
+  },
+  "Kuyumculuk Teknolojisi": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/kuyumculuk.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/kuyumculuk.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/kuyumculuk_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/kuyumculuk.rar"
+  },
+  "Laboratuvar Hizmetleri": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/laboratuvar.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/laboratuvar.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/laboratuvar_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/laboratuvar.rar"
+  },
+  "Maden Teknolojisi": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/maden.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/maden.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/maden_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/maden.rar"
+  },
+  "Makine ve Tasarım Teknolojisi": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/makine.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/makine.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/makine_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/makine.rar"
+  },
+  "Matbaa Teknolojisi": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/matbaa.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/matbaa.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/matbaa_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/matbaa.rar"
+  },
+  "Metal Teknolojisi": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/metal.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/metal.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/metal_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/metal.rar"
+  },
+  "Metalürji Teknolojisi": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/metalurji.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/metalurji.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/metalurji_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/metalurji.rar"
+  },
+  "Mobilya ve İç Mekân Tasarımı": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/mobilya.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/mobilya.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/mobilya_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/mobilya.rar"
+  },
+  "Moda Tasarım Teknolojileri": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/moda.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/moda.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/moda_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/moda.rar"
+  },
+  "Motorlu Araçlar Teknolojisi": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/motorluarac.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/motorluarac.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/motorluarac_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/motorluarac.rar"
+  },
+  "Muhasebe ve Finansman": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/muhasebe.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/muhasebepro.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/muhasebe_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/muhasebepro.rar"
+  },
+  "Pazarlama ve Perakende": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/pazarlama.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/pazarlama.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/pazarlama_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/pazarlama.rar"
+  },
+  "Plastik Sanatlar": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/plastiksanatlar.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/plastiksanatlar.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/plastiksanatlar_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/plastiksanatlar.rar"
+  },
+  "Plastik Teknolojisi": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/plastiktek.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/plastiktek.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/plastiktek_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/plastiktek.rar"
+  },
+  "Radyo-Televizyon": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/radyotv.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/radyotv.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/radyotv_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/radyotvpro.rar"
+  },
+  "Raylı Sistemler Teknolojisi": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/rayli.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/rayli.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/rayli_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/rayli.rar"
+  },
+  "Sağlık Hizmetleri": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/saglik.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/saglik.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/saglik_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/saglik.rar"
+  },
+  "Seramik ve Cam Teknolojisi": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/seramikpro.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/seramikpro.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/protokol_seramik_2021_10.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/seramikpro.rar"
+  },
+  "Siber Güvenlik": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/siber.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/siber.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/siber_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/siber.rar"
+  },
+  "Tarım": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/tarim.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/tarim.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/tarim_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/tarim.rar"
+  },
+  "Tekstil Teknolojisi": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/tekstil.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/tekstil.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/tekstil_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/tekstil.rar"
+  },
+  "Tesisat Teknolojisi ve İklimlendirme": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/tesisat.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/tesisat.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/tesisat_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/tesisat.rar"
+  },
+  "Uçak Bakım": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/ucak.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/ucak.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/ucak_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/ucak.rar"
+  },
+  "Ulaştırma Hizmetleri": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/ulastirma.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/ulastirma.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/ulastirma_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/ulastirma.rar"
+  },
+  "Yenilenebilir Enerji Teknolojileri": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/yenilenebilir.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/yenilenebilir.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/yenilenebilir_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/yenilenebilir.rar"
+  },
+  "Yiyecek İçecek Hizmetleri": {
+    "11": "https://meslek.meb.gov.tr/upload/dbf11/yiyecekpro.rar",
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/yiyecekpro.rar",
+    "12": "https://meslek.meb.gov.tr/upload/dbf12/yiyecekpro_dbf_12.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/yiyecekpro.rar"
+  },
+  "Havacılık ve Uzay Teknolojisi": {
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/havacilikveuzay.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/havacilikveuzay.rar"
+  },
+  "Mikromekanik": {
+    "10": "https://meslek.meb.gov.tr/upload/dbf10/mikromekanik.rar",
+    "9": "https://meslek.meb.gov.tr/upload/dbf9/mikromekanik.rar"
+  }
+}
