@@ -319,8 +319,15 @@ def get_or_create_alan(cursor, alan_adi, meb_alan_id=None, cop_url=None, dbf_url
                 # JSON değilse normal merge işlemi
                 updated_cop_urls = merge_cop_urls(existing_cop_url, cop_url)
             
-        # MEB Alan ID'sini güncelle (eğer yoksa)
-        updated_meb_alan_id = existing_meb_alan_id or meb_alan_id
+        # MEB Alan ID'sini güncelle (eğer yoksa veya farklıysa)
+        updated_meb_alan_id = existing_meb_alan_id
+        if meb_alan_id:
+            if not updated_meb_alan_id:
+                updated_meb_alan_id = meb_alan_id
+                print(f"      📝 MEB ID parametre ile eklendi: {alan_adi} -> {meb_alan_id}")
+            elif updated_meb_alan_id != meb_alan_id:
+                updated_meb_alan_id = meb_alan_id
+                print(f"      🔄 MEB ID güncellendi: {alan_adi} -> {existing_meb_alan_id} → {meb_alan_id}")
         
         # Eğer hala MEB ID yoksa, URL'lerden çıkarmaya çalış
         if not updated_meb_alan_id:
@@ -405,6 +412,122 @@ def merge_cop_urls(existing_cop_url, new_cop_url):
         # Hata durumunda yeni URL'i kullan
         return json.dumps({"default": new_cop_url}) if new_cop_url else "{}"
 
+def get_meb_alan_id_with_fallback(alan_adi, data_meb_id=None):
+    """
+    MEB Alan ID'sini bulma fonksiyonu - çoklu kaynak stratejisi
+    
+    1. Önce verilen data'dan MEB ID'yi kontrol et
+    2. Bulamazsa veritabanındaki meb_alan_id'yi kontrol et  
+    3. Bulamazsa MEB'den çekip veritabanını güncelle
+    4. Hiçbiri yoksa None döndür
+    
+    Args:
+        alan_adi: Alan adı
+        data_meb_id: Data'dan gelen MEB ID (opsiyonel)
+    
+    Returns:
+        tuple: (meb_alan_id, source) - source: 'data', 'db', 'meb', 'none'
+    """
+    # 1. Önce verilen data'dan kontrol et
+    if data_meb_id:
+        return data_meb_id, 'data'
+    
+    # 2. Veritabanından kontrol et
+    db_path = find_or_create_database()
+    if db_path:
+        try:
+            with sqlite3.connect(db_path, timeout=30.0) as conn:
+                conn.row_factory = sqlite3.Row
+                cursor = conn.cursor()
+                
+                normalized_alan_adi = normalize_alan_adi(alan_adi)
+                cursor.execute("SELECT meb_alan_id FROM temel_plan_alan WHERE alan_adi = ?", (normalized_alan_adi,))
+                result = cursor.fetchone()
+                
+                if result and result['meb_alan_id']:
+                    return result['meb_alan_id'], 'db'
+        except Exception as e:
+            print(f"DB MEB ID kontrol hatası: {e}")
+    
+    # 3. MEB'den çekip veritabanını güncelle
+    try:
+        # COP modülünden MEB ID'lerini çek
+        try:
+            from .getir_cop import update_meb_alan_ids
+        except ImportError:
+            from getir_cop import update_meb_alan_ids
+            
+        meb_alan_ids = update_meb_alan_ids()
+        
+        # Tam eşleşme ara
+        if alan_adi in meb_alan_ids:
+            meb_alan_id = meb_alan_ids[alan_adi]
+            
+            # Veritabanını güncelle
+            if db_path:
+                try:
+                    with sqlite3.connect(db_path, timeout=30.0) as conn:
+                        cursor = conn.cursor()
+                        normalized_alan_adi = normalize_alan_adi(alan_adi)
+                        cursor.execute("""
+                            UPDATE temel_plan_alan 
+                            SET meb_alan_id = ?, updated_at = datetime('now')
+                            WHERE alan_adi = ?
+                        """, (meb_alan_id, normalized_alan_adi))
+                        print(f"📋 MEB ID güncellendi: {alan_adi} -> {meb_alan_id}")
+                except Exception as e:
+                    print(f"MEB ID güncelleme hatası: {e}")
+            
+            return meb_alan_id, 'meb'
+        
+        # Normalize edilmiş adla ara
+        normalized_alan_adi = normalize_alan_adi(alan_adi)
+        if normalized_alan_adi in meb_alan_ids:
+            meb_alan_id = meb_alan_ids[normalized_alan_adi]
+            
+            # Veritabanını güncelle
+            if db_path:
+                try:
+                    with sqlite3.connect(db_path, timeout=30.0) as conn:
+                        cursor = conn.cursor()
+                        cursor.execute("""
+                            UPDATE temel_plan_alan 
+                            SET meb_alan_id = ?, updated_at = datetime('now')
+                            WHERE alan_adi = ?
+                        """, (meb_alan_id, normalized_alan_adi))
+                        print(f"📋 MEB ID güncellendi (normalize): {alan_adi} -> {meb_alan_id}")
+                except Exception as e:
+                    print(f"MEB ID güncelleme hatası: {e}")
+            
+            return meb_alan_id, 'meb'
+        
+    except Exception as e:
+        print(f"MEB ID çekme hatası: {e}")
+    
+    # 4. Hiçbiri yoksa None döndür
+    return None, 'none'
+
+def get_folder_name_for_download(alan_adi, meb_alan_id, area_id):
+    """
+    Dosya klasörü adını belirler:
+    - MEB ID varsa: "{meb_alan_id}_{alan_adi}"
+    - MEB ID yoksa: "{alan_adi}" (direkt alan adı, ID yok)
+    
+    Args:
+        alan_adi: Alan adı
+        meb_alan_id: MEB alan ID'si (opsiyonel)
+        area_id: Veritabanı alan ID'si (kullanılmıyor)
+    
+    Returns:
+        str: Klasör adı
+    """
+    if meb_alan_id:
+        # MEB ID varsa: 08_Denizcilik formatında
+        return f"{meb_alan_id}_{sanitize_filename_tr(alan_adi)}"
+    else:
+        # MEB ID yoksa: Direkt alan adı (ID yok)
+        return sanitize_filename_tr(alan_adi)
+
 # ====== Database Connection Utilities ======
 
 def find_or_create_database() -> Optional[str]:
@@ -427,13 +550,13 @@ def find_or_create_database() -> Optional[str]:
             # Schema dosyasından tabloları oluştur
             schema_path = "data/schema.sql"
             if os.path.exists(schema_path):
-                with sqlite3.connect(db_path) as conn:
+                with sqlite3.connect(db_path, timeout=30.0) as conn:
                     with open(schema_path, 'r', encoding='utf-8') as f:
                         conn.executescript(f.read())
                 print(f"✅ Database initialized: {db_path}")
             else:
                 # Boş database oluştur
-                sqlite3.connect(db_path).close()
+                sqlite3.connect(db_path, timeout=30.0).close()
                 print(f"⚠️ Database created without schema: {db_path}")
         except Exception as e:
             print(f"❌ Database creation failed: {e}")
@@ -462,7 +585,7 @@ def with_database(func: Callable) -> Callable:
             return {"error": "Database not found", "success": False}
         
         try:
-            with sqlite3.connect(db_path) as conn:
+            with sqlite3.connect(db_path, timeout=30.0) as conn:
                 # Row factory ile dict-style access
                 conn.row_factory = sqlite3.Row
                 cursor = conn.cursor()
@@ -499,7 +622,7 @@ def with_database_json(func: Callable) -> Callable:
             return jsonify({"error": "Database not found", "success": False}), 500
         
         try:
-            with sqlite3.connect(db_path) as conn:
+            with sqlite3.connect(db_path, timeout=30.0) as conn:
                 conn.row_factory = sqlite3.Row
                 cursor = conn.cursor()
                 

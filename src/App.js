@@ -459,7 +459,6 @@ const CourseEditSidebar = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl,
     onShowPDF(url, title);
   };
 
-  console.log('CourseEditSidebar render:', { isOpen, course });
   
   if (!isOpen) return null;
 

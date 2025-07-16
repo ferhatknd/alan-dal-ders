@@ -8,9 +8,9 @@ import time
 from pathlib import Path
 import re
 try:
-    from .utils import normalize_to_title_case_tr, sanitize_filename_tr
+    from .utils import normalize_to_title_case_tr, sanitize_filename_tr, with_database
 except ImportError:
-    from utils import normalize_to_title_case_tr, sanitize_filename_tr
+    from utils import normalize_to_title_case_tr, sanitize_filename_tr, with_database
 
 # Doğru URL: https://meslek.meb.gov.tr/moduller (debug ile doğrulandı)
 BASE_BOM_URL = "https://meslek.meb.gov.tr/moduller"
@@ -22,42 +22,30 @@ HEADERS = {
 
 BOM_ROOT_DIR = "data/bom"
 
-def get_areas_from_db_for_bom():
+@with_database
+def get_areas_from_db(cursor):
     """
     Veritabanından alan ID, adları ve MEB ID'leri çeker (BOM için).
     Returns: dict {alan_adi: {'id': alan_id, 'meb_alan_id': meb_alan_id}}
     """
-    db_path = "data/temel_plan.db"
-    if not os.path.exists(db_path):
-        print(f"Veritabanı bulunamadı: {db_path}")
-        return {}
-    
     try:
-        with sqlite3.connect(db_path) as conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT id, alan_adi, meb_alan_id FROM temel_plan_alan ORDER BY alan_adi")
-            results = cursor.fetchall()
-            return {alan_adi: {'id': alan_id, 'meb_alan_id': meb_alan_id} for alan_id, alan_adi, meb_alan_id in results}
+        cursor.execute("SELECT id, alan_adi, meb_alan_id FROM temel_plan_alan ORDER BY alan_adi")
+        results = cursor.fetchall()
+        return {alan_adi: {'id': alan_id, 'meb_alan_id': meb_alan_id} for alan_id, alan_adi, meb_alan_id in results}
     except Exception as e:
         print(f"Veritabanı okuma hatası: {e}")
         return {}
 
-def get_ders_ids_from_db():
+@with_database
+def get_ders_ids_from_db(cursor):
     """
     Veritabanından ders ID'lerini ve adlarını çeker (BÖM ders organizasyonu için)
     Returns: dict {ders_adi: ders_id}
     """
-    db_path = "data/temel_plan.db"
-    if not os.path.exists(db_path):
-        print(f"Veritabanı bulunamadı: {db_path}")
-        return {}
-    
     try:
-        with sqlite3.connect(db_path) as conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT id, ders_adi FROM temel_plan_ders ORDER BY ders_adi")
-            results = cursor.fetchall()
-            
+        cursor.execute("SELECT id, ders_adi FROM temel_plan_ders ORDER BY ders_adi")
+        results = cursor.fetchall()
+        
         # {ders_adi: id} şeklinde mapping oluştur
         ders_dict = {}
         for ders_id, ders_adi in results:
@@ -70,7 +58,7 @@ def get_ders_ids_from_db():
         return {}
 
 
-def find_matching_area_id_for_bom(html_area_name, db_areas):
+def find_matching_area_id(html_area_name, db_areas):
     """
     HTML'den gelen alan adını veritabanındaki alanlarla eşleştirir (BOM için).
     Returns: (alan_id, meb_alan_id, matched_name) veya (None, None, None)
@@ -125,9 +113,9 @@ def extract_update_year(date_string):
     
     return None
 
-def sanitize_filename_bom(name):
+def sanitize_filename(name):
     """
-    Dosya/klasör ismi olarak kullanılabilir hale getir (BOM için).
+    Dosya/klasör ismi olarak kullanılabilir hale getir.
     utils.py'deki merkezi sanitize_filename_tr fonksiyonunu kullanır.
     """
     return sanitize_filename_tr(name)
@@ -250,17 +238,17 @@ def download_and_save_bom_pdf(area_name, modul_link, modul_adi, ders_adi, db_are
     try:
         # Veritabanından alan bilgilerini al (eğer daha önce alınmamışsa)
         if db_areas is None:
-            db_areas = get_areas_from_db_for_bom()
+            db_areas = get_areas_from_db()
         
         # Alan ID'sini bul
-        area_id, meb_alan_id, matched_name = find_matching_area_id_for_bom(area_name, db_areas)
+        area_id, meb_alan_id, matched_name = find_matching_area_id(area_name, db_areas)
         
         if area_id:
             # MEB ID varsa kullan, yoksa database ID kullan
             if meb_alan_id:
-                folder_name = f"{meb_alan_id}_{sanitize_filename_bom(matched_name)}"
+                folder_name = f"{meb_alan_id}_{sanitize_filename(matched_name)}"
             else:
-                folder_name = f"{area_id:02d}_{sanitize_filename_bom(matched_name)}"
+                folder_name = f"{area_id:02d}_{sanitize_filename(matched_name)}"
             bom_dir = Path(BOM_ROOT_DIR) / folder_name
         else:
             # ID bulunamazsa eski sistemi kullan
@@ -270,10 +258,8 @@ def download_and_save_bom_pdf(area_name, modul_link, modul_adi, ders_adi, db_are
         # Ana alan klasörünü oluştur (ders alt klasörü oluşturulmaz)
         bom_dir.mkdir(parents=True, exist_ok=True)
         
-        # Dosya adını oluştur - ders adı ile birlikte
-        safe_ders_adi = sanitize_filename_bom(ders_adi)
-        safe_modul_adi = sanitize_filename_bom(modul_adi)
-        pdf_filename = f"{safe_ders_adi}_{safe_modul_adi}.pdf"
+        # Dosya adını orijinal URL'den çıkar
+        pdf_filename = os.path.basename(modul_link)
         pdf_path = bom_dir / pdf_filename
         
         # Eğer dosya zaten mevcutsa atla
@@ -301,17 +287,17 @@ def save_bom_metadata(area_name, bom_data, db_areas=None):
     try:
         # Veritabanından alan bilgilerini al (eğer daha önce alınmamışsa)
         if db_areas is None:
-            db_areas = get_areas_from_db_for_bom()
+            db_areas = get_areas_from_db()
         
         # Alan ID'sini bul
-        area_id, meb_alan_id, matched_name = find_matching_area_id_for_bom(area_name, db_areas)
+        area_id, meb_alan_id, matched_name = find_matching_area_id(area_name, db_areas)
         
         if area_id:
             # MEB ID varsa kullan, yoksa database ID kullan
             if meb_alan_id:
-                folder_name = f"{meb_alan_id}_{sanitize_filename_bom(matched_name)}"
+                folder_name = f"{meb_alan_id}_{sanitize_filename(matched_name)}"
             else:
-                folder_name = f"{area_id:02d}_{sanitize_filename_bom(matched_name)}"
+                folder_name = f"{area_id:02d}_{sanitize_filename(matched_name)}"
             bom_dir = Path(BOM_ROOT_DIR) / folder_name
         else:
             # ID bulunamazsa eski sistemi kullan
@@ -337,28 +323,8 @@ def save_bom_metadata(area_name, bom_data, db_areas=None):
     except Exception as e:
         pass  # Error handling moved to caller
 
-def getir_bom(siniflar=["9", "10", "11", "12"]):
-    """
-    Tüm alanlar için Bireysel Öğrenme Materyali (BÖM) verilerini eş zamanlı olarak çeker.
-    """
-    # Tüm sınıflardan benzersiz alanları topla
-    all_alanlar_by_sinif = {sinif: get_alanlar(sinif) for sinif in siniflar}
-    unique_alanlar = list({v['id']:v for k,v_list in all_alanlar_by_sinif.items() for v in v_list}.values())
 
-    all_bom_data = {}
-    with ThreadPoolExecutor(max_workers=5) as executor:
-        future_to_alan = {executor.submit(get_bom_for_alan, alan['id'], alan['isim'], requests.Session()): alan for alan in unique_alanlar if alan['id'] not in ["0", "00"]}
-        for future in as_completed(future_to_alan):
-            alan = future_to_alan[future]
-            try:
-                data = future.result()
-                if data and data.get("dersler"):
-                    all_bom_data[alan['id']] = data
-            except Exception as exc:
-                print(f"BÖM verisi işlenirken hata ({alan['isim']}): {exc}")
-    return all_bom_data
-
-def getir_bom_with_db_integration(siniflar=["9", "10", "11", "12"]):
+def get_bom_with_db_integration(siniflar=["9", "10", "11", "12"]):
     """
     BOM verilerini veritabanı entegrasyonu ile çeker ve dosyaları organize eder.
     Generator olarak her adımda ilerleme mesajı döndürür.
@@ -366,7 +332,7 @@ def getir_bom_with_db_integration(siniflar=["9", "10", "11", "12"]):
     yield {'type': 'status', 'message': 'BOM (Bireysel Öğrenme Materyali) verileri işleniyor...'}
     
     # Veritabanından alan bilgilerini tek seferde al (performans için)
-    db_areas = get_areas_from_db_for_bom()
+    db_areas = get_areas_from_db()
     if not db_areas:
         yield {'type': 'error', 'message': 'Veritabanında alan bulunamadı! Önce Adım 1\'i çalıştırın.'}
         return
@@ -387,7 +353,7 @@ def getir_bom_with_db_integration(siniflar=["9", "10", "11", "12"]):
     total_processed = 0
     total_downloaded = 0
     
-    with ThreadPoolExecutor(max_workers=3) as executor:
+    with ThreadPoolExecutor(max_workers=4) as executor:
         future_to_alan = {
             executor.submit(get_bom_for_alan, alan['id'], alan['isim'], requests.Session()): alan 
             for alan in unique_alanlar if alan['id'] not in ["0", "00"]
@@ -441,8 +407,13 @@ def getir_bom_with_db_integration(siniflar=["9", "10", "11", "12"]):
                 else:
                     yield {'type': 'info', 'message': f"📋 {alan_adi} -> BOM verisi bulunamadı"}
                     
+            except requests.exceptions.HTTPError as http_err:
+                if http_err.response and 500 <= http_err.response.status_code < 600:
+                    yield {'type': 'warning', 'message': f"Sunucu hatası (5xx): '{alan_adi}' alanı işlenemedi. Sunucu kaynaklı bir sorun olabilir, atlanıyor."}
+                else:
+                    yield {'type': 'warning', 'message': f"HTTP Hatası: '{alan_adi}' alanı işlenirken hata: {http_err}"}
             except Exception as exc:
-                yield {'type': 'warning', 'message': f"❌ {alan_adi} -> BOM verisi işlenirken hata: {exc}"}
+                yield {'type': 'warning', 'message': f"Genel Hata: '{alan_adi}' alanı işlenirken hata: {exc}"}
     
     # Sonuç özeti
     yield {
@@ -451,11 +422,19 @@ def getir_bom_with_db_integration(siniflar=["9", "10", "11", "12"]):
     }
     
     # Son durum için JSON dosyası da oluştur (yedek)
-    output_filename = "data/getir_bom_sonuc.json"
+    output_filename = "data/get_bom.json"
     with open(output_filename, 'w', encoding='utf-8') as f:
         json.dump(area_bom_data, f, ensure_ascii=False, indent=4)
     
     yield {'type': 'done', 'message': f'BOM verileri kaydedildi. Yedek dosya: {output_filename}'}
+
+def get_bom():
+    """
+    BOM (Bireysel Öğrenme Materyali) linklerini çeker ve işler.
+    CLAUDE.md prensiplerini uygular: standardize edilmiş fonksiyon adı.
+    """
+    for message in get_bom_with_db_integration():
+        yield message
 
 def main():
     """
@@ -464,7 +443,7 @@ def main():
     print("BOM (Bireysel Öğrenme Materyali) Verileri")
     print("Veritabanı entegrasyonu ile BOM verileri çekiliyor...")
     
-    for message in getir_bom_with_db_integration():
+    for message in get_bom_with_db_integration():
         if message['type'] == 'error':
             print(f"❌ HATA: {message['message']}")
             return

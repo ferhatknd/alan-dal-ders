@@ -225,7 +225,7 @@ def save_area_and_branches_to_db(cursor, area_name, branches):
         pass  # Error handling moved to caller
         return None
 
-def getir_dal_with_db_integration():
+def get_dal():
     """
     Ana dal getirme fonksiyonu - veritabanı entegrasyonu ile.
     Generator olarak her adımda ilerleme mesajı döndürür.
@@ -354,7 +354,7 @@ def main():
     print("Adım 1: Alan-Dal Verilerini Getirme ve Kaydetme")
     print("Veritabanı entegrasyonu ile alan-dal verileri çekiliyor...")
     
-    for message in getir_dal_with_db_integration():
+    for message in get_dal():
         if message['type'] == 'error':
             print(f"❌ HATA: {message['message']}")
             return

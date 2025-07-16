@@ -6,12 +6,14 @@ import re
 import sqlite3
 try:
     from .oku_dbf import extract_ders_adi
-    from .utils import normalize_to_title_case_tr, with_database, download_and_cache_pdf, get_or_create_alan, find_or_create_database, sanitize_filename_tr
+    from .utils import normalize_to_title_case_tr, with_database, download_and_cache_pdf, get_or_create_alan, find_or_create_database, sanitize_filename_tr, get_meb_alan_id_with_fallback, get_folder_name_for_download
+    from .getir_cop import update_meb_alan_ids
 except ImportError:
     from oku_dbf import extract_ders_adi
-    from utils import normalize_to_title_case_tr, with_database, download_and_cache_pdf, get_or_create_alan, find_or_create_database, sanitize_filename_tr
+    from utils import normalize_to_title_case_tr, with_database, download_and_cache_pdf, get_or_create_alan, find_or_create_database, sanitize_filename_tr, get_meb_alan_id_with_fallback, get_folder_name_for_download
+    from getir_cop import update_meb_alan_ids
 
-BASE_DBF_URL = "https://meslek.meb.gov.tr/dbflistele.aspx"
+BASE_DBF_URL = "https://meslek.meb.gov.tr/dbfgoster.aspx"
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
     "Referer": "https://meslek.meb.gov.tr/"
@@ -68,64 +70,109 @@ def find_matching_area_id(html_area_name, db_areas):
     print(f"Eşleşme bulunamadı: '{html_area_name}' (normalize: '{normalized_html_name}')")
     return None, None
 
-def getir_dbf(siniflar=["9", "10", "11", "12"]):
+def get_dbf_data_for_alan_and_sinif(alan_adi, meb_alan_id, sinif_kodu):
     """
-    Tüm sınıflar için DBF (Ders Bilgi Formu) verilerini eşzamanlı olarak çeker.
+    Belirli bir alan ve sınıf için DBF verilerini çeker.
+    COP'daki yöntemle aynı prensip: spesifik alan+sınıf sayfasına git.
     """
-    def get_dbf_data_for_class(sinif_kodu):
-        params = {"sinif_kodu": sinif_kodu, "kurum_id": "1"}
-        class_dbf_data = {}
-        try:
-            response = requests.get(BASE_DBF_URL, params=params, headers=HEADERS, timeout=15)
-            response.raise_for_status()
-            response.encoding = response.apparent_encoding
-            soup = BeautifulSoup(response.text, "html.parser")
+    params = {"kurum_id": "1", "sinif_kodu": sinif_kodu, "alan_id": meb_alan_id}
+    
+    try:
+        response = requests.get(BASE_DBF_URL, params=params, headers=HEADERS, timeout=15)
+        response.raise_for_status()
+        response.encoding = response.apparent_encoding
+        soup = BeautifulSoup(response.text, "html.parser")
 
-            alan_columns = soup.find_all('div', class_='col-lg-3')
-            for column in alan_columns:
-                ul_tag = column.find('ul', class_='list-group')
-                if not ul_tag: continue
-
-                link_tag = ul_tag.find_parent('a', href=True)
-                if not link_tag or not (link_tag['href'].endswith('.rar') or link_tag['href'].endswith('.zip')):
-                    continue
-
-                dbf_link = requests.compat.urljoin(response.url, link_tag['href'])
-                
-                alan_adi = ""
-                tarih = ""
-
-                b_tag = ul_tag.find('b')
-                if b_tag:
-                    alan_adi = b_tag.get_text(strip=True)
-
-                for item in ul_tag.find_all('li'):
-                    if item.find('i', class_='fa-calendar'):
-                        tarih = item.get_text(strip=True)
-                        break
-
-                if alan_adi and dbf_link:
+        # DBF linkini bul (RAR/ZIP dosyası)
+        dbf_links = soup.find_all('a', href=lambda x: x and (x.endswith('.rar') or x.endswith('.zip')))
+        
+        if dbf_links:
+            for link in dbf_links:
+                href = link.get('href', '')
+                if href:
+                    # Tam URL'yi oluştur
+                    if href.startswith('http'):
+                        dbf_url = href
+                    else:
+                        dbf_url = requests.compat.urljoin(response.url, href)
+                    
+                    # Tarih bilgisini bul
+                    tarih = ""
+                    parent_div = link.find_parent('div')
+                    if parent_div:
+                        for li in parent_div.find_all('li'):
+                            if 'calendar' in str(li) or re.search(r'\d{2}\.\d{2}\.\d{4}', li.get_text()):
+                                tarih = li.get_text(strip=True)
+                                break
+                    
                     # Güncelleme yılını çıkar
                     update_year = extract_update_year(tarih)
                     
-                    class_dbf_data[alan_adi] = {
-                        "link": dbf_link,
+                    return {
+                        "link": dbf_url,
                         "guncelleme_tarihi": tarih,
-                        "update_year": update_year
+                        "update_year": update_year,
+                        "meb_alan_id": meb_alan_id
                     }
-        except requests.RequestException as e:
-            print(f"DBF Hata: {sinif_kodu}. sınıf sayfası çekilemedi: {e}")
-        return sinif_kodu, class_dbf_data
+        
+        return None
+        
+    except requests.RequestException as e:
+        print(f"DBF Hata: {alan_adi} ({sinif_kodu}. sınıf) sayfası çekilemedi: {e}")
+        return None
 
+def get_dbf_data(siniflar=["9", "10", "11", "12"]):
+    """
+    Tüm sınıflar için DBF (Ders Bilgi Formu) verilerini eşzamanlı olarak çeker.
+    COP'daki yöntemle aynı prensip: önce MEB alan ID'lerini al, sonra her alan+sınıf için spesifik sayfa.
+    """
+    # Önce MEB alan ID'lerini çek
+    print("📋 MEB Alan ID'leri çekiliyor...")
+    meb_alan_ids = update_meb_alan_ids()
+    
+    if not meb_alan_ids:
+        print("❌ MEB Alan ID'leri çekilemedi!")
+        return {}
+    
+    print(f"🔍 {len(meb_alan_ids)} alan için DBF linkleri çekiliyor...")
+    
+    # Tüm alan+sınıf kombinasyonları için task listesi oluştur
+    tasks = []
+    for alan_adi, meb_alan_id in meb_alan_ids.items():
+        for sinif in siniflar:
+            tasks.append((alan_adi, meb_alan_id, sinif))
+    
+    # Sonuçları organize et
     all_dbf_data = {}
+    
+    # Paralel işleme
     with ThreadPoolExecutor(max_workers=len(siniflar)) as executor:
-        future_to_sinif = {executor.submit(get_dbf_data_for_class, sinif): sinif for sinif in siniflar}
-        for future in as_completed(future_to_sinif):
+        # Future'ları submit et
+        future_to_task = {
+            executor.submit(get_dbf_data_for_alan_and_sinif, alan_adi, meb_alan_id, sinif): (alan_adi, meb_alan_id, sinif)
+            for alan_adi, meb_alan_id, sinif in tasks
+        }
+        
+        # Sonuçları topla
+        for future in as_completed(future_to_task):
+            alan_adi, meb_alan_id, sinif = future_to_task[future]
+            
             try:
-                sinif, data = future.result()
-                all_dbf_data[sinif] = data
-            except Exception as exc:
-                print(f"DBF verisi işlenirken hata: {exc}")
+                dbf_data = future.result()
+                
+                if dbf_data:
+                    # Sınıf bazında organize et
+                    if sinif not in all_dbf_data:
+                        all_dbf_data[sinif] = {}
+                    
+                    all_dbf_data[sinif][alan_adi] = dbf_data
+                    print(f"📋 {alan_adi} ({sinif}. sınıf) -> DBF bulundu (ID: {meb_alan_id})")
+                else:
+                    print(f"❌ {alan_adi} ({sinif}. sınıf) -> DBF bulunamadı")
+                    
+            except Exception as e:
+                print(f"❌ {alan_adi} ({sinif}. sınıf) DBF işleme hatası: {e}")
+    
     return all_dbf_data
 
 def extract_update_year(date_string):
@@ -391,7 +438,7 @@ def get_dbf(cursor, dbf_data=None):
     # DBF verilerini çek (eğer geçilmemişse)
     if dbf_data is None:
         yield {'type': 'status', 'message': 'DBF linkleri çekiliyor...'}
-        dbf_data = getir_dbf()
+        dbf_data = get_dbf_data()
         if not dbf_data:
             yield {'type': 'error', 'message': 'DBF verileri çekilemedi!'}
             return
@@ -409,19 +456,21 @@ def get_dbf(cursor, dbf_data=None):
             link = info["link"]
             
             try:
+                # MEB ID'yi çoklu kaynak stratejisi ile al
+                data_meb_id = info.get("meb_alan_id")
+                meb_alan_id, source = get_meb_alan_id_with_fallback(alan_adi, data_meb_id)
+                
                 # Alan ID'sini al veya oluştur
-                area_id, meb_alan_id, matched_name = get_or_create_area_for_download(cursor, alan_adi, meb_alan_ids)
+                area_id, _, matched_name = get_or_create_area_for_download(cursor, alan_adi, meb_alan_ids)
+                
+                # Klasör adını yeni strateji ile belirle
+                folder_name = get_folder_name_for_download(matched_name or alan_adi, meb_alan_id, area_id)
+                alan_dir = os.path.join(DBF_ROOT_DIR, folder_name)
                 
                 if meb_alan_id:
-                    # MEB ID bazlı klasör yapısı: {meb_alan_id}_{alan_adi}
-                    folder_name = f"{meb_alan_id}_{sanitize_filename(matched_name)}"
-                    alan_dir = os.path.join(DBF_ROOT_DIR, folder_name)
-                    yield {"type": "status", "message": f"[{alan_adi}] Klasör: {folder_name}"}
+                    yield {"type": "status", "message": f"[{alan_adi}] Klasör: {folder_name} (MEB ID: {meb_alan_id}, kaynak: {source})"}
                 else:
-                    # MEB ID yoksa database ID kullan
-                    folder_name = f"{area_id:02d}_{sanitize_filename(matched_name)}"
-                    alan_dir = os.path.join(DBF_ROOT_DIR, folder_name)
-                    yield {"type": "warning", "message": f"[{alan_adi}] MEB ID yok, database ID kullanılıyor: {folder_name}"}
+                    yield {"type": "warning", "message": f"[{alan_adi}] MEB ID bulunamadı, alan adı kullanılıyor: {folder_name}"}
                 
             except Exception as e:
                 # Hata durumunda eski sistemi kullan
@@ -735,7 +784,7 @@ def main():
     
     if choice == "1":
         print("DBF verileri çekiliyor...")
-        dbf_data = getir_dbf()
+        dbf_data = get_dbf_data()
         if dbf_data:
             print("✅ DBF verileri başarıyla çekildi!")
             print(f"Toplam {sum(len(alanlar) for alanlar in dbf_data.values())} alan bulundu.")

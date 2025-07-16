@@ -18,9 +18,9 @@ import re
 import time
 
 try:
-    from .utils import normalize_to_title_case_tr, find_or_create_database, get_or_create_alan, download_and_cache_pdf, with_database
+    from .utils import normalize_to_title_case_tr, find_or_create_database, get_or_create_alan, download_and_cache_pdf, with_database, get_meb_alan_id_with_fallback, get_folder_name_for_download
 except ImportError:
-    from utils import normalize_to_title_case_tr, find_or_create_database, get_or_create_alan, download_and_cache_pdf, with_database
+    from utils import normalize_to_title_case_tr, find_or_create_database, get_or_create_alan, download_and_cache_pdf, with_database, get_meb_alan_id_with_fallback, get_folder_name_for_download
 
 # Doğru URL yapısı
 BASE_DM_URL = "https://meslek.meb.gov.tr/dmgoster.aspx"
@@ -245,7 +245,7 @@ def get_dm_with_cursor(cursor):
             yield {'type': 'status', 'message': f'{len(tasks)} alan+sınıf kombinasyonu için paralel DM çekimi başlatılıyor...'}
             
             # ThreadPoolExecutor ile paralel veri çekme
-            with ThreadPoolExecutor(max_workers=8) as executor:
+            with ThreadPoolExecutor(max_workers=4) as executor:
                 # Future'ları submit et
                 future_to_task = {
                     executor.submit(get_dm_data_for_area, sinif, meb_alan_id, alan_adi): (alan_adi, sinif, meb_alan_id)
@@ -299,7 +299,10 @@ def get_dm_with_cursor(cursor):
                     area_db_info = db_areas.get(normalized_alan_adi) or db_areas.get(alan_adi)
                     
                     if area_db_info:
-                        meb_alan_id = area_db_info['meb_alan_id']
+                        data_meb_id = area_db_info['meb_alan_id']
+                        
+                        # MEB ID'yi fallback stratejisi ile al
+                        meb_alan_id, source = get_meb_alan_id_with_fallback(normalized_alan_adi, data_meb_id)
                         
                         # DM URL'lerini JSON formatında kaydet
                         dm_urls_json = json.dumps(sinif_dm_data)
@@ -346,7 +349,10 @@ def get_dm_with_cursor(cursor):
                     area_db_info = db_areas.get(normalized_alan_adi) or db_areas.get(alan_adi)
                     
                     if area_db_info:
-                        meb_alan_id = area_db_info['meb_alan_id']
+                        data_meb_id = area_db_info['meb_alan_id']
+                        
+                        # MEB ID'yi fallback stratejisi ile al
+                        meb_alan_id, source = get_meb_alan_id_with_fallback(normalized_alan_adi, data_meb_id)
                         
                         # Her sınıfın PDF'lerini indir
                         for sinif, dm_list in sinif_dm_data.items():

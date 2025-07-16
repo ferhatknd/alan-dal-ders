@@ -11,7 +11,7 @@ import sqlite3
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import requests
 from bs4 import BeautifulSoup
-from .utils import normalize_to_title_case_tr, find_or_create_database, get_or_create_alan, download_and_cache_pdf, with_database
+from .utils import normalize_to_title_case_tr, find_or_create_database, get_or_create_alan, download_and_cache_pdf, with_database, get_meb_alan_id_with_fallback, get_folder_name_for_download
 import re
 import json
 
@@ -96,81 +96,7 @@ def extract_update_year(html_content):
     
     return None
 
-def get_alan_cop_links_from_specific_page(sinif_kodu="9", alan_id="08"):
-    """
-    Belirli bir alan ID'si için ÇÖP PDF linkini çeker.
-    """
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.9,tr;q=0.8',
-        'Accept-Encoding': 'gzip, deflate, br',
-        'Connection': 'keep-alive',
-        'Upgrade-Insecure-Requests': '1'
-    }
-    
-    try:
-        url = "https://meslek.meb.gov.tr/cercevegoster.aspx"
-        params = {"kurum_id": "1", "sinif_kodu": sinif_kodu, "alan_id": alan_id}
-        
-        response = requests.get(url, params=params, headers=headers, timeout=45)
-        response.raise_for_status()
-        response.encoding = 'utf-8'
-        
-        soup = BeautifulSoup(response.text, 'html.parser')
-        
-        # PDF linkini bul
-        pdf_links = soup.find_all('a', href=lambda x: x and x.endswith('.pdf') and f'cop{sinif_kodu}' in x)
-        
-        if pdf_links:
-            href = pdf_links[0].get('href', '')
-            if href:
-                full_url = f"https://meslek.meb.gov.tr/{href}"
-                
-                # Güncelleme yılını HTML'den çıkar
-                update_year = extract_update_year(response.text)
-                
-                return {
-                    'url': full_url,
-                    'update_year': update_year
-                }
-        
-        return None
-        
-    except Exception as e:
-        print(f"❌ Alan ID {alan_id} için ÇÖP linki çekilirken hata: {e}")
-        return None
-
-def get_alan_cop_links(sinif_kodu="9"):
-    """
-    Tüm alanlar için ÇÖP PDF linklerini çeker.
-    Önce dropdown'dan alan ID'lerini alır, sonra her alan için PDF linkini çeker.
-    """
-    alan_cop_map = {}
-    
-    # Önce MEB alan ID'lerini çek
-    meb_alan_ids = update_meb_alan_ids()
-    
-    print(f"🔍 {len(meb_alan_ids)} alan için ÇÖP linkleri çekiliyor...")
-    
-    for alan_adi, meb_alan_id in meb_alan_ids.items():
-        # Her alan için PDF linkini çek
-        pdf_data = get_alan_cop_links_from_specific_page(sinif_kodu, meb_alan_id)
-        
-        if pdf_data:
-            alan_cop_map[alan_adi] = {
-                'url': pdf_data['url'],
-                'meb_alan_id': meb_alan_id,
-                'update_year': pdf_data['update_year']
-            }
-            print(f"📋 {alan_adi} (ID: {meb_alan_id}) -> {pdf_data['url']} (Yıl: {pdf_data['update_year']})")
-        else:
-            print(f"❌ {alan_adi} (ID: {meb_alan_id}) için PDF bulunamadı")
-    
-    print(f"✅ {sinif_kodu}. sınıf için {len(alan_cop_map)} alan bulundu")
-    return alan_cop_map
-
-def getir_cop_links():
+def get_cop_links():
     """
     Tüm sınıflar için ÇÖP linklerini paralel olarak çeker.
     Alan ID'lerini dropdown'dan eşleştirir.
@@ -218,7 +144,8 @@ def getir_cop_links():
         
     return all_links
 
-def get_cop():
+@with_database
+def get_cop_with_cursor(cursor):
     """
     ÇÖP (Çerçeve Öğretim Programı) linklerini çeker ve işler.
     HTML parsing ile yeni alanları kontrol eder.
@@ -227,22 +154,13 @@ def get_cop():
     data/get_cop.json çıktı dosyası üretir.
     Progress mesajları yield eder.
     """
-    # Database connection handling
-    db_path = find_or_create_database()
-    if not db_path:
-        yield {'type': 'error', 'message': 'Database not found'}
-        return
-    
     try:
-        with sqlite3.connect(db_path) as conn:
-            conn.row_factory = sqlite3.Row
-            cursor = conn.cursor()
             
             # Her seferinde HTML parsing yaparak yeni alanları kontrol et
             yield {'type': 'status', 'message': 'MEB sitesinden güncel ÇÖP linkleri çekiliyor...'}
             
             try:
-                all_cops = getir_cop_links()
+                all_cops = get_cop_links()
                 yield {'type': 'status', 'message': f'{len(all_cops)} adet ÇÖP linki bulundu.'}
             except Exception as e:
                 yield {'type': 'error', 'message': f'ÇÖP linkleri çekilirken hata: {str(e)}'}
@@ -284,13 +202,16 @@ def get_cop():
             saved_alan_count = 0
             for alan_adi, alan_info in alan_cop_urls.items():
                 try:
-                    meb_alan_id = alan_info['meb_alan_id']
+                    data_meb_id = alan_info['meb_alan_id']
                     cop_urls_json = alan_info['urls']
+                    
+                    # MEB ID'yi fallback stratejisi ile al
+                    meb_alan_id, source = get_meb_alan_id_with_fallback(alan_adi, data_meb_id)
                     
                     # URL'leri JSON formatında kaydet
                     cop_urls_json_string = json.dumps(cop_urls_json)
                     get_or_create_alan(cursor, alan_adi, meb_alan_id=meb_alan_id, cop_url=cop_urls_json_string)
-                    conn.commit()  # Commit after each update
+                    # Commit handled by @with_database decorator
                     
                     saved_alan_count += 1
                     yield {'type': 'progress', 'message': f'URL kaydedildi: {alan_adi} ({len(cop_urls_json)} sınıf)', 'progress': saved_alan_count / len(alan_cop_urls)}
@@ -307,8 +228,11 @@ def get_cop():
             processed_count = 0
             for alan_adi, alan_info in alan_cop_urls.items():
                 try:
-                    meb_alan_id = alan_info['meb_alan_id']
+                    data_meb_id = alan_info['meb_alan_id']
                     cop_urls_json = alan_info['urls']
+                    
+                    # MEB ID'yi fallback stratejisi ile al
+                    meb_alan_id, source = get_meb_alan_id_with_fallback(alan_adi, data_meb_id)
                     
                     # PDF'leri MEB ID bazlı klasör yapısında indir/kontrol et
                     for sinif_key, sinif_data in cop_urls_json.items():
@@ -354,6 +278,13 @@ def get_cop():
     except Exception as e:
         yield {'type': 'error', 'message': f'ÇÖP indirme iş akışında genel hata: {str(e)}'}
 
+def get_cop():
+    """
+    ÇÖP (Çerçeve Öğretim Programı) linklerini çeker ve işler.
+    CLAUDE.md prensiplerini uygular: @with_database decorator kullanır.
+    """
+    for message in get_cop_with_cursor():
+        yield message
 
 # Bu dosya doğrudan çalıştırıldığında test amaçlı kullanılabilir.
 if __name__ == '__main__':
