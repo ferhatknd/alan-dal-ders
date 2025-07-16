@@ -13,6 +13,7 @@ import requests
 from bs4 import BeautifulSoup
 from .utils import normalize_to_title_case_tr, find_or_create_database, get_or_create_alan, download_and_cache_pdf, with_database
 import re
+import json
 
 
 def update_meb_alan_ids():
@@ -61,6 +62,40 @@ def update_meb_alan_ids():
         print(f"❌ MEB Alan ID güncelleme hatası: {e}")
         return {}
 
+def extract_update_year(html_content):
+    """
+    HTML içeriğinden güncelleme yılını çıkarır.
+    Örnek: "12.12.2024 00:00:00" → "2024"
+    """
+    if not html_content:
+        return None
+    
+    # Tarih formatları için regex pattern'leri
+    patterns = [
+        r'(\d{2})\.(\d{2})\.(\d{4})',  # DD.MM.YYYY formatı
+        r'(\d{4})-(\d{2})-(\d{2})',   # YYYY-MM-DD formatı
+        r'(\d{4})',                   # 4 haneli yıl
+    ]
+    
+    for pattern in patterns:
+        matches = re.findall(pattern, str(html_content))
+        for match in matches:
+            if isinstance(match, tuple):
+                # Tuple'dan yıl bilgisini al
+                for group in match:
+                    if len(group) == 4 and group.isdigit():
+                        year = int(group)
+                        if 2000 <= year <= 2030:  # Mantıklı yıl aralığı
+                            return str(year)
+            else:
+                # Direkt match
+                if len(match) == 4 and match.isdigit():
+                    year = int(match)
+                    if 2000 <= year <= 2030:
+                        return str(year)
+    
+    return None
+
 def get_alan_cop_links_from_specific_page(sinif_kodu="9", alan_id="08"):
     """
     Belirli bir alan ID'si için ÇÖP PDF linkini çeker.
@@ -91,7 +126,14 @@ def get_alan_cop_links_from_specific_page(sinif_kodu="9", alan_id="08"):
             href = pdf_links[0].get('href', '')
             if href:
                 full_url = f"https://meslek.meb.gov.tr/{href}"
-                return full_url
+                
+                # Güncelleme yılını HTML'den çıkar
+                update_year = extract_update_year(response.text)
+                
+                return {
+                    'url': full_url,
+                    'update_year': update_year
+                }
         
         return None
         
@@ -113,14 +155,15 @@ def get_alan_cop_links(sinif_kodu="9"):
     
     for alan_adi, meb_alan_id in meb_alan_ids.items():
         # Her alan için PDF linkini çek
-        pdf_url = get_alan_cop_links_from_specific_page(sinif_kodu, meb_alan_id)
+        pdf_data = get_alan_cop_links_from_specific_page(sinif_kodu, meb_alan_id)
         
-        if pdf_url:
+        if pdf_data:
             alan_cop_map[alan_adi] = {
-                'url': pdf_url,
-                'meb_alan_id': meb_alan_id
+                'url': pdf_data['url'],
+                'meb_alan_id': meb_alan_id,
+                'update_year': pdf_data['update_year']
             }
-            print(f"📋 {alan_adi} (ID: {meb_alan_id}) -> {pdf_url}")
+            print(f"📋 {alan_adi} (ID: {meb_alan_id}) -> {pdf_data['url']} (Yıl: {pdf_data['update_year']})")
         else:
             print(f"❌ {alan_adi} (ID: {meb_alan_id}) için PDF bulunamadı")
     
@@ -154,7 +197,8 @@ def getir_cop_links():
                             'alan_adi': alan_adi, 
                             'link': link_data['url'], 
                             'sinif': sinif,
-                            'meb_alan_id': meb_alan_id
+                            'meb_alan_id': meb_alan_id,
+                            'update_year': link_data.get('update_year')
                         })
                     else:
                         # Backward compatibility için string link desteği
@@ -163,7 +207,8 @@ def getir_cop_links():
                             'alan_adi': alan_adi, 
                             'link': link_data, 
                             'sinif': sinif,
-                            'meb_alan_id': meb_alan_id
+                            'meb_alan_id': meb_alan_id,
+                            'update_year': None
                         })
             except Exception as exc:
                 print(f'❌ {sinif}. sınıf ÇÖP linkleri çekilirken hata oluştu: {exc}')
@@ -213,6 +258,7 @@ def get_cop():
                 cop_url = cop_info.get('link')
                 sinif = cop_info.get('sinif')
                 meb_alan_id = cop_info.get('meb_alan_id')
+                update_year = cop_info.get('update_year')
                 
                 if not alan_adi or not cop_url or not sinif:
                     continue
@@ -223,8 +269,11 @@ def get_cop():
                         'urls': {}
                     }
                 
-                # Sınıf bazında URL'leri kaydet
-                alan_cop_urls[alan_adi]['urls'][str(sinif)] = cop_url
+                # Sınıf bazında URL'leri ve güncelleme yılını kaydet
+                alan_cop_urls[alan_adi]['urls'][str(sinif)] = {
+                    'url': cop_url,
+                    'update_year': update_year
+                }
             
             yield {'type': 'status', 'message': f'{len(alan_cop_urls)} alan için URL\'ler gruplandı.'}
             
@@ -262,8 +311,14 @@ def get_cop():
                     cop_urls_json = alan_info['urls']
                     
                     # PDF'leri MEB ID bazlı klasör yapısında indir/kontrol et
-                    for sinif_key, cop_url in cop_urls_json.items():
+                    for sinif_key, sinif_data in cop_urls_json.items():
                         try:
+                            # Sınıf verisinden URL'i al
+                            if isinstance(sinif_data, dict):
+                                cop_url = sinif_data['url']
+                            else:
+                                cop_url = sinif_data  # Backward compatibility
+                            
                             # MEB ID bazlı klasör yapısı: data/cop/{meb_alan_id}_{alan_adi}/
                             file_path = download_and_cache_pdf(
                                 cop_url, 

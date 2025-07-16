@@ -6,6 +6,7 @@ import sqlite3
 import json
 import time
 from pathlib import Path
+import re
 try:
     from .utils import normalize_to_title_case_tr, sanitize_filename_tr
 except ImportError:
@@ -88,6 +89,40 @@ def find_matching_area_id_for_bom(html_area_name, db_areas):
     
     print(f"BOM Eşleşme bulunamadı: '{html_area_name}' (normalize: '{normalized_html_name}')")
     return None, None
+
+def extract_update_year(date_string):
+    """
+    Tarih stringinden yıl bilgisini çıkarır.
+    Örnek: "12.12.2024 00:00:00" → "2024"
+    """
+    if not date_string:
+        return None
+    
+    # Tarih formatları için regex pattern'leri
+    patterns = [
+        r'(\d{2})\.(\d{2})\.(\d{4})',  # DD.MM.YYYY formatı
+        r'(\d{4})-(\d{2})-(\d{2})',   # YYYY-MM-DD formatı
+        r'(\d{4})',                   # 4 haneli yıl
+    ]
+    
+    for pattern in patterns:
+        matches = re.findall(pattern, str(date_string))
+        for match in matches:
+            if isinstance(match, tuple):
+                # Tuple'dan yıl bilgisini al
+                for group in match:
+                    if len(group) == 4 and group.isdigit():
+                        year = int(group)
+                        if 2000 <= year <= 2030:  # Mantıklı yıl aralığı
+                            return str(year)
+            else:
+                # Direkt match
+                if len(match) == 4 and match.isdigit():
+                    year = int(match)
+                    if 2000 <= year <= 2030:
+                        return str(year)
+    
+    return None
 
 def sanitize_filename_bom(name):
     """
@@ -178,7 +213,21 @@ def get_bom_for_alan(alan_id, alan_adi, session):
                                 full_link = link_tag['href']
                             else:
                                 full_link = requests.compat.urljoin("https://meslek.meb.gov.tr/", link_tag['href'])
-                            ders_modulleri.append({"isim": modul_adi, "link": full_link})
+                            
+                            # Güncelleme tarihini bul (üçüncü sütundan)
+                            update_date = ""
+                            if len(cols) >= 3:
+                                update_date = cols[2].get_text(strip=True)
+                            
+                            # Güncelleme yılını çıkar
+                            update_year = extract_update_year(update_date)
+                            
+                            ders_modulleri.append({
+                                "isim": modul_adi, 
+                                "link": full_link,
+                                "update_date": update_date,
+                                "update_year": update_year
+                            })
             
             if ders_modulleri:
                 bom_data["dersler"].append({

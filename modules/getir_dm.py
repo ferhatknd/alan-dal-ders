@@ -1,365 +1,340 @@
+"""
+modules/getir_dm.py - DM (Ders Materyali) İndirme Modülü
+
+Bu modül, MEB sitesinden Ders Materyali (DM) PDF'lerinin
+linklerini çeker, dosyaları `utils.py` kullanarak indirir ve bu süreçte
+veritabanında eksik olan alanları ekler.
+
+Doğru URL: https://meslek.meb.gov.tr/dm_listele.aspx?sinif_kodu={sinif}&kurum_id=1
+"""
+
+import os
+import sqlite3
 import requests
 from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import os
-import sqlite3
 import json
+import re
 import time
-from pathlib import Path
-try:
-    from .utils import normalize_to_title_case_tr, sanitize_filename_tr
-except ImportError:
-    from utils import normalize_to_title_case_tr, sanitize_filename_tr
 
-BASE_OPTIONS_URL = "https://meslek.meb.gov.tr/cercevelistele.aspx"
-BASE_DERS_ALT_URL = "https://meslek.meb.gov.tr/dmgoster.aspx"
+try:
+    from .utils import normalize_to_title_case_tr, find_or_create_database, get_or_create_alan, download_and_cache_pdf, with_database
+except ImportError:
+    from utils import normalize_to_title_case_tr, find_or_create_database, get_or_create_alan, download_and_cache_pdf, with_database
+
+# Doğru URL yapısı
+BASE_DM_URL = "https://meslek.meb.gov.tr/dm_listele.aspx"
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-    "Referer": "https://meslek.meb.gov.tr/"
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+    'Accept-Language': 'en-US,en;q=0.9,tr;q=0.8',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Connection': 'keep-alive',
+    'Upgrade-Insecure-Requests': '1'
 }
 
-DM_ROOT_DIR = "data/dm"
-
-def get_areas_from_db_for_dm():
+@with_database
+def get_areas_from_db_with_meb_id(cursor):
     """
-    Veritabanından alan ID ve adlarını çeker (DM için).
-    Returns: dict {alan_adi: alan_id}
+    Veritabanından alan ID, adı ve MEB ID'sini çeker.
+    Returns: dict {alan_adi: {'id': alan_id, 'meb_alan_id': meb_alan_id}}
     """
-    db_path = "data/temel_plan.db"
-    if not os.path.exists(db_path):
-        print(f"Veritabanı bulunamadı: {db_path}")
-        return {}
-    
     try:
-        with sqlite3.connect(db_path) as conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT id, alan_adi FROM temel_plan_alan ORDER BY alan_adi")
-            results = cursor.fetchall()
-            return {alan_adi: alan_id for alan_id, alan_adi in results}
+        cursor.execute("SELECT id, alan_adi, meb_alan_id FROM temel_plan_alan ORDER BY alan_adi")
+        results = cursor.fetchall()
+        return {alan_adi: {'id': area_id, 'meb_alan_id': meb_alan_id} for area_id, alan_adi, meb_alan_id in results}
     except Exception as e:
         print(f"Veritabanı okuma hatası: {e}")
         return {}
 
-def get_ders_ids_from_db():
+def extract_update_year(date_string):
     """
-    Veritabanından ders ID'lerini ve adlarını çeker (DM ders organizasyonu için)
-    Returns: dict {ders_adi: ders_id}
+    Tarih stringinden yıl bilgisini çıkarır.
+    Örnek: "12.12.2024 00:00:00" → "2024"
     """
-    db_path = "data/temel_plan.db"
-    if not os.path.exists(db_path):
-        print(f"Veritabanı bulunamadı: {db_path}")
+    if not date_string:
+        return None
+    
+    # Tarih formatları için regex pattern'leri
+    patterns = [
+        r'(\d{4})',  # 4 haneli yıl
+        r'(\d{2})\.(\d{2})\.(\d{4})',  # DD.MM.YYYY formatı
+        r'(\d{4})-(\d{2})-(\d{2})',  # YYYY-MM-DD formatı
+    ]
+    
+    for pattern in patterns:
+        match = re.search(pattern, str(date_string))
+        if match:
+            # En uzun match'i (yıl) al
+            groups = match.groups()
+            for group in groups:
+                if len(group) == 4 and group.isdigit():
+                    year = int(group)
+                    if 2000 <= year <= 2030:  # Mantıklı yıl aralığı
+                        return str(year)
+    
+    return None
+
+def get_dm_data_for_class(sinif_kodu):
+    """
+    Belirli bir sınıf için DM verilerini çeker.
+    Doğru URL kullanır: dm_listele.aspx?sinif_kodu={sinif}&kurum_id=1
+    """
+    params = {"sinif_kodu": sinif_kodu, "kurum_id": "1"}
+    class_dm_data = {}
+    
+    try:
+        response = requests.get(BASE_DM_URL, params=params, headers=HEADERS, timeout=15)
+        response.raise_for_status()
+        response.encoding = response.apparent_encoding
+        soup = BeautifulSoup(response.text, "html.parser")
+        
+        # Card yapısından bilgileri çıkar
+        cards = soup.find_all('div', class_='card')
+        
+        for card in cards:
+            try:
+                # Card header'dan alan adını çıkar
+                card_header = card.find('div', class_='card-header')
+                if not card_header:
+                    continue
+                    
+                alan_adi = card_header.get_text(strip=True)
+                if not alan_adi:
+                    continue
+                
+                # Card body'den PDF linklerini çıkar
+                card_body = card.find('div', class_='card-body')
+                if not card_body:
+                    continue
+                
+                dm_list = []
+                
+                # Liste elemanlarını bul
+                list_items = card_body.find_all('li') or card_body.find_all('a', href=True)
+                
+                for item in list_items:
+                    if item.name == 'li':
+                        link_tag = item.find('a', href=True)
+                    else:
+                        link_tag = item
+                    
+                    if not link_tag:
+                        continue
+                    
+                    href = link_tag.get('href', '').strip()
+                    if not href.endswith('.pdf'):
+                        continue
+                    
+                    # PDF URL'sini tam URL'ye çevir
+                    if href.startswith('http'):
+                        pdf_url = href
+                    else:
+                        pdf_url = f"https://meslek.meb.gov.tr/{href.lstrip('/')}"
+                    
+                    # Ders adını ve metadata'yı çıkar
+                    title_text = link_tag.get_text(strip=True)
+                    
+                    # Güncelleme tarihini bul (parent element'lerde ara)
+                    update_date = ""
+                    parent = item.parent
+                    while parent and not update_date:
+                        date_text = parent.get_text()
+                        date_match = re.search(r'(\d{2}\.\d{2}\.\d{4})', date_text)
+                        if date_match:
+                            update_date = date_match.group(1)
+                            break
+                        parent = parent.parent
+                    
+                    # Güncelleme yılını çıkar
+                    update_year = extract_update_year(update_date)
+                    
+                    dm_info = {
+                        'title': title_text,
+                        'pdf_url': pdf_url,
+                        'update_date': update_date,
+                        'update_year': update_year,
+                        'sinif': sinif_kodu
+                    }
+                    
+                    dm_list.append(dm_info)
+                
+                if dm_list:
+                    class_dm_data[alan_adi] = dm_list
+                    
+            except Exception as e:
+                print(f"Card işleme hatası: {e}")
+                continue
+        
+        return class_dm_data
+        
+    except Exception as e:
+        print(f"DM verileri çekilirken hata (Sınıf {sinif_kodu}): {e}")
         return {}
+
+def get_dm():
+    """
+    DM (Ders Materyali) linklerini çeker ve işler.
+    HTML parsing ile card yapısından bilgileri çıkarır.
+    URL'leri JSON formatında gruplar ve veritabanına kaydeder.
+    PDF dosyalarını indirir (açmaz).
+    data/get_dm.json çıktı dosyası üretir.
+    Progress mesajları yield eder.
+    """
+    # Database connection handling
+    db_path = find_or_create_database()
+    if not db_path:
+        yield {'type': 'error', 'message': 'Database not found'}
+        return
     
     try:
         with sqlite3.connect(db_path) as conn:
+            conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
-            cursor.execute("SELECT id, ders_adi FROM temel_plan_ders ORDER BY ders_adi")
-            results = cursor.fetchall()
             
-        # {ders_adi: id} şeklinde mapping oluştur
-        ders_dict = {}
-        for ders_id, ders_adi in results:
-            if ders_adi:
-                ders_dict[ders_adi.strip()] = ders_id
+            # Tüm sınıflar için DM verilerini çek
+            siniflar = ["9", "10", "11", "12"]
+            yield {'type': 'status', 'message': 'MEB sitesinden güncel DM linkleri çekiliyor...'}
+            
+            all_dm_data = {}
+            total_dm_count = 0
+            
+            with ThreadPoolExecutor(max_workers=4) as executor:
+                future_to_sinif = {executor.submit(get_dm_data_for_class, sinif): sinif for sinif in siniflar}
                 
-        return ders_dict
-    except Exception as e:
-        print(f"Veritabanı ders bilgileri çekme hatası: {e}")
-        return {}
-
-
-def find_matching_area_id_for_dm(html_area_name, db_areas):
-    """
-    HTML'den gelen alan adını veritabanındaki alanlarla eşleştirir (DM için).
-    Returns: (alan_id, matched_name) veya (None, None)
-    """
-    normalized_html_name = normalize_to_title_case_tr(html_area_name)
-    
-    # Tam eşleşme kontrolü
-    if normalized_html_name in db_areas:
-        return db_areas[normalized_html_name], normalized_html_name
-    
-    # Kısmi eşleşme kontrolü
-    for db_name, area_id in db_areas.items():
-        if normalized_html_name.lower() in db_name.lower() or db_name.lower() in normalized_html_name.lower():
-            print(f"DM Kısmi eşleşme bulundu: '{html_area_name}' -> '{db_name}' (ID: {area_id})")
-            return area_id, db_name
-    
-    print(f"DM Eşleşme bulunamadı: '{html_area_name}' (normalize: '{normalized_html_name}')")
-    return None, None
-
-def sanitize_filename_dm(name):
-    """
-    Dosya/klasör ismi olarak kullanılabilir hale getir (DM için).
-    utils.py'deki merkezi sanitize_filename_tr fonksiyonunu kullanır.
-    """
-    return sanitize_filename_tr(name)
-
-def get_alanlar(sinif_kodu="9"):
-    params = {"sinif_kodu": sinif_kodu, "kurum_id": "1"}
-    try:
-        resp = requests.get(BASE_OPTIONS_URL, params=params, headers=HEADERS, timeout=10)
-        resp.raise_for_status()
-    except requests.exceptions.RequestException as e:
-        return []
-
-    resp.encoding = resp.apparent_encoding
-    soup = BeautifulSoup(resp.text, "html.parser")
-    sel = soup.find('select', id="ContentPlaceHolder1_drpalansec")
-    if not sel:
-        return []
-    alanlar = []
-    for opt in sel.find_all('option'):
-        val = opt.get('value','').strip()
-        name = opt.text.strip()
-        if val and val not in ("00","0"):
-            alanlar.append({"id": val, "isim": name})
-    return alanlar
-
-def get_dersler_for_alan(alan_id, alan_adi, sinif_kodu="9"):
-    params = {"sinif_kodu": sinif_kodu, "kurum_id": "1", "alan_id": alan_id}
-    try:
-        resp = requests.get(BASE_DERS_ALT_URL, params=params, headers=HEADERS, timeout=10)
-        resp.raise_for_status()
-    except requests.exceptions.RequestException as e:
-        return []
-
-    resp.encoding = resp.apparent_encoding
-    soup = BeautifulSoup(resp.text, "html.parser")
-
-    dersler = []
-    for div in soup.find_all('div', class_='p-0 bg-light'):
-        a = div.find('a', href=True)
-        if not a: continue
-        ul = a.find('ul', class_='list-group')
-        if not ul: continue
-
-        items = ul.find_all('li')
-        ders_adi = items[0].get_text(" ", strip=True)
-        sinif_text = ""
-        for li in items:
-            text = li.get_text(" ", strip=True)
-            if "Sınıf" in text and any(char.isdigit() for char in text):
-                sinif_text = text
-                break
-        link = requests.compat.urljoin(resp.url, a['href'].strip())
-
-        dersler.append({"isim": ders_adi,
-                        "sinif": sinif_text,
-                        "link": link})
-    return dersler
-
-def download_and_save_dm_pdf(area_name, ders_link, ders_adi, sinif, db_areas=None):
-    """
-    DM PDF'ini indirir ve data/dm/{ID}-{alan_adi}/ klasörüne kaydeder.
-    """
-    try:
-        # Veritabanından alan bilgilerini al (eğer daha önce alınmamışsa)
-        if db_areas is None:
-            db_areas = get_areas_from_db_for_dm()
-        
-        # Alan ID'sini bul
-        area_id, matched_name = find_matching_area_id_for_dm(area_name, db_areas)
-        
-        if area_id:
-            # Klasör adını ID + alan adı formatında oluştur
-            folder_name = f"{area_id:02d} - {matched_name}"
-            dm_dir = Path(DM_ROOT_DIR) / sanitize_filename_dm(folder_name)
-            print(f"  DM Klasör: {folder_name}")
-        else:
-            # ID bulunamazsa eski sistemi kullan
-            safe_area_name = area_name.replace('/', '_').replace('\\', '_').replace(':', '_')
-            dm_dir = Path(DM_ROOT_DIR) / safe_area_name
-            print(f"  DM ID bulunamadı, eski format kullanılıyor: {area_name}")
-        
-        # Sınıf alt klasörü oluştur
-        sinif_dir = dm_dir / f"sinif_{sinif}"
-        sinif_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Dosya adını oluştur
-        safe_ders_adi = sanitize_filename_dm(ders_adi)
-        pdf_filename = f"{safe_ders_adi}.pdf"
-        pdf_path = sinif_dir / pdf_filename
-        
-        # Eğer dosya zaten mevcutsa atla
-        if pdf_path.exists():
-            return str(pdf_path), False
-        
-        # PDF'yi indir
-        response = requests.get(ders_link, headers=HEADERS, timeout=30)
-        response.raise_for_status()
-        
-        # Dosyayı kaydet
-        with open(pdf_path, 'wb') as f:
-            f.write(response.content)
-        
-        print(f"  DM PDF kaydedildi: {pdf_path}")
-        return str(pdf_path), True
-        
-    except Exception as e:
-        print(f"  DM PDF indirme hatası ({area_name} - {ders_adi}): {e}")
-        return None, False
-
-def save_dm_metadata(area_name, sinif_data, db_areas=None):
-    """
-    DM metadata'larını JSON dosyasına kaydeder (yeni dizin yapısında).
-    """
-    try:
-        # Veritabanından alan bilgilerini al (eğer daha önce alınmamışsa)
-        if db_areas is None:
-            db_areas = get_areas_from_db_for_dm()
-        
-        # Alan ID'sini bul
-        area_id, matched_name = find_matching_area_id_for_dm(area_name, db_areas)
-        
-        if area_id:
-            # Klasör adını ID + alan adı formatında oluştur
-            folder_name = f"{area_id:02d} - {matched_name}"
-            dm_dir = Path(DM_ROOT_DIR) / sanitize_filename_dm(folder_name)
-        else:
-            # ID bulunamazsa eski sistemi kullan
-            safe_area_name = area_name.replace('/', '_').replace('\\', '_').replace(':', '_')
-            dm_dir = Path(DM_ROOT_DIR) / safe_area_name
-        
-        metadata_file = dm_dir / 'dm_metadata.json'
-        
-        metadata = {
-            'alan_adi': area_name,
-            'alan_id': area_id,
-            'matched_name': matched_name,
-            'siniflar': sinif_data,
-            'toplam_sinif': len(sinif_data),
-            'olusturma_tarihi': time.strftime('%Y-%m-%d %H:%M:%S')
-        }
-        
-        with open(metadata_file, 'w', encoding='utf-8') as f:
-            json.dump(metadata, f, ensure_ascii=False, indent=2)
-        
-        print(f"  DM metadata kaydedildi: {metadata_file}")
-        
-    except Exception as e:
-        print(f"  DM metadata kaydetme hatası ({area_name}): {e}")
-
-def getir_dm(siniflar=["9", "10", "11", "12"]):
-    """
-    Tüm sınıflar ve alanlar için Ders Materyali (PDF) verilerini çeker.
-    """
-    all_dm_data = {}
-    for sinif in siniflar:
-        alanlar = get_alanlar(sinif)
-        sinif_dm = {}
-        for alan in alanlar:
-            dersler = get_dersler_for_alan(alan["id"], alan["isim"], sinif)
-            sinif_dm[alan["isim"]] = dersler
-        all_dm_data[sinif] = sinif_dm
-    return all_dm_data
-
-def getir_dm_with_db_integration(siniflar=["9", "10", "11", "12"]):
-    """
-    DM verilerini veritabanı entegrasyonu ile çeker ve dosyaları organize eder.
-    Generator olarak her adımda ilerleme mesajı döndürür.
-    """
-    yield {'type': 'status', 'message': 'DM (Ders Materyali) verileri işleniyor...'}
-    
-    # Veritabanından alan bilgilerini tek seferde al (performans için)
-    db_areas = get_areas_from_db_for_dm()
-    if not db_areas:
-        yield {'type': 'error', 'message': 'Veritabanında alan bulunamadı! Önce Adım 1\'i çalıştırın.'}
-        return
-    
-    yield {'type': 'status', 'message': f'Veritabanından {len(db_areas)} alan alındı.'}
-    
-    # Ana dizini oluştur
-    if not os.path.exists(DM_ROOT_DIR):
-        os.makedirs(DM_ROOT_DIR)
-    
-    # Alanları organize et
-    area_dm_data = {}
-    total_processed = 0
-    total_downloaded = 0
-    
-    for sinif in siniflar:
-        yield {'type': 'status', 'message': f'{sinif}. sınıf DM verileri çekiliyor...'}
-        
-        alanlar = get_alanlar(sinif)
-        for alan in alanlar:
-            alan_adi = alan["isim"]
+                for future in as_completed(future_to_sinif):
+                    sinif = future_to_sinif[future]
+                    try:
+                        sinif_data = future.result()
+                        if sinif_data:
+                            all_dm_data[sinif] = sinif_data
+                            sinif_count = sum(len(dm_list) for dm_list in sinif_data.values())
+                            total_dm_count += sinif_count
+                            yield {'type': 'success', 'message': f'{sinif}. sınıf: {len(sinif_data)} alan, {sinif_count} DM bulundu'}
+                    except Exception as e:
+                        yield {'type': 'error', 'message': f'{sinif}. sınıf DM verileri çekilirken hata: {e}'}
             
-            # Alan adını normalize et ve veritabanında olup olmadığını kontrol et
-            normalized_area_name = normalize_to_title_case_tr(alan_adi)
+            yield {'type': 'status', 'message': f'Toplam {total_dm_count} DM linki bulundu.'}
             
-            # Hem orijinal hem normalize edilmiş isimle kontrol et
-            if alan_adi in db_areas or normalized_area_name in db_areas:
-                dersler = get_dersler_for_alan(alan["id"], alan_adi, sinif)
-                
-                if dersler:
-                    # Alan verisini organize et
-                    if alan_adi not in area_dm_data:
-                        area_dm_data[alan_adi] = {}
+            # Alan bazında URL'leri grupla ve veritabanına kaydet
+            alan_dm_urls = {}
+            processed_areas = set()
+            
+            for sinif, sinif_data in all_dm_data.items():
+                for alan_adi, dm_list in sinif_data.items():
+                    if alan_adi not in alan_dm_urls:
+                        alan_dm_urls[alan_adi] = {
+                            'siniflar': {}
+                        }
                     
-                    area_dm_data[alan_adi][sinif] = dersler
+                    # Sınıf bazında DM'leri kaydet
+                    alan_dm_urls[alan_adi]['siniflar'][sinif] = dm_list
+                    processed_areas.add(alan_adi)
+            
+            yield {'type': 'status', 'message': f'{len(processed_areas)} alan için DM verileri gruplandı.'}
+            
+            # Veritabanı alanlarını al
+            db_areas = get_areas_from_db_with_meb_id()
+            
+            # ÖNCE: Tüm URL'leri veritabanına kaydet
+            yield {'type': 'status', 'message': 'DM URL\'leri veritabanına kaydediliyor...'}
+            
+            saved_alan_count = 0
+            for alan_adi, alan_info in alan_dm_urls.items():
+                try:
+                    # Alan bilgilerini veritabanından al
+                    normalized_alan_adi = normalize_to_title_case_tr(alan_adi)
+                    area_db_info = db_areas.get(normalized_alan_adi) or db_areas.get(alan_adi)
                     
-                    # Her dersi indir
-                    for ders in dersler:
-                        if ders.get('link'):
-                            pdf_path, downloaded = download_and_save_dm_pdf(
-                                alan_adi, 
-                                ders['link'], 
-                                ders['isim'], 
-                                sinif,
-                                db_areas
-                            )
-                            
-                            if pdf_path:
-                                if downloaded:
-                                    total_downloaded += 1
-                                total_processed += 1
-                                yield {'type': 'success', 'message': f"'{alan_adi}' - '{ders['isim']}' ({sinif}. sınıf) DM kaydedildi"}
-                            else:
-                                yield {'type': 'warning', 'message': f"'{alan_adi}' - '{ders['isim']}' ({sinif}. sınıf) DM indirilemedi"}
-                else:
-                    yield {'type': 'info', 'message': f"'{alan_adi}' ({sinif}. sınıf) için ders bulunamadı"}
-            else:
-                yield {'type': 'info', 'message': f"Alan '{alan_adi}' veritabanında yok, atlanıyor"}
-    
-    # Her alan için metadata dosyalarını oluştur
-    yield {'type': 'status', 'message': 'Alan metadata dosyaları oluşturuluyor...'}
-    for alan_adi, sinif_data in area_dm_data.items():
-        save_dm_metadata(alan_adi, sinif_data, db_areas)
-    
-    # Sonuç özeti
-    yield {
-        'type': 'success', 
-        'message': f'DM işlemi tamamlandı! {len(area_dm_data)} alan, {total_processed} DM dosyası işlendi ({total_downloaded} yeni indirme).'
-    }
-    
-    # Son durum için JSON dosyası da oluştur (yedek)
-    output_filename = "data/getir_dm_sonuc.json"
-    with open(output_filename, 'w', encoding='utf-8') as f:
-        json.dump(area_dm_data, f, ensure_ascii=False, indent=4)
-    
-    yield {'type': 'done', 'message': f'DM verileri kaydedildi. Yedek dosya: {output_filename}'}
+                    if area_db_info:
+                        meb_alan_id = area_db_info['meb_alan_id']
+                        
+                        # DM URL'lerini JSON formatında kaydet
+                        dm_urls_json = json.dumps(alan_info['siniflar'])
+                        
+                        # Veritabanında dm_url sütunu yoksa, get_or_create_alan kullan
+                        get_or_create_alan(cursor, normalized_alan_adi, meb_alan_id=meb_alan_id)
+                        
+                        # DM URL'lerini ayrı olarak güncelle (eğer sütun varsa)
+                        try:
+                            cursor.execute("""
+                                UPDATE temel_plan_alan 
+                                SET dm_url = ?
+                                WHERE alan_adi = ?
+                            """, (dm_urls_json, normalized_alan_adi))
+                        except sqlite3.OperationalError:
+                            # dm_url sütunu yoksa atla
+                            pass
+                        
+                        conn.commit()
+                        saved_alan_count += 1
+                        yield {'type': 'progress', 'message': f'DM URL kaydedildi: {alan_adi}', 'progress': saved_alan_count / len(alan_dm_urls)}
+                    else:
+                        # Alan veritabanında yoksa otomatik oluştur
+                        alan_id = get_or_create_alan(cursor, normalized_alan_adi)
+                        conn.commit()
+                        yield {'type': 'warning', 'message': f'Yeni alan oluşturuldu: {alan_adi}'}
+                        saved_alan_count += 1
+                        
+                except Exception as e:
+                    yield {'type': 'error', 'message': f'DM URL kaydetme hatası ({alan_adi}): {e}'}
+                    continue
+            
+            yield {'type': 'success', 'message': f'✅ {saved_alan_count} alan için DM URL\'leri veritabanına kaydedildi.'}
+            
+            # SONRA: PDF indirme işlemi (isteğe bağlı)
+            yield {'type': 'status', 'message': 'PDF dosyaları kontrol ediliyor...'}
+            
+            processed_pdf_count = 0
+            for alan_adi, alan_info in alan_dm_urls.items():
+                try:
+                    # Alan bilgilerini al
+                    normalized_alan_adi = normalize_to_title_case_tr(alan_adi)
+                    area_db_info = db_areas.get(normalized_alan_adi) or db_areas.get(alan_adi)
+                    
+                    if area_db_info:
+                        meb_alan_id = area_db_info['meb_alan_id']
+                        
+                        # Her sınıfın PDF'lerini indir
+                        for sinif, dm_list in alan_info['siniflar'].items():
+                            for dm_info in dm_list:
+                                try:
+                                    # MEB ID bazlı klasör yapısı: data/dm/{meb_alan_id}_{alan_adi}/
+                                    file_path = download_and_cache_pdf(
+                                        dm_info['pdf_url'],
+                                        "dm",
+                                        alan_adi=normalized_alan_adi,
+                                        additional_info=None,  # Dosya adını değiştirme
+                                        meb_alan_id=meb_alan_id
+                                    )
+                                    if file_path:
+                                        processed_pdf_count += 1
+                                        yield {'type': 'success', 'message': f'PDF hazır: {os.path.basename(file_path)}'}
+                                    else:
+                                        yield {'type': 'warning', 'message': f'PDF indirme başarısız: {alan_adi} - {dm_info["title"]}'}
+                                except Exception as e:
+                                    yield {'type': 'error', 'message': f'PDF kontrol hatası ({alan_adi} - {dm_info["title"]}): {e}'}
+                    
+                except Exception as e:
+                    yield {'type': 'error', 'message': f'PDF işleme hatası ({alan_adi}): {e}'}
+                    continue
+            
+            # JSON çıktı dosyası oluştur
+            output_filename = "data/get_dm.json"
+            try:
+                with open(output_filename, 'w', encoding='utf-8') as f:
+                    json.dump(alan_dm_urls, f, ensure_ascii=False, indent=2)
+                yield {'type': 'success', 'message': f'DM verileri kaydedildi: {output_filename}'}
+            except Exception as e:
+                yield {'type': 'error', 'message': f'JSON dosyası kaydedilemedi: {e}'}
+            
+            yield {'type': 'done', 'message': f'Tüm DM dosyaları işlendi. {len(alan_dm_urls)} alan için URL\'ler veritabanına kaydedildi.'}
+            
+    except Exception as e:
+        yield {'type': 'error', 'message': f'DM indirme iş akışında genel hata: {str(e)}'}
 
-def main():
-    """
-    Ana fonksiyon - komut satırından çalıştırıldığında kullanılır.
-    """
-    print("DM (Ders Materyali) Verileri")
-    print("Veritabanı entegrasyonu ile DM verileri çekiliyor...")
-    
-    for message in getir_dm_with_db_integration():
-        if message['type'] == 'error':
-            print(f"❌ HATA: {message['message']}")
-            return
-        elif message['type'] == 'warning':
-            print(f"⚠️  UYARI: {message['message']}")
-        elif message['type'] == 'success':
-            print(f"✅ {message['message']}")
-        elif message['type'] == 'done':
-            print(f"🎉 {message['message']}")
-            break
-        else:
-            print(f"ℹ️  {message['message']}")
-
-if __name__ == "__main__":
-    main()
+# Bu dosya doğrudan çalıştırıldığında test amaçlı kullanılabilir.
+if __name__ == '__main__':
+    print("DM PDF İndirme ve DB Ekleme Testi Başlatılıyor...")
+    for message in get_dm():
+        print(f"[{message.get('type', 'log').upper()}] {message.get('message', '')}")

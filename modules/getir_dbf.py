@@ -108,9 +108,13 @@ def getir_dbf(siniflar=["9", "10", "11", "12"]):
                         break
 
                 if alan_adi and dbf_link:
+                    # Güncelleme yılını çıkar
+                    update_year = extract_update_year(tarih)
+                    
                     class_dbf_data[alan_adi] = {
                         "link": dbf_link,
-                        "guncelleme_tarihi": tarih
+                        "guncelleme_tarihi": tarih,
+                        "update_year": update_year
                     }
         except requests.RequestException as e:
             print(f"DBF Hata: {sinif_kodu}. sınıf sayfası çekilemedi: {e}")
@@ -126,6 +130,40 @@ def getir_dbf(siniflar=["9", "10", "11", "12"]):
             except Exception as exc:
                 print(f"DBF verisi işlenirken hata: {exc}")
     return all_dbf_data
+
+def extract_update_year(date_string):
+    """
+    Tarih stringinden yıl bilgisini çıkarır.
+    Örnek: "12.12.2024 00:00:00" → "2024"
+    """
+    if not date_string:
+        return None
+    
+    # Tarih formatları için regex pattern'leri
+    patterns = [
+        r'(\d{2})\.(\d{2})\.(\d{4})',  # DD.MM.YYYY formatı
+        r'(\d{4})-(\d{2})-(\d{2})',   # YYYY-MM-DD formatı
+        r'(\d{4})',                   # 4 haneli yıl
+    ]
+    
+    for pattern in patterns:
+        matches = re.findall(pattern, str(date_string))
+        for match in matches:
+            if isinstance(match, tuple):
+                # Tuple'dan yıl bilgisini al
+                for group in match:
+                    if len(group) == 4 and group.isdigit():
+                        year = int(group)
+                        if 2000 <= year <= 2030:  # Mantıklı yıl aralığı
+                            return str(year)
+            else:
+                # Direkt match
+                if len(match) == 4 and match.isdigit():
+                    year = int(match)
+                    if 2000 <= year <= 2030:
+                        return str(year)
+    
+    return None
 
 def sanitize_filename(name):
     """
