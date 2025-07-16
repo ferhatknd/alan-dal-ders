@@ -57,7 +57,7 @@ const CopDropdown = ({ copUrls, onSelectCop }) => {
           border: 'none',
           borderRadius: '4px',
           cursor: 'pointer',
-          fontSize: '12px',
+          fontSize: '15px',
           fontWeight: 'bold'
         }}
       >
@@ -90,7 +90,7 @@ const CopDropdown = ({ copUrls, onSelectCop }) => {
                 border: 'none',
                 textAlign: 'left',
                 cursor: 'pointer',
-                fontSize: '12px',
+                fontSize: '15px',
                 borderBottom: '1px solid #f0f0f0'
               }}
               onMouseOver={(e) => e.target.style.background = '#f8f9fa'}
@@ -137,7 +137,7 @@ const DbfDropdown = ({ dbfUrls, onSelectDbf }) => {
           border: 'none',
           borderRadius: '4px',
           cursor: 'pointer',
-          fontSize: '12px',
+          fontSize: '15px',
           fontWeight: 'bold'
         }}
       >
@@ -170,7 +170,7 @@ const DbfDropdown = ({ dbfUrls, onSelectDbf }) => {
                 border: 'none',
                 textAlign: 'left',
                 cursor: 'pointer',
-                fontSize: '12px',
+                fontSize: '15px',
                 borderBottom: '1px solid #f0f0f0'
               }}
               onMouseOver={(e) => e.target.style.background = '#f8f9fa'}
@@ -196,7 +196,7 @@ const ButtonGroup = ({ label, options, value, onChange, maxPerRow = 4 }) => {
         alignItems: 'center'
       }}>
         <label style={{ 
-          fontSize: '14px', 
+          fontSize: '15px', 
           fontWeight: 'bold', 
           color: '#495057',
           minWidth: '60px',
@@ -220,7 +220,7 @@ const ButtonGroup = ({ label, options, value, onChange, maxPerRow = 4 }) => {
                 backgroundColor: value === option.value ? '#007bff' : '#ffffff',
                 color: value === option.value ? '#ffffff' : '#495057',
                 cursor: 'pointer',
-                fontSize: '14px',
+                fontSize: '15px',
                 fontWeight: value === option.value ? 'bold' : 'normal',
                 minWidth: '44px',
                 transition: 'all 0.2s ease',
@@ -2374,7 +2374,7 @@ console.error(errorMsg);
               color: "white",
               border: "none",
               borderRadius: "8px",
-              fontSize: "11px",
+              fontSize: "15px",
               fontWeight: "bold",
               cursor: loading ? "not-allowed" : "pointer",
               display: "flex",
@@ -2386,7 +2386,7 @@ console.error(errorMsg);
             }}
           >
             <div>Getir Alan ve Dal</div>
-            <div style={{ fontSize: "10px", marginTop: "5px" }}>({stats.alan}) ve ({stats.dal})</div>
+            <div style={{ fontSize: "15px", marginTop: "5px" }}>({stats.alan}) ve ({stats.dal})</div>
           </button>
 
           {/* 2. Getir COP */}
@@ -2400,7 +2400,7 @@ console.error(errorMsg);
               color: "white",
               border: "none",
               borderRadius: "8px",
-              fontSize: "11px",
+              fontSize: "15px",
               fontWeight: "bold",
               cursor: (loading || catLoading === "cop") ? "not-allowed" : "pointer",
               display: "flex",
@@ -2412,7 +2412,7 @@ console.error(errorMsg);
             }}
           >
             <div>Getir ÇÖP</div>
-            <div style={{ fontSize: "10px", marginTop: "5px" }}>({stats.cop_pdf} PDF)</div>
+            <div style={{ fontSize: "15px", marginTop: "5px" }}>({stats.cop_pdf} PDF)</div>
           </button>
 
           {/* 3. Getir DBF */}
@@ -2426,7 +2426,7 @@ console.error(errorMsg);
               color: "white",
               border: "none",
               borderRadius: "8px",
-              fontSize: "10px",
+              fontSize: "15px",
               fontWeight: "bold",
               cursor: (loading || catLoading === "dbf") ? "not-allowed" : "pointer",
               display: "flex",
@@ -2438,7 +2438,7 @@ console.error(errorMsg);
             }}
           >
             <div>Getir DBF</div>
-            <div style={{ fontSize: "10px", marginTop: "5px" }}>
+            <div style={{ fontSize: "15px", marginTop: "5px" }}>
               Ders({stats.ders})<br />({stats.dbf_rar} RAR, {stats.dbf_pdf} PDF, {stats.dbf_docx} DOCX)
             </div>
           </button>
@@ -2454,7 +2454,7 @@ console.error(errorMsg);
               color: "white",
               border: "none",
               borderRadius: "8px",
-              fontSize: "11px",
+              fontSize: "15px",
               fontWeight: "bold",
               cursor: (loading || catLoading === "dm") ? "not-allowed" : "pointer",
               display: "flex",
@@ -2466,7 +2466,7 @@ console.error(errorMsg);
             }}
           >
             <div>Getir DM</div>
-            <div style={{ fontSize: "10px", marginTop: "5px" }}>({stats.dm_pdf} PDF)</div>
+            <div style={{ fontSize: "15px", marginTop: "5px" }}>({stats.dm_pdf} PDF)</div>
           </button>
 
           {/* 5. Getir BOM */}
@@ -2480,7 +2480,7 @@ console.error(errorMsg);
               color: "white",
               border: "none",
               borderRadius: "8px",
-              fontSize: "11px",
+              fontSize: "15px",
               fontWeight: "bold",
               cursor: (loading || catLoading === "bom") ? "not-allowed" : "pointer",
               display: "flex",
@@ -2492,7 +2492,7 @@ console.error(errorMsg);
             }}
           >
             <div>Getir BOM</div>
-            <div style={{ fontSize: "10px", marginTop: "5px" }}>({stats.bom_pdf} PDF)</div>
+            <div style={{ fontSize: "15px", marginTop: "5px" }}>({stats.bom_pdf} PDF)</div>
           </button>
 
           {/* 6. Oku COP */}
@@ -2506,7 +2506,7 @@ console.error(errorMsg);
               color: "white",
               border: "none",
               borderRadius: "8px",
-              fontSize: "11px",
+              fontSize: "15px",
               fontWeight: "bold",
               cursor: (loading || copProcessing) ? "not-allowed" : "pointer",
               display: "flex",
@@ -2518,7 +2518,7 @@ console.error(errorMsg);
             }}
           >
             <div>Oku COP</div>
-            <div style={{ fontSize: "10px", marginTop: "5px" }}>({stats.cop_okunan} Ders)</div>
+            <div style={{ fontSize: "15px", marginTop: "5px" }}>({stats.cop_okunan} Ders)</div>
           </button>
 
           {/* 7. Oku DBF */}
@@ -2532,7 +2532,7 @@ console.error(errorMsg);
               color: "white",
               border: "none",
               borderRadius: "8px",
-              fontSize: "11px",
+              fontSize: "15px",
               fontWeight: "bold",
               cursor: (loading || dbfProcessing) ? "not-allowed" : "pointer",
               display: "flex",
@@ -2544,7 +2544,7 @@ console.error(errorMsg);
             }}
           >
             <div>Oku DBF</div>
-            <div style={{ fontSize: "10px", marginTop: "5px" }}>({stats.dbf_okunan} Ders)</div>
+            <div style={{ fontSize: "15px", marginTop: "5px" }}>({stats.dbf_okunan} Ders)</div>
           </button>
         </div>
 
