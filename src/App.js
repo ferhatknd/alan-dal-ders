@@ -2001,30 +2001,49 @@ console.error(errorMsg);
       setCatLoading("");
     }
   };
-  const fetchBom = async () => {
+  const fetchBom = useCallback(() => {
+    if (loading || catLoading) return;
+
     setCatLoading("bom");
     setCatError("");
-    
-    // Console'u aç ve mesaj yazdır
     console.log('BOM verileri çekiliyor...');
-    
-    try {
-      const res = await fetch("http://localhost:5001/api/get-bom");
-      if (!res.ok) throw new Error("BOM verisi alınamadı");
-      const json = await res.json();
-      
-      console.log(`BOM: ${json.updated_count || 0} ders güncellendi`);
-      
-      // Disk dosyalarından gerçek istatistikleri yükle
-      await loadStatistics();
-      
-    } catch (e) {
-      setCatError("BOM: " + e.message);
-      console.error('BOM hatası: ' + e.message);
-    } finally {
+
+    const eventSource = new EventSource("http://localhost:5001/api/get-bom");
+
+    eventSource.onmessage = (event) => {
+      try {
+        const eventData = JSON.parse(event.data);
+        console.log(eventData.message || eventData);
+        
+        if (eventData.type === "done" || eventData.type === "error") {
+          setCatLoading("");
+          loadStatistics(); // İstatistikleri yeniden yükle
+          eventSource.close();
+          if (eventData.type === "error") {
+            setCatError("BOM hatası: " + eventData.message);
+          }
+        }
+      } catch (e) {
+        const errorMsg = "Gelen BOM verisi işlenemedi: " + e.message;
+        setCatError(errorMsg);
+        console.error(errorMsg, "Raw data:", event.data);
+        setCatLoading("");
+        eventSource.close();
+      }
+    };
+
+    eventSource.onerror = (err) => {
+      const errorMsg = "BOM indirme bağlantı hatası veya sunucu yanıt vermiyor.";
+      setCatError(errorMsg);
+      console.error(errorMsg);
       setCatLoading("");
-    }
-  };
+      eventSource.close();
+    };
+
+    return () => {
+      eventSource.close();
+    };
+  }, [loading, catLoading, loadStatistics]);
 
   // COP verilerini alan adına göre basit bir harita haline getir
   const createCopMapping = useCallback((copData) => {

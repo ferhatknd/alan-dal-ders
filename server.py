@@ -242,29 +242,20 @@ def api_get_dm():
 @app.route('/api/get-bom')
 def api_get_bom():
     """
-    Bireysel Öğrenme Materyali (BÖM) verilerini çeker ve veritabanına kaydeder.
+    Bireysel Öğrenme Materyali (BÖM) verilerini çeker ve dosyaları indirir.
+    İlerlemeyi SSE ile anlık olarak gönderir.
     """
-    try:
-        result = get_bom()
-        
-        # Veritabanına kaydet
-        db_path = find_or_create_database()
-        if db_path:
-            with sqlite3.connect(db_path) as conn:
-                cursor = conn.cursor()
-                updated_count = save_bom_data_to_db(cursor, result)
-                conn.commit()
-                
-            return jsonify({
-                "data": result,
-                "message": f"{updated_count} ders BOM bilgisi güncellendi",
-                "updated_count": updated_count
-            })
-        else:
-            return jsonify({"data": result, "message": "Veritabanına kaydedilemedi"})
-            
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    def generate():
+        try:
+            # get_bom fonksiyonu bir generator olduğu için, her adımı yield ile alıyoruz
+            for message in get_bom():
+                yield f"data: {json.dumps(message)}\n\n"
+                time.sleep(0.05)  # Arayüzün güncellenmesi için küçük bir bekleme
+        except Exception as e:
+            error_message = {'type': 'error', 'message': f'BOM işlemi sırasında bir hata oluştu: {str(e)}'}
+            yield f"data: {json.dumps(error_message)}\n\n"
+
+    return Response(generate(), mimetype='text/event-stream')
 
 @app.route('/api/get-statistics')
 @with_database_json
