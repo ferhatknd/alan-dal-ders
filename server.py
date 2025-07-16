@@ -20,7 +20,7 @@ from modules.oku_dbf import oku_dbf
 from modules.getir_dbf import getir_dbf, download_and_extract_dbf_with_progress, get_dbf
 from modules.getir_cop import get_cop
 # from modules.oku_cop import oku_cop_pdf as new_oku_cop_pdf, save_cop_results_to_db as new_save_cop_results_to_db
-from modules.getir_dm import getir_dm
+from modules.getir_dm import get_dm
 from modules.getir_bom import getir_bom
 from modules.getir_dal import getir_dal_with_db_integration
 
@@ -251,28 +251,16 @@ def api_get_cop():
 def api_get_dm():
     """
     Ders Materyali (PDF) verilerini çeker ve veritabanına kaydeder.
+    Server-Sent Events (SSE) ile real-time progress updates.
     """
-    try:
-        result = getir_dm()
-        
-        # Veritabanına kaydet
-        db_path = find_or_create_database()
-        if db_path:
-            with sqlite3.connect(db_path) as conn:
-                cursor = conn.cursor()
-                saved_count = save_dm_data_to_db(cursor, result)
-                conn.commit()
-                
-            return jsonify({
-                "data": result,
-                "message": f"{saved_count} ders kaydedildi",
-                "saved_count": saved_count
-            })
-        else:
-            return jsonify({"data": result, "message": "Veritabanına kaydedilemedi"})
-            
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    def generate():
+        try:
+            for message in get_dm():
+                yield f"data: {json.dumps(message)}\n\n"
+        except Exception as e:
+            yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
+    
+    return Response(generate(), mimetype='text/event-stream')
 
 @app.route('/api/get-bom')
 def api_get_bom():
@@ -731,7 +719,7 @@ def scrape_to_db():
                 
                 # 1. Ders Materyali verilerini çek ve kaydet
                 yield f"data: {json.dumps({'type': 'status', 'message': '1/4: Ders Materyali (DM) verileri çekiliyor...'})}\n\n"
-                dm_data = getir_dm()
+                dm_data = get_dm()
                 dm_saved = save_dm_data_to_db(cursor, dm_data)
                 total_saved += dm_saved
                 yield f"data: {json.dumps({'type': 'status', 'message': f'DM: {dm_saved} ders kaydedildi'})}\n\n"
@@ -1461,15 +1449,10 @@ def workflow_step_4():
     def generate():
         try:
             yield f"data: {json.dumps({'type': 'status', 'message': 'Adım 4: DM (Ders Materyali) verileri işleniyor...'})}\n\n"
-            dm_data = getir_dm()
             
-            # Veritabanına kaydet
-            db_path = find_or_create_database()
-            if db_path:
-                with sqlite3.connect(db_path) as conn:
-                    cursor = conn.cursor()
-                    dm_saved = save_dm_data_to_db(cursor, dm_data)
-                    yield f"data: {json.dumps({'type': 'success', 'message': f'DM: {dm_saved} ders kaydedildi'})}\n\n"
+            # DM verilerini generator olarak işle
+            for message in get_dm():
+                yield f"data: {json.dumps(message)}\n\n"
             
             yield f"data: {json.dumps({'type': 'done', 'message': 'Adım 4 tamamlandı!'})}\n\n"
         except Exception as e:
@@ -1539,7 +1522,7 @@ def workflow_full():
                         time.sleep(0.05)
                 elif step_endpoint == '/api/workflow-step-4':
                     yield f"data: {json.dumps({'type': 'status', 'message': 'DM verileri işleniyor...'})}\n\n"
-                    dm_data = getir_dm()
+                    dm_data = get_dm()
                     db_path = find_or_create_database()
                     if db_path:
                         with sqlite3.connect(db_path) as conn:
