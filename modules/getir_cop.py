@@ -224,7 +224,7 @@ def get_cop():
                     }
                 
                 # Sınıf bazında URL'leri kaydet
-                alan_cop_urls[alan_adi]['urls'][f'sinif_{sinif}'] = cop_url
+                alan_cop_urls[alan_adi]['urls'][str(sinif)] = cop_url
             
             yield {'type': 'status', 'message': f'{len(alan_cop_urls)} alan için URL\'ler gruplandı.'}
             

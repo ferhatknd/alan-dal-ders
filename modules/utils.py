@@ -311,7 +311,7 @@ def merge_cop_urls(existing_cop_url, new_cop_url):
             sinif_match = re.search(r'cop(\d+)', new_cop_url)
             if sinif_match:
                 sinif = sinif_match.group(1)
-                existing_urls[f"sinif_{sinif}"] = new_cop_url
+                existing_urls[str(sinif)] = new_cop_url
             else:
                 # Sınıf bulunamazsa generic key kullan
                 existing_urls[f"url_{len(existing_urls) + 1}"] = new_cop_url

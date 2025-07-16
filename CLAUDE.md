@@ -2,7 +2,7 @@
 
 Bu dosya, Claude Code için MEB Mesleki Eğitim Veri İşleme ve Veritabanı Projesinin kapsamlı birleşik kılavuzudur. README.md, is_akisi.md ve teknik detayların tümünü içerir. Proje mantığını koruyarak her seferinde hata yapmaktan kaçınmak için tüm kritik bilgileri içerir.
 
-**Son Güncelleme**: 2025-07-15 (Fonksiyon standardizasyonu: get_cop() ve get_dbf() güncellemeleri)
+**Son Güncelleme**: 2025-07-16 (JSON URL format standardizasyonu + Duplicate dal kontrolü eklendi)
 
 ## 🎯 Proje Genel Bakış
 
@@ -508,6 +508,20 @@ def my_function(cursor, param1, param2):
 - Real-time logging için SSE kullan
 - Aşamalı iş akışı UI ile organize edilmiş 3-adımlı süreç
 
+### 8. JSON URL Format Standardizasyonu ⭐ **YENİ KURAL**
+- **Tüm JSON URL'leri integer key formatında saklanmalı**:
+  - ✅ Doğru: `{"9": "url", "10": "url", "11": "url"}`
+  - ❌ Yanlış: `{"sinif_9": "url", "sinif_10": "url"}`
+- **Frontend her iki formatı da destekler** (geriye uyumluluk)
+- **Protokol dal duplicate kontrolü** eklendi (getir_dbf.py:218-228)
+
+### 9. Duplicate Kontrol Kuralları ⭐ **YENİ KURAL**
+- **Alan Oluşturma**: `alan_adi` kontrolü ile duplicate engelleme
+- **Dal Oluşturma**: `dal_adi + alan_id` kontrolü ile duplicate engelleme
+- **Ders Oluşturma**: `ders_adi` kontrolü ile duplicate engelleme
+- **Ders-Dal İlişkisi**: `ders_id + dal_id` kontrolü ile duplicate engelleme
+- **Protokol Dalları**: Artık duplicate kontrolü yapılıyor
+
 ## 🔄 Sık Kullanılan İşlemler
 
 ### Yeni Standardize Fonksiyonlar ⭐ **YENİ**
@@ -525,7 +539,7 @@ for message in get_dbf():
     print(message)
 ```
 
-### JSON Çıktı Kontrol ⭐ **YENİ**
+### JSON Çıktı Kontrol ⭐ **GÜNCELLENDİ**
 ```python
 import json
 
@@ -537,7 +551,14 @@ with open('data/get_cop.json', 'r', encoding='utf-8') as f:
 with open('data/get_dbf.json', 'r', encoding='utf-8') as f:
     dbf_data = json.load(f)
 
-# Her iki dosya da aynı format: {alan_adi: {sinif_key: url}}
+# ⭐ YENİ FORMAT: {alan_adi: {"9": "url", "10": "url"}}
+# Örnek:
+# {
+#   "Bilişim Teknolojileri": {
+#     "9": "https://meslek.meb.gov.tr/upload/dbf9/siber.rar",
+#     "10": "https://meslek.meb.gov.tr/upload/dbf10/siber.rar"
+#   }
+# }
 ```
 
 ### Veritabanı JSON Sütun Erişimi ⭐ **YENİ**
@@ -609,8 +630,10 @@ def my_function(cursor, param):
 - **Fonksiyon İsimleri**: `get_cop()` ve `get_dbf()` kullanın, eski isimleri kullanmayın
 - **JSON Çıktıları**: Her iki fonksiyon da `data/` klasöründe JSON dosyası üretir
 - **Veritabanı Sütunları**: `cop_url` ve `dbf_urls` sütunları JSON formatında URL'ler içerir
+- **JSON URL Format**: ⭐ **YENİ** Tüm URL'ler integer key formatında: `{"9": "url", "10": "url"}`
 - **Dosya İndirme**: Her iki fonksiyon da indirir ama açmaz
 - **Protokol Alanları**: " - Protokol" formatı artık doğru handle edilir
+- **Duplicate Kontrolü**: ⭐ **YENİ** Alan, dal, ders ve ilişkiler için tam duplicate kontrolü
 - **Database Decorators**: `@with_database` ve `@with_database_json` kullanın
 - **PDF Validation**: Dosya bütünlüğü kontrolü önemli
 - **Error Recovery**: Network hatalarında robust retry mekanizması

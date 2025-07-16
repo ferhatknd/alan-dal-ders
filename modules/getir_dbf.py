@@ -214,13 +214,18 @@ def link_courses_to_protocol_area(cursor, base_area_id, protocol_area_id):
             if dal_result:
                 dal_adi = dal_result['dal_adi']
                 
-                # Protokol alan için dal oluştur
-                cursor.execute("""
-                    INSERT INTO temel_plan_dal (dal_adi, alan_id, created_at, updated_at)
-                    VALUES (?, ?, datetime('now'), datetime('now'))
-                """, (dal_adi, protocol_area_id))
+                # Protokol alan için dal oluştur (duplicate check)
+                cursor.execute("SELECT id FROM temel_plan_dal WHERE dal_adi = ? AND alan_id = ?", (dal_adi, protocol_area_id))
+                existing_dal = cursor.fetchone()
                 
-                protocol_dal_id = cursor.lastrowid
+                if existing_dal:
+                    protocol_dal_id = existing_dal['id']
+                else:
+                    cursor.execute("""
+                        INSERT INTO temel_plan_dal (dal_adi, alan_id, created_at, updated_at)
+                        VALUES (?, ?, datetime('now'), datetime('now'))
+                    """, (dal_adi, protocol_area_id))
+                    protocol_dal_id = cursor.lastrowid
                 protocol_dallar.append((base_dal_id, protocol_dal_id))
         
         # Ders-dal ilişkilerini kopyala
@@ -553,7 +558,7 @@ def get_dbf(cursor, dbf_data=None):
             for alan_adi, info in alanlar.items():
                 if alan_adi not in alan_dbf_urls:
                     alan_dbf_urls[alan_adi] = {}
-                alan_dbf_urls[alan_adi][f'sinif_{sinif}'] = info['link']
+                alan_dbf_urls[alan_adi][str(sinif)] = info['link']
         
         # Her alan için URL'leri JSON formatında veritabanına kaydet
         import json
@@ -885,7 +890,7 @@ def save_dbf_urls_to_database(cursor):
         for alan_adi, info in alanlar.items():
             if alan_adi not in alan_dbf_urls:
                 alan_dbf_urls[alan_adi] = {}
-            alan_dbf_urls[alan_adi][f'sinif_{sinif}'] = info['link']
+            alan_dbf_urls[alan_adi][str(sinif)] = info['link']
     
     print(f"🔍 {len(alan_dbf_urls)} alan için URL'ler veritabanına kaydediliyor...")
     

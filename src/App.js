@@ -39,7 +39,7 @@ const CopDropdown = ({ copUrls, onSelectCop }) => {
   }
   
   const copList = Object.entries(copUrls).map(([key, url]) => ({
-    label: key.includes('sinif_') ? `${key.split('_')[1]}. Sınıf` : key,
+    label: key.includes('sinif_') ? `${key.split('_')[1]}. Sınıf` : /^\d+$/.test(key) ? `${key}. Sınıf` : key,
     url: url,
     key: key
   }));
@@ -119,7 +119,7 @@ const DbfDropdown = ({ dbfUrls, onSelectDbf }) => {
   }
   
   const dbfList = Object.entries(dbfUrls).map(([key, url]) => ({
-    label: key.includes('sinif_') ? `${key.split('_')[1]}. Sınıf` : `${key}. Sınıf`,
+    label: key.includes('sinif_') ? `${key.split('_')[1]}. Sınıf` : /^\d+$/.test(key) ? `${key}. Sınıf` : key,
     url: url,
     key: key
   }));
