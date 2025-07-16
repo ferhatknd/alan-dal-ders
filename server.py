@@ -17,12 +17,12 @@ from contextlib import redirect_stdout, redirect_stderr
 from modules.oku_dbf import oku_dbf
 
 # Yeni modülleri import et
-from modules.getir_dbf import getir_dbf, get_dbf
+from modules.getir_dbf import get_dbf_data, get_dbf
 from modules.getir_cop import get_cop
 # from modules.oku_cop import oku_cop_pdf as new_oku_cop_pdf, save_cop_results_to_db as new_save_cop_results_to_db
 from modules.getir_dm import get_dm
-from modules.getir_bom import getir_bom
-from modules.getir_dal import getir_dal_with_db_integration
+from modules.getir_bom import get_bom
+from modules.getir_dal import get_dal
 
 # Database utilities from utils.py
 from modules.utils import with_database_json, find_or_create_database, get_or_create_alan, normalize_to_title_case_tr, normalize_alan_adi, merge_cop_urls
@@ -195,33 +195,10 @@ def api_get_dbf():
     """
     def generate():
         try:
-            # 1. DBF linklerini çek
-            yield f"data: {json.dumps({'type': 'status', 'message': 'DBF linkleri MEB sitesinden çekiliyor...'})}\n\n"
-            dbf_data = getir_dbf()
-            yield f"data: {json.dumps({'type': 'status', 'message': f'{sum(len(alanlar) for alanlar in dbf_data.values())} alan için DBF linkleri bulundu.'})}\n\n"
-            
-            # 2. URL'leri veritabanına kaydet
-            yield f"data: {json.dumps({'type': 'status', 'message': 'URLler veritabanına kaydediliyor...'})}\n\n"
-            try:
-                from modules.getir_dbf import save_dbf_urls_to_database
-                save_result = save_dbf_urls_to_database()
-                if save_result and save_result.get('success'):
-                    count = save_result.get('count', 0)
-                    yield f"data: {json.dumps({'type': 'success', 'message': f'{count} alan için URLler veritabanına kaydedildi.'})}\n\n"
-                else:
-                    yield f"data: {json.dumps({'type': 'warning', 'message': 'URL kaydetme işlemi tamamlanamadı.'})}\n\n"
-            except Exception as e:
-                yield f"data: {json.dumps({'type': 'error', 'message': f'URL kaydetme hatası: {str(e)}'})}\n\n"
-            
-            # 3. Dosyaları indir
-            yield f"data: {json.dumps({'type': 'status', 'message': 'DBF dosyaları indiriliyor...'})}\n\n"
-            
-            # get_dbf fonksiyonu HTML parsing'i dahili olarak yapıyor ve JSON üretiyor
+            # get_dbf fonksiyonu tüm işlemleri yapıyor: link çekme + dosya indirme + DB kaydetme
             for msg in get_dbf():
                 yield f"data: {json.dumps(msg)}\n\n"
                 time.sleep(0.05)
-            
-            yield f"data: {json.dumps({'type': 'done', 'message': 'DBF işlemleri tamamlandı: Linkler çekildi, veritabanına kaydedildi ve dosyalar indirildi.'})}\n\n"
             
         except Exception as e:
             yield f"data: {json.dumps({'type': 'error', 'message': f'DBF işlemi hatası: {str(e)}'})}\n\n"
@@ -268,7 +245,7 @@ def api_get_bom():
     Bireysel Öğrenme Materyali (BÖM) verilerini çeker ve veritabanına kaydeder.
     """
     try:
-        result = getir_bom()
+        result = get_bom()
         
         # Veritabanına kaydet
         db_path = find_or_create_database()
@@ -738,7 +715,7 @@ def scrape_to_db():
                 
                 # 4. BOM verilerini çek ve kaydet
                 yield f"data: {json.dumps({'type': 'status', 'message': '4/4: BOM verileri çekiliyor...'})}\n\n"
-                bom_data = getir_bom()
+                bom_data = get_bom()
                 bom_saved = save_bom_data_to_db(cursor, bom_data)
                 yield f"data: {json.dumps({'type': 'status', 'message': f'BOM: {bom_saved} ders güncellendi'})}\n\n"
                 
@@ -1375,9 +1352,9 @@ def workflow_step_1():
     def generate():
         try:
             # getir_dal modülünden yeni entegre fonksiyonu kullan
-            from modules.getir_dal import getir_dal_with_db_integration
+            from modules.getir_dal import get_dal
             
-            for message in getir_dal_with_db_integration():
+            for message in get_dal():
                 yield f"data: {json.dumps(message)}\n\n"
                 time.sleep(0.05)
         except Exception as e:
@@ -1450,7 +1427,7 @@ def workflow_step_5():
     def generate():
         try:
             yield f"data: {json.dumps({'type': 'status', 'message': 'Adım 5: BOM (Bireysel Öğrenme Materyali) verileri işleniyor...'})}\n\n"
-            bom_data = getir_bom()
+            bom_data = get_bom()
             
             # Veritabanına kaydet
             db_path = find_or_create_database()
@@ -1488,8 +1465,8 @@ def workflow_full():
                 
                 # Her adımı çalıştır
                 if step_endpoint == '/api/workflow-step-1':
-                    from modules.getir_dal import getir_dal_with_db_integration
-                    for message in getir_dal_with_db_integration():
+                    from modules.getir_dal import get_dal
+                    for message in get_dal():
                         yield f"data: {json.dumps(message)}\n\n"
                         time.sleep(0.05)
                 elif step_endpoint == '/api/workflow-step-2':
@@ -1513,7 +1490,7 @@ def workflow_full():
                             yield f"data: {json.dumps({'type': 'success', 'message': f'DM: {dm_saved} ders kaydedildi'})}\n\n"
                 elif step_endpoint == '/api/workflow-step-5':
                     yield f"data: {json.dumps({'type': 'status', 'message': 'BOM verileri işleniyor...'})}\n\n"
-                    bom_data = getir_bom()
+                    bom_data = get_bom()
                     db_path = find_or_create_database()
                     if db_path:
                         with sqlite3.connect(db_path) as conn:
@@ -1539,9 +1516,9 @@ def scrape_alan_dal():
     """
     def generate():
         try:
-            # getir_dal_with_db_integration bir generator'dır.
+            # get_dal bir generator'dır.
             # Her yield edilen mesajı alıp SSE formatında gönderiyoruz.
-            for message in getir_dal_with_db_integration():
+            for message in get_dal():
                 yield f"data: {json.dumps(message)}\n\n"
                 time.sleep(0.05)  # İstemcinin veriyi işlemesi için küçük bir bekleme
         except Exception as e:
