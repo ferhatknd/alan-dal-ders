@@ -1961,14 +1961,39 @@ console.error(errorMsg);
     console.log('DM verileri çekiliyor...');
     
     try {
-      const res = await fetch("http://localhost:5001/api/get-dm");
-      if (!res.ok) throw new Error("Ders Materyali verisi alınamadı");
-      const json = await res.json();
+      const eventSource = new EventSource("http://localhost:5001/api/get-dm");
       
-      console.log(`DM: ${json.saved_count || 0} ders kaydedildi`);
+      eventSource.onmessage = function(event) {
+        try {
+          const data = JSON.parse(event.data);
+          console.log(`DM: ${data.message || JSON.stringify(data)}`);
+          
+          // İşlem tamamlandığında
+          if (data.type === 'done' || data.type === 'error') {
+            eventSource.close();
+            setCatLoading("");
+            
+            if (data.type === 'error') {
+              setCatError("DM: " + data.message);
+            } else {
+              // Disk dosyalarından gerçek istatistikleri yükle
+              loadStatistics();
+            }
+          }
+        } catch (e) {
+          console.error('DM JSON parse hatası:', e);
+          setCatError("DM: JSON parse hatası");
+          eventSource.close();
+          setCatLoading("");
+        }
+      };
       
-      // Disk dosyalarından gerçek istatistikleri yükle
-      await loadStatistics();
+      eventSource.onerror = function(event) {
+        console.error('DM SSE hatası:', event);
+        setCatError("DM: Bağlantı hatası");
+        eventSource.close();
+        setCatLoading("");
+      };
       
     } catch (e) {
       setCatError("DM: " + e.message);

@@ -936,49 +936,35 @@ def get_or_create_dal(cursor, dal_adi, alan_id):
         return cursor.lastrowid
 
 def create_ders(cursor, course):
-    """Ders kaydı oluşturur veya mevcut ders ID'sini döner."""
+    """
+    Ders kaydı oluşturur veya mevcut ders ID'sini döner.
+    Merkezi utils.create_or_get_ders() fonksiyonunu kullanır.
+    """
+    from modules.utils import create_or_get_ders
+    
     # Ders saati değerini düzgün şekilde handle et
     haftalik_ders_saati = course.get('haftalik_ders_saati', '')
     if haftalik_ders_saati and str(haftalik_ders_saati).isdigit():
         ders_saati = int(haftalik_ders_saati)
     else:
-        # ÇÖP'te ders saati bilgisi yoksa 0 varsayılan değeri kullan
         ders_saati = 0
     
-    ders_adi = course.get('ders_adi', '')
-    sinif = int(course.get('sinif', 0)) if course.get('sinif') else None
-    
-    # Önce mevcut dersi kontrol et
-    cursor.execute("""
-        SELECT id FROM temel_plan_ders 
-        WHERE ders_adi = ? AND sinif = ?
-    """, (ders_adi, sinif))
-    
-    existing = cursor.fetchone()
-    if existing:
-        return existing[0]  # Mevcut ders ID'sini döner
-    
-    # Yeni ders oluştur
-    cursor.execute("""
-        INSERT INTO temel_plan_ders (
-            ders_adi, sinif, ders_saati, amac, dm_url, dbf_url, bom_url
-        ) VALUES (?, ?, ?, ?, ?, ?, ?)
-    """, (
-        ders_adi,
-        sinif,
-        ders_saati,  # NOT NULL hatası engellemek için 0 kullan
-        course.get('amaç', ''),
-        course.get('dm_url', ''),  # Ders Materyali URL'si
-        course.get('dbf_url', ''), # DBF PDF URL'si (yerel path)
-        course.get('bom_url', '')  # BOM URL'si
-    ))
-    return cursor.lastrowid
+    return create_or_get_ders(
+        cursor=cursor,
+        ders_adi=course.get('ders_adi', ''),
+        sinif=course.get('sinif', 0),
+        ders_saati=ders_saati,
+        amac=course.get('amaç', ''),
+        dm_url=course.get('dm_url', ''),
+        dbf_url=course.get('dbf_url', ''),
+        bom_url=course.get('bom_url', ''),
+        cop_url=course.get('cop_url', '')
+    )
 
 def create_ders_dal_relation(cursor, ders_id, dal_id):
     """Ders-Dal ilişkisi oluşturur."""
-    cursor.execute("""
-        INSERT OR IGNORE INTO temel_plan_ders_dal (ders_id, dal_id) VALUES (?, ?)
-    """, (ders_id, dal_id))
+    from modules.utils import create_ders_dal_relation
+    return create_ders_dal_relation(cursor, ders_id, dal_id)
 
 def get_or_create_arac(cursor, arac_gerec):
     """Araç-gereç kaydı bulur veya oluşturur."""
@@ -1179,26 +1165,22 @@ def save_bom_data_to_db(cursor, bom_data):
 
 def get_or_create_ders(cursor, ders_adi, sinif, amac='', cop_url=''):
     """
-    Ders kaydını bulur veya oluşturur. Aynı ders adı + sınıf kombinasyonu için tek kayıt yapar.
+    Ders kaydını bulur veya oluşturur.
+    Merkezi utils.create_or_get_ders() fonksiyonunu kullanır.
     """
-    # Önce mevcut dersi ara
-    cursor.execute("""
-        SELECT id FROM temel_plan_ders 
-        WHERE ders_adi = ? AND sinif = ?
-    """, (ders_adi, sinif))
+    from modules.utils import create_or_get_ders
     
-    result = cursor.fetchone()
-    if result:
-        return result[0]
-    
-    # Ders yoksa oluştur
-    cursor.execute("""
-        INSERT INTO temel_plan_ders (
-            ders_adi, sinif, ders_saati, amac, dm_url, dbf_url, bom_url
-        ) VALUES (?, ?, ?, ?, ?, ?, ?)
-    """, (ders_adi, sinif, 0, amac, '', '', cop_url))
-    
-    return cursor.lastrowid
+    return create_or_get_ders(
+        cursor=cursor,
+        ders_adi=ders_adi,
+        sinif=sinif,
+        ders_saati=0,
+        amac=amac,
+        dm_url='',
+        dbf_url='',
+        bom_url='',
+        cop_url=cop_url
+    )
 
 def save_cop_parsed_data_to_db(cursor, parsed_data, alan_adi, sinif, cop_url):
     """

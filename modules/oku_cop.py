@@ -505,35 +505,25 @@ def save_cop_results_to_db(cursor, result: Dict[str, Any]) -> int:
                 if not ders_adi or sinif <= 0:
                     continue
                 
-                # Ders kaydı/bulma (duplicate check - sadece ders_adi kontrolü)
-                cursor.execute("""
-                    SELECT id FROM temel_plan_ders 
-                    WHERE ders_adi = ?
-                """, (ders_adi,))
-                ders_result = cursor.fetchone()
+                # Merkezi ders kaydetme fonksiyonunu kullan
+                from .utils import create_or_get_ders
                 
-                if ders_result:
-                    ders_id = ders_result['id']
-                    # Ders saati güncelle (0 ise veya yeni değer daha büyükse)
-                    cursor.execute("""
-                        UPDATE temel_plan_ders 
-                        SET ders_saati = ? 
-                        WHERE id = ? AND (ders_saati = 0 OR ders_saati < ?)
-                    """, (saat, ders_id, saat))
-                    print(f"      ↻ Mevcut ders atlandı (zaten var): {ders_adi}")
-                else:
-                    cursor.execute("""
-                        INSERT INTO temel_plan_ders (ders_adi, sinif, ders_saati) 
-                        VALUES (?, ?, ?)
-                    """, (ders_adi, sinif, saat))
-                    ders_id = cursor.lastrowid
-                    print(f"      ➕ Yeni ders eklendi: {ders_adi} ({sinif}. sınıf, {saat} saat)")
+                ders_id = create_or_get_ders(
+                    cursor=cursor,
+                    ders_adi=ders_adi,
+                    sinif=sinif,
+                    ders_saati=saat,
+                    amac='',
+                    dm_url='',
+                    dbf_url='',
+                    bom_url='',
+                    cop_url=''
+                )
                 
-                # Ders-Dal ilişkisi
-                cursor.execute("""
-                    INSERT OR IGNORE INTO temel_plan_ders_dal (ders_id, dal_id) 
-                    VALUES (?, ?)
-                """, (ders_id, dal_id))
+                # Ders-Dal ilişkisi (sadece ders_id varsa)
+                if ders_id:
+                    from .utils import create_ders_dal_relation
+                    create_ders_dal_relation(cursor, ders_id, dal_id)
                 
                 saved_count += 1
     

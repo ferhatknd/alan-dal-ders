@@ -53,17 +53,16 @@ def get_provinces():
             if 'ilid' in item and 'il' in item:
                 provinces[item['ilid']] = item['il']
             else:
-                print(f"[{time.strftime('%H:%M:%S')}] Uyarı: Beklenmeyen il JSON öğesi yapısı: {item}")
+                pass  # Log silenced for cleaner output
         return provinces
     except requests.exceptions.RequestException as e:
-        print(f"[{time.strftime('%H:%M:%S')}] İller çekilirken ağ hatası oluştu: {e}")
+        pass  # Error handling moved to caller
         return {}
     except json.JSONDecodeError as e:
-        print(f"[{time.strftime('%H:%M:%S')}] İller yanıtı JSON olarak çözümlenemedi: {e}.")
-        print(f"Hata anındaki yanıtın ilk 200 karakteri: \n{response_text[:200]}")
+        pass  # Error handling moved to caller
         return {}
     except Exception as e:
-        print(f"[{time.strftime('%H:%M:%S')}] İller çekilirken beklenmeyen bir hata oluştu: {e}")
+        pass  # Error handling moved to caller
         return {}
 
 def get_areas_for_province(province_id):
@@ -100,17 +99,16 @@ def get_areas_for_province(province_id):
             if 'alan' in item and 'alan_adi' in item:
                 areas[item['alan']] = item['alan_adi']
             else:
-                print(f"  [{time.strftime('%H:%M:%S')}] Uyarı: Beklenmeyen alan JSON öğesi yapısı: {item}")
+                pass  # Log silenced for cleaner output
         return areas
     except requests.exceptions.RequestException as e:
-        print(f"[{time.strftime('%H:%M:%S')}] İl ID: {province_id} için alanlar çekilirken ağ hatası oluştu: {e}")
+        pass  # Error handling moved to caller
         return {}
     except json.JSONDecodeError as e:
-        print(f"[{time.strftime('%H:%M:%S')}] İl ID: {province_id} için alanlar yanıtı JSON olarak çözümlenemedi: {e}.")
-        print(f"Yanıtın tamamı (JSON hatası anında): \n{response_text}") # Hata anında tüm yanıtı göster
+        pass  # Error handling moved to caller
         return {}
     except Exception as e:
-        print(f"[{time.strftime('%H:%M:%S')}] İl ID: {province_id} için alanlar çekilirken beklenmeyen bir hata oluştu: {e}")
+        pass  # Error handling moved to caller
         return {}
 
 def get_branches_for_area(province_id, area_value):
@@ -148,17 +146,16 @@ def get_branches_for_area(province_id, area_value):
             if 'dal' in item and 'dal_adi' in item:
                 branches.append(item['dal_adi'])
             else:
-                print(f"    [{time.strftime('%H:%M:%S')}] Uyarı: Beklenmeyen dal JSON öğesi yapısı: {item}")
+                pass  # Log silenced for cleaner output
         return branches
     except requests.exceptions.RequestException as e:
-        print(f"    [{time.strftime('%H:%M:%S')}] Hata: İl ID: {province_id}, Alan: '{area_value}' için dallar çekilemedi: {e}")
+        pass  # Error handling moved to caller
         return None
     except json.JSONDecodeError as e:
-        print(f"    [{time.strftime('%H:%M:%S')}] Hata: İl ID: {province_id}, Alan: '{area_value}' için dallar yanıtı JSON olarak çözümlenemedi: {e}.")
-        print(f"Yanıtın tamamı (JSON hatası anında): \n{response_text}") # Hata anında tüm yanıtı göster
+        pass  # Error handling moved to caller
         return None
     except Exception as e:
-        print(f"    [{time.strftime('%H:%M:%S')}] Hata: İl ID: {province_id}, Alan: '{area_value}' için dallar çekilirken beklenmeyen bir hata oluştu: {e}")
+        pass  # Error handling moved to caller
         return None
 
 def find_or_create_database():
@@ -178,7 +175,7 @@ def find_or_create_database():
         with sqlite3.connect(db_path) as conn:
             with open(schema_path, 'r', encoding='utf-8') as f:
                 conn.executescript(f.read())
-        print(f"Veritabanı şemadan oluşturuldu: {db_path}")
+        pass  # Database setup message moved to caller
     
     return db_path
 
@@ -225,7 +222,7 @@ def save_area_and_branches_to_db(cursor, area_name, branches):
         return area_id
             
     except Exception as e:
-        print(f"Veritabanı kayıt hatası ({area_name}): {e}")
+        pass  # Error handling moved to caller
         return None
 
 def getir_dal_with_db_integration():
@@ -305,7 +302,7 @@ def getir_dal_with_db_integration():
                 branches = branches_or_none if branches_or_none is not None else []
                 
                 if branches_or_none is None:
-                    yield {'type': 'warning', 'message': f"'{area_name}' için dal bilgisi çekilemedi, yine de alan kaydedilecek."}
+                    yield {'type': 'warning', 'message': f"⚠️ {area_name} -> Dal bilgisi çekilemedi, yine de alan kaydedilecek"}
 
                 unique_areas_with_branches[area_name] = branches
                 new_areas_in_province += 1
@@ -322,7 +319,7 @@ def getir_dal_with_db_integration():
                 area_id = save_area_and_branches_to_db(area_name, branches)
                 
                 if not area_id:
-                    yield {'type': 'warning', 'message': f"Alan '{area_name}' veritabanına kaydedilemedi"}
+                    yield {'type': 'warning', 'message': f"❌ {area_name} -> Veritabanına kaydedilemedi"}
                 
                 time.sleep(0.3)
         
@@ -367,7 +364,7 @@ def main():
         elif message['type'] == 'success':
             print(f"✅ {message['message']}")
         elif message['type'] == 'done':
-            print(f"🎉 {message['message']}")
+            print(f"✅ {message['message']}")
             break
         elif message['type'] == 'province_summary':
             print(f"İl      : {message['province_name']} {message['province_progress']}")
@@ -375,11 +372,13 @@ def main():
             print(f"Dal Sayısı : {message['dal_sayisi_province']} (Toplam: {message['dal_sayisi_total_so_far']})\n")
         elif message['type'] == 'area_processing':
             # Bu mesaj tipini artık ana konsolda göstermeyebiliriz, isteğe bağlı.
-            # print(f"  📋 Alan: {message['area_name']} {message['area_progress']}")
+            # Standardized area progress message format
+            # print(f"📋 {message['area_name']} {message['area_progress']}")
             pass
         elif message['type'] == 'branches_processing':
             # Bu da daha detaylı bir log, ana konsolda göstermeyebiliriz.
-            # print(f"    🌿 {message['branches_count']} dal bulundu (Toplam: {message['total_branches']})")
+            # Standardized branch progress message format
+            # print(f"🌿 {message['area_name']} -> {message['branches_count']} dal bulundu (Toplam: {message['total_branches']})")
             pass
         else:
             print(f"ℹ️  {message['message']}")

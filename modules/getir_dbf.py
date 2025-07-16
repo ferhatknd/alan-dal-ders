@@ -436,16 +436,24 @@ def get_dbf(cursor, dbf_data=None):
             # Dosya zaten varsa atla
             if os.path.exists(archive_path):
                 file_size = os.path.getsize(archive_path)
-                msg = f"[{alan_adi}] {archive_filename} zaten mevcut ({file_size // (1024*1024)}MB) - ATLANIYOR"
-                print(msg)
-                yield {"type": "info", "message": msg}
+                yield {"type": "info", "message": f"📁 {alan_adi} -> {archive_filename} zaten mevcut ({file_size // (1024*1024)}MB)"}
                 continue
 
-            # İndir - sadece başlama mesajı göster
-            # Progress mesajları kaldırıldı
+            # İndir - hata durumunda devam et
+            yield {"type": "status", "message": f"⬇️ {alan_adi} -> {archive_filename} indiriliyor..."}
+            
             try:
-                # Chunk-based download with progress feedback
-                with requests.get(link, stream=True, timeout=120) as r:
+                # Önce HEAD request ile dosya varlığını kontrol et
+                head_response = requests.head(link, timeout=10)
+                if head_response.status_code == 404:
+                    yield {"type": "warning", "message": f"⚠️ {alan_adi} -> {archive_filename} dosya bulunamadı (404) - atlanıyor"}
+                    continue
+                elif head_response.status_code >= 400:
+                    yield {"type": "warning", "message": f"⚠️ {alan_adi} -> {archive_filename} erişim hatası ({head_response.status_code}) - atlanıyor"}
+                    continue
+                
+                # Dosya indirme
+                with requests.get(link, stream=True, timeout=60) as r:
                     r.raise_for_status()
                     
                     # Content-Length header'dan dosya boyutunu al
@@ -457,27 +465,36 @@ def get_dbf(cursor, dbf_data=None):
                             if chunk:
                                 f.write(chunk)
                                 downloaded_size += len(chunk)
-                                
-                                # Progress mesajı kaldırıldı - sadece indirme tamamlandığında bilgi verilecek
-                                pass
                 
-                msg = f"[{alan_adi}] {archive_filename} indirildi ({downloaded_size // (1024*1024)}MB)"
-                print(msg)
-                yield {"type": "status", "message": msg}
+                # Başarılı indirme
+                yield {"type": "success", "message": f"📁 {alan_adi} -> {archive_filename} indirildi ({downloaded_size // (1024*1024)}MB)"}
+                
             except requests.exceptions.Timeout:
-                msg = f"[{alan_adi}] {archive_filename} indirme timeout (120s) - dosya çok büyük olabilir"
-                print(msg)
-                yield {"type": "error", "message": msg}
+                yield {"type": "error", "message": f"❌ {alan_adi} -> {archive_filename} indirme timeout (60s) - atlanıyor"}
+                # Yarıda kalan dosyayı sil
+                if os.path.exists(archive_path):
+                    os.remove(archive_path)
                 continue
+                
+            except requests.exceptions.HTTPError as e:
+                yield {"type": "error", "message": f"❌ {alan_adi} -> {archive_filename} HTTP hatası: {e} - atlanıyor"}
+                # Yarıda kalan dosyayı sil
+                if os.path.exists(archive_path):
+                    os.remove(archive_path)
+                continue
+                
             except requests.exceptions.RequestException as e:
-                msg = f"[{alan_adi}] {archive_filename} indirme hatası: {e}"
-                print(msg)
-                yield {"type": "error", "message": msg}
+                yield {"type": "error", "message": f"❌ {alan_adi} -> {archive_filename} bağlantı hatası: {e} - atlanıyor"}
+                # Yarıda kalan dosyayı sil
+                if os.path.exists(archive_path):
+                    os.remove(archive_path)
                 continue
+                
             except Exception as e:
-                msg = f"[{alan_adi}] {archive_filename} indirilemedi: {e}"
-                print(msg)
-                yield {"type": "error", "message": msg}
+                yield {"type": "error", "message": f"❌ {alan_adi} -> {archive_filename} genel hata: {e} - atlanıyor"}
+                # Yarıda kalan dosyayı sil
+                if os.path.exists(archive_path):
+                    os.remove(archive_path)
                 continue
 
             # AÇMA İŞLEMİ GEÇİCİ OLARAK KAPAT
@@ -521,7 +538,8 @@ def get_dbf(cursor, dbf_data=None):
                     handle_protocol_area(cursor, alan_adi, alan_id)
                 
                 saved_alan_count += 1
-                yield {'type': 'progress', 'message': f'URL kaydedildi: {alan_adi} ({len(alan_urls)} sınıf)'}
+                sınıf_sayısı = len(alan_urls)
+                yield {'type': 'success', 'message': f'📋 {alan_adi} -> URL kaydedildi ({sınıf_sayısı} sınıf)'}
                 
             except Exception as e:
                 yield {'type': 'error', 'message': f'URL kaydetme hatası ({alan_adi}): {e}'}
@@ -540,7 +558,7 @@ def get_dbf(cursor, dbf_data=None):
     except Exception as e:
         yield {'type': 'error', 'message': f'DBF URL kaydetme hatası: {e}'}
     
-    yield {'type': 'done', 'message': f'Tüm DBF dosyaları işlendi. {len(alan_dbf_urls)} alan için URL\'ler veritabanına kaydedildi.'}
+    yield {'type': 'done', 'message': f'Tüm DBF dosyaları işlendi. {len(alan_dbf_urls) if "alan_dbf_urls" in locals() else 0} alan için URL\'ler veritabanına kaydedildi.'}
 
 # Bu fonksiyon kaldırıldı - unrar işlemleri artık yapılmıyor
 # Sadece get_dbf() fonksiyonu kullanılacak (indirme + URL kaydetme)

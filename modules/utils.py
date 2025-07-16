@@ -222,11 +222,79 @@ def normalize_alan_adi(alan_adi):
     # Manuel replacement yoksa, normalize_to_title_case_tr kullan
     return normalize_to_title_case_tr(normalized)
 
+def extract_meb_id_from_urls(cop_url=None, dbf_urls=None):
+    """
+    URL'lerden MEB ID'sini çıkarır.
+    ÇÖP ve DBF URL'lerini tarar ve ID'yi bulur.
+    
+    Args:
+        cop_url: ÇÖP URL'si (JSON veya string)
+        dbf_urls: DBF URL'leri (JSON veya dict)
+        
+    Returns:
+        str: MEB ID'si ("01", "02", vb.) veya None
+    """
+    urls_to_check = []
+    
+    # ÇÖP URL'lerini ekle
+    if cop_url:
+        try:
+            if isinstance(cop_url, str) and cop_url.startswith('{'):
+                cop_data = json.loads(cop_url)
+                if isinstance(cop_data, dict):
+                    urls_to_check.extend(cop_data.values())
+            else:
+                urls_to_check.append(cop_url)
+        except (json.JSONDecodeError, AttributeError):
+            urls_to_check.append(cop_url)
+    
+    # DBF URL'lerini ekle
+    if dbf_urls:
+        try:
+            if isinstance(dbf_urls, str):
+                dbf_data = json.loads(dbf_urls)
+            else:
+                dbf_data = dbf_urls
+                
+            if isinstance(dbf_data, dict):
+                urls_to_check.extend(dbf_data.values())
+        except (json.JSONDecodeError, AttributeError, TypeError):
+            pass
+    
+    # URL'lerden MEB ID'sini çıkar
+    for url in urls_to_check:
+        if isinstance(url, str):
+            # ÇÖP URL'lerinden: cop9, cop10, cop11, cop12
+            cop_match = re.search(r'cop(\d+)', url)
+            if cop_match:
+                continue  # ÇÖP'te sınıf bilgisi var, MEB ID yok
+            
+            # DBF URL'lerinden: dbf9, dbf10, dbf11, dbf12
+            dbf_match = re.search(r'dbf(\d+)', url)
+            if dbf_match:
+                continue  # DBF'te sınıf bilgisi var, MEB ID yok
+            
+            # Genel URL pattern'i: alan_id parameter'i
+            alan_id_match = re.search(r'alan_id=(\d+)', url)
+            if alan_id_match:
+                meb_id = alan_id_match.group(1)
+                # 2 haneli format'a çevir
+                return f"{int(meb_id):02d}"
+            
+            # Dosya adından çıkarma: /upload/dbf9/01_adalet.rar
+            file_match = re.search(r'/(\d{2})_[^/]+\.(rar|zip|pdf)$', url)
+            if file_match:
+                return file_match.group(1)
+    
+    return None
+
+
 def get_or_create_alan(cursor, alan_adi, meb_alan_id=None, cop_url=None, dbf_urls=None):
     """
     Alan kaydı bulur veya oluşturur. 
     ÇÖP URL'leri JSON formatında birleştirir.
     Alan adını normalize eder.
+    MEB ID yoksa URL'lerden çıkarmaya çalışır.
     """
     normalized_alan_adi = normalize_alan_adi(alan_adi)
     
@@ -253,6 +321,13 @@ def get_or_create_alan(cursor, alan_adi, meb_alan_id=None, cop_url=None, dbf_url
             
         # MEB Alan ID'sini güncelle (eğer yoksa)
         updated_meb_alan_id = existing_meb_alan_id or meb_alan_id
+        
+        # Eğer hala MEB ID yoksa, URL'lerden çıkarmaya çalış
+        if not updated_meb_alan_id:
+            extracted_id = extract_meb_id_from_urls(updated_cop_urls, dbf_urls)
+            if extracted_id:
+                updated_meb_alan_id = extracted_id
+                print(f"      🔍 MEB ID URL'den çıkarıldı: {alan_adi} -> {extracted_id}")
         
         cursor.execute("""
             UPDATE temel_plan_alan 
@@ -281,6 +356,13 @@ def get_or_create_alan(cursor, alan_adi, meb_alan_id=None, cop_url=None, dbf_url
             except (json.JSONDecodeError, AttributeError):
                 # JSON değilse tek URL olarak kaydet
                 cop_url_json = json.dumps({"default": cop_url})
+        
+        # MEB ID yoksa URL'lerden çıkarmaya çalış
+        if not meb_alan_id:
+            extracted_id = extract_meb_id_from_urls(cop_url_json, dbf_urls_json)
+            if extracted_id:
+                meb_alan_id = extracted_id
+                print(f"      🔍 MEB ID URL'den çıkarıldı: {alan_adi} -> {extracted_id}")
         
         cursor.execute("""
             INSERT INTO temel_plan_alan (alan_adi, meb_alan_id, cop_url, dbf_urls) 
@@ -444,6 +526,124 @@ def with_database_json(func: Callable) -> Callable:
             return jsonify(error_response), 500
     
     return wrapper
+
+
+# ====== Ders Management Utilities ======
+
+def create_or_get_ders(cursor, ders_adi, sinif, ders_saati=0, amac='', dm_url='', dbf_url='', bom_url='', cop_url=''):
+    """
+    Merkezi ders kaydetme fonksiyonu.
+    
+    ÖNEMLI: Aynı ders adı için farklı sınıflar varsa, sadece en düşük sınıfı saklar.
+    Örnek: "Ahilik Kültürü ve Girişimcilik" hem 11 hem 12'de varsa, sadece 11 kaydedilir.
+    
+    Args:
+        cursor: Database cursor
+        ders_adi: Ders adı
+        sinif: Sınıf seviyesi (9, 10, 11, 12)
+        ders_saati: Haftalık ders saati (varsayılan: 0)
+        amac: Ders amacı (opsiyonel)
+        dm_url: Ders materyali URL'si (opsiyonel)
+        dbf_url: DBF dosya URL'si (opsiyonel)
+        bom_url: BOM URL'si (opsiyonel)
+        cop_url: ÇÖP URL'si (opsiyonel)
+        
+    Returns:
+        int: Ders ID'si
+    """
+    if not ders_adi or not sinif:
+        return None
+    
+    # Sınıf değerini integer'a çevir
+    try:
+        sinif = int(sinif)
+    except (ValueError, TypeError):
+        print(f"❌ Geçersiz sınıf değeri: {sinif}")
+        return None
+    
+    # Ders saati değerini integer'a çevir
+    try:
+        ders_saati = int(ders_saati) if ders_saati else 0
+    except (ValueError, TypeError):
+        ders_saati = 0
+    
+    # Önce aynı ders adı ile mevcut kayıtları kontrol et
+    cursor.execute("""
+        SELECT id, sinif, ders_saati FROM temel_plan_ders 
+        WHERE ders_adi = ?
+        ORDER BY sinif ASC
+    """, (ders_adi,))
+    
+    existing_records = cursor.fetchall()
+    
+    if existing_records:
+        # Mevcut kayıtlar var
+        existing_lowest_sinif = existing_records[0]['sinif']  # En düşük sınıf
+        existing_lowest_id = existing_records[0]['id']
+        
+        if sinif >= existing_lowest_sinif:
+            # Yeni sınıf daha büyük veya eşit, mevcut kaydı kullan
+            # Ders saati güncelle (0 ise veya yeni değer daha büyükse)
+            if ders_saati > 0:
+                cursor.execute("""
+                    UPDATE temel_plan_ders 
+                    SET ders_saati = ? 
+                    WHERE id = ? AND (ders_saati = 0 OR ders_saati < ?)
+                """, (ders_saati, existing_lowest_id, ders_saati))
+            
+            print(f"      ↻ Duplicate ders atlandı: {ders_adi} ({sinif}. sınıf) - Mevcut: {existing_lowest_sinif}. sınıf")
+            return existing_lowest_id
+        else:
+            # Yeni sınıf daha düşük, mevcut kayıtları sil ve yeni kayıt oluştur
+            print(f"      ↻ Daha düşük sınıf bulundu: {ders_adi} ({sinif}. sınıf) - Eski kayıtlar siliniyor")
+            
+            # Mevcut kayıtları sil (cascade'e güvenmek yerine manuel temizlik)
+            for existing_record in existing_records:
+                existing_id = existing_record['id']
+                existing_sinif = existing_record['sinif']
+                # İlişkili kayıtları sil
+                cursor.execute("DELETE FROM temel_plan_ders_dal WHERE ders_id = ?", (existing_id,))
+                cursor.execute("DELETE FROM temel_plan_ders WHERE id = ?", (existing_id,))
+                print(f"      ↻ Silindi: {ders_adi} ({existing_sinif}. sınıf)")
+    
+    # Yeni ders oluştur
+    cursor.execute("""
+        INSERT INTO temel_plan_ders (
+            ders_adi, sinif, ders_saati, amac, dm_url, dbf_url, bom_url
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)
+    """, (
+        ders_adi,
+        sinif,
+        ders_saati,
+        amac,
+        dm_url,
+        dbf_url,
+        bom_url
+    ))
+    
+    ders_id = cursor.lastrowid
+    print(f"      ➕ Yeni ders eklendi: {ders_adi} ({sinif}. sınıf, {ders_saati} saat)")
+    return ders_id
+
+
+def create_ders_dal_relation(cursor, ders_id, dal_id):
+    """
+    Ders-Dal ilişkisi oluşturur.
+    
+    Args:
+        cursor: Database cursor
+        ders_id: Ders ID'si
+        dal_id: Dal ID'si
+    """
+    if not ders_id or not dal_id:
+        return False
+    
+    cursor.execute("""
+        INSERT OR IGNORE INTO temel_plan_ders_dal (ders_id, dal_id, created_at) 
+        VALUES (?, ?, datetime('now'))
+    """, (ders_id, dal_id))
+    
+    return True
 
 
 # ====== Archive Extraction Utilities ======

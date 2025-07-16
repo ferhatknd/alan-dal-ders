@@ -24,8 +24,8 @@ BOM_ROOT_DIR = "data/bom"
 
 def get_areas_from_db_for_bom():
     """
-    Veritabanından alan ID ve adlarını çeker (BOM için).
-    Returns: dict {alan_adi: alan_id}
+    Veritabanından alan ID, adları ve MEB ID'leri çeker (BOM için).
+    Returns: dict {alan_adi: {'id': alan_id, 'meb_alan_id': meb_alan_id}}
     """
     db_path = "data/temel_plan.db"
     if not os.path.exists(db_path):
@@ -35,9 +35,9 @@ def get_areas_from_db_for_bom():
     try:
         with sqlite3.connect(db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT id, alan_adi FROM temel_plan_alan ORDER BY alan_adi")
+            cursor.execute("SELECT id, alan_adi, meb_alan_id FROM temel_plan_alan ORDER BY alan_adi")
             results = cursor.fetchall()
-            return {alan_adi: alan_id for alan_id, alan_adi in results}
+            return {alan_adi: {'id': alan_id, 'meb_alan_id': meb_alan_id} for alan_id, alan_adi, meb_alan_id in results}
     except Exception as e:
         print(f"Veritabanı okuma hatası: {e}")
         return {}
@@ -73,22 +73,23 @@ def get_ders_ids_from_db():
 def find_matching_area_id_for_bom(html_area_name, db_areas):
     """
     HTML'den gelen alan adını veritabanındaki alanlarla eşleştirir (BOM için).
-    Returns: (alan_id, matched_name) veya (None, None)
+    Returns: (alan_id, meb_alan_id, matched_name) veya (None, None, None)
     """
     normalized_html_name = normalize_to_title_case_tr(html_area_name)
     
     # Tam eşleşme kontrolü
     if normalized_html_name in db_areas:
-        return db_areas[normalized_html_name], normalized_html_name
+        area_info = db_areas[normalized_html_name]
+        return area_info['id'], area_info['meb_alan_id'], normalized_html_name
     
     # Kısmi eşleşme kontrolü
-    for db_name, area_id in db_areas.items():
+    for db_name, area_info in db_areas.items():
         if normalized_html_name.lower() in db_name.lower() or db_name.lower() in normalized_html_name.lower():
-            print(f"BOM Kısmi eşleşme bulundu: '{html_area_name}' -> '{db_name}' (ID: {area_id})")
-            return area_id, db_name
+            print(f"BOM Kısmi eşleşme bulundu: '{html_area_name}' -> '{db_name}' (ID: {area_info['id']})")
+            return area_info['id'], area_info['meb_alan_id'], db_name
     
     print(f"BOM Eşleşme bulunamadı: '{html_area_name}' (normalize: '{normalized_html_name}')")
-    return None, None
+    return None, None, None
 
 def extract_update_year(date_string):
     """
@@ -243,7 +244,7 @@ def get_bom_for_alan(alan_id, alan_adi, session):
 
 def download_and_save_bom_pdf(area_name, modul_link, modul_adi, ders_adi, db_areas=None):
     """
-    BOM PDF'ini indirir ve data/bom/{ID}-{alan_adi}/ klasörüne kaydeder.
+    BOM PDF'ini indirir ve data/bom/{meb_alan_id}_{alan_adi}/ klasörüne kaydeder.
     Ders klasörü oluşturulmaz, tüm dosyalar direkt alan klasörüne kaydedilir.
     """
     try:
@@ -252,18 +253,19 @@ def download_and_save_bom_pdf(area_name, modul_link, modul_adi, ders_adi, db_are
             db_areas = get_areas_from_db_for_bom()
         
         # Alan ID'sini bul
-        area_id, matched_name = find_matching_area_id_for_bom(area_name, db_areas)
+        area_id, meb_alan_id, matched_name = find_matching_area_id_for_bom(area_name, db_areas)
         
         if area_id:
-            # Klasör adını ID + alan adı formatında oluştur
-            folder_name = f"{area_id:02d} - {matched_name}"
-            bom_dir = Path(BOM_ROOT_DIR) / sanitize_filename_bom(folder_name)
-            print(f"  BOM Klasör: {folder_name}")
+            # MEB ID varsa kullan, yoksa database ID kullan
+            if meb_alan_id:
+                folder_name = f"{meb_alan_id}_{sanitize_filename_bom(matched_name)}"
+            else:
+                folder_name = f"{area_id:02d}_{sanitize_filename_bom(matched_name)}"
+            bom_dir = Path(BOM_ROOT_DIR) / folder_name
         else:
             # ID bulunamazsa eski sistemi kullan
             safe_area_name = area_name.replace('/', '_').replace('\\', '_').replace(':', '_')
             bom_dir = Path(BOM_ROOT_DIR) / safe_area_name
-            print(f"  BOM ID bulunamadı, eski format kullanılıyor: {area_name}")
         
         # Ana alan klasörünü oluştur (ders alt klasörü oluşturulmaz)
         bom_dir.mkdir(parents=True, exist_ok=True)
@@ -286,11 +288,10 @@ def download_and_save_bom_pdf(area_name, modul_link, modul_adi, ders_adi, db_are
         with open(pdf_path, 'wb') as f:
             f.write(response.content)
         
-        print(f"  BOM PDF kaydedildi: {pdf_path}")
         return str(pdf_path), True
         
     except Exception as e:
-        print(f"  BOM PDF indirme hatası ({area_name} - {ders_adi} - {modul_adi}): {e}")
+        pass  # Error handling moved to caller
         return None, False
 
 def save_bom_metadata(area_name, bom_data, db_areas=None):
@@ -303,12 +304,15 @@ def save_bom_metadata(area_name, bom_data, db_areas=None):
             db_areas = get_areas_from_db_for_bom()
         
         # Alan ID'sini bul
-        area_id, matched_name = find_matching_area_id_for_bom(area_name, db_areas)
+        area_id, meb_alan_id, matched_name = find_matching_area_id_for_bom(area_name, db_areas)
         
         if area_id:
-            # Klasör adını ID + alan adı formatında oluştur
-            folder_name = f"{area_id:02d} - {matched_name}"
-            bom_dir = Path(BOM_ROOT_DIR) / sanitize_filename_bom(folder_name)
+            # MEB ID varsa kullan, yoksa database ID kullan
+            if meb_alan_id:
+                folder_name = f"{meb_alan_id}_{sanitize_filename_bom(matched_name)}"
+            else:
+                folder_name = f"{area_id:02d}_{sanitize_filename_bom(matched_name)}"
+            bom_dir = Path(BOM_ROOT_DIR) / folder_name
         else:
             # ID bulunamazsa eski sistemi kullan
             safe_area_name = area_name.replace('/', '_').replace('\\', '_').replace(':', '_')
@@ -328,10 +332,10 @@ def save_bom_metadata(area_name, bom_data, db_areas=None):
         with open(metadata_file, 'w', encoding='utf-8') as f:
             json.dump(metadata, f, ensure_ascii=False, indent=2)
         
-        print(f"  BOM metadata kaydedildi: {metadata_file}")
+        pass  # Success message moved to caller
         
     except Exception as e:
-        print(f"  BOM metadata kaydetme hatası ({area_name}): {e}")
+        pass  # Error handling moved to caller
 
 def getir_bom(siniflar=["9", "10", "11", "12"]):
     """
@@ -424,20 +428,21 @@ def getir_bom_with_db_integration(siniflar=["9", "10", "11", "12"]):
                                         if downloaded:
                                             total_downloaded += 1
                                         total_processed += 1
-                                        yield {'type': 'success', 'message': f"'{alan_adi}' - '{ders_adi}' - '{modul_adi}' BOM kaydedildi"}
+                                        yield {'type': 'success', 'message': f"📄 {alan_adi} -> {os.path.basename(pdf_path)} ({ders_adi} - {modul_adi})"}
                                     else:
-                                        yield {'type': 'warning', 'message': f"'{alan_adi}' - '{ders_adi}' - '{modul_adi}' BOM indirilemedi"}
+                                        yield {'type': 'warning', 'message': f"❌ {alan_adi} -> BOM indirilemedi ({ders_adi} - {modul_adi})"}
                         
                         # Metadata kaydet
                         save_bom_metadata(alan_adi, bom_data, db_areas)
-                        yield {'type': 'success', 'message': f"'{alan_adi}' BOM metadata kaydedildi"}
+                        ders_sayisi = len(bom_data.get('dersler', []))
+                        yield {'type': 'success', 'message': f"📋 {alan_adi} -> BOM metadata kaydedildi ({ders_sayisi} ders)"}
                     else:
-                        yield {'type': 'info', 'message': f"Alan '{alan_adi}' veritabanında yok, atlanıyor"}
+                        yield {'type': 'info', 'message': f"📋 {alan_adi} -> Veritabanında yok, atlanıyor"}
                 else:
-                    yield {'type': 'info', 'message': f"'{alan_adi}' için BOM verisi bulunamadı"}
+                    yield {'type': 'info', 'message': f"📋 {alan_adi} -> BOM verisi bulunamadı"}
                     
             except Exception as exc:
-                yield {'type': 'warning', 'message': f"BOM verisi işlenirken hata ({alan_adi}): {exc}"}
+                yield {'type': 'warning', 'message': f"❌ {alan_adi} -> BOM verisi işlenirken hata: {exc}"}
     
     # Sonuç özeti
     yield {
