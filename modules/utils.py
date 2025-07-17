@@ -5,6 +5,8 @@ import functools
 from typing import Optional, Callable
 import json
 import re
+import time
+from bs4 import BeautifulSoup
 
 def download_and_cache_pdf(url: str, cache_type: str, alan_adi: str = None, additional_info: str = None, alan_id: str = None, alan_db_id: int = None, meb_alan_id: str = None) -> Optional[str]:
     """
@@ -528,6 +530,239 @@ def get_folder_name_for_download(alan_adi, meb_alan_id, area_id):
         # MEB ID yoksa: Direkt alan adı (ID yok)
         return sanitize_filename_tr(alan_adi)
 
+# ====== MEB Alan ID Cache Management ======
+
+# Global cache değişkenleri
+_meb_alan_ids_cache = None
+_cache_timestamp = None
+_cache_duration = 3600  # 1 saat cache süresi
+
+def get_meb_alan_ids_cached():
+    """
+    MEB Alan ID'lerini cache ile çeker.
+    1 saatlik cache süresi ile performance optimizasyonu.
+    
+    Returns:
+        dict: {alan_adi: meb_alan_id} formatında alan ID'leri
+    """
+    global _meb_alan_ids_cache, _cache_timestamp
+    
+    current_time = time.time()
+    
+    # Cache kontrol et
+    if (_meb_alan_ids_cache is not None and 
+        _cache_timestamp is not None and 
+        current_time - _cache_timestamp < _cache_duration):
+        
+        print(f"📋 MEB Alan ID'leri cache'den alındı ({len(_meb_alan_ids_cache)} alan)")
+        return _meb_alan_ids_cache
+    
+    # Cache yoksa veya süresi dolmuşsa MEB'den çek
+    print("📋 MEB Alan ID'leri çekiliyor...")
+    
+    try:
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.9,tr;q=0.8',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1'
+        }
+        
+        alan_id_map = {}
+        
+        # cercevelistele.aspx sayfasından alan dropdown'unu çek
+        url = "https://meslek.meb.gov.tr/cercevelistele.aspx"
+        params = {"sinif_kodu": "9", "kurum_id": "1"}
+        
+        response = requests.get(url, params=params, headers=headers, timeout=45)
+        response.raise_for_status()
+        response.encoding = 'utf-8'
+        
+        soup = BeautifulSoup(response.text, 'html.parser')
+        
+        # Select dropdown'daki option'ları bul
+        # Örnek: <option value="01">Adalet</option>
+        select = soup.find('select', {'name': re.compile(r'.*drpalansec.*')})
+        if select:
+            options = select.find_all('option')
+            for option in options:
+                value = option.get('value', '').strip()
+                text = option.get_text(strip=True)
+                # Boş option'ları ve "Alanlar" başlığını atla
+                if value and text and value != '' and text != 'Alanlar' and value != '00':
+                    alan_id_map[text] = value
+                    print(f"📋 {text} -> MEB ID: {value}")
+        
+        # Cache'i güncelle
+        _meb_alan_ids_cache = alan_id_map
+        _cache_timestamp = current_time
+        
+        print(f"✅ MEB Alan ID'leri cache'lendi ({len(alan_id_map)} alan)")
+        
+        # Otomatik database güncelleme
+        try:
+            print("🔄 Otomatik database güncelleme başlatılıyor...")
+            db_path = find_or_create_database()
+            if db_path:
+                with sqlite3.connect(db_path, timeout=30.0) as conn:
+                    conn.row_factory = sqlite3.Row
+                    cursor = conn.cursor()
+                    
+                    # Sadece eksik olanları güncelle
+                    updated_count = 0
+                    for alan_adi, meb_alan_id in alan_id_map.items():
+                        try:
+                            normalized_alan_adi = normalize_alan_adi(alan_adi)
+                            
+                            # Mevcut MEB ID'yi kontrol et
+                            cursor.execute("SELECT meb_alan_id FROM temel_plan_alan WHERE alan_adi = ?", (normalized_alan_adi,))
+                            result = cursor.fetchone()
+                            
+                            if result:
+                                existing_meb_id = result['meb_alan_id']
+                                if existing_meb_id != meb_alan_id:
+                                    # Güncelle
+                                    cursor.execute("UPDATE temel_plan_alan SET meb_alan_id = ? WHERE alan_adi = ?", (meb_alan_id, normalized_alan_adi))
+                                    updated_count += 1
+                                    print(f"🔄 Güncellendi: {alan_adi} -> {meb_alan_id}")
+                            else:
+                                # Yeni alan oluştur
+                                cursor.execute("""
+                                    INSERT INTO temel_plan_alan (alan_adi, meb_alan_id, created_at, updated_at) 
+                                    VALUES (?, ?, datetime('now'), datetime('now'))
+                                """, (normalized_alan_adi, meb_alan_id))
+                                updated_count += 1
+                                print(f"🆕 Yeni alan: {alan_adi} -> {meb_alan_id}")
+                        except Exception as e:
+                            print(f"❌ Alan güncelleme hatası ({alan_adi}): {e}")
+                            continue
+                    
+                    if updated_count > 0:
+                        print(f"✅ {updated_count} alan database'de güncellendi")
+                    else:
+                        print("✅ Tüm alanlar zaten güncel")
+                        
+        except Exception as e:
+            print(f"❌ Otomatik database güncelleme hatası: {e}")
+        
+        return alan_id_map
+        
+    except Exception as e:
+        print(f"❌ MEB Alan ID çekme hatası: {e}")
+        
+        # Hata durumunda eski cache'i döndür (varsa)
+        if _meb_alan_ids_cache is not None:
+            print("⚠️ Eski cache kullanılıyor")
+            return _meb_alan_ids_cache
+        
+        return {}
+
+def invalidate_meb_alan_ids_cache():
+    """
+    MEB Alan ID cache'ini temizler.
+    Manuel cache yenileme için kullanılır.
+    """
+    global _meb_alan_ids_cache, _cache_timestamp
+    _meb_alan_ids_cache = None
+    _cache_timestamp = None
+    print("🔄 MEB Alan ID cache'i temizlendi")
+
+def update_all_meb_alan_ids_from_cache_impl(cursor):
+    """
+    Cache'deki tüm MEB Alan ID'lerini database'e toplu olarak günceller.
+    Sadece mevcut alanları günceller, yeni alan oluşturmaz.
+    
+    Returns:
+        dict: {"updated": int, "skipped": int, "errors": list}
+    """
+    # Cache'den MEB ID'leri al
+    meb_alan_ids = get_meb_alan_ids_cached()
+    
+    if not meb_alan_ids:
+        return {"updated": 0, "skipped": 0, "errors": ["Cache boş veya erişilemiyor"]}
+    
+    updated_count = 0
+    skipped_count = 0
+    errors = []
+    
+    print(f"🔄 {len(meb_alan_ids)} MEB ID'si database'e güncelleniyor...")
+    
+    for alan_adi, meb_alan_id in meb_alan_ids.items():
+        try:
+            # Alan adını normalize et
+            normalized_alan_adi = normalize_alan_adi(alan_adi)
+            
+            # Alanın database'de olup olmadığını kontrol et
+            cursor.execute("SELECT id, meb_alan_id FROM temel_plan_alan WHERE alan_adi = ?", (normalized_alan_adi,))
+            result = cursor.fetchone()
+            
+            if result:
+                existing_id = result['id']
+                existing_meb_id = result['meb_alan_id']
+                
+                # MEB ID güncelleme gerekiyor mu?
+                if existing_meb_id != meb_alan_id:
+                    # Güncelle
+                    cursor.execute("UPDATE temel_plan_alan SET meb_alan_id = ? WHERE id = ?", (meb_alan_id, existing_id))
+                    updated_count += 1
+                    
+                    if existing_meb_id:
+                        print(f"🔄 Güncellendi: {alan_adi} -> {existing_meb_id} → {meb_alan_id}")
+                    else:
+                        print(f"➕ Eklendi: {alan_adi} -> {meb_alan_id}")
+                else:
+                    # Zaten doğru MEB ID var
+                    skipped_count += 1
+                    print(f"✅ Zaten güncel: {alan_adi} -> {meb_alan_id}")
+            else:
+                # Alan database'de yok, yeni oluştur
+                cursor.execute("""
+                    INSERT INTO temel_plan_alan (alan_adi, meb_alan_id, created_at, updated_at) 
+                    VALUES (?, ?, datetime('now'), datetime('now'))
+                """, (normalized_alan_adi, meb_alan_id))
+                updated_count += 1
+                print(f"🆕 Yeni alan oluşturuldu: {alan_adi} -> {meb_alan_id}")
+                
+        except Exception as e:
+            error_msg = f"Hata ({alan_adi}): {e}"
+            errors.append(error_msg)
+            print(f"❌ {error_msg}")
+            continue
+    
+    print(f"✅ Toplu güncelleme tamamlandı: {updated_count} güncellendi, {skipped_count} atlandı, {len(errors)} hata")
+    
+    return {
+        "updated": updated_count,
+        "skipped": skipped_count,
+        "errors": errors
+    }
+
+def get_cache_info():
+    """
+    Cache durumu hakkında bilgi döndürür.
+    
+    Returns:
+        dict: Cache durumu bilgisi
+    """
+    global _meb_alan_ids_cache, _cache_timestamp
+    
+    if _meb_alan_ids_cache is None:
+        return {"status": "empty", "count": 0, "age": 0, "remaining": 0}
+    
+    current_time = time.time()
+    age = current_time - _cache_timestamp if _cache_timestamp else 0
+    remaining = max(0, _cache_duration - age)
+    
+    return {
+        "status": "active",
+        "count": len(_meb_alan_ids_cache),
+        "age": age,
+        "remaining": remaining,
+        "cache_duration": _cache_duration
+    }
+
 # ====== Database Connection Utilities ======
 
 def find_or_create_database() -> Optional[str]:
@@ -870,3 +1105,11 @@ def scan_directory_for_pdfs(root_dir, file_extensions=('.pdf', '.docx')):
                 })
     
     return pdfs
+
+# Wrapper fonksiyonu decorator ile
+@with_database
+def update_all_meb_alan_ids_from_cache(cursor):
+    """
+    Cache'deki tüm MEB Alan ID'lerini database'e toplu olarak günceller.
+    """
+    return update_all_meb_alan_ids_from_cache_impl(cursor)

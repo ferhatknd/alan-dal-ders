@@ -6,12 +6,10 @@ import re
 import sqlite3
 try:
     from .oku_dbf import extract_ders_adi
-    from .utils import normalize_to_title_case_tr, with_database, download_and_cache_pdf, get_or_create_alan, find_or_create_database, sanitize_filename_tr, get_meb_alan_id_with_fallback, get_folder_name_for_download
-    from .getir_cop import update_meb_alan_ids
+    from .utils import normalize_to_title_case_tr, with_database, download_and_cache_pdf, get_or_create_alan, find_or_create_database, sanitize_filename_tr, get_meb_alan_id_with_fallback, get_folder_name_for_download, get_meb_alan_ids_cached
 except ImportError:
     from oku_dbf import extract_ders_adi
-    from utils import normalize_to_title_case_tr, with_database, download_and_cache_pdf, get_or_create_alan, find_or_create_database, sanitize_filename_tr, get_meb_alan_id_with_fallback, get_folder_name_for_download
-    from getir_cop import update_meb_alan_ids
+    from utils import normalize_to_title_case_tr, with_database, download_and_cache_pdf, get_or_create_alan, find_or_create_database, sanitize_filename_tr, get_meb_alan_id_with_fallback, get_folder_name_for_download, get_meb_alan_ids_cached
 
 BASE_DBF_URL = "https://meslek.meb.gov.tr/dbfgoster.aspx"
 HEADERS = {
@@ -126,9 +124,9 @@ def get_dbf_data(siniflar=["9", "10", "11", "12"]):
     Tüm sınıflar için DBF (Ders Bilgi Formu) verilerini eşzamanlı olarak çeker.
     COP'daki yöntemle aynı prensip: önce MEB alan ID'lerini al, sonra her alan+sınıf için spesifik sayfa.
     """
-    # Önce MEB alan ID'lerini çek
+    # Önce MEB alan ID'lerini çek (cache'den)
     print("📋 MEB Alan ID'leri çekiliyor...")
-    meb_alan_ids = update_meb_alan_ids()
+    meb_alan_ids = get_meb_alan_ids_cached()
     
     if not meb_alan_ids:
         print("❌ MEB Alan ID'leri çekilemedi!")
@@ -443,13 +441,8 @@ def get_dbf(cursor, dbf_data=None):
             yield {'type': 'error', 'message': 'DBF verileri çekilemedi!'}
             return
 
-    # MEB alan ID'lerini al
-    try:
-        from .getir_cop import update_meb_alan_ids
-    except ImportError:
-        from getir_cop import update_meb_alan_ids
-    
-    meb_alan_ids = update_meb_alan_ids()
+    # MEB alan ID'lerini al (cache'den)
+    meb_alan_ids = get_meb_alan_ids_cached()
 
     for sinif, alanlar in dbf_data.items():
         for alan_adi, info in alanlar.items():
@@ -724,13 +717,8 @@ def save_dbf_urls_to_database(cursor):
     
     print(f"🔍 {len(alan_dbf_urls)} alan için URL'ler veritabanına kaydediliyor...")
     
-    # MEB alan ID'lerini güncelle (getir_cop.py'den)
-    try:
-        from .getir_cop import update_meb_alan_ids
-    except ImportError:
-        from getir_cop import update_meb_alan_ids
-    
-    meb_alan_ids = update_meb_alan_ids()
+    # MEB alan ID'lerini güncelle (cache'den)
+    meb_alan_ids = get_meb_alan_ids_cached()
     
     saved_count = 0
     protocol_areas = []

@@ -11,7 +11,7 @@ import sqlite3
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import requests
 from bs4 import BeautifulSoup
-from .utils import normalize_to_title_case_tr, find_or_create_database, get_or_create_alan, download_and_cache_pdf, with_database, get_meb_alan_id_with_fallback, get_folder_name_for_download
+from .utils import normalize_to_title_case_tr, find_or_create_database, get_or_create_alan, download_and_cache_pdf, with_database, get_meb_alan_id_with_fallback, get_folder_name_for_download, get_meb_alan_ids_cached
 import re
 import json
 
@@ -96,6 +96,94 @@ def extract_update_year(html_content):
     
     return None
 
+def get_alan_cop_links(sinif):
+    """
+    Belirli bir sınıf için tüm alanların ÇÖP linklerini çeker.
+    
+    Args:
+        sinif (str): Sınıf kodu (9, 10, 11, 12)
+    
+    Returns:
+        dict: {alan_adi: {'url': cop_url, 'update_year': year}}
+    """
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9,tr;q=0.8',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1'
+    }
+    
+    alan_links = {}
+    
+    try:
+        # MEB sitesinden ÇÖP linklerini çek
+        url = "https://meslek.meb.gov.tr/cercevelistele.aspx"
+        params = {"sinif_kodu": sinif, "kurum_id": "1"}
+        
+        response = requests.get(url, params=params, headers=headers, timeout=45)
+        response.raise_for_status()
+        response.encoding = 'utf-8'
+        
+        soup = BeautifulSoup(response.text, 'html.parser')
+        
+        # ÇÖP linklerini içeren tablo/yapıyı bul
+        # PDF linklerini filtrele
+        cop_links = soup.find_all('a', href=True)
+        
+        for link in cop_links:
+            href = link.get('href', '').strip()
+            
+            # PDF linklerini filtrele (upload/cop9/, upload/cop10/, vb.)
+            if href.endswith('.pdf') and f'cop{sinif}' in href:
+                # Link metni veya parent elementten alan adını çıkar
+                link_text = link.get_text(strip=True)
+                
+                # Link text'i varsa alan adını çıkar
+                if link_text:
+                    # "AdaletMTAL9.SınıfÇerçeve Öğretim Programı2024-41" -> "Adalet"
+                    # "Aile ve Tüketici HizmetleriMTAL9.SınıfÇerçeve Öğretim Programı2024-41" -> "Aile ve Tüketici Hizmetleri"
+                    alan_adi = link_text
+                    
+                    # MTAL kelimesinden önceki kısmı al
+                    if 'MTAL' in alan_adi:
+                        alan_adi = alan_adi.split('MTAL')[0].strip()
+                    
+                    # Diğer temizlik işlemleri
+                    alan_adi = alan_adi.replace('Çerçeve Öğretim Programı', '').strip()
+                    alan_adi = re.sub(r'\d{4}-\d+', '', alan_adi).strip()  # 2024-41 gibi ifadeleri temizle
+                    
+                    # Eğer alan adı yoksa dosya adından çıkar
+                    if not alan_adi:
+                        # upload/cop9/adalet_9.pdf -> adalet
+                        filename = href.split('/')[-1].replace('.pdf', '')
+                        alan_adi = filename.replace(f'_{sinif}', '').replace('_', ' ').title()
+                    
+                    if alan_adi:
+                        # PDF URL'sini tam URL'ye çevir
+                        if href.startswith('http'):
+                            pdf_url = href
+                        else:
+                            pdf_url = f"https://meslek.meb.gov.tr/{href}"
+                        
+                        # Güncelleme yılını HTML içeriğinden çıkar
+                        update_year = extract_update_year(response.text)
+                        
+                        alan_links[alan_adi] = {
+                            'url': pdf_url,
+                            'update_year': update_year
+                        }
+                        
+                        print(f"  {sinif}. sınıf ÇÖP: {alan_adi}")
+        
+        print(f"📋 {sinif}. sınıf için {len(alan_links)} ÇÖP linki bulundu")
+        return alan_links
+        
+    except Exception as e:
+        print(f"❌ {sinif}. sınıf ÇÖP linkleri çekilirken hata: {e}")
+        return {}
+
 def get_cop_links():
     """
     Tüm sınıflar için ÇÖP linklerini paralel olarak çeker.
@@ -104,9 +192,9 @@ def get_cop_links():
     all_links = []
     siniflar = ["9", "10", "11", "12"]
     
-    # Önce MEB alan ID'lerini çek
+    # Önce MEB alan ID'lerini çek (cache'den)
     print("📋 MEB Alan ID'leri çek...")
-    meb_alan_ids = update_meb_alan_ids()
+    meb_alan_ids = get_meb_alan_ids_cached()
     
     with ThreadPoolExecutor(max_workers=4) as executor:
         future_to_sinif = {executor.submit(get_alan_cop_links, sinif): sinif for sinif in siniflar}

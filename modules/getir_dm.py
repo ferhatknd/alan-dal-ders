@@ -18,9 +18,9 @@ import re
 import time
 
 try:
-    from .utils import normalize_to_title_case_tr, find_or_create_database, get_or_create_alan, download_and_cache_pdf, with_database, get_meb_alan_id_with_fallback, get_folder_name_for_download
+    from .utils import normalize_to_title_case_tr, find_or_create_database, get_or_create_alan, download_and_cache_pdf, with_database, get_meb_alan_id_with_fallback, get_folder_name_for_download, get_meb_alan_ids_cached
 except ImportError:
-    from utils import normalize_to_title_case_tr, find_or_create_database, get_or_create_alan, download_and_cache_pdf, with_database, get_meb_alan_id_with_fallback, get_folder_name_for_download
+    from utils import normalize_to_title_case_tr, find_or_create_database, get_or_create_alan, download_and_cache_pdf, with_database, get_meb_alan_id_with_fallback, get_folder_name_for_download, get_meb_alan_ids_cached
 
 # Doğru URL yapısı
 BASE_DM_URL = "https://meslek.meb.gov.tr/dmgoster.aspx"
@@ -225,8 +225,36 @@ def get_dm_with_cursor(cursor):
             areas_with_meb_id = {alan_adi: info for alan_adi, info in db_areas.items() if info.get('meb_alan_id')}
             
             if not areas_with_meb_id:
-                yield {'type': 'error', 'message': 'Veritabanında meb_alan_id bulunan alan yok. Önce alan verilerini çekin.'}
-                return
+                # Eğer DB'de meb_alan_id'li alan yoksa, MEB'den çek ve alanları oluştur
+                yield {'type': 'warning', 'message': 'Veritabanında meb_alan_id bulunan alan yok. MEB\'den alan ID\'leri çekiliyor...'}
+                
+                # MEB'den alan ID'lerini çek
+                meb_alan_ids = get_meb_alan_ids_cached()
+                
+                if not meb_alan_ids:
+                    yield {'type': 'error', 'message': 'MEB\'den alan ID\'leri çekilemedi. DM işlemi iptal ediliyor.'}
+                    return
+                
+                # Alanları oluştur
+                created_count = 0
+                for alan_adi, meb_alan_id in meb_alan_ids.items():
+                    try:
+                        get_or_create_alan(cursor, alan_adi, meb_alan_id=meb_alan_id)
+                        created_count += 1
+                    except Exception as e:
+                        yield {'type': 'warning', 'message': f'Alan oluşturma hatası ({alan_adi}): {e}'}
+                
+                yield {'type': 'success', 'message': f'✅ {created_count} alan otomatik oluşturuldu.'}
+                
+                # Yeni oluşturulan alanları tekrar çek
+                cursor.execute("SELECT id, alan_adi, meb_alan_id FROM temel_plan_alan ORDER BY alan_adi")
+                results = cursor.fetchall()
+                db_areas = {alan_adi: {'id': area_id, 'meb_alan_id': meb_alan_id} for area_id, alan_adi, meb_alan_id in results}
+                areas_with_meb_id = {alan_adi: info for alan_adi, info in db_areas.items() if info.get('meb_alan_id')}
+                
+                if not areas_with_meb_id:
+                    yield {'type': 'error', 'message': 'Alan oluşturma işlemi başarısız. DM işlemi iptal ediliyor.'}
+                    return
             
             yield {'type': 'status', 'message': f'{len(areas_with_meb_id)} alan için DM verileri çekiliyor...'}
             
