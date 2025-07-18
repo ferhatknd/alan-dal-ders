@@ -29,7 +29,7 @@ def get_database_statistics(cursor) -> Dict[str, Any]:
     Returns:
         dict: Kapsamlı veritabanı istatistikleri
         {
-            "total_alan": int,
+            "alan_count": int,
             "cop_url_count": int,
             "dbf_url_count": int,
             "ders_count": int,
@@ -91,7 +91,7 @@ def get_database_statistics(cursor) -> Dict[str, Any]:
     except Exception as e:
         print(f"❌ İstatistik çekme hatası: {e}")
         return {
-            "total_alan": 0,
+            "alan_count": 0,
             "cop_url_count": 0, 
             "dbf_url_count": 0,
             "ders_count": 0,
@@ -117,7 +117,7 @@ def format_database_statistics_message(stats: Dict[str, Any]) -> str:
     if not stats or 'error' in stats:
         return "📊 İstatistik alınamadı"
     
-    return f"📊 Veritabanı Durumu: {stats['total_alan']} toplam alan | {stats['cop_url_count']} COP URL | {stats['dbf_url_count']} DBF URL | {stats['ders_count']} ders | {stats['dal_count']} dal"
+    return f"📊 Veritabanı Durumu: {stats['alan_count']} toplam alan | {stats['cop_url_count']} COP URL | {stats['dbf_url_count']} DBF URL | {stats['ders_count']} ders | {stats['dal_count']} dal"
 
 
 def get_file_statistics(data_root: str = "data") -> Dict[str, int]:
@@ -134,8 +134,10 @@ def get_file_statistics(data_root: str = "data") -> Dict[str, int]:
             "dbf_rar": int,
             "dbf_pdf": int,
             "dbf_docx": int,
+            "dbf_total": int,  # Toplam DBF dosya sayısı
             "dm_pdf": int,
-            "bom_pdf": int
+            "bom_pdf": int,
+            "bom_total": int  # Toplam BOM dosya sayısı
         }
     """
     stats = {
@@ -143,8 +145,10 @@ def get_file_statistics(data_root: str = "data") -> Dict[str, int]:
         "dbf_rar": 0,
         "dbf_pdf": 0,
         "dbf_docx": 0,
+        "dbf_total": 0,  # Toplam DBF dosya sayısı
         "dm_pdf": 0,
-        "bom_pdf": 0
+        "bom_pdf": 0,
+        "bom_total": 0  # Toplam BOM dosya sayısı
     }
     
     if not os.path.exists(data_root):
@@ -164,10 +168,13 @@ def get_file_statistics(data_root: str = "data") -> Dict[str, int]:
                 for file in files:
                     if file.lower().endswith('.rar'):
                         stats["dbf_rar"] += 1
+                        stats["dbf_total"] += 1
                     elif file.lower().endswith('.pdf'):
                         stats["dbf_pdf"] += 1
+                        stats["dbf_total"] += 1
                     elif file.lower().endswith('.docx'):
                         stats["dbf_docx"] += 1
+                        stats["dbf_total"] += 1
         
         # DM PDF'leri say
         dm_dir = os.path.join(data_root, "dm")
@@ -175,11 +182,13 @@ def get_file_statistics(data_root: str = "data") -> Dict[str, int]:
             for root, dirs, files in os.walk(dm_dir):
                 stats["dm_pdf"] += len([f for f in files if f.lower().endswith('.pdf')])
         
-        # BOM PDF'leri say
+        # BOM dosyalarını say
         bom_dir = os.path.join(data_root, "bom")
         if os.path.exists(bom_dir):
             for root, dirs, files in os.walk(bom_dir):
-                stats["bom_pdf"] += len([f for f in files if f.lower().endswith('.pdf')])
+                pdf_count = len([f for f in files if f.lower().endswith('.pdf')])
+                stats["bom_pdf"] += pdf_count
+                stats["bom_total"] += pdf_count  # BOM'da sadece PDF dosyaları var
                 
     except Exception as e:
         print(f"❌ Dosya istatistik hesaplama hatası: {e}")

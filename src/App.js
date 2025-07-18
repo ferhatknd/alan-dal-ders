@@ -1770,8 +1770,8 @@ console.error(errorMsg);
             disabled={loading}
             className="workflow-button getir-alan-dal"
           >
-            <div>Getir Alan ve Dal</div>
-            <div>({stats.alan}) ve ({stats.dal})</div>
+            <div>Getir Alan/Dal</div>
+            <div>({(stats.alan_count || stats.alan)}/{(stats.dal_count || stats.dal)})</div>
           </button>
 
           {/* 2. Getir COP */}
@@ -1781,7 +1781,7 @@ console.error(errorMsg);
             className="workflow-button getir-cop"
           >
             <div>Getir ÇÖP</div>
-            <div>({stats.cop_pdf} PDF)</div>
+            <div>({stats.cop_pdf} Dosya)</div>
           </button>
 
           {/* 3. Getir DBF */}
@@ -1791,9 +1791,7 @@ console.error(errorMsg);
             className="workflow-button getir-dbf"
           >
             <div>Getir DBF</div>
-            <div>
-              Ders({stats.ders})<br />({stats.dbf_rar} RAR, {stats.dbf_pdf} PDF, {stats.dbf_docx} DOCX)
-            </div>
+            <div>({stats.dbf_total || (stats.dbf_rar + stats.dbf_pdf + stats.dbf_docx)} Dosya)</div>
           </button>
 
           {/* 4. Getir DM */}
@@ -1803,7 +1801,7 @@ console.error(errorMsg);
             className="workflow-button getir-dm"
           >
             <div>Getir DM</div>
-            <div>({stats.dm_pdf} PDF)</div>
+            <div>({stats.dm_pdf} Dosya)</div>
           </button>
 
           {/* 5. Getir BOM */}
@@ -1813,7 +1811,7 @@ console.error(errorMsg);
             className="workflow-button getir-bom"
           >
             <div>Getir BOM</div>
-            <div>({stats.bom_pdf} PDF)</div>
+            <div>({stats.bom_total || stats.bom_pdf} Dosya)</div>
           </button>
 
           {/* 6. Oku COP */}
@@ -1823,7 +1821,7 @@ console.error(errorMsg);
             className="workflow-button oku-cop"
           >
             <div>Oku COP</div>
-            <div>({stats.cop_okunan} Ders)</div>
+            <div>({stats.ders_count} Ders)</div>
           </button>
 
           {/* 7. Oku DBF */}
@@ -1833,7 +1831,7 @@ console.error(errorMsg);
             className="workflow-button oku-dbf"
           >
             <div>Oku DBF</div>
-            <div>({stats.dbf_okunan} Ders)</div>
+            <div>({stats.ders_count} Ders)</div>
           </button>
         </div>
 

@@ -26,7 +26,7 @@ from modules.getir_dal import get_dal
 
 # Database utilities from utils-database.py
 from modules.utils_database import with_database_json, find_or_create_database, get_or_create_alan
-from modules.utils import normalize_to_title_case_tr
+from modules.utils_normalize import normalize_to_title_case_tr
 
 app = Flask(__name__)
 CORS(app)
