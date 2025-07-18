@@ -1,5 +1,5 @@
 from flask import Flask, Response, jsonify, request
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 import json
 import time
 import os
@@ -29,8 +29,6 @@ from modules.utils_database import with_database_json, find_or_create_database, 
 from modules.utils import normalize_to_title_case_tr, normalize_alan_adi
 
 app = Flask(__name__)
-# CORS'u etkinleştirerek localhost:3000 gibi farklı bir porttan gelen
-# istekleri kabul etmesini sağlıyoruz.
 CORS(app)
 
 CACHE_FILE = "data/scraped_data.json"
@@ -293,25 +291,13 @@ def get_statistics(cursor):
         else:
             file_stats = {"cop_pdf": 0, "dbf_rar": 0, "dbf_pdf": 0, "dbf_docx": 0, "dm_pdf": 0, "bom_pdf": 0}
 
-        # Backward compatibility için eski format
-        legacy_stats = {
-            "alan": db_stats.get("total_alan", 0),
-            "dal": db_stats.get("dal_count", 0), 
-            "ders": db_stats.get("ders_count", 0),
-            "cop_okunan": db_stats.get("ders_dal_relations", 0),  # bir dala bağlı olan dersler
-            "dbf_okunan": 0,  # Bu değer ayrıca hesaplanmalı
-            **file_stats
-        }
         
-        # dbf_okunan: ders saati 0'dan büyük olan dersler
-        cursor.execute("SELECT COUNT(id) FROM temel_plan_ders WHERE ders_saati > 0")
-        legacy_stats["dbf_okunan"] = cursor.fetchone()[0]
 
         # Yeni kapsamlı format
         comprehensive_stats = {
             **db_stats,
             **file_stats,
-            "legacy": legacy_stats,
+            
             "summary_message": f"📊 {db_stats.get('total_alan', 0)} alan | {db_stats.get('cop_url_count', 0)} COP | {db_stats.get('dbf_url_count', 0)} DBF | {db_stats.get('ders_count', 0)} ders | {db_stats.get('dal_count', 0)} dal"
         }
 
@@ -604,8 +590,8 @@ def api_oku_cop():
     
     return Response(generate(), mimetype='text/event-stream')
 
-@app.route('/api/update-ders-saatleri-from-dbf')
-def api_update_ders_saatleri_from_dbf():
+@app.route('/api/process-dbf')
+def api_process_dbf():
     """
     DBF dosyalarını işleyip mevcut derslerin ders saatlerini günceller.
     """
@@ -701,15 +687,17 @@ def scrape_to_db():
                 
                 # 2. DBF verilerini çek ve kaydet
                 yield f"data: {json.dumps({'type': 'status', 'message': '2/4: DBF verileri çekiliyor...'})}\n\n"
-                dbf_data = getir_dbf()
-                dbf_saved = save_dbf_data_to_db(cursor, dbf_data)
-                yield f"data: {json.dumps({'type': 'status', 'message': f'DBF: {dbf_saved} alan güncellendi'})}\n\n"
+                # get_dbf generator olarak çalışır, her mesajı işle
+                for dbf_msg in get_dbf():
+                    yield f"data: {json.dumps(dbf_msg)}\n\n"
+                    time.sleep(0.05)
                 
                 # 3. ÇÖP verilerini çek ve kaydet
                 yield f"data: {json.dumps({'type': 'status', 'message': '3/4: ÇÖP verileri çekiliyor...'})}\n\n"
-                cop_data = getir_cop()
-                cop_saved = save_cop_data_to_db(cursor, cop_data)
-                yield f"data: {json.dumps({'type': 'status', 'message': f'ÇÖP: {cop_saved} alan güncellendi'})}\n\n"
+                # get_cop generator olarak çalışır, her mesajı işle
+                for cop_msg in get_cop():
+                    yield f"data: {json.dumps(cop_msg)}\n\n"
+                    time.sleep(0.05)
                 
                 # 4. BOM verilerini çek ve kaydet
                 yield f"data: {json.dumps({'type': 'status', 'message': '4/4: BOM verileri çekiliyor...'})}\n\n"
@@ -725,8 +713,8 @@ def scrape_to_db():
     
     return Response(generate(), mimetype='text/event-stream')
 
-@app.route('/api/save-courses-to-db', methods=['POST'])
-def save_courses_to_db():
+@app.route('/api/save', methods=['POST'])
+def save():
     """
     Düzenlenmiş ders verilerini temel_plan_* tablolarına kaydeder.
     """
@@ -1341,187 +1329,19 @@ def update_ders_saati_from_dbf_data(cursor, parsed_data):
     
     return updated_count
 
-# Yeni 5 Adımlı İş Akışı Endpoints
-@app.route('/api/workflow-step-1')
-def workflow_step_1():
+@app.route('/api/get-dal')
+def get_dal_endpoint():
     """
-    Adım 1: Alan-Dal verilerini çekip veritabanına kaydeder.
+    Alan-Dal ilişkilerini çeker ve veritabanına kaydeder.
+    getir_dal.py modülündeki get_dal() fonksiyonunu tetikler.
     """
     def generate():
         try:
-            # getir_dal modülünden yeni entegre fonksiyonu kullan
-            from modules.getir_dal import get_dal
-            
             for message in get_dal():
                 yield f"data: {json.dumps(message)}\n\n"
                 time.sleep(0.05)
         except Exception as e:
-            yield f"data: {json.dumps({'type': 'error', 'message': f'Adım 1 hatası: {str(e)}'})}\n\n"
-    
-    return Response(generate(), mimetype='text/event-stream')
-
-@app.route('/api/workflow-step-2')
-def workflow_step_2():
-    """
-    Adım 2: ÇÖP (Çerçeve Öğretim Programı) verilerini çekip organize eder.
-    """
-    def generate():
-        try:
-            # getir_cop_oku modülünden yeni entegre fonksiyonu kullan
-            from modules.getir_cop import getir_cop_with_db_integration
-            
-            for message in getir_cop_with_db_integration():
-                yield f"data: {json.dumps(message)}\n\n"
-                time.sleep(0.05)
-        except Exception as e:
-            yield f"data: {json.dumps({'type': 'error', 'message': f'Adım 2 hatası: {str(e)}'})}\n\n"
-    
-    return Response(generate(), mimetype='text/event-stream')
-
-@app.route('/api/workflow-step-3')
-def workflow_step_3():
-    """
-    Adım 3: DBF (Ders Bilgi Formu) verilerini işler.
-    """
-    def generate():
-        try:
-            # get_dbf fonksiyonu ile DBF verileri işleniyor
-            yield f"data: {json.dumps({'type': 'status', 'message': 'Adım 3: DBF verileri işleniyor...'})}\n\n"
-            
-            for msg in get_dbf():
-                yield f"data: {json.dumps(msg)}\n\n"
-                time.sleep(0.05)
-                
-            yield f"data: {json.dumps({'type': 'done', 'message': 'Adım 3 tamamlandı!'})}\n\n"
-        except Exception as e:
-            yield f"data: {json.dumps({'type': 'error', 'message': f'Adım 3 hatası: {str(e)}'})}\n\n"
-    
-    return Response(generate(), mimetype='text/event-stream')
-
-@app.route('/api/workflow-step-4')
-def workflow_step_4():
-    """
-    Adım 4: DM (Ders Materyali) verilerini işler.
-    """
-    def generate():
-        try:
-            yield f"data: {json.dumps({'type': 'status', 'message': 'Adım 4: DM (Ders Materyali) verileri işleniyor...'})}\n\n"
-            
-            # DM verilerini generator olarak işle
-            for message in get_dm():
-                yield f"data: {json.dumps(message)}\n\n"
-            
-            yield f"data: {json.dumps({'type': 'done', 'message': 'Adım 4 tamamlandı!'})}\n\n"
-        except Exception as e:
-            yield f"data: {json.dumps({'type': 'error', 'message': f'Adım 4 hatası: {str(e)}'})}\n\n"
-    
-    return Response(generate(), mimetype='text/event-stream')
-
-@app.route('/api/workflow-step-5')
-def workflow_step_5():
-    """
-    Adım 5: BOM (Bireysel Öğrenme Materyali) verilerini işler.
-    """
-    def generate():
-        try:
-            yield f"data: {json.dumps({'type': 'status', 'message': 'Adım 5: BOM (Bireysel Öğrenme Materyali) verileri işleniyor...'})}\n\n"
-            bom_data = get_bom()
-            
-            # Veritabanına kaydet
-            db_path = find_or_create_database()
-            if db_path:
-                with sqlite3.connect(db_path) as conn:
-                    cursor = conn.cursor()
-                    bom_saved = save_bom_data_to_db(cursor, bom_data)
-                    yield f"data: {json.dumps({'type': 'success', 'message': f'BOM: {bom_saved} ders güncellendi'})}\n\n"
-            
-            yield f"data: {json.dumps({'type': 'done', 'message': 'Adım 5 tamamlandı!'})}\n\n"
-        except Exception as e:
-            yield f"data: {json.dumps({'type': 'error', 'message': f'Adım 5 hatası: {str(e)}'})}\n\n"
-    
-    return Response(generate(), mimetype='text/event-stream')
-
-@app.route('/api/workflow-full')
-def workflow_full():
-    """
-    Tüm 5 adımı sıralı olarak çalıştırır.
-    """
-    def generate():
-        try:
-            steps = [
-                ('Adım 1: Alan-Dal Verileri', '/api/workflow-step-1'),
-                ('Adım 2: ÇÖP Verileri', '/api/workflow-step-2'),
-                ('Adım 3: DBF Verileri', '/api/workflow-step-3'),
-                ('Adım 4: DM Verileri', '/api/workflow-step-4'),
-                ('Adım 5: BOM Verileri', '/api/workflow-step-5')
-            ]
-            
-            yield f"data: {json.dumps({'type': 'status', 'message': '5 Adımlı İş Akışı Başlıyor...'})}\n\n"
-            
-            for step_name, step_endpoint in steps:
-                yield f"data: {json.dumps({'type': 'status', 'message': f'{step_name} başlıyor...'})}\n\n"
-                
-                # Her adımı çalıştır
-                if step_endpoint == '/api/workflow-step-1':
-                    from modules.getir_dal import get_dal
-                    for message in get_dal():
-                        yield f"data: {json.dumps(message)}\n\n"
-                        time.sleep(0.05)
-                elif step_endpoint == '/api/workflow-step-2':
-                    cop_data = getir_cop()
-                    cop_count = len(cop_data.get('cop_data', {}))
-                    yield f"data: {json.dumps({'type': 'success', 'message': f'ÇÖP verileri çekildi: {cop_count} sınıf'})}\n\n"
-                # Diğer adımlar için basitleştirilmiş versiyonlar
-                elif step_endpoint == '/api/workflow-step-3':
-                    yield f"data: {json.dumps({'type': 'status', 'message': 'DBF verileri işleniyor...'})}\n\n"
-                    for msg in get_dbf():
-                        yield f"data: {json.dumps(msg)}\n\n"
-                        time.sleep(0.05)
-                elif step_endpoint == '/api/workflow-step-4':
-                    yield f"data: {json.dumps({'type': 'status', 'message': 'DM verileri işleniyor...'})}\n\n"
-                    dm_data = get_dm()
-                    db_path = find_or_create_database()
-                    if db_path:
-                        with sqlite3.connect(db_path) as conn:
-                            cursor = conn.cursor()
-                            dm_saved = save_dm_data_to_db(cursor, dm_data)
-                            yield f"data: {json.dumps({'type': 'success', 'message': f'DM: {dm_saved} ders kaydedildi'})}\n\n"
-                elif step_endpoint == '/api/workflow-step-5':
-                    yield f"data: {json.dumps({'type': 'status', 'message': 'BOM verileri işleniyor...'})}\n\n"
-                    bom_data = get_bom()
-                    db_path = find_or_create_database()
-                    if db_path:
-                        with sqlite3.connect(db_path) as conn:
-                            cursor = conn.cursor()
-                            bom_saved = save_bom_data_to_db(cursor, bom_data)
-                            yield f"data: {json.dumps({'type': 'success', 'message': f'BOM: {bom_saved} ders güncellendi'})}\n\n"
-                
-                yield f"data: {json.dumps({'type': 'success', 'message': f'{step_name} tamamlandı!'})}\n\n"
-            
-            yield f"data: {json.dumps({'type': 'done', 'message': '🎉 Tüm 5 adım başarıyla tamamlandı!'})}\n\n"
-            
-        except Exception as e:
-            yield f"data: {json.dumps({'type': 'error', 'message': f'İş akışı hatası: {str(e)}'})}\n\n"
-    
-    return Response(generate(), mimetype='text/event-stream')
-
-@app.route('/api/scrape-alan-dal')
-def scrape_alan_dal():
-    """
-    Veri çekme (scraping) işlemini başlatır ve ilerlemeyi
-    Server-Sent Events (SSE) ile anlık olarak gönderir.
-    getir_dal.py içerisindeki ana fonksiyonu tetikler.
-    """
-    def generate():
-        try:
-            # get_dal bir generator'dır.
-            # Her yield edilen mesajı alıp SSE formatında gönderiyoruz.
-            for message in get_dal():
-                yield f"data: {json.dumps(message)}\n\n"
-                time.sleep(0.05)  # İstemcinin veriyi işlemesi için küçük bir bekleme
-        except Exception as e:
-            # Hata durumunda istemciye bir hata mesajı gönder
-            error_message = {'type': 'error', 'message': f'Bir hata oluştu: {str(e)}'}
+            error_message = {'type': 'error', 'message': f'Alan-Dal çekme hatası: {str(e)}'}
             yield f"data: {json.dumps(error_message)}\n\n"
 
     return Response(generate(), mimetype='text/event-stream')
