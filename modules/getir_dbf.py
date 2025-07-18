@@ -573,7 +573,7 @@ def get_dbf(cursor, dbf_data=None):
                 meb_alan_id = meb_alan_ids.get(alan_adi) if meb_alan_ids else None
                 
                 # Alan ID'sini al veya oluştur (ORJİNAL ALAN ADI ile)
-                alan_id = get_or_create_alan(cursor, alan_adi, meb_alan_id=meb_alan_id, dbf_urls=alan_urls)
+                alan_id = with_database(lambda c: get_or_create_alan(c, alan_adi, meb_alan_id=meb_alan_id, dbf_urls=alan_urls))()
                 
                 # Protokol alan ise işle (ders bağlantıları için)
                 if is_protocol_area(alan_adi):
@@ -587,6 +587,15 @@ def get_dbf(cursor, dbf_data=None):
                 yield {'type': 'error', 'message': f'URL kaydetme hatası ({alan_adi}): {e}'}
         
         yield {'type': 'success', 'message': f'✅ {saved_alan_count} alan için URL\'ler veritabanına kaydedildi.'}
+        
+        # Merkezi istatistik fonksiyonunu kullan (CLAUDE.md kuralları)
+        try:
+            from .utils import get_database_statistics, format_database_statistics_message
+            stats = get_database_statistics()
+            stats_message = format_database_statistics_message(stats)
+            yield {'type': 'info', 'message': stats_message}
+        except Exception as e:
+            yield {'type': 'warning', 'message': f'İstatistik alınamadı: {e}'}
         
         # JSON çıktı dosyası oluştur
         output_filename = "data/get_dbf.json"

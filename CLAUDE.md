@@ -41,6 +41,8 @@ npm test
 # Veritabanı ve schema otomatik kurulum
 python server.py  # İlk çalıştırmada otomatik setup
 
+#always use single responsibility principle when creating new method
+
 # Test debugging
 python test.py  # DBF PDF analizi için
 
@@ -326,3 +328,11 @@ Bu proje MIT Lisansı altında lisanslanmıştır.
 📧 **Destek:** Projeyle ilgili sorular için issue açabilirsiniz
 
 📊 **Bu CLAUDE.md dosyası, projenin tüm kritik bilgilerini içerir ve Claude Code'un tutarlı çalışması için tasarlanmıştır.**
+
+## Uygulama Mimarisi Notları
+
+- **JSON Dosyaları**:
+  - json dosyaları ana iş akışında olan dosyalar değildir. 
+  - Onları kullanarak başka işlemler planlanmaz. 
+  - Bu dosyalar sadece sonucu kontrol etmek için süreçlerin sonucunda kaydedilen dosyalardır. 
+  - Bir süreçte ne alınıyor ise öncelikle veritabanına kaydetme birincil hedeftir.

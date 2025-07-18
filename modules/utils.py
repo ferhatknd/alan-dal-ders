@@ -183,46 +183,8 @@ def normalize_alan_adi(alan_adi):
     if not alan_adi:
         return "Belirtilmemiş"
     
-    # Normalize edilmiş alan adı: İlk harf büyük, geri kalan kelimeler ilk harfi büyük
-    normalized = alan_adi.strip()
-    
-    # Yaygın normalizations
-    replacements = {
-        'AİLE VE TÜKETİCİ HİZMETLERİ': 'Aile ve Tüketici Hizmetleri',
-        'ADALET': 'Adalet',
-        'BİLİŞİM TEKNOLOJİLERİ': 'Bilişim Teknolojileri',
-        'METAL TEKNOLOJİSİ': 'Metal Teknolojisi',
-        'ELEKTRİK ELEKTRONİK TEKNOLOJİSİ': 'Elektrik Elektronik Teknolojisi',
-        'MAKİNE TEKNOLOJİSİ': 'Makine Teknolojisi',
-        'İNŞAAT TEKNOLOJİSİ': 'İnşaat Teknolojisi',
-        'ULAŞTIRMA': 'Ulaştırma',
-        'ENERJİ': 'Enerji',
-        'ÇEVRE': 'Çevre',
-        'TARIM': 'Tarım',
-        'HAYVANCILIK': 'Hayvancılık',
-        'GIDA': 'Gıda',
-        'TEKSTİL GİYİM AYAKKABI': 'Tekstil Giyim Ayakkabı',
-        'KIMYA': 'Kimya',
-        'CAM SERAMIK': 'Cam Seramik',
-        'AĞAÇ': 'Ağaç',
-        'KAĞIT MATBAA': 'Kağıt Matbaa',
-        'DERİ': 'Deri',
-        'FİNANS SİGORTACILIK': 'Finans Sigortacılık',
-        'PAZARLAMA VE SATIŞ': 'Pazarlama ve Satış',
-        'LOJİSTİK': 'Lojistik',
-        'TURİZM': 'Turizm',
-        'SPOR': 'Spor',
-        'SANAT VE TASARIM': 'Sanat ve Tasarım',
-        'İLETİŞİM': 'İletişim',
-        'DİN HİZMETLERİ': 'Din Hizmetleri'
-    }
-    
-    # Önce exact match kontrol et
-    if normalized.upper() in replacements:
-        return replacements[normalized.upper()]
-    
-    # Manuel replacement yoksa, normalize_to_title_case_tr kullan
-    return normalize_to_title_case_tr(normalized)
+    # Doğrudan normalize_to_title_case_tr fonksiyonunu çağır
+    return normalize_to_title_case_tr(alan_adi.strip())
 
 def extract_meb_id_from_urls(cop_url=None, dbf_urls=None):
     """
@@ -338,11 +300,31 @@ def get_or_create_alan(cursor, alan_adi, meb_alan_id=None, cop_url=None, dbf_url
                 updated_meb_alan_id = extracted_id
                 print(f"      🔍 MEB ID URL'den çıkarıldı: {alan_adi} -> {extracted_id}")
         
-        cursor.execute("""
-            UPDATE temel_plan_alan 
-            SET cop_url = ?, meb_alan_id = ?
-            WHERE id = ?
-        """, (updated_cop_urls, updated_meb_alan_id, alan_id))
+        # Sadece verilen parametreleri güncelle (diğerlerini koruyarak)
+        update_parts = []
+        update_values = []
+        
+        if cop_url is not None:
+            update_parts.append("cop_url = ?")
+            update_values.append(updated_cop_urls)
+        
+        if dbf_urls is not None:
+            update_parts.append("dbf_urls = ?")
+            dbf_urls_json = json.dumps(dbf_urls)
+            update_values.append(dbf_urls_json)
+        
+        if updated_meb_alan_id is not None:
+            update_parts.append("meb_alan_id = ?")
+            update_values.append(updated_meb_alan_id)
+        
+        if update_parts:
+            update_query = f"""
+                UPDATE temel_plan_alan 
+                SET {', '.join(update_parts)}
+                WHERE id = ?
+            """
+            update_values.append(alan_id)
+            cursor.execute(update_query, tuple(update_values))
         
         return alan_id
     else:
@@ -1113,3 +1095,103 @@ def update_all_meb_alan_ids_from_cache(cursor):
     Cache'deki tüm MEB Alan ID'lerini database'e toplu olarak günceller.
     """
     return update_all_meb_alan_ids_from_cache_impl(cursor)
+
+# ====== Database Statistics Utilities ======
+
+@with_database
+def get_database_statistics(cursor):
+    """
+    Merkezi veritabanı istatistikleri çekme fonksiyonu.
+    CLAUDE.md kurallarına uygun olarak @with_database decorator kullanır.
+    
+    Returns:
+        dict: Kapsamlı veritabanı istatistikleri
+        {
+            "total_alan": int,
+            "cop_url_count": int,
+            "dbf_url_count": int,
+            "ders_count": int,
+            "dal_count": int,
+            "ders_dal_relations": int,
+            "ogrenme_birimi_count": int,
+            "konu_count": int,
+            "kazanim_count": int
+        }
+    """
+    stats = {}
+    
+    try:
+        # Alan sayıları
+        cursor.execute('SELECT COUNT(*) FROM temel_plan_alan')
+        stats['total_alan'] = cursor.fetchone()[0]
+        
+        cursor.execute('SELECT COUNT(*) FROM temel_plan_alan WHERE cop_url IS NOT NULL')
+        stats['cop_url_count'] = cursor.fetchone()[0]
+        
+        cursor.execute('SELECT COUNT(*) FROM temel_plan_alan WHERE dbf_urls IS NOT NULL')
+        stats['dbf_url_count'] = cursor.fetchone()[0]
+        
+        # Ders sayıları
+        cursor.execute('SELECT COUNT(*) FROM temel_plan_ders')
+        stats['ders_count'] = cursor.fetchone()[0]
+        
+        # Dal sayıları  
+        cursor.execute('SELECT COUNT(*) FROM temel_plan_dal')
+        stats['dal_count'] = cursor.fetchone()[0]
+        
+        # Ders-Dal ilişkileri
+        cursor.execute('SELECT COUNT(*) FROM temel_plan_ders_dal')
+        stats['ders_dal_relations'] = cursor.fetchone()[0]
+        
+        # Öğrenme birimi sayıları (varsa)
+        try:
+            cursor.execute('SELECT COUNT(*) FROM temel_plan_ogrenme_birimi')
+            stats['ogrenme_birimi_count'] = cursor.fetchone()[0]
+        except:
+            stats['ogrenme_birimi_count'] = 0
+        
+        # Konu sayıları (varsa)
+        try:
+            cursor.execute('SELECT COUNT(*) FROM temel_plan_konu')
+            stats['konu_count'] = cursor.fetchone()[0]
+        except:
+            stats['konu_count'] = 0
+        
+        # Kazanım sayıları (varsa)
+        try:
+            cursor.execute('SELECT COUNT(*) FROM temel_plan_kazanim')
+            stats['kazanim_count'] = cursor.fetchone()[0]
+        except:
+            stats['kazanim_count'] = 0
+            
+        return stats
+        
+    except Exception as e:
+        print(f"❌ İstatistik çekme hatası: {e}")
+        return {
+            "total_alan": 0,
+            "cop_url_count": 0, 
+            "dbf_url_count": 0,
+            "ders_count": 0,
+            "dal_count": 0,
+            "ders_dal_relations": 0,
+            "ogrenme_birimi_count": 0,
+            "konu_count": 0,
+            "kazanim_count": 0,
+            "error": str(e)
+        }
+
+def format_database_statistics_message(stats):
+    """
+    İstatistikleri konsol mesajı formatına çevirir.
+    
+    Args:
+        stats: get_database_statistics() dönüş değeri
+        
+    Returns:
+        str: Formatlanmış mesaj
+    """
+    if not stats or 'error' in stats:
+        return "📊 İstatistik alınamadı"
+    
+    return f"📊 Veritabanı Durumu: {stats['total_alan']} toplam alan | {stats['cop_url_count']} COP URL | {stats['dbf_url_count']} DBF URL | {stats['ders_count']} ders | {stats['dal_count']} dal"

@@ -262,53 +262,59 @@ def api_get_bom():
 def get_statistics(cursor):
     """
     Veritabanı ve dosya sisteminden istatistikleri toplar ve döndürür.
+    Merkezi get_database_statistics fonksiyonunu kullanır (CLAUDE.md kuralları).
     """
-    stats = {
-        "alan": 0, "dal": 0, "ders": 0,
-        "cop_pdf": 0, "dbf_rar": 0, "dbf_pdf": 0, "dbf_docx": 0,
-        "dm_pdf": 0, "bom_pdf": 0, "cop_okunan": 0, "dbf_okunan": 0
-    }
-
     try:
-        # 1. Veritabanından istatistikleri al
-        cursor.execute("SELECT COUNT(id) FROM temel_plan_alan")
-        stats["alan"] = cursor.fetchone()[0]
+        # Merkezi utils fonksiyonunu kullan
+        from modules.utils import get_database_statistics
+        db_stats = get_database_statistics()
         
-        cursor.execute("SELECT COUNT(id) FROM temel_plan_dal")
-        stats["dal"] = cursor.fetchone()[0]
-        
-        cursor.execute("SELECT COUNT(id) FROM temel_plan_ders")
-        stats["ders"] = cursor.fetchone()[0]
+        # Dosya sistem istatistikleri
+        def count_files_in_dir(directory, extensions):
+            count = 0
+            if os.path.exists(directory):
+                for _, _, files in os.walk(directory):
+                    for file in files:
+                        if file.lower().endswith(tuple(extensions)):
+                            count += 1
+            return count
 
+        data_dir = "data"
+        file_stats = {}
+        
+        if os.path.exists(data_dir):
+            file_stats["cop_pdf"] = count_files_in_dir(os.path.join(data_dir, "cop"), ['.pdf']) + count_files_in_dir(os.path.join(data_dir, "cop_files"), ['.pdf'])
+            file_stats["dbf_rar"] = count_files_in_dir(os.path.join(data_dir, "dbf"), ['.rar', '.zip'])
+            file_stats["dbf_pdf"] = count_files_in_dir(os.path.join(data_dir, "dbf"), ['.pdf'])
+            file_stats["dbf_docx"] = count_files_in_dir(os.path.join(data_dir, "dbf"), ['.docx'])
+            file_stats["dm_pdf"] = count_files_in_dir(os.path.join(data_dir, "dm"), ['.pdf'])
+            file_stats["bom_pdf"] = count_files_in_dir(os.path.join(data_dir, "bom"), ['.pdf'])
+        else:
+            file_stats = {"cop_pdf": 0, "dbf_rar": 0, "dbf_pdf": 0, "dbf_docx": 0, "dm_pdf": 0, "bom_pdf": 0}
+
+        # Backward compatibility için eski format
+        legacy_stats = {
+            "alan": db_stats.get("total_alan", 0),
+            "dal": db_stats.get("dal_count", 0), 
+            "ders": db_stats.get("ders_count", 0),
+            "cop_okunan": db_stats.get("ders_dal_relations", 0),  # bir dala bağlı olan dersler
+            "dbf_okunan": 0,  # Bu değer ayrıca hesaplanmalı
+            **file_stats
+        }
+        
         # dbf_okunan: ders saati 0'dan büyük olan dersler
         cursor.execute("SELECT COUNT(id) FROM temel_plan_ders WHERE ders_saati > 0")
-        stats["dbf_okunan"] = cursor.fetchone()[0]
+        legacy_stats["dbf_okunan"] = cursor.fetchone()[0]
 
-        # cop_okunan: bir dala bağlı olan dersler
-        cursor.execute("SELECT COUNT(DISTINCT ders_id) FROM temel_plan_ders_dal")
-        stats["cop_okunan"] = cursor.fetchone()[0]
+        # Yeni kapsamlı format
+        comprehensive_stats = {
+            **db_stats,
+            **file_stats,
+            "legacy": legacy_stats,
+            "summary_message": f"📊 {db_stats.get('total_alan', 0)} alan | {db_stats.get('cop_url_count', 0)} COP | {db_stats.get('dbf_url_count', 0)} DBF | {db_stats.get('ders_count', 0)} ders | {db_stats.get('dal_count', 0)} dal"
+        }
 
-        # 2. Dosya sisteminden istatistikleri al
-        data_dir = "data"
-        if os.path.exists(data_dir):
-            
-            def count_files_in_dir(directory, extensions):
-                count = 0
-                if os.path.exists(directory):
-                    for _, _, files in os.walk(directory):
-                        for file in files:
-                            if file.lower().endswith(tuple(extensions)):
-                                count += 1
-                return count
-
-            stats["cop_pdf"] = count_files_in_dir(os.path.join(data_dir, "cop"), ['.pdf']) + count_files_in_dir(os.path.join(data_dir, "cop_files"), ['.pdf'])
-            stats["dbf_rar"] = count_files_in_dir(os.path.join(data_dir, "dbf"), ['.rar', '.zip'])
-            stats["dbf_pdf"] = count_files_in_dir(os.path.join(data_dir, "dbf"), ['.pdf'])
-            stats["dbf_docx"] = count_files_in_dir(os.path.join(data_dir, "dbf"), ['.docx'])
-            stats["dm_pdf"] = count_files_in_dir(os.path.join(data_dir, "dm"), ['.pdf'])
-            stats["bom_pdf"] = count_files_in_dir(os.path.join(data_dir, "bom"), ['.pdf'])
-
-        return stats
+        return comprehensive_stats
 
     except Exception as e:
         print(f"İstatistik alınırken hata oluştu: {e}")

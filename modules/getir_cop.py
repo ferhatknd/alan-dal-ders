@@ -232,8 +232,7 @@ def get_cop_links():
         
     return all_links
 
-@with_database
-def get_cop_with_cursor(cursor):
+def get_cop_with_cursor():
     """
     ÇÖP (Çerçeve Öğretim Programı) linklerini çeker ve işler.
     HTML parsing ile yeni alanları kontrol eder.
@@ -298,7 +297,7 @@ def get_cop_with_cursor(cursor):
                     
                     # URL'leri JSON formatında kaydet
                     cop_urls_json_string = json.dumps(cop_urls_json)
-                    get_or_create_alan(cursor, alan_adi, meb_alan_id=meb_alan_id, cop_url=cop_urls_json_string)
+                    with_database(lambda c: get_or_create_alan(c, alan_adi, meb_alan_id=meb_alan_id, cop_url=cop_urls_json_string))()
                     # Commit handled by @with_database decorator
                     
                     saved_alan_count += 1
@@ -309,6 +308,15 @@ def get_cop_with_cursor(cursor):
                     continue
             
             yield {'type': 'success', 'message': f'✅ {saved_alan_count} alan için URL\'ler veritabanına kaydedildi.'}
+            
+            # Merkezi istatistik fonksiyonunu kullan (CLAUDE.md kuralları)
+            try:
+                from .utils import get_database_statistics, format_database_statistics_message
+                stats = get_database_statistics()
+                stats_message = format_database_statistics_message(stats)
+                yield {'type': 'info', 'message': stats_message}
+            except Exception as e:
+                yield {'type': 'warning', 'message': f'İstatistik alınamadı: {e}'}
             
             # SONRA: PDF indirme işlemi (isteğe bağlı)
             yield {'type': 'status', 'message': 'PDF dosyaları kontrol ediliyor...'}
@@ -366,7 +374,8 @@ def get_cop_with_cursor(cursor):
     except Exception as e:
         yield {'type': 'error', 'message': f'ÇÖP indirme iş akışında genel hata: {str(e)}'}
 
-def get_cop():
+@with_database
+def get_cop(cursor):
     """
     ÇÖP (Çerçeve Öğretim Programı) linklerini çeker ve işler.
     CLAUDE.md prensiplerini uygular: @with_database decorator kullanır.
