@@ -51,7 +51,6 @@ def find_or_create_database() -> Optional[str]:
     
     return db_path
 
-
 def with_database(func: Callable) -> Callable:
     """
     Database connection decorator.
@@ -85,7 +84,6 @@ def with_database(func: Callable) -> Callable:
             return {"error": str(e), "success": False}
     
     return wrapper
-
 
 def with_database_json(func: Callable) -> Callable:
     """
@@ -136,7 +134,6 @@ def with_database_json(func: Callable) -> Callable:
             return jsonify(error_response), 500
     
     return wrapper
-
 
 def extract_meb_id_from_urls(cop_url=None, dbf_urls=None):
     """
@@ -204,7 +201,6 @@ def extract_meb_id_from_urls(cop_url=None, dbf_urls=None):
     
     return None
 
-
 def merge_cop_urls(existing_cop_url, new_cop_url):
     """
     Mevcut ÇÖP URL'leri ile yeni URL'i birleştirir.
@@ -240,7 +236,6 @@ def merge_cop_urls(existing_cop_url, new_cop_url):
         # Hata durumunda yeni URL'i kullan
         return json.dumps({"default": new_cop_url}) if new_cop_url else "{}"
 
-
 def get_or_create_alan(cursor, alan_adi, meb_alan_id=None, cop_url=None, dbf_urls=None):
     """
     Alan kaydı bulur veya oluşturur. 
@@ -249,9 +244,9 @@ def get_or_create_alan(cursor, alan_adi, meb_alan_id=None, cop_url=None, dbf_url
     MEB ID yoksa URL'lerden çıkarmaya çalışır.
     """
     # Import normalize_alan_adi from utils
-    from .utils import normalize_alan_adi
+    from .utils_normalize import normalize_to_title_case_tr
     
-    normalized_alan_adi = normalize_alan_adi(alan_adi)
+    normalized_alan_adi = normalize_to_title_case_tr(alan_adi.strip()) if alan_adi else "Belirtilmemiş"
     
     cursor.execute("SELECT id, cop_url, meb_alan_id FROM temel_plan_alan WHERE alan_adi = ?", (normalized_alan_adi,))
     result = cursor.fetchone()
@@ -352,9 +347,7 @@ def get_or_create_alan(cursor, alan_adi, meb_alan_id=None, cop_url=None, dbf_url
         """, (normalized_alan_adi, meb_alan_id, cop_url_json, dbf_urls_json))
         return cursor.lastrowid
 
-
 # Geriye uyumluluk için eski fonksiyonları yeni fonksiyonlara yönlendiren wrapper'lar
-
 def get_meb_alan_ids_cached():
     """Geriye uyumluluk wrapper'ı - get_meb_alan_ids() kullanın"""
     return get_meb_alan_ids()
@@ -381,7 +374,6 @@ def update_all_meb_alan_ids_from_cache_impl(cursor):
     # Bu fonksiyonu doğrudan çağırma, wrapper kullan
     return update_database_from_cache()
 
-
 def get_folder_name_for_download(alan_adi, meb_alan_id, area_id):
     """
     Dosya klasörü adını belirler:
@@ -397,7 +389,7 @@ def get_folder_name_for_download(alan_adi, meb_alan_id, area_id):
         str: Klasör adı
     """
     # Import sanitize_filename_tr from utils
-    from .utils import sanitize_filename_tr
+    from .utils_normalize import sanitize_filename_tr
     
     if meb_alan_id:
         # MEB ID varsa: 08_Denizcilik formatında
@@ -406,9 +398,7 @@ def get_folder_name_for_download(alan_adi, meb_alan_id, area_id):
         # MEB ID yoksa: Direkt alan adı (ID yok)
         return sanitize_filename_tr(alan_adi)
 
-
 # ====== MEB Alan ID Cache Management ======
-
 # Global cache değişkenleri
 _meb_alan_ids_cache = None
 _cache_timestamp = None
@@ -508,7 +498,7 @@ def get_meb_alan_ids(force_refresh=False, info_only=False):
         # Otomatik database güncelleme
         try:
             # Import normalize_alan_adi from utils
-            from .utils import normalize_alan_adi
+            from .utils_normalize import normalize_to_title_case_tr
             
             print("🔄 Otomatik database güncelleme başlatılıyor...")
             db_path = find_or_create_database()
@@ -521,7 +511,7 @@ def get_meb_alan_ids(force_refresh=False, info_only=False):
                     updated_count = 0
                     for alan_adi, meb_alan_id in alan_id_map.items():
                         try:
-                            normalized_alan_adi = normalize_alan_adi(alan_adi)
+                            normalized_alan_adi = normalize_to_title_case_tr(alan_adi.strip()) if alan_adi else "Belirtilmemiş"
                             
                             # Mevcut MEB ID'yi kontrol et
                             cursor.execute("SELECT meb_alan_id FROM temel_plan_alan WHERE alan_adi = ?", (normalized_alan_adi,))
@@ -566,7 +556,6 @@ def get_meb_alan_ids(force_refresh=False, info_only=False):
         
         return {}
 
-
 def get_meb_alan_id(alan_adi, data_meb_id=None):
     """
     Tek bir alan için MEB ID'yi bulur.
@@ -585,7 +574,7 @@ def get_meb_alan_id(alan_adi, data_meb_id=None):
         tuple: (meb_alan_id, source) - source: 'data', 'db', 'cache', 'none'
     """
     # Import normalize_alan_adi from utils
-    from .utils import normalize_alan_adi
+    from .utils_normalize import normalize_to_title_case_tr
     
     # 1. Önce verilen data'dan kontrol et
     if data_meb_id:
@@ -599,7 +588,7 @@ def get_meb_alan_id(alan_adi, data_meb_id=None):
                 conn.row_factory = sqlite3.Row
                 cursor = conn.cursor()
                 
-                normalized_alan_adi = normalize_alan_adi(alan_adi)
+                normalized_alan_adi = normalize_to_title_case_tr(alan_adi.strip()) if alan_adi else "Belirtilmemiş"
                 cursor.execute("SELECT meb_alan_id FROM temel_plan_alan WHERE alan_adi = ?", (normalized_alan_adi,))
                 result = cursor.fetchone()
                 
@@ -621,7 +610,7 @@ def get_meb_alan_id(alan_adi, data_meb_id=None):
                 try:
                     with sqlite3.connect(db_path, timeout=30.0) as conn:
                         cursor = conn.cursor()
-                        normalized_alan_adi = normalize_alan_adi(alan_adi)
+                        normalized_alan_adi = normalize_to_title_case_tr(alan_adi.strip()) if alan_adi else "Belirtilmemiş"
                         cursor.execute("""
                             UPDATE temel_plan_alan 
                             SET meb_alan_id = ?, updated_at = datetime('now')
@@ -634,7 +623,7 @@ def get_meb_alan_id(alan_adi, data_meb_id=None):
             return meb_alan_id, 'cache'
         
         # Normalize edilmiş adla ara
-        normalized_alan_adi = normalize_alan_adi(alan_adi)
+        normalized_alan_adi = normalize_to_title_case_tr(alan_adi.strip()) if alan_adi else "Belirtilmemiş"
         if normalized_alan_adi in meb_alan_ids:
             meb_alan_id = meb_alan_ids[normalized_alan_adi]
             
@@ -660,7 +649,6 @@ def get_meb_alan_id(alan_adi, data_meb_id=None):
     # 4. Hiçbiri yoksa None döndür
     return None, 'none'
 
-
 @with_database
 def update_database_from_cache(cursor):
     """
@@ -670,7 +658,7 @@ def update_database_from_cache(cursor):
         dict: {"updated": int, "skipped": int, "errors": list}
     """
     # Import normalize_alan_adi from utils
-    from .utils import normalize_alan_adi
+    from .utils_normalize import normalize_to_title_case_tr
     
     # Cache'den MEB ID'leri al
     meb_alan_ids = get_meb_alan_ids()
@@ -687,7 +675,7 @@ def update_database_from_cache(cursor):
     for alan_adi, meb_alan_id in meb_alan_ids.items():
         try:
             # Alan adını normalize et
-            normalized_alan_adi = normalize_alan_adi(alan_adi)
+            normalized_alan_adi = normalize_to_title_case_tr(alan_adi.strip()) if alan_adi else "Belirtilmemiş"
             
             # Alanın database'de olup olmadığını kontrol et
             cursor.execute("SELECT id, meb_alan_id FROM temel_plan_alan WHERE alan_adi = ?", (normalized_alan_adi,))
@@ -734,9 +722,7 @@ def update_database_from_cache(cursor):
         "errors": errors
     }
 
-
 # ====== Ders Management Utilities ======
-
 def create_or_get_ders(cursor, ders_adi, sinif, ders_saati=0, amac='', dm_url='', dbf_url='', bom_url='', cop_url=''):
     """
     Merkezi ders kaydetme fonksiyonu.
@@ -832,7 +818,6 @@ def create_or_get_ders(cursor, ders_adi, sinif, ders_saati=0, amac='', dm_url=''
     print(f"      ➕ Yeni ders eklendi: {ders_adi} ({sinif}. sınıf, {ders_saati} saat)")
     return ders_id
 
-
 def create_ders_dal_relation(cursor, ders_id, dal_id):
     """
     Ders-Dal ilişkisi oluşturur.
@@ -852,106 +837,38 @@ def create_ders_dal_relation(cursor, ders_id, dal_id):
     
     return True
 
+# ====== Database Statistics Utilities taşındı utils_stats.py'ye ======
 
-
-
-# ====== Database Statistics Utilities ======
-
-@with_database
-def get_database_statistics(cursor):
+def find_meb_alan_id_for_protokol(cursor, protokol_alan_adi):
     """
-    Merkezi veritabanı istatistikleri çekme fonksiyonu.
-    CLAUDE.md kurallarına uygun olarak @with_database decorator kullanır.
+    Protokol alanları için normal alan adından meb_alan_id bulur.
     
-    Returns:
-        dict: Kapsamlı veritabanı istatistikleri
-        {
-            "total_alan": int,
-            "cop_url_count": int,
-            "dbf_url_count": int,
-            "ders_count": int,
-            "dal_count": int,
-            "ders_dal_relations": int,
-            "ogrenme_birimi_count": int,
-            "konu_count": int,
-            "kazanim_count": int
-        }
-    """
-    stats = {}
-    
-    try:
-        # Alan sayıları
-        cursor.execute('SELECT COUNT(*) FROM temel_plan_alan')
-        stats['total_alan'] = cursor.fetchone()[0]
-        
-        cursor.execute('SELECT COUNT(*) FROM temel_plan_alan WHERE cop_url IS NOT NULL')
-        stats['cop_url_count'] = cursor.fetchone()[0]
-        
-        cursor.execute('SELECT COUNT(*) FROM temel_plan_alan WHERE dbf_urls IS NOT NULL')
-        stats['dbf_url_count'] = cursor.fetchone()[0]
-        
-        # Ders sayıları
-        cursor.execute('SELECT COUNT(*) FROM temel_plan_ders')
-        stats['ders_count'] = cursor.fetchone()[0]
-        
-        # Dal sayıları  
-        cursor.execute('SELECT COUNT(*) FROM temel_plan_dal')
-        stats['dal_count'] = cursor.fetchone()[0]
-        
-        # Ders-Dal ilişkileri
-        cursor.execute('SELECT COUNT(*) FROM temel_plan_ders_dal')
-        stats['ders_dal_relations'] = cursor.fetchone()[0]
-        
-        # Öğrenme birimi sayıları (varsa)
-        try:
-            cursor.execute('SELECT COUNT(*) FROM temel_plan_ogrenme_birimi')
-            stats['ogrenme_birimi_count'] = cursor.fetchone()[0]
-        except:
-            stats['ogrenme_birimi_count'] = 0
-        
-        # Konu sayıları (varsa)
-        try:
-            cursor.execute('SELECT COUNT(*) FROM temel_plan_konu')
-            stats['konu_count'] = cursor.fetchone()[0]
-        except:
-            stats['konu_count'] = 0
-        
-        # Kazanım sayıları (varsa)
-        try:
-            cursor.execute('SELECT COUNT(*) FROM temel_plan_kazanim')
-            stats['kazanim_count'] = cursor.fetchone()[0]
-        except:
-            stats['kazanim_count'] = 0
-            
-        return stats
-        
-    except Exception as e:
-        print(f"❌ İstatistik çekme hatası: {e}")
-        return {
-            "total_alan": 0,
-            "cop_url_count": 0, 
-            "dbf_url_count": 0,
-            "ders_count": 0,
-            "dal_count": 0,
-            "ders_dal_relations": 0,
-            "ogrenme_birimi_count": 0,
-            "konu_count": 0,
-            "kazanim_count": 0,
-            "error": str(e)
-        }
-
-
-def format_database_statistics_message(stats):
-    """
-    İstatistikleri konsol mesajı formatına çevirir.
+    Örnek: "Muhasebe ve Finansman - Protokol" → "Muhasebe ve Finansman" alan adından meb_alan_id alır
     
     Args:
-        stats: get_database_statistics() dönüş değeri
+        cursor: Database cursor
+        protokol_alan_adi: Protokol alan adı (sonunda " - Protokol" olan)
         
     Returns:
-        str: Formatlanmış mesaj
+        str: MEB alan ID'si ("38" gibi) veya None
     """
-    if not stats or 'error' in stats:
-        return "📊 İstatistik alınamadı"
+    if not protokol_alan_adi or not protokol_alan_adi.endswith(' - Protokol'):
+        return None
     
-    return f"📊 Veritabanı Durumu: {stats['total_alan']} toplam alan | {stats['cop_url_count']} COP URL | {stats['dbf_url_count']} DBF URL | {stats['ders_count']} ders | {stats['dal_count']} dal"
+    # " - Protokol" kısmını çıkar
+    normal_alan_adi = protokol_alan_adi.replace(' - Protokol', '').strip()
+    
+    # Normal alan adı ile meb_alan_id'yi bul
+    cursor.execute("""
+        SELECT meb_alan_id FROM temel_plan_alan 
+        WHERE alan_adi = ? AND meb_alan_id IS NOT NULL
+    """, (normal_alan_adi,))
+    
+    result = cursor.fetchone()
+    
+    if result:
+        meb_alan_id = result['meb_alan_id']
+        print(f"      🔍 Protokol alan MEB ID bulundu: {protokol_alan_adi} -> {normal_alan_adi} -> {meb_alan_id}")
+        return meb_alan_id
+    
+    return None

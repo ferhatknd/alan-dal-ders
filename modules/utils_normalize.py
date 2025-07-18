@@ -1,3 +1,14 @@
+"""
+modules/utils_normalize.py - String Normalizasyon Modülü
+
+Bu modül, string normalizasyon işlemlerini içerir.
+Önceki utils.py'den ayrıştırılmıştır.
+
+İçerdiği fonksiyonlar:
+- sanitize_filename_tr: Dosya/klasör adı güvenlik normalizasyonu
+- normalize_to_title_case_tr: Türkçe dil kurallarına uygun başlık formatı
+"""
+
 import os
 import requests
 import json
@@ -87,13 +98,3 @@ def normalize_to_title_case_tr(name: str) -> str:
                 final_words.append(capitalized)
 
     return ' '.join(final_words)
-
-def normalize_alan_adi(alan_adi):
-    """
-    Alan adını normalize eder - büyük/küçük harf sorununu çözer.
-    """
-    if not alan_adi:
-        return "Belirtilmemiş"
-    
-    # Doğrudan normalize_to_title_case_tr fonksiyonunu çağır
-    return normalize_to_title_case_tr(alan_adi.strip())

@@ -21,9 +21,9 @@ from typing import Optional
 import shutil
 
 try:
-    from .utils import sanitize_filename_tr
+    from .utils_normalize import sanitize_filename_tr
 except ImportError:
-    from utils import sanitize_filename_tr
+    from utils_normalize import sanitize_filename_tr
 
 
 def check_existing_file_in_all_areas(filename: str, cache_type: str, current_folder: str = None) -> Optional[str]:
@@ -287,3 +287,123 @@ def scan_directory_for_pdfs(root_dir, file_extensions=('.pdf', '.docx')):
                 })
     
     return pdfs
+
+
+def fix_protokol_folder_names_with_meb_id(cache_type: str = 'cop'):
+    """
+    Protokol klasörlerinin isimlerini MEB ID'li formata çevirir.
+    
+    Örnek:
+    - "Muhasebe_ve_Finansman_-_Protokol" → "38_Muhasebe_ve_Finansman_-_Protokol"
+    - "Radyo-Televizyon_-_Protokol" → "42_Radyo-Televizyon_-_Protokol"
+    
+    Args:
+        cache_type: 'cop', 'dbf', 'dm', 'bom' gibi dosya tipi
+        
+    Returns:
+        Dict: {"renamed": int, "errors": List[str], "results": List[Dict]}
+    """
+    try:
+        # Database fonksiyonlarını import et
+        from .utils_database import with_database, find_meb_alan_id_for_protokol
+    except ImportError:
+        from utils_database import with_database, find_meb_alan_id_for_protokol
+    
+    cache_root = os.path.join("data", cache_type)
+    if not os.path.exists(cache_root):
+        return {"renamed": 0, "errors": [f"Cache dizini bulunamadı: {cache_root}"], "results": []}
+    
+    results = []
+    errors = []
+    renamed_count = 0
+    
+    @with_database
+    def process_protokol_folders(cursor):
+        nonlocal results, errors, renamed_count
+        
+        # Tüm klasörleri tara
+        for item in os.listdir(cache_root):
+            item_path = os.path.join(cache_root, item)
+            if not os.path.isdir(item_path):
+                continue
+            
+            # Protokol klasörü mü kontrol et
+            if not item.endswith('_-_Protokol'):
+                continue
+            
+            # Zaten MEB ID'li mi kontrol et (rakam ile başlıyor mu)
+            if item[0].isdigit():
+                results.append({
+                    "old_name": item,
+                    "new_name": item,
+                    "status": "already_has_meb_id",
+                    "meb_alan_id": item.split('_')[0]
+                })
+                continue
+            
+            # Alan adını normalize et (dosya sisteminden database formatına)
+            # "Muhasebe_ve_Finansman_-_Protokol" → "Muhasebe ve Finansman - Protokol"
+            protokol_alan_adi = item.replace('_', ' ')
+            
+            # MEB ID'yi bul
+            meb_alan_id = find_meb_alan_id_for_protokol(cursor, protokol_alan_adi)
+            
+            if not meb_alan_id:
+                error_msg = f"MEB ID bulunamadı: {protokol_alan_adi}"
+                errors.append(error_msg)
+                results.append({
+                    "old_name": item,
+                    "new_name": None,
+                    "status": "meb_id_not_found",
+                    "error": error_msg
+                })
+                continue
+            
+            # Yeni klasör adını oluştur
+            new_folder_name = f"{meb_alan_id}_{item}"
+            new_item_path = os.path.join(cache_root, new_folder_name)
+            
+            # Hedef klasör zaten var mı kontrol et
+            if os.path.exists(new_item_path):
+                error_msg = f"Hedef klasör zaten mevcut: {new_folder_name}"
+                errors.append(error_msg)
+                results.append({
+                    "old_name": item,
+                    "new_name": new_folder_name,
+                    "status": "target_exists",
+                    "error": error_msg
+                })
+                continue
+            
+            # Klasörü yeniden adlandır
+            try:
+                os.rename(item_path, new_item_path)
+                renamed_count += 1
+                results.append({
+                    "old_name": item,
+                    "new_name": new_folder_name,
+                    "status": "renamed",
+                    "meb_alan_id": meb_alan_id
+                })
+                print(f"📁 Protokol klasörü yeniden adlandırıldı: {item} → {new_folder_name}")
+                
+            except Exception as e:
+                error_msg = f"Yeniden adlandırma hatası ({item}): {e}"
+                errors.append(error_msg)
+                results.append({
+                    "old_name": item,
+                    "new_name": new_folder_name,
+                    "status": "rename_error",
+                    "error": error_msg
+                })
+    
+    # Database işlemlerini başlat
+    process_result = process_protokol_folders()
+    if isinstance(process_result, dict) and 'error' in process_result:
+        errors.append(f"Database hatası: {process_result['error']}")
+    
+    return {
+        "renamed": renamed_count,
+        "errors": errors,
+        "results": results
+    }
