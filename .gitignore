@@ -42,7 +42,7 @@ oku_sonuc.json
 # Arşiv ve Dökümanlar
 *.pdf
 *.doc
-*.docx
+
 *.rar
 *.zip
 
@@ -52,6 +52,7 @@ test_*
 *.tmp
 *.bak
 *.old
+test_single_docx.py
 
 # veritabanı
 data/temel_plan.db

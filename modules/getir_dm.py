@@ -387,6 +387,7 @@ def get_dm_with_cursor(cursor):
                             for dm_info in dm_list:
                                 try:
                                     # MEB ID bazlı klasör yapısı: data/dm/{meb_alan_id}_{alan_adi}/
+                                    # Ortak dosyalar otomatik olarak 00_Ortak_Alan_Dersleri klasörüne taşınır
                                     file_path = download_and_cache_pdf(
                                         dm_info['pdf_url'],
                                         "dm",

@@ -8,9 +8,72 @@ import re
 import time
 from bs4 import BeautifulSoup
 
+def check_existing_file_in_all_areas(filename: str, cache_type: str, current_folder: str = None) -> Optional[str]:
+    """
+    Bir dosyanın tüm alan klasörlerinde mevcut olup olmadığını kontrol eder.
+    
+    Args:
+        filename: Kontrol edilecek dosya adı
+        cache_type: 'cop', 'dbf', 'dm', 'bom' gibi dosya tipi
+        current_folder: Mevcut alan klasörü (bu klasörde atlanır)
+    
+    Returns:
+        Dosyanın bulunduğu ilk yol veya None
+    """
+    cache_root = os.path.join("data", cache_type)
+    if not os.path.exists(cache_root):
+        return None
+    
+    # Tüm alan klasörlerini tara
+    for item in os.listdir(cache_root):
+        item_path = os.path.join(cache_root, item)
+        if not os.path.isdir(item_path):
+            continue
+        
+        # Mevcut klasörse atla
+        if current_folder and item == current_folder:
+            continue
+        
+        # Dosya bu klasörde var mı?
+        file_path = os.path.join(item_path, filename)
+        if os.path.exists(file_path):
+            return file_path
+    
+    return None
+
+def move_file_to_shared_folder(source_path: str, cache_type: str, filename: str) -> Optional[str]:
+    """
+    Dosyayı ortak alan klasörüne taşır.
+    
+    Args:
+        source_path: Kaynak dosya yolu
+        cache_type: 'cop', 'dbf', 'dm', 'bom' gibi dosya tipi
+        filename: Dosya adı
+    
+    Returns:
+        Taşınan dosyanın yeni yolu veya None
+    """
+    try:
+        shared_folder = os.path.join("data", cache_type, "00_Ortak_Alan_Dersleri")
+        os.makedirs(shared_folder, exist_ok=True)
+        
+        destination_path = os.path.join(shared_folder, filename)
+        
+        # Dosyayı taşı
+        import shutil
+        shutil.move(source_path, destination_path)
+        
+        print(f"📁 Ortak alana taşındı: {filename}")
+        return destination_path
+        
+    except Exception as e:
+        print(f"❌ Dosya taşıma hatası ({filename}): {e}")
+        return None
+
 def download_and_cache_pdf(url: str, cache_type: str, alan_adi: str = None, additional_info: str = None, alan_id: str = None, alan_db_id: int = None, meb_alan_id: str = None) -> Optional[str]:
     """
     PDF'yi indirir ve organize şekilde cache'ler.
+    Duplicate dosyalar için ortak alan klasörü kullanır.
     
     Args:
         url: PDF URL'si
@@ -65,6 +128,21 @@ def download_and_cache_pdf(url: str, cache_type: str, alan_adi: str = None, addi
         if os.path.exists(file_path):
             print(f"📁 Cache'den alınıyor: {file_path}")
             return file_path
+        
+        # Dosyanın başka alan klasörlerinde olup olmadığını kontrol et
+        existing_file_path = check_existing_file_in_all_areas(filename, cache_type, folder_name)
+        if existing_file_path:
+            # Dosya başka bir alanda mevcut - ortak alana taşı
+            shared_path = move_file_to_shared_folder(existing_file_path, cache_type, filename)
+            if shared_path:
+                print(f"📁 Ortak alandan kullanılıyor: {shared_path}")
+                return shared_path
+        
+        # Ortak alan klasöründe var mı kontrol et
+        shared_file_path = os.path.join("data", cache_type, "00_Ortak_Alan_Dersleri", filename)
+        if os.path.exists(shared_file_path):
+            print(f"📁 Ortak alandan alınıyor: {shared_file_path}")
+            return shared_file_path
         
         # PDF'yi indir
         print(f"⬇️ İndiriliyor: {url}")
