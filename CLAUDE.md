@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Bu dosya, Claude Code için MEB Mesleki Eğitim Veri İşleme ve Veritabanı Projesinin kapsamlı birleşik kılavuzudur. README.md, is_akisi.md ve teknik detayların tümünü içerir. Proje mantığını koruyarak her seferinde hata yapmaktan kaçınmak için tüm kritik bilgileri içerir.
 
-**Son Güncelleme**: 2025-07-18 (Database işlemleri modüler ayrımı + utils_database.py modülü eklendi + Dosya işlemleri modüler ayrımı + Ortak alan dosya sistemi + utils_file_management.py modülü eklendi)
+**Son Güncelleme**: 2025-07-18 (Database işlemleri modüler ayrımı + utils_database.py modülü eklendi + Dosya işlemleri modüler ayrımı + Ortak alan dosya sistemi + utils_file_management.py modülü eklendi + Workflow endpoint'leri temizlendi + /api/scrape-to-db standardize edildi + Frontend konsol çıktıları iyileştirildi + Endpoint isimlendirme standardizasyonu + getir_dal.py performans optimizasyonu)
 
 ## 🎯 Proje Genel Bakış
 
@@ -247,7 +247,7 @@ temel_plan_ders_dal
 
 ### 📥 Temel Veri Çekme
 - **`GET /api/get-cached-data`** - Önbellekteki JSON verilerini getir
-- **`GET /api/scrape-to-db`** - MEB'den veri çek ve DB'ye kaydet (SSE)
+- **`GET /api/scrape-to-db`** - Tüm veri kaynaklarını (DM, DBF, COP, BOM) tek seferde çeker ve DB'ye kaydeder (SSE) ⭐ **STANDARDİZE**
 
 ### 📊 Kategorik Veri Endpoint'leri
 - **`GET /api/get-dbf`** - DBF verilerini `get_dbf()` fonksiyonu ile çeker (SSE)
@@ -347,6 +347,8 @@ python server.py
 - **Ortak Alan Sistemi**: Duplicate dosyalar `00_Ortak_Alan_Dersleri` klasöründe otomatik yönetilir
 - **PDF Validation**: Dosya bütünlüğü kontrolü önemli
 - **Error Recovery**: Network hatalarında robust retry mekanizması
+- **⭐ YENİ**: `/api/scrape-to-db` endpoint'i artık yeni standardize fonksiyonları (`get_cop()`, `get_dbf()`) kullanıyor
+- **⭐ YENİ**: Eski workflow-step-* endpoint'leri kaldırıldı, sadece get-* endpoint'leri kullanılıyor
 
 ## 🔗 İlişkisel Yapı
 

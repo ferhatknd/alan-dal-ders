@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Bu dosya, Claude Code için MEB Mesleki Eğitim Veri İşleme ve Veritabanı Projesinin kapsamlı birleşik kılavuzudur. README.md, is_akisi.md ve teknik detayların tümünü içerir. Proje mantığını koruyarak her seferinde hata yapmaktan kaçınmak için tüm kritik bilgileri içerir.
 
-**Son Güncelleme**: 2025-07-16 (JSON URL format standardizasyonu + Duplicate dal kontrolü eklendi + BOM dizin yapısı sadeleştirildi)
+**Son Güncelleme**: 2025-07-18 (Database işlemleri modüler ayrımı + utils_database.py modülü eklendi + Dosya işlemleri modüler ayrımı + Ortak alan dosya sistemi + utils_file_management.py modülü eklendi + Workflow endpoint'leri temizlendi + /api/scrape-to-db standardize edildi + Frontend konsol çıktıları iyileştirildi + Endpoint isimlendirme standardizasyonu + getir_dal.py performans optimizasyonu)
 
 ## 🎯 Proje Genel Bakış
 
@@ -40,6 +40,8 @@ npm test
 ```bash
 # Veritabanı ve schema otomatik kurulum
 python server.py  # İlk çalıştırmada otomatik setup
+
+#always use single responsibility principle when creating new method
 
 # Test debugging
 python test.py  # DBF PDF analizi için
@@ -96,7 +98,9 @@ Alan (Area) → Dal (Field) → Ders (Course) → Öğrenme Birimi (Learning Uni
 - **`modules/getir_dm.py`** - Ders Materyalleri (DM) verilerini çeker
 - **`modules/getir_bom.py`** - Bireysel Öğrenme Materyalleri (BÖM) verilerini çeker
 - **`modules/getir_dal.py`** - Alan-Dal ilişkilerini çeker
-- **`modules/utils.py`** - ⭐ **GÜNCELLENDİ**: Yardımcı fonksiyonlar, Türkçe karakter normalizasyonu, **merkezi PDF cache yönetimi** ve **database connection decorators**
+- **`modules/utils.py`** - ⭐ **REFAKTOR**: Yardımcı fonksiyonlar, Türkçe karakter normalizasyonu (database fonksiyonları utils_database.py'ye taşındı)
+- **`modules/utils_database.py`** - ⭐ **YENİ**: Veritabanı işlemleri modülü, **database connection decorators**, **MEB ID yönetimi** ve **CRUD operasyonları**
+- **`modules/utils_file_management.py`** - ⭐ **YENİ**: Dosya işlemleri modülü, **ortak alan dosya sistemi**, **duplicate dosya yönetimi** ve **arşiv işlemleri**
 
 ### 🌐 Frontend Dosyaları
 - **`src/App.js`** - ⭐ **YENİLENDİ**: Tek satır workflow UI, console panel, JSON popup'sız tasarım
@@ -114,7 +118,7 @@ Alan (Area) → Dal (Field) → Ders (Course) → Öğrenme Birimi (Learning Uni
 - **`data/`** - JSON cache dosyaları, veritabanı ve schema dosyaları
   - `dbf/` - İndirilen DBF dosyaları (alan klasörleri halinde)
   - `cop/` - ÇÖP PDF dosyaları
-  - `dm/` - Ders Materyali dosyaları
+  - `dm/` - Ders Materyali dosyaları ⭐ **YENİ**: `00_Ortak_Alan_Dersleri` klasörü ile duplicate dosya yönetimi
   - `bom/` - BÖM dosyaları
 
 ### 🐛 Debug ve Test Araçları
@@ -191,7 +195,7 @@ temel_plan_ders_dal
 
 ### 4. Database Connection ⭐ **YENİ KURAL**
 - **ASLA** manuel `sqlite3.connect()` kullanma
-- **MUTLAKA** `utils.py`'deki decorator'ları kullan:
+- **MUTLAKA** `utils_database.py`'deki decorator'ları kullan:
   ```python
   # ✅ Doğru - Flask endpoint'leri için
   @app.route('/api/endpoint')
@@ -207,10 +211,20 @@ temel_plan_ders_dal
       return result
   ```
 
-### 5. Merkezi Fonksiyon Kullanımı ⭐ **YENİ KURAL**
-- `utils.py` içindeki merkezi fonksiyonlara sadık kalalım
-- Ortak yardımcı fonksiyonları ve utility metotları `utils.py` üzerinden çağır
-- Tekrar eden kod parçaları yerine merkezi fonksiyonları kullan
+### 5. Modüler Dosya İşlemleri ⭐ **YENİ KURAL**
+- **Dosya işlemleri**: `utils_file_management.py` modülünü kullan
+- **Database işlemleri**: `utils_database.py` modülünü kullan
+- **String/normalizasyon işlemleri**: `utils.py` modülünü kullan
+- **ASLA** karışık import yapma:
+  ```python
+  # ✅ Doğru - Modüler import
+  from modules.utils import normalize_alan_adi
+  from modules.utils_database import with_database, get_or_create_alan
+  from modules.utils_file_management import download_and_cache_pdf, extract_archive
+  
+  # ❌ Yanlış - Karışık import
+  from modules.utils import with_database  # Artık utils.py'de yok!
+  ```
 
 ### 6. JSON URL Format Standardizasyonu ⭐ **YENİ KURAL**
 - **Tüm JSON URL'leri integer key formatında saklanmalı**:
@@ -224,11 +238,16 @@ temel_plan_ders_dal
 - **Ders Oluşturma**: `ders_adi` kontrolü ile duplicate engelleme
 - **Ders-Dal İlişkisi**: `ders_id + dal_id` kontrolü ile duplicate engelleme
 
+### 8. Ortak Alan Dosya Sistemi ⭐ **YENİ KURAL**
+- **Duplicate dosyalar**: `00_Ortak_Alan_Dersleri` klasörüne otomatik taşınır
+- **Dosya indirme sırası**: Önce mevcut alan → Sonra diğer alanlar → Sonra ortak alan → Son olarak yeni indirme
+- **Otomatik yönetim**: `utils_file_management.py` modülü duplicate'leri otomatik tespit eder ve taşır
+
 ## 🔌 API Endpoints - Detaylı Referans
 
 ### 📥 Temel Veri Çekme
 - **`GET /api/get-cached-data`** - Önbellekteki JSON verilerini getir
-- **`GET /api/scrape-to-db`** - MEB'den veri çek ve DB'ye kaydet (SSE)
+- **`GET /api/scrape-to-db`** - Tüm veri kaynaklarını (DM, DBF, COP, BOM) tek seferde çeker ve DB'ye kaydeder (SSE) ⭐ **STANDARDİZE**
 
 ### 📊 Kategorik Veri Endpoint'leri
 - **`GET /api/get-dbf`** - DBF verilerini `get_dbf()` fonksiyonu ile çeker (SSE)
@@ -264,7 +283,7 @@ for message in get_dbf():
 
 ### Database İşlemleri ⭐ **YENİ**
 ```python
-from modules.utils import with_database_json, with_database
+from modules.utils_database import with_database_json, with_database
 
 # Flask endpoint için
 @app.route('/api/endpoint')
@@ -278,6 +297,25 @@ def my_endpoint(cursor):
 def my_function(cursor, param):
     cursor.execute("INSERT INTO table VALUES (?)", (param,))
     return {"success": True}
+```
+
+### Dosya İşlemleri ⭐ **YENİ**
+```python
+from modules.utils_file_management import download_and_cache_pdf, extract_archive, scan_directory_for_pdfs
+
+# PDF indirme (otomatik duplicate yönetimi ile)
+file_path = download_and_cache_pdf(
+    url="https://example.com/file.pdf",
+    cache_type="dm",
+    alan_adi="Bilişim Teknolojileri",
+    meb_alan_id="08"
+)
+
+# Arşiv açma
+extract_archive("file.rar", "output_dir")
+
+# PDF tarama
+pdfs = scan_directory_for_pdfs("data/dm/")
 ```
 
 ## 🔄 Otomatik Database Kurulumu
@@ -305,8 +343,12 @@ python server.py
 - **Veritabanı Sütunları**: `cop_url` ve `dbf_urls` sütunları JSON formatında URL'ler içerir
 - **JSON URL Format**: Tüm URL'ler integer key formatında: `{"9": "url", "10": "url"}`
 - **Database Decorators**: `@with_database` ve `@with_database_json` kullanın
+- **Modüler Import**: `utils.py` ve `utils_file_management.py` modüllerini doğru şekilde import edin
+- **Ortak Alan Sistemi**: Duplicate dosyalar `00_Ortak_Alan_Dersleri` klasöründe otomatik yönetilir
 - **PDF Validation**: Dosya bütünlüğü kontrolü önemli
 - **Error Recovery**: Network hatalarında robust retry mekanizması
+- **⭐ YENİ**: `/api/scrape-to-db` endpoint'i artık yeni standardize fonksiyonları (`get_cop()`, `get_dbf()`) kullanıyor
+- **⭐ YENİ**: Eski workflow-step-* endpoint'leri kaldırıldı, sadece get-* endpoint'leri kullanılıyor
 
 ## 🔗 İlişkisel Yapı
 
@@ -326,3 +368,24 @@ Bu proje MIT Lisansı altında lisanslanmıştır.
 📧 **Destek:** Projeyle ilgili sorular için issue açabilirsiniz
 
 📊 **Bu CLAUDE.md dosyası, projenin tüm kritik bilgilerini içerir ve Claude Code'un tutarlı çalışması için tasarlanmıştır.**
+
+## Uygulama Mimarisi Notları
+
+### 📊 JSON Dosyaları
+- JSON dosyaları ana iş akışında olan dosyalar değildir. 
+- Onları kullanarak başka işlemler planlanmaz. 
+- Bu dosyalar sadece sonucu kontrol etmek için süreçlerin sonucunda kaydedilen dosyalardır. 
+- Bir süreçte ne alınıyor ise öncelikle veritabanına kaydetme birincil hedeftir.
+
+### 🗂️ Modüler Dosya Yapısı
+- **utils.py**: String normalizasyonu, Türkçe karakter işlemleri
+- **utils_database.py**: Database connection decorators, MEB ID yönetimi, CRUD operasyonları
+- **utils_file_management.py**: Dosya indirme, arşiv işlemleri, duplicate yönetimi
+- **Ortak Alan Sistemi**: `data/*/00_Ortak_Alan_Dersleri/` klasörleri ile duplicate dosya yönetimi
+- **Otomatik Taşıma**: Birden fazla alanda bulunan dosyalar otomatik olarak ortak alana taşınır
+
+### 🔄 Dosya İşleme Akışı
+1. **Dosya İndirme**: `download_and_cache_pdf()` fonksiyonu ile
+2. **Duplicate Kontrol**: Mevcut dosyaları tarar
+3. **Ortak Alan Yönetimi**: Duplicate dosyaları `00_Ortak_Alan_Dersleri` klasörüne taşır
+4. **Cache Kullanımı**: Mevcut dosyaları tekrar indirmez
