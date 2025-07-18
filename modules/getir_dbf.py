@@ -6,11 +6,13 @@ import re
 import sqlite3
 try:
     from .oku_dbf import extract_ders_adi
-    from .utils import normalize_to_title_case_tr, with_database, get_or_create_alan, find_or_create_database, sanitize_filename_tr, get_meb_alan_id_with_fallback, get_folder_name_for_download, get_meb_alan_ids_cached
+    from .utils import normalize_to_title_case_tr, sanitize_filename_tr
+    from .utils_database import with_database, get_or_create_alan, find_or_create_database, get_meb_alan_id_with_fallback, get_folder_name_for_download, get_meb_alan_ids_cached
     from .utils_file_management import download_and_cache_pdf
 except ImportError:
     from oku_dbf import extract_ders_adi
-    from utils import normalize_to_title_case_tr, with_database, get_or_create_alan, find_or_create_database, sanitize_filename_tr, get_meb_alan_id_with_fallback, get_folder_name_for_download, get_meb_alan_ids_cached
+    from utils import normalize_to_title_case_tr, sanitize_filename_tr
+    from utils_database import with_database, get_or_create_alan, find_or_create_database, get_meb_alan_id_with_fallback, get_folder_name_for_download, get_meb_alan_ids_cached
     from utils_file_management import download_and_cache_pdf
 
 BASE_DBF_URL = "https://meslek.meb.gov.tr/dbfgoster.aspx"
@@ -592,7 +594,7 @@ def get_dbf(cursor, dbf_data=None):
         
         # Merkezi istatistik fonksiyonunu kullan (CLAUDE.md kuralları)
         try:
-            from .utils import get_database_statistics, format_database_statistics_message
+            from .utils_database import get_database_statistics, format_database_statistics_message
             stats = get_database_statistics()
             stats_message = format_database_statistics_message(stats)
             yield {'type': 'info', 'message': stats_message}

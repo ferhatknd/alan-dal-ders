@@ -7,7 +7,8 @@ import sys
 import random
 
 try:
-    from .utils import normalize_to_title_case_tr, with_database
+    from .utils import normalize_to_title_case_tr
+    from .utils_database import with_database
     from .utils_file_management import scan_directory_for_pdfs
 except ImportError:
     import os
@@ -16,7 +17,8 @@ except ImportError:
     parent_dir = os.path.abspath(os.path.join(current_dir, ".."))
     if parent_dir not in sys.path:
         sys.path.insert(0, parent_dir)
-    from modules.utils import normalize_to_title_case_tr, with_database
+    from modules.utils import normalize_to_title_case_tr
+    from modules.utils_database import with_database
     from modules.utils_file_management import scan_directory_for_pdfs
 
 # ------------- YARDIMCI FONKSİYONLAR ------------- #

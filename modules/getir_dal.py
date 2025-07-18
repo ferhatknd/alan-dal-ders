@@ -4,7 +4,8 @@ import time
 import os
 import sqlite3
 from pathlib import Path
-from .utils import normalize_to_title_case_tr, with_database
+from .utils import normalize_to_title_case_tr
+from .utils_database import with_database, find_or_create_database
 
 # requests.Session() kullanarak çerezleri ve oturum bilgilerini yönetiyoruz
 session = requests.Session()
@@ -158,26 +159,7 @@ def get_branches_for_area(province_id, area_value):
         pass  # Error handling moved to caller
         return None
 
-def find_or_create_database():
-    """
-    Veritabanı dosyasını bulur veya oluşturur.
-    """
-    db_path = "data/temel_plan.db"
-    if os.path.exists(db_path):
-        return db_path
-    
-    # data klasörü yoksa oluştur
-    os.makedirs("data", exist_ok=True)
-    
-    # Şema dosyasından veritabanını oluştur
-    schema_path = "data/schema.sql"
-    if os.path.exists(schema_path):
-        with sqlite3.connect(db_path) as conn:
-            with open(schema_path, 'r', encoding='utf-8') as f:
-                conn.executescript(f.read())
-        pass  # Database setup message moved to caller
-    
-    return db_path
+# find_or_create_database function now imported from utils_database.py
 
 @with_database
 def save_area_and_branches_to_db(cursor, area_name, branches):

@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Bu dosya, Claude Code için MEB Mesleki Eğitim Veri İşleme ve Veritabanı Projesinin kapsamlı birleşik kılavuzudur. README.md, is_akisi.md ve teknik detayların tümünü içerir. Proje mantığını koruyarak her seferinde hata yapmaktan kaçınmak için tüm kritik bilgileri içerir.
 
-**Son Güncelleme**: 2025-07-18 (Dosya işlemleri modüler ayrımı + Ortak alan dosya sistemi + utils_file_management.py modülü eklendi)
+**Son Güncelleme**: 2025-07-18 (Database işlemleri modüler ayrımı + utils_database.py modülü eklendi + Dosya işlemleri modüler ayrımı + Ortak alan dosya sistemi + utils_file_management.py modülü eklendi)
 
 ## 🎯 Proje Genel Bakış
 
@@ -98,7 +98,8 @@ Alan (Area) → Dal (Field) → Ders (Course) → Öğrenme Birimi (Learning Uni
 - **`modules/getir_dm.py`** - Ders Materyalleri (DM) verilerini çeker
 - **`modules/getir_bom.py`** - Bireysel Öğrenme Materyalleri (BÖM) verilerini çeker
 - **`modules/getir_dal.py`** - Alan-Dal ilişkilerini çeker
-- **`modules/utils.py`** - ⭐ **REFAKTOR**: Yardımcı fonksiyonlar, Türkçe karakter normalizasyonu, **database connection decorators** ve **MEB ID yönetimi**
+- **`modules/utils.py`** - ⭐ **REFAKTOR**: Yardımcı fonksiyonlar, Türkçe karakter normalizasyonu (database fonksiyonları utils_database.py'ye taşındı)
+- **`modules/utils_database.py`** - ⭐ **YENİ**: Veritabanı işlemleri modülü, **database connection decorators**, **MEB ID yönetimi** ve **CRUD operasyonları**
 - **`modules/utils_file_management.py`** - ⭐ **YENİ**: Dosya işlemleri modülü, **ortak alan dosya sistemi**, **duplicate dosya yönetimi** ve **arşiv işlemleri**
 
 ### 🌐 Frontend Dosyaları
@@ -194,7 +195,7 @@ temel_plan_ders_dal
 
 ### 4. Database Connection ⭐ **YENİ KURAL**
 - **ASLA** manuel `sqlite3.connect()` kullanma
-- **MUTLAKA** `utils.py`'deki decorator'ları kullan:
+- **MUTLAKA** `utils_database.py`'deki decorator'ları kullan:
   ```python
   # ✅ Doğru - Flask endpoint'leri için
   @app.route('/api/endpoint')
@@ -212,15 +213,17 @@ temel_plan_ders_dal
 
 ### 5. Modüler Dosya İşlemleri ⭐ **YENİ KURAL**
 - **Dosya işlemleri**: `utils_file_management.py` modülünü kullan
-- **Database işlemleri**: `utils.py` modülünü kullan
+- **Database işlemleri**: `utils_database.py` modülünü kullan
+- **String/normalizasyon işlemleri**: `utils.py` modülünü kullan
 - **ASLA** karışık import yapma:
   ```python
   # ✅ Doğru - Modüler import
-  from modules.utils import with_database, normalize_alan_adi
+  from modules.utils import normalize_alan_adi
+  from modules.utils_database import with_database, get_or_create_alan
   from modules.utils_file_management import download_and_cache_pdf, extract_archive
   
   # ❌ Yanlış - Karışık import
-  from modules.utils import download_and_cache_pdf  # Artık utils.py'de yok!
+  from modules.utils import with_database  # Artık utils.py'de yok!
   ```
 
 ### 6. JSON URL Format Standardizasyonu ⭐ **YENİ KURAL**
@@ -280,7 +283,7 @@ for message in get_dbf():
 
 ### Database İşlemleri ⭐ **YENİ**
 ```python
-from modules.utils import with_database_json, with_database
+from modules.utils_database import with_database_json, with_database
 
 # Flask endpoint için
 @app.route('/api/endpoint')
@@ -373,7 +376,8 @@ Bu proje MIT Lisansı altında lisanslanmıştır.
 - Bir süreçte ne alınıyor ise öncelikle veritabanına kaydetme birincil hedeftir.
 
 ### 🗂️ Modüler Dosya Yapısı
-- **utils.py**: Database, string normalizasyonu, MEB ID yönetimi
+- **utils.py**: String normalizasyonu, Türkçe karakter işlemleri
+- **utils_database.py**: Database connection decorators, MEB ID yönetimi, CRUD operasyonları
 - **utils_file_management.py**: Dosya indirme, arşiv işlemleri, duplicate yönetimi
 - **Ortak Alan Sistemi**: `data/*/00_Ortak_Alan_Dersleri/` klasörleri ile duplicate dosya yönetimi
 - **Otomatik Taşıma**: Birden fazla alanda bulunan dosyalar otomatik olarak ortak alana taşınır

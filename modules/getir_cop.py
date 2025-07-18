@@ -11,7 +11,8 @@ import sqlite3
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import requests
 from bs4 import BeautifulSoup
-from .utils import normalize_to_title_case_tr, find_or_create_database, get_or_create_alan, with_database, get_meb_alan_id_with_fallback, get_folder_name_for_download, get_meb_alan_ids_cached
+from .utils import normalize_to_title_case_tr
+from .utils_database import find_or_create_database, get_or_create_alan, with_database, get_meb_alan_id_with_fallback, get_folder_name_for_download, get_meb_alan_ids_cached
 from .utils_file_management import download_and_cache_pdf
 import re
 import json
@@ -312,7 +313,7 @@ def get_cop_with_cursor():
             
             # Merkezi istatistik fonksiyonunu kullan (CLAUDE.md kuralları)
             try:
-                from .utils import get_database_statistics, format_database_statistics_message
+                from .utils_database import get_database_statistics, format_database_statistics_message
                 stats = get_database_statistics()
                 stats_message = format_database_statistics_message(stats)
                 yield {'type': 'info', 'message': stats_message}

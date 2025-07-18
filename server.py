@@ -24,8 +24,9 @@ from modules.getir_dm import get_dm
 from modules.getir_bom import get_bom
 from modules.getir_dal import get_dal
 
-# Database utilities from utils.py
-from modules.utils import with_database_json, find_or_create_database, get_or_create_alan, normalize_to_title_case_tr, normalize_alan_adi, merge_cop_urls
+# Database utilities from utils-database.py
+from modules.utils_database import with_database_json, find_or_create_database, get_or_create_alan
+from modules.utils import normalize_to_title_case_tr, normalize_alan_adi
 
 app = Flask(__name__)
 # CORS'u etkinleştirerek localhost:3000 gibi farklı bir porttan gelen
@@ -265,8 +266,8 @@ def get_statistics(cursor):
     Merkezi get_database_statistics fonksiyonunu kullanır (CLAUDE.md kuralları).
     """
     try:
-        # Merkezi utils fonksiyonunu kullan
-        from modules.utils import get_database_statistics
+        # Merkezi utils-database fonksiyonunu kullan
+        from modules.utils_database import get_database_statistics
         db_stats = get_database_statistics()
         
         # Dosya sistem istatistikleri
@@ -914,7 +915,7 @@ def create_ders(cursor, course):
     Ders kaydı oluşturur veya mevcut ders ID'sini döner.
     Merkezi utils.create_or_get_ders() fonksiyonunu kullanır.
     """
-    from modules.utils import create_or_get_ders
+    from modules.utils_database import create_or_get_ders
     
     # Ders saati değerini düzgün şekilde handle et
     haftalik_ders_saati = course.get('haftalik_ders_saati', '')
@@ -937,7 +938,7 @@ def create_ders(cursor, course):
 
 def create_ders_dal_relation(cursor, ders_id, dal_id):
     """Ders-Dal ilişkisi oluşturur."""
-    from modules.utils import create_ders_dal_relation
+    from modules.utils_database import create_ders_dal_relation
     return create_ders_dal_relation(cursor, ders_id, dal_id)
 
 def get_or_create_arac(cursor, arac_gerec):
@@ -1142,7 +1143,7 @@ def get_or_create_ders(cursor, ders_adi, sinif, amac='', cop_url=''):
     Ders kaydını bulur veya oluşturur.
     Merkezi utils.create_or_get_ders() fonksiyonunu kullanır.
     """
-    from modules.utils import create_or_get_ders
+    from modules.utils_database import create_or_get_ders
     
     return create_or_get_ders(
         cursor=cursor,
