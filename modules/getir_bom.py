@@ -122,26 +122,42 @@ def sanitize_filename(name):
     """
     return sanitize_filename_tr(name)
 
-def get_alanlar(sinif_kodu="9"):
-    params = {"sinif_kodu": sinif_kodu, "kurum_id": "1"}
+def get_alanlar_from_moduller():
+    """
+    BOM moduller sayfasından doğru alan ID'lerini çeker.
+    Bu fonksiyon moduller sayfasında kullanılan gerçek ID formatını döndürür.
+    """
     try:
-        resp = requests.get(BASE_OPTIONS_URL, params=params, headers=HEADERS, timeout=10)
+        resp = requests.get(BASE_BOM_URL, headers=HEADERS, timeout=10)
         resp.raise_for_status()
     except requests.exceptions.RequestException as e:
+        print(f"Moduller sayfası yüklenemedi: {e}")
         return []
 
     resp.encoding = resp.apparent_encoding
     soup = BeautifulSoup(resp.text, "html.parser")
-    sel = soup.find('select', id="ContentPlaceHolder1_drpalansec")
-    if not sel:
+    
+    # Moduller sayfasındaki alan dropdown'unu bul
+    alan_dropdown = soup.find('select', {'name': 'ctl00$ContentPlaceHolder1$DropDownList1'})
+    if not alan_dropdown:
+        print("Moduller sayfasında alan dropdown bulunamadı!")
         return []
+    
     alanlar = []
-    for opt in sel.find_all('option'):
+    for opt in alan_dropdown.find_all('option'):
         val = opt.get('value','').strip()
         name = opt.text.strip()
-        if val and val not in ("00","0"):
+        if val and val not in ("00","0") and name != "Alanlar":
             alanlar.append({"id": val, "isim": name})
+    
     return alanlar
+
+def get_alanlar(sinif_kodu="9"):
+    """
+    BOM için alanları çeker - artık moduller sayfasından doğru ID'leri alır.
+    sinif_kodu parametresi geriye uyumluluk için korundu ama kullanılmıyor.
+    """
+    return get_alanlar_from_moduller()
 
 def get_aspnet_form_data(soup):
     form_data = {}
