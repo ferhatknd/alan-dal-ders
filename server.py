@@ -113,22 +113,285 @@ def get_cached_data(cursor):
         
         return {}
 
-# DISABLED: scrape_data() fonksiyonu tanımlı değil
-# @app.route('/api/scrape-stream')
-# def scrape_stream():
-#     """
-#     Veri çekme işlemini başlatır ve sonuçları Server-Sent Events (SSE)
-#     protokolü üzerinden anlık olarak istemciye gönderir.
-#     """
-#     def generate():
-#         # scrape_data bir generator olduğu için, her yield edilen veriyi alıp
-#         # SSE formatına uygun şekilde istemciye gönderiyoruz.
-#         for data_chunk in scrape_data():
-#             # Format: "data: <json_verisi>\n\n"
-#             yield f"data: {json.dumps(data_chunk)}\n\n"
-#             time.sleep(0.05) # İstemcinin veriyi işlemesi için küçük bir bekleme
-# 
-#     return Response(generate(), mimetype='text/event-stream')
+@app.route('/api/get-dal')
+def get_dal_endpoint():
+    """
+    Alan-Dal ilişkilerini çeker ve veritabanına kaydeder.
+    getir_dal.py modülündeki get_dal() fonksiyonunu tetikler.
+    """
+    def generate():
+        try:
+            for message in get_dal():
+                yield f"data: {json.dumps(message)}\n\n"
+                time.sleep(0.05)
+        except Exception as e:
+            error_message = {'type': 'error', 'message': f'Alan-Dal çekme hatası: {str(e)}'}
+            yield f"data: {json.dumps(error_message)}\n\n"
+
+    return Response(generate(), mimetype='text/event-stream')
+
+@app.route('/api/get-cop')
+def api_get_cop():
+    """
+    ÇÖP linklerini çeker ve veritabanına kaydeder.
+    İlerlemeyi SSE ile anlık olarak gönderir.
+    """
+    def generate():
+        try:
+            # get_cop fonksiyonu HTML parsing'i dahili olarak yapıyor ve JSON üretiyor
+            for message in get_cop():
+                yield f"data: {json.dumps(message)}\n\n"
+                time.sleep(0.05)
+        except Exception as e:
+            error_message = {'type': 'error', 'message': f'ÇÖP linkleri çekilirken hata oluştu: {str(e)}'}
+            yield f"data: {json.dumps(error_message)}\n\n"
+
+    return Response(generate(), mimetype='text/event-stream')
+
+@app.route('/api/get-dbf')
+def api_get_dbf():
+    """
+    DBF (Ders Bilgi Formu) verilerini çeker, veritabanına kaydeder ve dosyaları indirir.
+    İlerlemeyi SSE ile anlık olarak gönderir.
+    """
+    def generate():
+        try:
+            # get_dbf fonksiyonu tüm işlemleri yapıyor: link çekme + dosya indirme + DB kaydetme
+            for msg in get_dbf():
+                yield f"data: {json.dumps(msg)}\n\n"
+                time.sleep(0.05)
+            
+        except Exception as e:
+            yield f"data: {json.dumps({'type': 'error', 'message': f'DBF işlemi hatası: {str(e)}'})}\n\n"
+    
+    return Response(generate(), mimetype='text/event-stream')
+
+@app.route('/api/get-dm')
+def api_get_dm():
+    """
+    Ders Materyali (PDF) verilerini çeker ve veritabanına kaydeder.
+    Server-Sent Events (SSE) ile real-time progress updates.
+    """
+    def generate():
+        try:
+            for message in get_dm():
+                yield f"data: {json.dumps(message)}\n\n"
+        except Exception as e:
+            yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
+    
+    return Response(generate(), mimetype='text/event-stream')
+
+@app.route('/api/get-bom')
+def api_get_bom():
+    """
+    Bireysel Öğrenme Materyali (BÖM) verilerini çeker ve dosyaları indirir.
+    İlerlemeyi SSE ile anlık olarak gönderir.
+    """
+    def generate():
+        try:
+            # get_bom fonksiyonu bir generator olduğu için, her adımı yield ile alıyoruz
+            for message in get_bom():
+                yield f"data: {json.dumps(message)}\n\n"
+                time.sleep(0.05)  # Arayüzün güncellenmesi için küçük bir bekleme
+        except Exception as e:
+            error_message = {'type': 'error', 'message': f'BOM işlemi sırasında bir hata oluştu: {str(e)}'}
+            yield f"data: {json.dumps(error_message)}\n\n"
+
+    return Response(generate(), mimetype='text/event-stream')
+
+@app.route('/api/oku-cop')
+def api_oku_cop():
+    """
+    ÇÖP PDF'lerini işleyip alan-dal-ders ilişkilerini çıkararak veritabanına kaydeder.
+    """
+    def generate():
+        try:
+            # ÇÖP klasörünü kontrol et
+            cop_folder = "data/cop"
+            if not os.path.exists(cop_folder):
+                yield f"data: {json.dumps({'type': 'error', 'message': 'ÇÖP klasörü bulunamadı. Önce ÇÖP dosyalarını indirin.'})}\n\n"
+                return
+            
+            yield f"data: {json.dumps({'type': 'status', 'message': 'ÇÖP PDF dosyaları taranıyor...'})}\n\n"
+            
+            # ÇÖP PDF dosyalarını bul
+            cop_files = []
+            for root, dirs, files in os.walk(cop_folder):
+                for file in files:
+                    if file.lower().endswith('.pdf'):
+                        cop_files.append(os.path.join(root, file))
+            
+            if not cop_files:
+                yield f"data: {json.dumps({'type': 'error', 'message': 'ÇÖP PDF dosyası bulunamadı.'})}\n\n"
+                return
+            
+            yield f"data: {json.dumps({'type': 'status', 'message': f'{len(cop_files)} ÇÖP PDF dosyası bulundu. İşleniyor...'})}\n\n"
+            
+            # oku_cop modülünü import et
+            from modules.oku_cop import oku_cop_pdf_file, save_cop_results_to_db
+            
+            total_processed = 0
+            total_courses = 0
+            
+            # Database işlemleri artık @with_database decorator ile otomatik yönetiliyor
+            
+            for cop_file in cop_files:
+                try:
+                    yield f"data: {json.dumps({'type': 'status', 'message': f'{os.path.basename(cop_file)} işleniyor...'})}\n\n"
+                    
+                    # PDF'yi oku_cop.py ile işle
+                    result = oku_cop_pdf_file(cop_file)
+                    
+                    if result:
+                        # Sonuçları veritabanına kaydet (@with_database decorator ile)
+                        saved_count = save_cop_results_to_db(result)
+                        total_courses += saved_count
+                        
+                        if saved_count > 0:
+                            yield f"data: {json.dumps({'type': 'success', 'message': f'{os.path.basename(cop_file)}: {saved_count} ders bilgisi çıkarıldı'})}\n\n"
+                        else:
+                            yield f"data: {json.dumps({'type': 'warning', 'message': f'{os.path.basename(cop_file)}: Ders bilgisi çıkarılamadı'})}\n\n"
+                    else:
+                        yield f"data: {json.dumps({'type': 'warning', 'message': f'{os.path.basename(cop_file)}: İşlenemedi'})}\n\n"
+                    
+                    total_processed += 1
+                    
+                    # Progress update
+                    if total_processed % 5 == 0:
+                        yield f"data: {json.dumps({'type': 'info', 'message': f'{total_processed}/{len(cop_files)} dosya işlendi...'})}\n\n"
+                        
+                except Exception as e:
+                    yield f"data: {json.dumps({'type': 'error', 'message': f'{os.path.basename(cop_file)} işlenirken hata: {str(e)}'})}\n\n"
+            
+            yield f"data: {json.dumps({'type': 'done', 'message': f'İşlem tamamlandı! {total_processed} ÇÖP PDF dosyası işlendi, {total_courses} ders bilgisi çıkarıldı.'})}\n\n"
+            
+        except Exception as e:
+            yield f"data: {json.dumps({'type': 'error', 'message': f'Genel hata: {str(e)}'})}\n\n"
+    
+    return Response(generate(), mimetype='text/event-stream')
+
+@app.route('/api/oku-dbf')
+def api_oku_dbf():
+    """
+    DBF dosyalarını işleyip mevcut derslerin ders saatlerini günceller.
+    """
+    def generate():
+        try:
+            # Veritabanını bul/oluştur
+            db_path = find_or_create_database()
+            if not db_path:
+                yield f"data: {json.dumps({'type': 'error', 'message': 'Veritabanı bulunamadı veya oluşturulamadı'})}\\n\\n"
+                return
+            
+            # DBF klasörünü kontrol et
+            dbf_folder = "dbf"
+            if not os.path.exists(dbf_folder):
+                yield f"data: {json.dumps({'type': 'error', 'message': 'DBF klasörü bulunamadı. Önce DBF dosyalarını indirin.'})}\\n\\n"
+                return
+            
+            yield f"data: {json.dumps({'type': 'status', 'message': 'DBF dosyaları taranıyor...'})}\\n\\n"
+            
+            total_updated = 0
+            total_processed = 0
+            
+            # DBF klasöründeki tüm PDF ve DOCX dosyalarını bul
+            dbf_files = []
+            for root, dirs, files in os.walk(dbf_folder):
+                for file in files:
+                    if file.lower().endswith(('.pdf', '.docx')):
+                        dbf_files.append(os.path.join(root, file))
+            
+            yield f"data: {json.dumps({'type': 'status', 'message': f'{len(dbf_files)} DBF dosyası bulundu. İşleniyor...'})}\\n\\n"
+            
+            with sqlite3.connect(db_path) as conn:
+                cursor = conn.cursor()
+                
+                for dbf_file in dbf_files:
+                    try:
+                        yield f"data: {json.dumps({'type': 'status', 'message': f'{os.path.basename(dbf_file)} işleniyor...'})}\\n\\n"
+                        
+                        # oku_dbf.py ile DBF dosyasını işle
+                        with redirect_stdout(io.StringIO()):
+                            parsed_data = oku_dbf(dbf_file)
+                        
+                        if parsed_data:
+                            updated_count = update_ders_saati_from_dbf_data(cursor, parsed_data)
+                            total_updated += updated_count
+                            
+                            if updated_count > 0:
+                                yield f"data: {json.dumps({'type': 'success', 'message': f'{os.path.basename(dbf_file)}: {updated_count} ders güncellendi'})}\\n\\n"
+                        
+                        total_processed += 1
+                        
+                        # Her 10 dosyada bir commit yap
+                        if total_processed % 10 == 0:
+                            conn.commit()
+                            yield f"data: {json.dumps({'type': 'info', 'message': f'{total_processed}/{len(dbf_files)} dosya işlendi...'})}\\n\\n"
+                            
+                    except Exception as e:
+                        yield f"data: {json.dumps({'type': 'error', 'message': f'{os.path.basename(dbf_file)} işlenirken hata: {str(e)}'})}\\n\\n"
+                
+                # Final commit
+                conn.commit()
+            
+            yield f"data: {json.dumps({'type': 'done', 'message': f'İşlem tamamlandı! {total_processed} DBF dosyası işlendi, {total_updated} ders saati güncellendi.'})}\\n\\n"
+            
+        except Exception as e:
+            yield f"data: {json.dumps({'type': 'error', 'message': f'Genel hata: {str(e)}'})}\\n\\n"
+    
+    return Response(generate(), mimetype='text/event-stream')
+
+@app.route('/api/scrape-to-db')
+def scrape_to_db():
+    """
+    Tüm veri kaynaklarını (DM, DBF, COP, BOM) çekip veritabanına kaydeder.
+    """
+    def generate():
+        try:
+            # Veritabanını bul/oluştur
+            db_path = find_or_create_database()
+            if not db_path:
+                yield f"data: {json.dumps({'type': 'error', 'message': 'Veritabanı bulunamadı veya oluşturulamadı'})}\n\n"
+                return
+            
+            with sqlite3.connect(db_path) as conn:
+                cursor = conn.cursor()
+                total_saved = 0
+                
+                # 1. Ders Materyali verilerini çek ve kaydet
+                yield f"data: {json.dumps({'type': 'status', 'message': '1/4: Ders Materyali (DM) verileri çekiliyor...'})}\n\n"
+                dm_data = get_dm()
+                dm_saved = save_dm_data_to_db(cursor, dm_data)
+                total_saved += dm_saved
+                yield f"data: {json.dumps({'type': 'status', 'message': f'DM: {dm_saved} ders kaydedildi'})}\n\n"
+                
+                # 2. DBF verilerini çek ve kaydet
+                yield f"data: {json.dumps({'type': 'status', 'message': '2/4: DBF verileri çekiliyor...'})}\n\n"
+                # get_dbf generator olarak çalışır, her mesajı işle
+                for dbf_msg in get_dbf():
+                    yield f"data: {json.dumps(dbf_msg)}\n\n"
+                    time.sleep(0.05)
+                
+                # 3. ÇÖP verilerini çek ve kaydet
+                yield f"data: {json.dumps({'type': 'status', 'message': '3/4: ÇÖP verileri çekiliyor...'})}\n\n"
+                # get_cop generator olarak çalışır, her mesajı işle
+                for cop_msg in get_cop():
+                    yield f"data: {json.dumps(cop_msg)}\n\n"
+                    time.sleep(0.05)
+                
+                # 4. BOM verilerini çek ve kaydet
+                yield f"data: {json.dumps({'type': 'status', 'message': '4/4: BOM verileri çekiliyor...'})}\n\n"
+                bom_data = get_bom()
+                bom_saved = save_bom_data_to_db(cursor, bom_data)
+                yield f"data: {json.dumps({'type': 'status', 'message': f'BOM: {bom_saved} ders güncellendi'})}\n\n"
+                
+                conn.commit()
+                yield f"data: {json.dumps({'type': 'done', 'message': f'Toplam {total_saved} ders veritabanına kaydedildi!'})}\n\n"
+                        
+        except Exception as e:
+            yield f"data: {json.dumps({'type': 'error', 'message': f'Hata: {str(e)}'})}\n\n"
+    
+    return Response(generate(), mimetype='text/event-stream')
 
 @app.route('/api/process-pdf', methods=['POST'])
 def process_pdf():
@@ -183,77 +446,6 @@ def process_pdf():
         except Exception as e:
             yield f"data: {json.dumps({'type': 'error', 'message': f'Hata: {str(e)}'})}\n\n"
     
-    return Response(generate(), mimetype='text/event-stream')
-
-# DBF rar dosyalarını indirip açan ve ilerleme mesajı gönderen yeni endpoint
-@app.route('/api/get-dbf')
-def api_get_dbf():
-    """
-    DBF (Ders Bilgi Formu) verilerini çeker, veritabanına kaydeder ve dosyaları indirir.
-    İlerlemeyi SSE ile anlık olarak gönderir.
-    """
-    def generate():
-        try:
-            # get_dbf fonksiyonu tüm işlemleri yapıyor: link çekme + dosya indirme + DB kaydetme
-            for msg in get_dbf():
-                yield f"data: {json.dumps(msg)}\n\n"
-                time.sleep(0.05)
-            
-        except Exception as e:
-            yield f"data: {json.dumps({'type': 'error', 'message': f'DBF işlemi hatası: {str(e)}'})}\n\n"
-    
-    return Response(generate(), mimetype='text/event-stream')
-
-@app.route('/api/get-cop')
-def api_get_cop():
-    """
-    ÇÖP linklerini çeker ve veritabanına kaydeder.
-    İlerlemeyi SSE ile anlık olarak gönderir.
-    """
-    def generate():
-        try:
-            # get_cop fonksiyonu HTML parsing'i dahili olarak yapıyor ve JSON üretiyor
-            for message in get_cop():
-                yield f"data: {json.dumps(message)}\n\n"
-                time.sleep(0.05)
-        except Exception as e:
-            error_message = {'type': 'error', 'message': f'ÇÖP linkleri çekilirken hata oluştu: {str(e)}'}
-            yield f"data: {json.dumps(error_message)}\n\n"
-
-    return Response(generate(), mimetype='text/event-stream')
-
-
-@app.route('/api/get-dm')
-def api_get_dm():
-    """
-    Ders Materyali (PDF) verilerini çeker ve veritabanına kaydeder.
-    Server-Sent Events (SSE) ile real-time progress updates.
-    """
-    def generate():
-        try:
-            for message in get_dm():
-                yield f"data: {json.dumps(message)}\n\n"
-        except Exception as e:
-            yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
-    
-    return Response(generate(), mimetype='text/event-stream')
-
-@app.route('/api/get-bom')
-def api_get_bom():
-    """
-    Bireysel Öğrenme Materyali (BÖM) verilerini çeker ve dosyaları indirir.
-    İlerlemeyi SSE ile anlık olarak gönderir.
-    """
-    def generate():
-        try:
-            # get_bom fonksiyonu bir generator olduğu için, her adımı yield ile alıyoruz
-            for message in get_bom():
-                yield f"data: {json.dumps(message)}\n\n"
-                time.sleep(0.05)  # Arayüzün güncellenmesi için küçük bir bekleme
-        except Exception as e:
-            error_message = {'type': 'error', 'message': f'BOM işlemi sırasında bir hata oluştu: {str(e)}'}
-            yield f"data: {json.dumps(error_message)}\n\n"
-
     return Response(generate(), mimetype='text/event-stream')
 
 @app.route('/api/get-statistics')
@@ -518,200 +710,6 @@ def copy_course():
     except Exception as e:
         print(f"Ders kopyalama hatası: {e}")
         return jsonify({"error": str(e)}), 500
-
-@app.route('/api/oku-cop')
-def api_oku_cop():
-    """
-    ÇÖP PDF'lerini işleyip alan-dal-ders ilişkilerini çıkararak veritabanına kaydeder.
-    """
-    def generate():
-        try:
-            # ÇÖP klasörünü kontrol et
-            cop_folder = "data/cop"
-            if not os.path.exists(cop_folder):
-                yield f"data: {json.dumps({'type': 'error', 'message': 'ÇÖP klasörü bulunamadı. Önce ÇÖP dosyalarını indirin.'})}\n\n"
-                return
-            
-            yield f"data: {json.dumps({'type': 'status', 'message': 'ÇÖP PDF dosyaları taranıyor...'})}\n\n"
-            
-            # ÇÖP PDF dosyalarını bul
-            cop_files = []
-            for root, dirs, files in os.walk(cop_folder):
-                for file in files:
-                    if file.lower().endswith('.pdf'):
-                        cop_files.append(os.path.join(root, file))
-            
-            if not cop_files:
-                yield f"data: {json.dumps({'type': 'error', 'message': 'ÇÖP PDF dosyası bulunamadı.'})}\n\n"
-                return
-            
-            yield f"data: {json.dumps({'type': 'status', 'message': f'{len(cop_files)} ÇÖP PDF dosyası bulundu. İşleniyor...'})}\n\n"
-            
-            # oku_cop modülünü import et
-            from modules.oku_cop import oku_cop_pdf_file, save_cop_results_to_db
-            
-            total_processed = 0
-            total_courses = 0
-            
-            # Database işlemleri artık @with_database decorator ile otomatik yönetiliyor
-            
-            for cop_file in cop_files:
-                try:
-                    yield f"data: {json.dumps({'type': 'status', 'message': f'{os.path.basename(cop_file)} işleniyor...'})}\n\n"
-                    
-                    # PDF'yi oku_cop.py ile işle
-                    result = oku_cop_pdf_file(cop_file)
-                    
-                    if result:
-                        # Sonuçları veritabanına kaydet (@with_database decorator ile)
-                        saved_count = save_cop_results_to_db(result)
-                        total_courses += saved_count
-                        
-                        if saved_count > 0:
-                            yield f"data: {json.dumps({'type': 'success', 'message': f'{os.path.basename(cop_file)}: {saved_count} ders bilgisi çıkarıldı'})}\n\n"
-                        else:
-                            yield f"data: {json.dumps({'type': 'warning', 'message': f'{os.path.basename(cop_file)}: Ders bilgisi çıkarılamadı'})}\n\n"
-                    else:
-                        yield f"data: {json.dumps({'type': 'warning', 'message': f'{os.path.basename(cop_file)}: İşlenemedi'})}\n\n"
-                    
-                    total_processed += 1
-                    
-                    # Progress update
-                    if total_processed % 5 == 0:
-                        yield f"data: {json.dumps({'type': 'info', 'message': f'{total_processed}/{len(cop_files)} dosya işlendi...'})}\n\n"
-                        
-                except Exception as e:
-                    yield f"data: {json.dumps({'type': 'error', 'message': f'{os.path.basename(cop_file)} işlenirken hata: {str(e)}'})}\n\n"
-            
-            yield f"data: {json.dumps({'type': 'done', 'message': f'İşlem tamamlandı! {total_processed} ÇÖP PDF dosyası işlendi, {total_courses} ders bilgisi çıkarıldı.'})}\n\n"
-            
-        except Exception as e:
-            yield f"data: {json.dumps({'type': 'error', 'message': f'Genel hata: {str(e)}'})}\n\n"
-    
-    return Response(generate(), mimetype='text/event-stream')
-
-@app.route('/api/process-dbf')
-def api_process_dbf():
-    """
-    DBF dosyalarını işleyip mevcut derslerin ders saatlerini günceller.
-    """
-    def generate():
-        try:
-            # Veritabanını bul/oluştur
-            db_path = find_or_create_database()
-            if not db_path:
-                yield f"data: {json.dumps({'type': 'error', 'message': 'Veritabanı bulunamadı veya oluşturulamadı'})}\\n\\n"
-                return
-            
-            # DBF klasörünü kontrol et
-            dbf_folder = "dbf"
-            if not os.path.exists(dbf_folder):
-                yield f"data: {json.dumps({'type': 'error', 'message': 'DBF klasörü bulunamadı. Önce DBF dosyalarını indirin.'})}\\n\\n"
-                return
-            
-            yield f"data: {json.dumps({'type': 'status', 'message': 'DBF dosyaları taranıyor...'})}\\n\\n"
-            
-            total_updated = 0
-            total_processed = 0
-            
-            # DBF klasöründeki tüm PDF ve DOCX dosyalarını bul
-            dbf_files = []
-            for root, dirs, files in os.walk(dbf_folder):
-                for file in files:
-                    if file.lower().endswith(('.pdf', '.docx')):
-                        dbf_files.append(os.path.join(root, file))
-            
-            yield f"data: {json.dumps({'type': 'status', 'message': f'{len(dbf_files)} DBF dosyası bulundu. İşleniyor...'})}\\n\\n"
-            
-            with sqlite3.connect(db_path) as conn:
-                cursor = conn.cursor()
-                
-                for dbf_file in dbf_files:
-                    try:
-                        yield f"data: {json.dumps({'type': 'status', 'message': f'{os.path.basename(dbf_file)} işleniyor...'})}\\n\\n"
-                        
-                        # oku_dbf.py ile DBF dosyasını işle
-                        with redirect_stdout(io.StringIO()):
-                            parsed_data = oku_dbf(dbf_file)
-                        
-                        if parsed_data:
-                            updated_count = update_ders_saati_from_dbf_data(cursor, parsed_data)
-                            total_updated += updated_count
-                            
-                            if updated_count > 0:
-                                yield f"data: {json.dumps({'type': 'success', 'message': f'{os.path.basename(dbf_file)}: {updated_count} ders güncellendi'})}\\n\\n"
-                        
-                        total_processed += 1
-                        
-                        # Her 10 dosyada bir commit yap
-                        if total_processed % 10 == 0:
-                            conn.commit()
-                            yield f"data: {json.dumps({'type': 'info', 'message': f'{total_processed}/{len(dbf_files)} dosya işlendi...'})}\\n\\n"
-                            
-                    except Exception as e:
-                        yield f"data: {json.dumps({'type': 'error', 'message': f'{os.path.basename(dbf_file)} işlenirken hata: {str(e)}'})}\\n\\n"
-                
-                # Final commit
-                conn.commit()
-            
-            yield f"data: {json.dumps({'type': 'done', 'message': f'İşlem tamamlandı! {total_processed} DBF dosyası işlendi, {total_updated} ders saati güncellendi.'})}\\n\\n"
-            
-        except Exception as e:
-            yield f"data: {json.dumps({'type': 'error', 'message': f'Genel hata: {str(e)}'})}\\n\\n"
-    
-    return Response(generate(), mimetype='text/event-stream')
-
-@app.route('/api/scrape-to-db')
-def scrape_to_db():
-    """
-    Tüm veri kaynaklarını (DM, DBF, COP, BOM) çekip veritabanına kaydeder.
-    """
-    def generate():
-        try:
-            # Veritabanını bul/oluştur
-            db_path = find_or_create_database()
-            if not db_path:
-                yield f"data: {json.dumps({'type': 'error', 'message': 'Veritabanı bulunamadı veya oluşturulamadı'})}\n\n"
-                return
-            
-            with sqlite3.connect(db_path) as conn:
-                cursor = conn.cursor()
-                total_saved = 0
-                
-                # 1. Ders Materyali verilerini çek ve kaydet
-                yield f"data: {json.dumps({'type': 'status', 'message': '1/4: Ders Materyali (DM) verileri çekiliyor...'})}\n\n"
-                dm_data = get_dm()
-                dm_saved = save_dm_data_to_db(cursor, dm_data)
-                total_saved += dm_saved
-                yield f"data: {json.dumps({'type': 'status', 'message': f'DM: {dm_saved} ders kaydedildi'})}\n\n"
-                
-                # 2. DBF verilerini çek ve kaydet
-                yield f"data: {json.dumps({'type': 'status', 'message': '2/4: DBF verileri çekiliyor...'})}\n\n"
-                # get_dbf generator olarak çalışır, her mesajı işle
-                for dbf_msg in get_dbf():
-                    yield f"data: {json.dumps(dbf_msg)}\n\n"
-                    time.sleep(0.05)
-                
-                # 3. ÇÖP verilerini çek ve kaydet
-                yield f"data: {json.dumps({'type': 'status', 'message': '3/4: ÇÖP verileri çekiliyor...'})}\n\n"
-                # get_cop generator olarak çalışır, her mesajı işle
-                for cop_msg in get_cop():
-                    yield f"data: {json.dumps(cop_msg)}\n\n"
-                    time.sleep(0.05)
-                
-                # 4. BOM verilerini çek ve kaydet
-                yield f"data: {json.dumps({'type': 'status', 'message': '4/4: BOM verileri çekiliyor...'})}\n\n"
-                bom_data = get_bom()
-                bom_saved = save_bom_data_to_db(cursor, bom_data)
-                yield f"data: {json.dumps({'type': 'status', 'message': f'BOM: {bom_saved} ders güncellendi'})}\n\n"
-                
-                conn.commit()
-                yield f"data: {json.dumps({'type': 'done', 'message': f'Toplam {total_saved} ders veritabanına kaydedildi!'})}\n\n"
-                        
-        except Exception as e:
-            yield f"data: {json.dumps({'type': 'error', 'message': f'Hata: {str(e)}'})}\n\n"
-    
-    return Response(generate(), mimetype='text/event-stream')
 
 @app.route('/api/save', methods=['POST'])
 def save():
@@ -1217,7 +1215,6 @@ def save_cop_parsed_data_to_db(cursor, parsed_data, alan_adi, sinif, cop_url):
     
     return saved_count
 
-
 def find_matching_ders(cursor, dbf_ders_adi, sinif=None):
     """
     DBF'teki ders adını veritabanındaki derslerle eşleştirir.
@@ -1328,23 +1325,6 @@ def update_ders_saati_from_dbf_data(cursor, parsed_data):
         print(f"DBF ders saati güncelleme hatası: {str(e)}")
     
     return updated_count
-
-@app.route('/api/get-dal')
-def get_dal_endpoint():
-    """
-    Alan-Dal ilişkilerini çeker ve veritabanına kaydeder.
-    getir_dal.py modülündeki get_dal() fonksiyonunu tetikler.
-    """
-    def generate():
-        try:
-            for message in get_dal():
-                yield f"data: {json.dumps(message)}\n\n"
-                time.sleep(0.05)
-        except Exception as e:
-            error_message = {'type': 'error', 'message': f'Alan-Dal çekme hatası: {str(e)}'}
-            yield f"data: {json.dumps(error_message)}\n\n"
-
-    return Response(generate(), mimetype='text/event-stream')
 
 if __name__ == '__main__':
     # Database'i başlat

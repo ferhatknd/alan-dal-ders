@@ -262,7 +262,7 @@ temel_plan_ders_dal
 ### 🔄 PDF ve DBF İşleme Operasyonları
 - **`GET /api/dbf-download-extract`** - DBF dosyalarını toplu indir ve aç (SSE)
 - **`GET /api/oku-cop`** - ÇÖP PDF'lerini analiz et ve DB'ye kaydet (SSE)
-- **`POST /api/update-ders-saatleri-from-dbf`** - DBF'lerden ders saatlerini güncelle (SSE)
+- **`GET /api/oku-dbf`** - ⭐ **STANDARDİZE**: DBF dosyalarını okur ve ders saatlerini günceller (SSE)
 
 ## 🔄 Sık Kullanılan İşlemler
 

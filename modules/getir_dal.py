@@ -261,7 +261,7 @@ def get_dal():
                 'dal_sayisi_province': 0,
                 'dal_sayisi_total_so_far': total_branches_found
             }
-            time.sleep(1.5) # Sunucuyu yormamak için bekleme
+            time.sleep(0.1) # Sunucuyu yormamak için bekleme
             continue # Sonraki ile geç
         
         total_areas_in_province = len(areas)
@@ -303,7 +303,7 @@ def get_dal():
                 if not area_id:
                     yield {'type': 'warning', 'message': f"❌ {area_name} -> Veritabanına kaydedilemedi"}
                 
-                time.sleep(0.3)
+                time.sleep(0.1)
         
         total_areas_found += new_areas_in_province
         total_branches_found += new_branches_in_province
@@ -318,7 +318,7 @@ def get_dal():
             'dal_sayisi_total_so_far': total_branches_found
         }
 
-        time.sleep(1.5)  # Her ilin işlenmesi arasında daha uzun bir gecikme
+        time.sleep(0.2)  # Her ilin işlenmesi arasında daha uzun bir gecikme
     
     # Sonuç özeti
     

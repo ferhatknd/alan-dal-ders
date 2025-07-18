@@ -28,7 +28,6 @@ def sanitize_filename_tr(name: str) -> str:
     
     return safe_name
 
-
 def normalize_to_title_case_tr(name: str) -> str:
     """
     Bir metni, Türkçe karakterleri ve dil kurallarını dikkate alarak
