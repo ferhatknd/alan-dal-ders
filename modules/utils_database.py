@@ -353,103 +353,33 @@ def get_or_create_alan(cursor, alan_adi, meb_alan_id=None, cop_url=None, dbf_url
         return cursor.lastrowid
 
 
+# Geriye uyumluluk için eski fonksiyonları yeni fonksiyonlara yönlendiren wrapper'lar
+
+def get_meb_alan_ids_cached():
+    """Geriye uyumluluk wrapper'ı - get_meb_alan_ids() kullanın"""
+    return get_meb_alan_ids()
+
 def get_meb_alan_id_with_fallback(alan_adi, data_meb_id=None):
-    """
-    MEB Alan ID'sini bulma fonksiyonu - çoklu kaynak stratejisi
-    
-    1. Önce verilen data'dan MEB ID'yi kontrol et
-    2. Bulamazsa veritabanındaki meb_alan_id'yi kontrol et  
-    3. Bulamazsa MEB'den çekip veritabanını güncelle
-    4. Hiçbiri yoksa None döndür
-    
-    Args:
-        alan_adi: Alan adı
-        data_meb_id: Data'dan gelen MEB ID (opsiyonel)
-    
-    Returns:
-        tuple: (meb_alan_id, source) - source: 'data', 'db', 'meb', 'none'
-    """
-    # Import normalize_alan_adi from utils
-    from .utils import normalize_alan_adi
-    
-    # 1. Önce verilen data'dan kontrol et
-    if data_meb_id:
-        return data_meb_id, 'data'
-    
-    # 2. Veritabanından kontrol et
-    db_path = find_or_create_database()
-    if db_path:
-        try:
-            with sqlite3.connect(db_path, timeout=30.0) as conn:
-                conn.row_factory = sqlite3.Row
-                cursor = conn.cursor()
-                
-                normalized_alan_adi = normalize_alan_adi(alan_adi)
-                cursor.execute("SELECT meb_alan_id FROM temel_plan_alan WHERE alan_adi = ?", (normalized_alan_adi,))
-                result = cursor.fetchone()
-                
-                if result and result['meb_alan_id']:
-                    return result['meb_alan_id'], 'db'
-        except Exception as e:
-            print(f"DB MEB ID kontrol hatası: {e}")
-    
-    # 3. MEB'den çekip veritabanını güncelle
-    try:
-        # COP modülünden MEB ID'lerini çek
-        try:
-            from .getir_cop import update_meb_alan_ids
-        except ImportError:
-            from getir_cop import update_meb_alan_ids
-            
-        meb_alan_ids = update_meb_alan_ids()
-        
-        # Tam eşleşme ara
-        if alan_adi in meb_alan_ids:
-            meb_alan_id = meb_alan_ids[alan_adi]
-            
-            # Veritabanını güncelle
-            if db_path:
-                try:
-                    with sqlite3.connect(db_path, timeout=30.0) as conn:
-                        cursor = conn.cursor()
-                        normalized_alan_adi = normalize_alan_adi(alan_adi)
-                        cursor.execute("""
-                            UPDATE temel_plan_alan 
-                            SET meb_alan_id = ?, updated_at = datetime('now')
-                            WHERE alan_adi = ?
-                        """, (meb_alan_id, normalized_alan_adi))
-                        print(f"📋 MEB ID güncellendi: {alan_adi} -> {meb_alan_id}")
-                except Exception as e:
-                    print(f"MEB ID güncelleme hatası: {e}")
-            
-            return meb_alan_id, 'meb'
-        
-        # Normalize edilmiş adla ara
-        normalized_alan_adi = normalize_alan_adi(alan_adi)
-        if normalized_alan_adi in meb_alan_ids:
-            meb_alan_id = meb_alan_ids[normalized_alan_adi]
-            
-            # Veritabanını güncelle
-            if db_path:
-                try:
-                    with sqlite3.connect(db_path, timeout=30.0) as conn:
-                        cursor = conn.cursor()
-                        cursor.execute("""
-                            UPDATE temel_plan_alan 
-                            SET meb_alan_id = ?, updated_at = datetime('now')
-                            WHERE alan_adi = ?
-                        """, (meb_alan_id, normalized_alan_adi))
-                        print(f"📋 MEB ID güncellendi (normalize): {alan_adi} -> {meb_alan_id}")
-                except Exception as e:
-                    print(f"MEB ID güncelleme hatası: {e}")
-            
-            return meb_alan_id, 'meb'
-        
-    except Exception as e:
-        print(f"MEB ID çekme hatası: {e}")
-    
-    # 4. Hiçbiri yoksa None döndür
-    return None, 'none'
+    """Geriye uyumluluk wrapper'ı - get_meb_alan_id() kullanın"""
+    return get_meb_alan_id(alan_adi, data_meb_id)
+
+def invalidate_meb_alan_ids_cache():
+    """Geriye uyumluluk wrapper'ı - get_meb_alan_ids(force_refresh=True) kullanın"""
+    get_meb_alan_ids(force_refresh=True)
+    return None
+
+def get_cache_info():
+    """Geriye uyumluluk wrapper'ı - get_meb_alan_ids(info_only=True) kullanın"""
+    return get_meb_alan_ids(info_only=True)
+
+def update_all_meb_alan_ids_from_cache():
+    """Geriye uyumluluk wrapper'ı - update_database_from_cache() kullanın"""
+    return update_database_from_cache()
+
+def update_all_meb_alan_ids_from_cache_impl(cursor):
+    """Geriye uyumluluk wrapper'ı - update_database_from_cache() kullanın"""
+    # Bu fonksiyonu doğrudan çağırma, wrapper kullan
+    return update_database_from_cache()
 
 
 def get_folder_name_for_download(alan_adi, meb_alan_id, area_id):
@@ -484,15 +414,42 @@ _meb_alan_ids_cache = None
 _cache_timestamp = None
 _cache_duration = 3600  # 1 saat cache süresi
 
-def get_meb_alan_ids_cached():
+def get_meb_alan_ids(force_refresh=False, info_only=False):
     """
     MEB Alan ID'lerini cache ile çeker.
-    1 saatlik cache süresi ile performance optimizasyonu.
+    
+    Args:
+        force_refresh: Cache'i yenile (varsayılan: False)
+        info_only: Sadece cache bilgisi döndür (varsayılan: False)
     
     Returns:
         dict: {alan_adi: meb_alan_id} formatında alan ID'leri
+              veya info_only=True ise cache bilgisi
     """
     global _meb_alan_ids_cache, _cache_timestamp
+    
+    # Sadece cache bilgisi isteniyorsa
+    if info_only:
+        if _meb_alan_ids_cache is None:
+            return {"status": "empty", "count": 0, "age": 0, "remaining": 0}
+        
+        current_time = time.time()
+        age = current_time - _cache_timestamp if _cache_timestamp else 0
+        remaining = max(0, _cache_duration - age)
+        
+        return {
+            "status": "active",
+            "count": len(_meb_alan_ids_cache),
+            "age": age,
+            "remaining": remaining,
+            "cache_duration": _cache_duration
+        }
+    
+    # Cache temizleme isteniyorsa
+    if force_refresh:
+        _meb_alan_ids_cache = None
+        _cache_timestamp = None
+        print("🔄 MEB Alan ID cache'i temizlendi")
     
     current_time = time.time()
     
@@ -610,21 +567,104 @@ def get_meb_alan_ids_cached():
         return {}
 
 
-def invalidate_meb_alan_ids_cache():
+def get_meb_alan_id(alan_adi, data_meb_id=None):
     """
-    MEB Alan ID cache'ini temizler.
-    Manuel cache yenileme için kullanılır.
+    Tek bir alan için MEB ID'yi bulur.
+    
+    Strateji:
+    1. Verilen data'dan MEB ID'yi kontrol et
+    2. Veritabanındaki meb_alan_id'yi kontrol et  
+    3. Cache'den MEB ID'leri al ve eşleştir
+    4. Hiçbiri yoksa None döndür
+    
+    Args:
+        alan_adi: Alan adı
+        data_meb_id: Data'dan gelen MEB ID (opsiyonel)
+    
+    Returns:
+        tuple: (meb_alan_id, source) - source: 'data', 'db', 'cache', 'none'
     """
-    global _meb_alan_ids_cache, _cache_timestamp
-    _meb_alan_ids_cache = None
-    _cache_timestamp = None
-    print("🔄 MEB Alan ID cache'i temizlendi")
+    # Import normalize_alan_adi from utils
+    from .utils import normalize_alan_adi
+    
+    # 1. Önce verilen data'dan kontrol et
+    if data_meb_id:
+        return data_meb_id, 'data'
+    
+    # 2. Veritabanından kontrol et
+    db_path = find_or_create_database()
+    if db_path:
+        try:
+            with sqlite3.connect(db_path, timeout=30.0) as conn:
+                conn.row_factory = sqlite3.Row
+                cursor = conn.cursor()
+                
+                normalized_alan_adi = normalize_alan_adi(alan_adi)
+                cursor.execute("SELECT meb_alan_id FROM temel_plan_alan WHERE alan_adi = ?", (normalized_alan_adi,))
+                result = cursor.fetchone()
+                
+                if result and result['meb_alan_id']:
+                    return result['meb_alan_id'], 'db'
+        except Exception as e:
+            print(f"DB MEB ID kontrol hatası: {e}")
+    
+    # 3. Cache'den MEB ID'leri al ve eşleştir
+    try:
+        meb_alan_ids = get_meb_alan_ids()
+        
+        # Tam eşleşme ara
+        if alan_adi in meb_alan_ids:
+            meb_alan_id = meb_alan_ids[alan_adi]
+            
+            # Veritabanını güncelle
+            if db_path:
+                try:
+                    with sqlite3.connect(db_path, timeout=30.0) as conn:
+                        cursor = conn.cursor()
+                        normalized_alan_adi = normalize_alan_adi(alan_adi)
+                        cursor.execute("""
+                            UPDATE temel_plan_alan 
+                            SET meb_alan_id = ?, updated_at = datetime('now')
+                            WHERE alan_adi = ?
+                        """, (meb_alan_id, normalized_alan_adi))
+                        print(f"📋 MEB ID güncellendi: {alan_adi} -> {meb_alan_id}")
+                except Exception as e:
+                    print(f"MEB ID güncelleme hatası: {e}")
+            
+            return meb_alan_id, 'cache'
+        
+        # Normalize edilmiş adla ara
+        normalized_alan_adi = normalize_alan_adi(alan_adi)
+        if normalized_alan_adi in meb_alan_ids:
+            meb_alan_id = meb_alan_ids[normalized_alan_adi]
+            
+            # Veritabanını güncelle
+            if db_path:
+                try:
+                    with sqlite3.connect(db_path, timeout=30.0) as conn:
+                        cursor = conn.cursor()
+                        cursor.execute("""
+                            UPDATE temel_plan_alan 
+                            SET meb_alan_id = ?, updated_at = datetime('now')
+                            WHERE alan_adi = ?
+                        """, (meb_alan_id, normalized_alan_adi))
+                        print(f"📋 MEB ID güncellendi (normalize): {alan_adi} -> {meb_alan_id}")
+                except Exception as e:
+                    print(f"MEB ID güncelleme hatası: {e}")
+            
+            return meb_alan_id, 'cache'
+        
+    except Exception as e:
+        print(f"Cache'den MEB ID çekme hatası: {e}")
+    
+    # 4. Hiçbiri yoksa None döndür
+    return None, 'none'
 
 
-def update_all_meb_alan_ids_from_cache_impl(cursor):
+@with_database
+def update_database_from_cache(cursor):
     """
     Cache'deki tüm MEB Alan ID'lerini database'e toplu olarak günceller.
-    Sadece mevcut alanları günceller, yeni alan oluşturmaz.
     
     Returns:
         dict: {"updated": int, "skipped": int, "errors": list}
@@ -633,7 +673,7 @@ def update_all_meb_alan_ids_from_cache_impl(cursor):
     from .utils import normalize_alan_adi
     
     # Cache'den MEB ID'leri al
-    meb_alan_ids = get_meb_alan_ids_cached()
+    meb_alan_ids = get_meb_alan_ids()
     
     if not meb_alan_ids:
         return {"updated": 0, "skipped": 0, "errors": ["Cache boş veya erişilemiyor"]}
@@ -692,31 +732,6 @@ def update_all_meb_alan_ids_from_cache_impl(cursor):
         "updated": updated_count,
         "skipped": skipped_count,
         "errors": errors
-    }
-
-
-def get_cache_info():
-    """
-    Cache durumu hakkında bilgi döndürür.
-    
-    Returns:
-        dict: Cache durumu bilgisi
-    """
-    global _meb_alan_ids_cache, _cache_timestamp
-    
-    if _meb_alan_ids_cache is None:
-        return {"status": "empty", "count": 0, "age": 0, "remaining": 0}
-    
-    current_time = time.time()
-    age = current_time - _cache_timestamp if _cache_timestamp else 0
-    remaining = max(0, _cache_duration - age)
-    
-    return {
-        "status": "active",
-        "count": len(_meb_alan_ids_cache),
-        "age": age,
-        "remaining": remaining,
-        "cache_duration": _cache_duration
     }
 
 
@@ -838,13 +853,6 @@ def create_ders_dal_relation(cursor, ders_id, dal_id):
     return True
 
 
-# Wrapper fonksiyonu decorator ile
-@with_database
-def update_all_meb_alan_ids_from_cache(cursor):
-    """
-    Cache'deki tüm MEB Alan ID'lerini database'e toplu olarak günceller.
-    """
-    return update_all_meb_alan_ids_from_cache_impl(cursor)
 
 
 # ====== Database Statistics Utilities ======

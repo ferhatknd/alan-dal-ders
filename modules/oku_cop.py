@@ -510,7 +510,7 @@ def save_cop_results_to_db(cursor, result: Dict[str, Any]) -> int:
                     continue
                 
                 # Merkezi ders kaydetme fonksiyonunu kullan
-                from .utils import create_or_get_ders
+                from .utils_database import create_or_get_ders
                 
                 ders_id = create_or_get_ders(
                     cursor=cursor,
@@ -526,7 +526,7 @@ def save_cop_results_to_db(cursor, result: Dict[str, Any]) -> int:
                 
                 # Ders-Dal ilişkisi (sadece ders_id varsa)
                 if ders_id:
-                    from .utils import create_ders_dal_relation
+                    from .utils_database import create_ders_dal_relation
                     create_ders_dal_relation(cursor, ders_id, dal_id)
                 
                 saved_count += 1
