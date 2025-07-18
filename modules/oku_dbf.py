@@ -277,11 +277,38 @@ class DBFExtractor(BaseExtractor):
         return result
     
     def _extract_ders_sinifi(self, tables: List[List[List[str]]]) -> Optional[str]:
-        """Extract class level with number conversion"""
-        content = self.find_field_in_tables(tables, ['DERSİN SINIFI', 'SINIF'])
-        if content:
-            numbers = re.findall(r'\d+', content)
-            return numbers[0] if numbers else content
+        """
+        Extracts the class level ('9. Sınıf', '10. Sınıf', etc.) from the tables.
+        This method specifically looks for expected class patterns to avoid conflicts.
+        """
+        # This pattern is more specific to find the exact class information
+        class_pattern = r'(\d{1,2})\.\s*SINIF' 
+
+        for table in tables:
+            for row in table:
+                for cell in row:
+                    if cell and isinstance(cell, str):
+                        # Search for the specific pattern like "9. Sınıf"
+                        match = re.search(class_pattern, cell.upper())
+                        if match:
+                            return match.group(1) # Return the number part
+
+                        # Fallback to the old method with an additional check
+                        if 'DERSİN SINIFI' in cell.upper() or 'SINIF' in cell.upper():
+                            # Try to find a number in the same cell or adjacent cells
+                            content_to_check = []
+                            if ':' in cell:
+                                content_to_check.append(cell.split(':', 1)[1].strip())
+                            
+                            # Check all cells in the row
+                            for other_cell in row:
+                                if other_cell and isinstance(other_cell, str):
+                                    content_to_check.append(other_cell.strip())
+
+                            for content in content_to_check:
+                                numbers = re.findall(r'\b(9|10|11|12)\b', content)
+                                if numbers:
+                                    return numbers[0]
         return None
     
     def _extract_ders_saati(self, tables: List[List[List[str]]]) -> Optional[str]:
