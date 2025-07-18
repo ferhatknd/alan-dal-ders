@@ -8,9 +8,11 @@ from abc import ABC, abstractmethod
 from typing import Dict, List, Any, Optional
 
 try:
-    from .utils import extract_archive, scan_directory_for_archives, scan_directory_for_pdfs, with_database
+    from .utils import with_database
+    from .utils_file_management import extract_archive, scan_directory_for_archives, scan_directory_for_pdfs
 except ImportError:
-    from utils import extract_archive, scan_directory_for_archives, scan_directory_for_pdfs, with_database
+    from utils import with_database
+    from utils_file_management import extract_archive, scan_directory_for_archives, scan_directory_for_pdfs
 
 # ===========================
 # MODULAR REFACTORED CLASSES

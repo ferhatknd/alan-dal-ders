@@ -1,5 +1,5 @@
 """
-modules/utils-file-management.py - Dosya İşlemleri Yönetimi
+modules/utils_file_management.py - Dosya İşlemleri Yönetimi
 
 Bu modül, dosya indirme, dizin yönetimi, arşiv işlemleri gibi
 tüm dosya işlemlerini yönetir.
