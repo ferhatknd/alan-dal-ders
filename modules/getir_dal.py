@@ -4,7 +4,7 @@ import time
 import os
 import sqlite3
 from pathlib import Path
-from .utils import normalize_to_title_case_tr
+from .utils_normalize import normalize_to_title_case_tr
 from .utils_database import with_database, find_or_create_database
 
 # requests.Session() kullanarak çerezleri ve oturum bilgilerini yönetiyoruz

@@ -8,10 +8,10 @@ import time
 from pathlib import Path
 import re
 try:
-    from .utils import normalize_to_title_case_tr, sanitize_filename_tr
+    from .utils_normalize import normalize_to_title_case_tr, sanitize_filename_tr
     from .utils_database import with_database
 except ImportError:
-    from utils import normalize_to_title_case_tr, sanitize_filename_tr
+    from utils_normalize import normalize_to_title_case_tr, sanitize_filename_tr
     from utils_database import with_database
 
 # Doğru URL: https://meslek.meb.gov.tr/moduller (debug ile doğrulandı)

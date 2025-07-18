@@ -7,7 +7,7 @@ import sys
 import random
 
 try:
-    from .utils import normalize_to_title_case_tr
+    from .utils_normalize import normalize_to_title_case_tr
     from .utils_database import with_database
     from .utils_file_management import scan_directory_for_pdfs
 except ImportError:

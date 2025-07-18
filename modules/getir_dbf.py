@@ -6,12 +6,12 @@ import re
 import sqlite3
 try:
     from .oku_dbf import extract_ders_adi
-    from .utils import normalize_to_title_case_tr, sanitize_filename_tr
+    from .utils_normalize import normalize_to_title_case_tr, sanitize_filename_tr
     from .utils_database import with_database, get_or_create_alan, find_or_create_database, get_meb_alan_id_with_fallback, get_folder_name_for_download, get_meb_alan_ids_cached
     from .utils_file_management import download_and_cache_pdf
 except ImportError:
     from oku_dbf import extract_ders_adi
-    from utils import normalize_to_title_case_tr, sanitize_filename_tr
+    from utils_normalize import normalize_to_title_case_tr, sanitize_filename_tr
     from utils_database import with_database, get_or_create_alan, find_or_create_database, get_meb_alan_id_with_fallback, get_folder_name_for_download, get_meb_alan_ids_cached
     from utils_file_management import download_and_cache_pdf
 

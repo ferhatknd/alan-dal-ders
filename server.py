@@ -26,7 +26,7 @@ from modules.getir_dal import get_dal
 
 # Database utilities from utils-database.py
 from modules.utils_database import with_database_json, find_or_create_database, get_or_create_alan
-from modules.utils import normalize_to_title_case_tr, normalize_alan_adi
+from modules.utils import normalize_to_title_case_tr
 
 app = Flask(__name__)
 CORS(app)
@@ -457,7 +457,7 @@ def get_statistics(cursor):
     """
     try:
         # Merkezi utils-database fonksiyonunu kullan
-        from modules.utils_database import get_database_statistics
+        from modules.utils_stats import get_database_statistics
         db_stats = get_database_statistics()
         
         # Dosya sistem istatistikleri

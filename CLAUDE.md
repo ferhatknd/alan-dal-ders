@@ -98,9 +98,10 @@ Alan (Area) → Dal (Field) → Ders (Course) → Öğrenme Birimi (Learning Uni
 - **`modules/getir_dm.py`** - Ders Materyalleri (DM) verilerini çeker
 - **`modules/getir_bom.py`** - Bireysel Öğrenme Materyalleri (BÖM) verilerini çeker
 - **`modules/getir_dal.py`** - Alan-Dal ilişkilerini çeker
-- **`modules/utils.py`** - ⭐ **REFAKTOR**: Yardımcı fonksiyonlar, Türkçe karakter normalizasyonu (database fonksiyonları utils_database.py'ye taşındı)
+- **`modules/utils_normalize.py`** - ⭐ **YENİ AYIRIM**: String normalizasyon fonksiyonları, Türkçe karakter normalizasyonu (eski utils.py'den ayrıştırıldı)
 - **`modules/utils_database.py`** - ⭐ **YENİ**: Veritabanı işlemleri modülü, **database connection decorators**, **MEB ID yönetimi** ve **CRUD operasyonları**
 - **`modules/utils_file_management.py`** - ⭐ **YENİ**: Dosya işlemleri modülü, **ortak alan dosya sistemi**, **duplicate dosya yönetimi** ve **arşiv işlemleri**
+- **`modules/utils_stats.py`** - ⭐ **YENİ AYIRIM**: İstatistik ve monitoring fonksiyonları (utils_database.py'den ayrıştırıldı)
 
 ### 🌐 Frontend Dosyaları
 - **`src/App.js`** - ⭐ **YENİLENDİ**: Tek satır workflow UI, console panel, JSON popup'sız tasarım
@@ -211,19 +212,22 @@ temel_plan_ders_dal
       return result
   ```
 
-### 5. Modüler Dosya İşlemleri ⭐ **YENİ KURAL**
-- **Dosya işlemleri**: `utils_file_management.py` modülünü kullan
+### 5. Modüler Import Sistemi ⭐ **YENİ KURAL**
+- **String/normalizasyon işlemleri**: `utils_normalize.py` modülünü kullan
 - **Database işlemleri**: `utils_database.py` modülünü kullan
-- **String/normalizasyon işlemleri**: `utils.py` modülünü kullan
+- **Dosya işlemleri**: `utils_file_management.py` modülünü kullan
+- **İstatistik işlemleri**: `utils_stats.py` modülünü kullan
 - **ASLA** karışık import yapma:
   ```python
-  # ✅ Doğru - Modüler import
-  from modules.utils import normalize_alan_adi
+  # ✅ Doğru - Yeni modüler import sistemi
+  from modules.utils_normalize import normalize_to_title_case_tr, sanitize_filename_tr
   from modules.utils_database import with_database, get_or_create_alan
   from modules.utils_file_management import download_and_cache_pdf, extract_archive
+  from modules.utils_stats import get_database_statistics, format_database_statistics_message
   
-  # ❌ Yanlış - Karışık import
-  from modules.utils import with_database  # Artık utils.py'de yok!
+  # ❌ Yanlış - Eski import'lar
+  from modules.utils import normalize_to_title_case_tr  # utils.py artık yok!
+  from modules.utils_database import get_database_statistics  # İstatistikler utils_stats.py'de!
   ```
 
 ### 6. JSON URL Format Standardizasyonu ⭐ **YENİ KURAL**
@@ -349,6 +353,9 @@ python server.py
 - **Error Recovery**: Network hatalarında robust retry mekanizması
 - **⭐ YENİ**: `/api/scrape-to-db` endpoint'i artık yeni standardize fonksiyonları (`get_cop()`, `get_dbf()`) kullanıyor
 - **⭐ YENİ**: Eski workflow-step-* endpoint'leri kaldırıldı, sadece get-* endpoint'leri kullanılıyor
+- **⭐ YENİ**: Frontend konsol çıktıları iyileştirildi - şehir bazlı okunabilir format
+- **⭐ YENİ**: `/api/oku-dbf` endpoint'i standardize edildi (eski `/api/process-dbf` yerine)
+- **⭐ YENİ**: `getir_dal.py` performans optimizasyonu - time.sleep süreleri azaltıldı (0.3s → 0.1s)
 
 ## 🔗 İlişkisel Yapı
 
@@ -377,10 +384,11 @@ Bu proje MIT Lisansı altında lisanslanmıştır.
 - Bu dosyalar sadece sonucu kontrol etmek için süreçlerin sonucunda kaydedilen dosyalardır. 
 - Bir süreçte ne alınıyor ise öncelikle veritabanına kaydetme birincil hedeftir.
 
-### 🗂️ Modüler Dosya Yapısı
-- **utils.py**: String normalizasyonu, Türkçe karakter işlemleri
+### 🗂️ Modüler Dosya Yapısı ⭐ **GÜNCELLEME**
+- **utils_normalize.py**: String normalizasyonu, Türkçe karakter işlemleri (eski utils.py'den ayrıştırıldı)
 - **utils_database.py**: Database connection decorators, MEB ID yönetimi, CRUD operasyonları
 - **utils_file_management.py**: Dosya indirme, arşiv işlemleri, duplicate yönetimi
+- **utils_stats.py**: İstatistik ve monitoring fonksiyonları (utils_database.py'den ayrıştırıldı)
 - **Ortak Alan Sistemi**: `data/*/00_Ortak_Alan_Dersleri/` klasörleri ile duplicate dosya yönetimi
 - **Otomatik Taşıma**: Birden fazla alanda bulunan dosyalar otomatik olarak ortak alana taşınır
 
@@ -389,3 +397,13 @@ Bu proje MIT Lisansı altında lisanslanmıştır.
 2. **Duplicate Kontrol**: Mevcut dosyaları tarar
 3. **Ortak Alan Yönetimi**: Duplicate dosyaları `00_Ortak_Alan_Dersleri` klasörüne taşır
 4. **Cache Kullanımı**: Mevcut dosyaları tekrar indirmez
+
+### 🚀 Performans Optimizasyonları ⭐ **YENİ**
+- **Alan-Dal Çekme Hızlandırması**: `getir_dal.py`'de time.sleep süreleri optimize edildi
+  - Her alan arasında: `0.3s → 0.1s` (3x daha hızlı)
+  - Her il arasında: `1.5s → 0.5s` (3x daha hızlı)
+  - Alan olmayan iller: `1.5s → 0.5s` (3x daha hızlı)
+- **Frontend Konsol Çıktıları**: Düzenli, okunabilir format ile şehir bazlı ilerleme
+  - Format: `İSTANBUL (34/81), Alan/Dal Sayısı (45/85) -> (13/31)`
+  - Gereksiz detay mesajları gizlendi (area_processing, branches_processing)
+- **Endpoint İsimlendirme**: Tutarlı `oku-*` prefix'i ile standardizasyon
