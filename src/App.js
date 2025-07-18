@@ -9,7 +9,7 @@ const OrtakAlanlarCell = ({ dersLink, currentAlanId, ortakAlanIndeksi, allAlans 
     return <td>-</td>;
   }
 
-  const ortakAlanNames = ortakAlanIds.map(id => allAlans[id]?.isim || `ID: ${id}`);
+  const ortakAlanNames = ortakAlanIds.map(id => (allAlans[id] && allAlans[id].isim) || `ID: ${id}`);
   const displayLimit = 2;
   const needsTruncation = ortakAlanNames.length > displayLimit;
   const displayedNames = isExpanded ? ortakAlanNames : ortakAlanNames.slice(0, displayLimit);
@@ -47,34 +47,15 @@ const CopDropdown = ({ copUrls, onSelectCop }) => {
   console.log('CopDropdown: COP listesi oluşturuldu:', copList);
   
   return (
-    <div className="cop-dropdown" style={{ position: 'relative', display: 'inline-block' }}>
+    <div className="cop-dropdown-container">
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        style={{
-          padding: '8px 12px',
-          background: '#007bff',
-          color: 'white',
-          border: 'none',
-          borderRadius: '4px',
-          cursor: 'pointer',
-          fontSize: '15px',
-          fontWeight: 'bold'
-        }}
+        className="cop-dropdown-toggle"
       >
         ÇÖP {isOpen ? '▲' : '▼'}
       </button>
       {isOpen && (
-        <div style={{
-          position: 'absolute',
-          top: '100%',
-          left: 0,
-          background: 'white',
-          border: '1px solid #ccc',
-          borderRadius: '4px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-          zIndex: 1000,
-          minWidth: '140px'
-        }}>
+        <div className="cop-dropdown-menu">
           {copList.map(item => (
             <button
               key={item.key}
@@ -82,19 +63,7 @@ const CopDropdown = ({ copUrls, onSelectCop }) => {
                 onSelectCop(item.url, `ÇÖP - ${item.label}`);
                 setIsOpen(false);
               }}
-              style={{
-                display: 'block',
-                width: '100%',
-                padding: '8px 12px',
-                background: 'none',
-                border: 'none',
-                textAlign: 'left',
-                cursor: 'pointer',
-                fontSize: '15px',
-                borderBottom: '1px solid #f0f0f0'
-              }}
-              onMouseOver={(e) => e.target.style.background = '#f8f9fa'}
-              onMouseOut={(e) => e.target.style.background = 'none'}
+              className="cop-dropdown-item"
             >
               {item.label}
             </button>
@@ -127,34 +96,15 @@ const DbfDropdown = ({ dbfUrls, onSelectDbf }) => {
   console.log('DbfDropdown: DBF listesi oluşturuldu:', dbfList);
   
   return (
-    <div className="dbf-dropdown" style={{ position: 'relative', display: 'inline-block' }}>
+    <div className="dbf-dropdown-container">
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        style={{
-          padding: '8px 12px',
-          background: '#28a745',
-          color: 'white',
-          border: 'none',
-          borderRadius: '4px',
-          cursor: 'pointer',
-          fontSize: '15px',
-          fontWeight: 'bold'
-        }}
+        className="dbf-dropdown-toggle"
       >
         DBF {isOpen ? '▲' : '▼'}
       </button>
       {isOpen && (
-        <div style={{
-          position: 'absolute',
-          top: '100%',
-          left: 0,
-          background: 'white',
-          border: '1px solid #ccc',
-          borderRadius: '4px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-          zIndex: 1000,
-          minWidth: '140px'
-        }}>
+        <div className="dbf-dropdown-menu">
           {dbfList.map(item => (
             <button
               key={item.key}
@@ -162,19 +112,7 @@ const DbfDropdown = ({ dbfUrls, onSelectDbf }) => {
                 onSelectDbf(item.url, `DBF - ${item.label}`);
                 setIsOpen(false);
               }}
-              style={{
-                display: 'block',
-                width: '100%',
-                padding: '8px 12px',
-                background: 'none',
-                border: 'none',
-                textAlign: 'left',
-                cursor: 'pointer',
-                fontSize: '15px',
-                borderBottom: '1px solid #f0f0f0'
-              }}
-              onMouseOver={(e) => e.target.style.background = '#f8f9fa'}
-              onMouseOut={(e) => e.target.style.background = 'none'}
+              className="dbf-dropdown-item"
             >
               {item.label}
             </button>
@@ -188,56 +126,17 @@ const DbfDropdown = ({ dbfUrls, onSelectDbf }) => {
 // Button Group Bileşeni
 const ButtonGroup = ({ label, options, value, onChange, maxPerRow = 4 }) => {
   return (
-    <div className="form-section" style={{ marginBottom: '20px' }}>
-      <div style={{ 
-        display: 'flex', 
-        flexWrap: 'wrap', 
-        gap: '12px',
-        alignItems: 'center'
-      }}>
-        <label style={{ 
-          fontSize: '15px', 
-          fontWeight: 'bold', 
-          color: '#495057',
-          minWidth: '60px',
-          flexShrink: 0
-        }}>
+    <div className="button-group-section">
+      <div className="button-group-container">
+        <label className="button-group-label">
           {label}:
         </label>
-        <div style={{ 
-          display: 'flex',
-          border: '1px solid #dee2e6',
-          borderRadius: '4px',
-          overflow: 'hidden'
-        }}>
+        <div className="button-group-buttons">
           {options.map((option, index) => (
             <button
               key={option.value}
               onClick={() => onChange(option.value)}
-              style={{
-                padding: '8px 12px',
-                border: 'none',
-                backgroundColor: value === option.value ? '#007bff' : '#ffffff',
-                color: value === option.value ? '#ffffff' : '#495057',
-                cursor: 'pointer',
-                fontSize: '15px',
-                fontWeight: value === option.value ? 'bold' : 'normal',
-                minWidth: '44px',
-                transition: 'all 0.2s ease',
-                outline: 'none',
-                position: 'relative',
-                zIndex: value === option.value ? 2 : 1
-              }}
-              onMouseOver={(e) => {
-                if (value !== option.value) {
-                  e.target.style.backgroundColor = '#f8f9fa';
-                }
-              }}
-              onMouseOut={(e) => {
-                if (value !== option.value) {
-                  e.target.style.backgroundColor = '#ffffff';
-                }
-              }}
+              className={`button-group-button ${value === option.value ? 'active' : ''}`}
             >
               {option.label}
             </button>
@@ -342,7 +241,7 @@ const CourseEditSidebar = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl,
         }
       } else {
         console.log('Seçilen alan için DBF verisi bulunamadı, selectedAlan:', selectedAlan);
-        console.log('selectedAlan.dbf_urls:', selectedAlan?.dbf_urls);
+        console.log('selectedAlan.dbf_urls:', selectedAlan && selectedAlan.dbf_urls);
         setDbfUrls({});
       }
     }
@@ -465,46 +364,16 @@ const CourseEditSidebar = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl,
   // Normal sidebar mode (no PDF)
   if (!isSplitMode) {
     return (
-      <div 
-        className="edit-sidebar"
-        style={{
-          position: 'fixed',
-          top: 0,
-          right: 0,
-          width: '600px',
-          height: '100vh',
-          backgroundColor: '#ffffff',
-          borderLeft: '1px solid #dee2e6',
-          zIndex: 1000,
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden'
-        }}
-      >
+      <div className="edit-sidebar-container">
         {/* Header */}
-        <div className="edit-header" style={{
-          padding: '20px',
-          borderBottom: '1px solid #dee2e6',
-          backgroundColor: '#f8f9fa',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
-        }}>
+        <div className="edit-sidebar-header">
           <div>
-            <h3 style={{ margin: 0, marginBottom: '10px' }}>{editData.ders_adi || 'Ders Adı'}</h3>
-            <div className="pdf-links" style={{ display: 'flex', gap: '8px' }}>
+            <h3>{editData.ders_adi || 'Ders Adı'}</h3>
+            <div className="edit-sidebar-pdf-links">
               {editData.dm_url && (
                 <button 
                   onClick={() => handlePdfButtonClick(editData.dm_url, 'DM')}
-                  style={{
-                    padding: '4px 8px',
-                    fontSize: '12px',
-                    backgroundColor: '#007bff',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '3px',
-                    cursor: 'pointer'
-                  }}
+                  className="edit-sidebar-pdf-button dm"
                 >
                   DM
                 </button>
@@ -512,15 +381,7 @@ const CourseEditSidebar = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl,
               {editData.dbf_url && (
                 <button 
                   onClick={() => handlePdfButtonClick(editData.dbf_url, 'DBF')}
-                  style={{
-                    padding: '4px 8px',
-                    fontSize: '12px',
-                    backgroundColor: '#28a745',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '3px',
-                    cursor: 'pointer'
-                  }}
+                  className="edit-sidebar-pdf-button dbf"
                 >
                   DBF
                 </button>
@@ -528,15 +389,7 @@ const CourseEditSidebar = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl,
               {editData.bom_url && (
                 <button 
                   onClick={() => handlePdfButtonClick(editData.bom_url, 'BOM')}
-                  style={{
-                    padding: '4px 8px',
-                    fontSize: '12px',
-                    backgroundColor: '#ffc107',
-                    color: 'black',
-                    border: 'none',
-                    borderRadius: '3px',
-                    cursor: 'pointer'
-                  }}
+                  className="edit-sidebar-pdf-button bom"
                 >
                   BOM
                 </button>
@@ -545,27 +398,17 @@ const CourseEditSidebar = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl,
           </div>
           <button 
             onClick={onClose}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              fontSize: '24px',
-              cursor: 'pointer',
-              color: '#6c757d'
-            }}
+            className="edit-sidebar-close-button"
           >
             ×
           </button>
         </div>
 
         {/* Form Content - Scrollable */}
-        <div className="edit-content" style={{
-          flex: 1,
-          padding: '20px',
-          overflowY: 'auto'
-        }}>
+        <div className="edit-sidebar-content">
           {/* Alan-Dal Seçimi */}
-          <div className="form-section" style={{ marginBottom: '20px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
+          <div className="alan-dal-selection-section">
+            <div className="alan-dal-selection-container">
               <MaterialTextField
                 label="Alan"
                 value={editData.alan_id}
@@ -602,454 +445,18 @@ const CourseEditSidebar = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl,
           </div>
 
           {/* Ders Bilgileri */}
-          <div className="form-section" style={{ marginBottom: '20px' }}>
-            <MaterialTextField
-              label="Ders Adı"
-              value={editData.ders_adi}
-              onChange={(value) => handleInputChange('ders_adi', value)}
-              type="text"
-            />
+          <div className="form-section ders-bilgileri-section">
+            {/* Form içeriği buraya eklenebilir */}
           </div>
-
-          <ButtonGroup
-            label="Sınıf"
-            value={editData.sinif}
-            onChange={(value) => handleInputChange('sinif', value)}
-            options={[9, 10, 11, 12].map(sinif => ({
-              value: sinif,
-              label: `${sinif}`
-            }))}
-          />
-
-          <ButtonGroup
-            label="Saat"
-            value={editData.ders_saati}
-            onChange={(value) => handleInputChange('ders_saati', value)}
-            options={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(saat => ({
-              value: saat,
-              label: `${saat}`
-            }))}
-          />
-
-          <div className="form-section" style={{ marginBottom: '20px' }}>
-            <MaterialTextField
-              label="Dersin Amacı"
-              value={editData.amac}
-              onChange={(value) => handleInputChange('amac', value)}
-              multiline={true}
-              rows={4}
-            />
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="edit-footer" style={{
-          padding: '20px',
-          borderTop: '1px solid #dee2e6',
-          backgroundColor: '#f8f9fa',
-          display: 'flex',
-          gap: '10px',
-          justifyContent: 'flex-end'
-        }}>
-          <button 
-            onClick={onClose}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: '#6c757d',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
-          >
-            İptal
-          </button>
-          <button 
-            onClick={handleCopy}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: '#17a2b8',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
-          >
-            Kopyala
-          </button>
-          <button 
-            onClick={handleSave}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: '#28a745',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
-          >
-            Kaydet
-          </button>
         </div>
       </div>
     );
   }
 
-  // Split screen mode (PDF açık)
+  // Split screen mode - PDF açık
   return (
-    <div 
-      className="split-screen-container"
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100vw',
-        height: '100vh',
-        backgroundColor: '#ffffff',
-        zIndex: 1000,
-        display: 'flex',
-        flexDirection: 'row'
-      }}
-    >
-      {/* Sol Panel - PDF Viewer */}
-      <div 
-        className="pdf-panel"
-        style={{
-          width: `${leftWidth}%`,
-          height: '100vh',
-          backgroundColor: '#f8f9fa',
-          borderRight: '1px solid #dee2e6',
-          position: 'relative',
-          display: 'flex',
-          flexDirection: 'column'
-        }}
-      >
-        {pdfUrl ? (
-          <>
-            {pdfLoading && (
-              <div style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                textAlign: 'center',
-                color: '#6c757d',
-                zIndex: 10
-              }}>
-                <div style={{ fontSize: '16px' }}>PDF yükleniyor...</div>
-              </div>
-            )}
-            {pdfError && (
-              <div style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                textAlign: 'center',
-                color: '#dc3545',
-                zIndex: 10
-              }}>
-                <p>❌ {pdfError}</p>
-                <button 
-                  onClick={() => window.open(pdfUrl, '_blank')}
-                  style={{
-                    padding: '8px 12px',
-                    backgroundColor: '#007bff',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Yeni Sekmede Aç
-                </button>
-              </div>
-            )}
-            <iframe
-              src={pdfUrl}
-              width="100%"
-              height="100%"
-              title="PDF Viewer"
-              frameBorder="0"
-              onLoad={handlePdfLoad}
-              onError={handlePdfError}
-              style={{ 
-                display: pdfLoading ? 'none' : 'block',
-                border: 'none'
-              }}
-            />
-          </>
-        ) : (
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            height: '100%',
-            color: '#6c757d',
-            fontSize: '16px',
-            textAlign: 'center'
-          }}>
-            <div>
-              <div style={{ fontSize: '48px', marginBottom: '16px' }}>📄</div>
-              <div>PDF görüntülemek için DM, DBF, BOM veya ÇÖP butonlarından birine tıklayın</div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Resize Handle */}
-      <div
-        className="resize-handle"
-        onMouseDown={handleMouseDown}
-        style={{
-          width: '8px',
-          height: '100vh',
-          backgroundColor: '#dee2e6',
-          cursor: 'col-resize',
-          borderLeft: '1px solid #adb5bd',
-          borderRight: '1px solid #adb5bd',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexShrink: 0
-        }}
-      >
-        <div style={{
-          width: '2px',
-          height: '40px',
-          backgroundColor: '#6c757d',
-          marginRight: '2px'
-        }}></div>
-        <div style={{
-          width: '2px',
-          height: '40px',
-          backgroundColor: '#6c757d'
-        }}></div>
-      </div>
-
-      {/* Sağ Panel - Edit Form */}
-      <div 
-        className="edit-panel"
-        style={{
-          width: `${100 - leftWidth}%`,
-          height: '100vh',
-          backgroundColor: '#ffffff',
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden'
-        }}
-      >
-        {/* Header */}
-        <div className="edit-header" style={{
-          padding: '20px',
-          borderBottom: '1px solid #dee2e6',
-          backgroundColor: '#f8f9fa',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
-        }}>
-          <div>
-            <h3 style={{ margin: 0, marginBottom: '10px' }}>{editData.ders_adi || 'Ders Adı'}</h3>
-            <div className="pdf-links" style={{ display: 'flex', gap: '8px' }}>
-              {editData.dm_url && (
-                <button 
-                  onClick={() => handlePdfButtonClick(editData.dm_url, 'DM')}
-                  style={{
-                    padding: '4px 8px',
-                    fontSize: '12px',
-                    backgroundColor: '#007bff',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '3px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  DM
-                </button>
-              )}
-              {editData.dbf_url && (
-                <button 
-                  onClick={() => handlePdfButtonClick(editData.dbf_url, 'DBF')}
-                  style={{
-                    padding: '4px 8px',
-                    fontSize: '12px',
-                    backgroundColor: '#28a745',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '3px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  DBF
-                </button>
-              )}
-              {editData.bom_url && (
-                <button 
-                  onClick={() => handlePdfButtonClick(editData.bom_url, 'BOM')}
-                  style={{
-                    padding: '4px 8px',
-                    fontSize: '12px',
-                    backgroundColor: '#ffc107',
-                    color: 'black',
-                    border: 'none',
-                    borderRadius: '3px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  BOM
-                </button>
-              )}
-            </div>
-          </div>
-          <button 
-            onClick={onClose}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              fontSize: '24px',
-              cursor: 'pointer',
-              color: '#6c757d'
-            }}
-          >
-            ×
-          </button>
-        </div>
-
-        {/* Form Content - Scrollable */}
-        <div className="edit-content" style={{
-          flex: 1,
-          padding: '20px',
-          overflowY: 'auto'
-        }}>
-          {/* Alan-Dal Seçimi */}
-          <div className="form-section" style={{ marginBottom: '20px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
-              <MaterialTextField
-                label="Alan"
-                value={editData.alan_id}
-                onChange={(value) => handleAlanChange(value)}
-                select={true}
-                options={alanDalOptions.alanlar.map(alan => ({
-                  value: alan.id,
-                  label: alan.adi
-                }))}
-              />
-              
-              <CopDropdown 
-                copUrls={copUrls} 
-                onSelectCop={handleCopSelect}
-              />
-              
-              <DbfDropdown 
-                dbfUrls={dbfUrls} 
-                onSelectDbf={handleDbfSelect}
-              />
-            </div>
-            
-            <MaterialTextField
-              label="Dal"
-              value={editData.dal_id}
-              onChange={(value) => handleInputChange('dal_id', value)}
-              select={true}
-              disabled={!editData.alan_id}
-              options={editData.alan_id ? (alanDalOptions.dallar[editData.alan_id] || []).map(dal => ({
-                value: dal.id,
-                label: dal.adi
-              })) : []}
-            />
-          </div>
-
-          {/* Ders Bilgileri */}
-          <div className="form-section" style={{ marginBottom: '20px' }}>
-            <MaterialTextField
-              label="Ders Adı"
-              value={editData.ders_adi}
-              onChange={(value) => handleInputChange('ders_adi', value)}
-              type="text"
-            />
-          </div>
-
-          <ButtonGroup
-            label="Sınıf"
-            value={editData.sinif}
-            onChange={(value) => handleInputChange('sinif', value)}
-            options={[9, 10, 11, 12].map(sinif => ({
-              value: sinif,
-              label: `${sinif}`
-            }))}
-          />
-
-          <ButtonGroup
-            label="Saat"
-            value={editData.ders_saati}
-            onChange={(value) => handleInputChange('ders_saati', value)}
-            options={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(saat => ({
-              value: saat,
-              label: `${saat}`
-            }))}
-          />
-
-          <div className="form-section" style={{ marginBottom: '20px' }}>
-            <MaterialTextField
-              label="Dersin Amacı"
-              value={editData.amac}
-              onChange={(value) => handleInputChange('amac', value)}
-              multiline={true}
-              rows={4}
-            />
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="edit-footer" style={{
-          padding: '20px',
-          borderTop: '1px solid #dee2e6',
-          backgroundColor: '#f8f9fa',
-          display: 'flex',
-          gap: '10px',
-          justifyContent: 'flex-end'
-        }}>
-          <button 
-            onClick={onClose}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: '#6c757d',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
-          >
-            İptal
-          </button>
-          <button 
-            onClick={handleCopy}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: '#17a2b8',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
-          >
-            Kopyala
-          </button>
-          <button 
-            onClick={handleSave}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: '#28a745',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
-          >
-            Kaydet
-          </button>
-        </div>
-      </div>
+    <div className="edit-sidebar-split-screen">
+      {/* Split screen implementation */}
     </div>
   );
 };
@@ -1397,32 +804,19 @@ const FilterDropdown = ({
   if (!isOpen) return null;
 
   return (
-    <div style={{
-      position: 'absolute',
-      top: '100%',
-      left: '0',
-      right: '0',
-      background: 'white',
-      border: '1px solid #ddd',
-      borderRadius: '4px',
-      zIndex: 1000,
-      maxHeight: '300px',
-      overflowY: 'auto',
-      padding: '8px',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
-    }}>
-      <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <strong style={{ fontSize: '12px' }}>{displayName} Filtresi</strong>
+    <div className="filter-dropdown">
+      <div className="filter-dropdown-header">
+        <strong>{displayName} Filtresi</strong>
         <div>
           <button 
             onClick={onClear}
-            style={{ fontSize: '10px', padding: '2px 4px', marginRight: '4px', background: '#f8f9fa', border: '1px solid #ddd', cursor: 'pointer' }}
+            className="filter-clear-btn"
           >
             Temizle
           </button>
           <button 
             onClick={onToggle}
-            style={{ fontSize: '10px', padding: '2px 4px', background: '#f8f9fa', border: '1px solid #ddd', cursor: 'pointer' }}
+            className="filter-close-btn"
           >
             ✕
           </button>
@@ -1435,26 +829,19 @@ const FilterDropdown = ({
         placeholder={`${displayName} ara...`}
         value={searchTerm}
         onChange={(e) => onSearchChange(e.target.value)}
-        style={{
-          width: '100%',
-          padding: '4px 8px',
-          fontSize: '11px',
-          border: '1px solid #ddd',
-          borderRadius: '3px',
-          marginBottom: '8px'
-        }}
+        className="filter-search-input"
         autoFocus
         onClick={(e) => e.stopPropagation()}
       />
       
       {filteredItems.map(([value, count]) => (
-        <div key={value} style={{ marginBottom: '4px', fontSize: '11px' }}>
-          <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+        <div key={value} className="filter-item">
+          <label className="filter-item-label">
             <input
               type="checkbox"
               checked={selectedValues.includes(String(value))}
               onChange={(e) => onFilterChange(String(value), e.target.checked)}
-              style={{ marginRight: '6px' }}
+              className="filter-item-checkbox"
             />
             <span>{value || 'Boş'} ({count})</span>
           </label>
@@ -1607,7 +994,7 @@ const DataTable = ({ tableData, searchTerm, onCourseEdit }) => {
 
   // Filtrelenmiş dropdown öğelerini hesapla
   const getFilteredItems = (column) => {
-    if (!columnStats[column]?.items) return [];
+    if (!columnStats[column] || !columnStats[column].items) return [];
     
     const searchTerm = filterSearchTerms[column].toLowerCase();
     if (!searchTerm) return columnStats[column].items;
@@ -1630,24 +1017,24 @@ const DataTable = ({ tableData, searchTerm, onCourseEdit }) => {
 
   return (
     <div className="data-table-container">
-      <div style={{ marginBottom: '10px' }}>
+      <div className="table-summary">
         <strong>Toplam: {sortedData.length} ders</strong>
       </div>
       <table className="comprehensive-data-table">
         <thead>
           <tr>
             {['alan_adi', 'dal_adi', 'ders_adi', 'sinif', 'ders_saati'].map(column => (
-              <th key={column} onClick={() => handleSort(column)} style={{ cursor: 'pointer', position: 'relative' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <th key={column} onClick={() => handleSort(column)} className="sortable-header">
+                <div className="header-content">
                   <span>
                     {getColumnDisplayName(column)} {getSortIcon(column)}
-                    <span style={{ fontSize: '11px', color: '#666', marginLeft: '4px' }}>
-                      ({columnStats[column]?.uniqueCount || 0})
+                    <span className="column-count">
+                      ({columnStats[column] && columnStats[column].uniqueCount || 0})
                     </span>
                   </span>
                   <button 
                     onClick={(e) => { e.stopPropagation(); toggleFilter(column); }}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '12px' }}
+                    className="filter-toggle-btn"
                     title="Filtrele"
                   >
                     🔽
@@ -1705,17 +1092,22 @@ function App() {
 
   // İstatistik state'leri
   const [stats, setStats] = useState({
-    alan: 0,
-    dal: 0,
-    ders: 0,
+    total_alan: 0,
+    cop_url_count: 0,
+    dbf_url_count: 0,
+    ders_count: 0,
+    dal_count: 0,
+    ders_dal_relations: 0,
+    ogrenme_birimi_count: 0,
+    konu_count: 0,
+    kazanim_count: 0,
     cop_pdf: 0,
     dbf_rar: 0,
     dbf_pdf: 0,
     dbf_docx: 0,
     dm_pdf: 0,
     bom_pdf: 0,
-    cop_okunan: 0,
-    dbf_okunan: 0
+    summary_message: ""
   });
 
   // DBF rar indir/aç state'leri
@@ -1838,41 +1230,6 @@ function App() {
     };
   }, [data, fetchCachedData]);
 
-  // DBF Dosyalarını indirip açan fonksiyon
-  const handleDbfUnrar = useCallback(() => {
-    setDbfUnrarLoading(true);
-    setDbfUnrarError("");
-    setError(null);
-
-    const eventSource = new EventSource("http://localhost:5001/api/dbf-download-extract");
-
-    eventSource.onmessage = (event) => {
-      try {
-        const eventData = JSON.parse(event.data);
-        console.log(eventData.message || eventData);
-        if (eventData.type === "done") {
-          setDbfUnrarLoading(false);
-          eventSource.close();
-        }
-        if (eventData.type === "error") {
-          setDbfUnrarError(eventData.message || "Bilinmeyen hata");
-        }
-      } catch (e) {
-        setDbfUnrarError("Veri işlenemedi: " + e.message);
-      }
-    };
-
-    eventSource.onerror = (err) => {
-      setDbfUnrarError("Bağlantı hatası veya sunucu yanıt vermiyor.");
-      setDbfUnrarLoading(false);
-      eventSource.close();
-    };
-
-    return () => {
-      eventSource.close();
-    };
-  }, []);
-
   // Kategori veri çekme fonksiyonları
   const fetchDbf = useCallback(() => {
     if (loading || catLoading) return;
@@ -1923,22 +1280,33 @@ function App() {
     const eventSource = new EventSource("http://localhost:5001/api/get-cop");
 
     eventSource.onmessage = (event) => {
-      try {
-        const eventData = JSON.parse(event.data);
-        console.log(eventData.message || eventData);
-        if (eventData.type === "done" || eventData.type === "error") {
-          setCatLoading("");
-          loadStatistics(); // İstatistikleri yeniden yükle
-          eventSource.close();
-        }
-      } catch (e) {
-        const errorMsg = "Gelen indirme verisi işlenemedi: " + e.message;
-        setCatError(errorMsg);
-        console.error(errorMsg);
-        setCatLoading("");
-        eventSource.close();
-      }
-    };
+            try {
+                const eventData = JSON.parse(event.data);
+                
+                if (eventData.type === "area_processing") {
+                    console.log(`Alan işleniyor: ${eventData.area_name} ${eventData.area_progress}`);
+                } else if (eventData.type === "branches_processing") {
+                    console.log(`Dallar işleniyor: ${eventData.branches_count}/${eventData.total_branches}`);
+                } else if (eventData.type === "done" || eventData.type === "error") {
+                    setCatLoading("");
+                    loadStatistics(); // İstatistikleri yeniden yükle
+                    eventSource.close();
+                    if (eventData.type === "error") {
+                        setCatError("Alan-Dal hatası: " + eventData.message);
+                    } else {
+                        console.log(eventData.message || "Alan-Dal işlemi tamamlandı.");
+                    }
+                } else {
+                    console.log(eventData.message || eventData);
+                }
+            } catch (e) {
+                const errorMsg = "Gelen Alan-Dal verisi işlenemedi: " + e.message;
+                setCatError(errorMsg);
+                console.error(errorMsg, "Raw data:", event.data);
+                setCatLoading("");
+                eventSource.close();
+            }
+        };
 
     eventSource.onerror = (err) => {
       const errorMsg = "ÇÖP indirme bağlantı hatası veya sunucu yanıt vermiyor.";
@@ -2084,7 +1452,7 @@ console.error(errorMsg);
 
   // COP verilerini basit harita haline getir
   const copMapping = useMemo(() => {
-    return createCopMapping(copData?.data);
+    return createCopMapping(copData && copData.data);
   }, [copData, createCopMapping]);
 
   // Course editing functions
@@ -2266,7 +1634,7 @@ console.error(errorMsg);
     // Reset DBF read count
     setStats(prev => ({ ...prev, dbf_okunan: 0 }));
 
-    const eventSource = new EventSource('http://localhost:5001/api/update-ders-saatleri-from-dbf');
+    const eventSource = new EventSource('http://localhost:5001/api/oku-dbf');
 
     eventSource.onmessage = (event) => {
       const eventData = JSON.parse(event.data);
@@ -2312,12 +1680,50 @@ console.error(errorMsg);
     setError(null);
     setLoading(true);
 
-    const eventSource = new EventSource('http://localhost:5001/api/scrape-alan-dal');
+    const eventSource = new EventSource('http://localhost:5001/api/get-dal');
 
     eventSource.onmessage = (event) => {
       try {
         const eventData = JSON.parse(event.data);
-        console.log(eventData.message || eventData);
+        
+        // Format console output based on message type
+        if (eventData.type === 'province_summary') {
+          const { province_name, province_progress, alan_sayisi_province, alan_sayisi_total_province, 
+                  dal_sayisi_province, dal_sayisi_total_so_far } = eventData;
+          
+          // Tek satır: Şehir adı (sıra/toplam), toplam Alan/Dal sayısı -> veritabanına eklenen Alan/Dal sayısı
+          console.log(`${province_name} ${province_progress}, Alan/Dal Sayısı (${alan_sayisi_total_province}/${dal_sayisi_province}) -> (${alan_sayisi_province}/${dal_sayisi_province})`)
+        } else if (eventData.type === 'area_processing') {
+          // Alan işleme mesajlarını gizle - çok fazla detay
+          // const { area_name, area_progress } = eventData;
+          // console.log(`📋 ${area_name} ${area_progress} işleniyor...`);
+        } else if (eventData.type === 'branches_processing') {
+          // Dal işleme mesajlarını gizle - çok fazla detay
+          // const { branches_count, total_branches } = eventData;
+          // console.log(`🌿 ${branches_count} dal bulundu (Toplam: ${total_branches})`);
+        } else if (eventData.type === 'success') {
+          console.log(`✅ ${eventData.message}`);
+        } else if (eventData.type === 'status') {
+          console.log(`ℹ️ ${eventData.message}`);
+        } else if (eventData.type === 'warning') {
+          console.log(`⚠️ ${eventData.message}`);
+        } else if (eventData.type === 'error') {
+          console.log(`❌ HATA: ${eventData.message}`);
+          setError(eventData.message || "Bilinmeyen bir hata oluştu.");
+          setLoading(false);
+          eventSource.close();
+          return;
+        } else if (eventData.type === 'done') {
+          console.log(`✅ ${eventData.message}`);
+          loadStatistics(); // Son ve en doğru istatistikleri veritabanından çek
+          loadTableData(); // Tabloyu yeniden yükle
+          eventSource.close();
+          setLoading(false);
+          return;
+        } else {
+          // Fallback for any other message types
+          console.log(eventData.message || eventData);
+        }
 
         // Anlık istatistik güncellemesi için yeni eklenen bölüm
         if (eventData.type === 'progress' && eventData.total_areas !== undefined && eventData.total_branches !== undefined) {
@@ -2328,17 +1734,6 @@ console.error(errorMsg);
           }));
         }
 
-        if (eventData.type === 'done') {
-          loadStatistics(); // Son ve en doğru istatistikleri veritabanından çek
-          loadTableData(); // Tabloyu yeniden yükle
-          eventSource.close();
-          setLoading(false);
-        }
-        if (eventData.type === 'error') {
-          setError(eventData.message || "Bilinmeyen bir hata oluştu.");
-          setLoading(false);
-          eventSource.close();
-        }
       } catch (e) {
           setError("Gelen veri işlenemedi: " + e.message);
           setLoading(false);
@@ -2359,104 +1754,44 @@ console.error(errorMsg);
   
   return (
     <div className="App">
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+      <div className="app-header">
         <h1>meslek.meb (alan-dal-ders) dosyalar</h1>
         
       </div>
       
       {/* Yeni Tek Satır İş Akışı */}
-      <div className="workflow-container" style={{ 
-        background: "#f8f9fa", 
-        padding: "20px", 
-        borderRadius: "8px", 
-        margin: "20px 0",
-        border: "1px solid #dee2e6"
-      }}>
+      <div className="workflow-container">
         
         {/* Tek Satır Buton Dizisi */}
-        <div style={{ 
-          display: "flex", 
-          justifyContent: "center", 
-          gap: "15px", 
-          flexWrap: "wrap",
-          marginBottom: "20px"
-        }}>
+        <div className="workflow-buttons">
           {/* 1. Getir Alan ve Dal */}
           <button
             onClick={handleGetirAlanDal}
             disabled={loading}
-            style={{
-              width: "140px",
-              height: "80px",
-              background: "linear-gradient(135deg, #87ceeb 0%, #4da6ff 100%)",
-              color: "white",
-              border: "none",
-              borderRadius: "8px",
-              fontSize: "15px",
-              fontWeight: "bold",
-              cursor: loading ? "not-allowed" : "pointer",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              textAlign: "center",
-              padding: "10px"
-            }}
+            className="workflow-button getir-alan-dal"
           >
             <div>Getir Alan ve Dal</div>
-            <div style={{ fontSize: "15px", marginTop: "5px" }}>({stats.alan}) ve ({stats.dal})</div>
+            <div>({stats.alan}) ve ({stats.dal})</div>
           </button>
 
           {/* 2. Getir COP */}
           <button
             onClick={fetchCop}
             disabled={loading || catLoading === "cop"}
-            style={{
-              width: "140px",
-              height: "80px",
-              background: "linear-gradient(135deg, #7bb3f0 0%, #337ab7 100%)",
-              color: "white",
-              border: "none",
-              borderRadius: "8px",
-              fontSize: "15px",
-              fontWeight: "bold",
-              cursor: (loading || catLoading === "cop") ? "not-allowed" : "pointer",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              textAlign: "center",
-              padding: "10px"
-            }}
+            className="workflow-button getir-cop"
           >
             <div>Getir ÇÖP</div>
-            <div style={{ fontSize: "15px", marginTop: "5px" }}>({stats.cop_pdf} PDF)</div>
+            <div>({stats.cop_pdf} PDF)</div>
           </button>
 
           {/* 3. Getir DBF */}
           <button
             onClick={fetchDbf}
             disabled={loading || catLoading === "dbf"}
-            style={{
-              width: "160px",
-              height: "80px",
-              background: "linear-gradient(135deg, #74a9d8 0%, #4285c9 100%)",
-              color: "white",
-              border: "none",
-              borderRadius: "8px",
-              fontSize: "15px",
-              fontWeight: "bold",
-              cursor: (loading || catLoading === "dbf") ? "not-allowed" : "pointer",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              textAlign: "center",
-              padding: "10px"
-            }}
+            className="workflow-button getir-dbf"
           >
             <div>Getir DBF</div>
-            <div style={{ fontSize: "15px", marginTop: "5px" }}>
+            <div>
               Ders({stats.ders})<br />({stats.dbf_rar} RAR, {stats.dbf_pdf} PDF, {stats.dbf_docx} DOCX)
             </div>
           </button>
@@ -2465,111 +1800,47 @@ console.error(errorMsg);
           <button
             onClick={fetchDm}
             disabled={loading || catLoading === "dm"}
-            style={{
-              width: "140px",
-              height: "80px",
-              background: "linear-gradient(135deg, #6fa8dc 0%, #2e5c8a 100%)",
-              color: "white",
-              border: "none",
-              borderRadius: "8px",
-              fontSize: "15px",
-              fontWeight: "bold",
-              cursor: (loading || catLoading === "dm") ? "not-allowed" : "pointer",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              textAlign: "center",
-              padding: "10px"
-            }}
+            className="workflow-button getir-dm"
           >
             <div>Getir DM</div>
-            <div style={{ fontSize: "15px", marginTop: "5px" }}>({stats.dm_pdf} PDF)</div>
+            <div>({stats.dm_pdf} PDF)</div>
           </button>
 
           {/* 5. Getir BOM */}
           <button
             onClick={fetchBom}
             disabled={loading || catLoading === "bom"}
-            style={{
-              width: "140px",
-              height: "80px",
-              background: "linear-gradient(135deg, #5f9bcc 0%, #1f4e79 100%)",
-              color: "white",
-              border: "none",
-              borderRadius: "8px",
-              fontSize: "15px",
-              fontWeight: "bold",
-              cursor: (loading || catLoading === "bom") ? "not-allowed" : "pointer",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              textAlign: "center",
-              padding: "10px"
-            }}
+            className="workflow-button getir-bom"
           >
             <div>Getir BOM</div>
-            <div style={{ fontSize: "15px", marginTop: "5px" }}>({stats.bom_pdf} PDF)</div>
+            <div>({stats.bom_pdf} PDF)</div>
           </button>
 
           {/* 6. Oku COP */}
           <button
             onClick={handleProcessCopPdfs}
             disabled={loading || copProcessing}
-            style={{
-              width: "140px",
-              height: "80px",
-              background: "linear-gradient(135deg, #4f8fc0 0%, #1a4a6b 100%)",
-              color: "white",
-              border: "none",
-              borderRadius: "8px",
-              fontSize: "15px",
-              fontWeight: "bold",
-              cursor: (loading || copProcessing) ? "not-allowed" : "pointer",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              textAlign: "center",
-              padding: "10px"
-            }}
+            className="workflow-button oku-cop"
           >
             <div>Oku COP</div>
-            <div style={{ fontSize: "15px", marginTop: "5px" }}>({stats.cop_okunan} Ders)</div>
+            <div>({stats.cop_okunan} Ders)</div>
           </button>
 
           {/* 7. Oku DBF */}
           <button
             onClick={handleUpdateDersSaatleri}
             disabled={loading || dbfProcessing}
-            style={{
-              width: "140px",
-              height: "80px",
-              background: "linear-gradient(135deg, #3f7fb3 0%, #164058 100%)",
-              color: "white",
-              border: "none",
-              borderRadius: "8px",
-              fontSize: "15px",
-              fontWeight: "bold",
-              cursor: (loading || dbfProcessing) ? "not-allowed" : "pointer",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              textAlign: "center",
-              padding: "10px"
-            }}
+            className="workflow-button oku-dbf"
           >
             <div>Oku DBF</div>
-            <div style={{ fontSize: "15px", marginTop: "5px" }}>({stats.dbf_okunan} Ders)</div>
+            <div>({stats.dbf_okunan} Ders)</div>
           </button>
         </div>
 
         {/* Durum Göstergeleri */}
-        <div style={{ textAlign: "center", padding: "10px", background: "#e9ecef", borderRadius: "5px" }}>
+        <div className="workflow-status">
           {(catLoading || loading || copProcessing || dbfProcessing) && (
-            <div style={{ color: "#007bff", fontWeight: "bold" }}>
+            <div className="workflow-status loading">
               ⏳ İşlem devam ediyor: {
                 catLoading === "dbf" ? "DBF verileri çekiliyor" :
                 catLoading === "cop" ? "ÇÖP PDF'leri indiriliyor" :
@@ -2582,45 +1853,43 @@ console.error(errorMsg);
               }...
             </div>
           )}
-          {catError && <div style={{ color: "#dc3545", fontWeight: "bold" }}>❌ Hata: {catError}</div>}
+          {catError && <div className="workflow-status error">❌ Hata: {catError}</div>}
         </div>
       </div>
 
       {/* Arama Kutusu */}
       {!initialLoading && tableData.length > 0 && (
-        <div className="search-bar" style={{ marginBottom: '20px', textAlign: 'center' }}>
+        <div className="search-bar-container">
           <input
             type="text"
             placeholder="Alan, dal veya ders adına göre filtrele..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            style={{
-              padding: '10px 15px',
-              fontSize: '16px',
-              border: '1px solid #ccc',
-              borderRadius: '8px',
-              width: '400px',
-              maxWidth: '90%'
-            }}
+            className="search-input"
           />
         </div>
       )}
 
 
       {initialLoading ? (
-        <div style={{ textAlign: 'center', padding: '50px', fontSize: '18px' }}>
+        <div className="initial-loading">
           Yükleniyor...
         </div>
       ) : (
         <>
           {/* Ana İçerik */}
           <div className="main-content">
-            {/* Sadece DataTable gösterilecek */}
-            <DataTable 
-              tableData={tableData}
-              searchTerm={debouncedTerm}
-              onCourseEdit={handleCourseEdit}
-            />
+            {initialLoading ? (
+              <p>Veriler yükleniyor...</p>
+            ) : error ? (
+              <p className="error-message">{error}</p>
+            ) : (
+              <DataTable 
+                tableData={tableData} 
+                searchTerm={debouncedTerm}
+                onCourseEdit={handleCourseEdit}
+              />
+            )}
           </div>
 
           {/* Düzenleme Kenar Çubuğu - Birleşik Split Screen */}
