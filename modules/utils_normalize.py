@@ -30,7 +30,17 @@ def sanitize_filename_tr(name: str) -> str:
     if not name:
         return "bilinmeyen_alan"
     
-    # Normalize alan adı (klasör adı için)
+    # Protokol alanları için özel formatlama
+    if " - Protokol" in name:
+        # "Alan Adı - Protokol" -> "Alan_Adi-Protokol" formatında
+        base_name = name.replace(" - Protokol", "")
+        safe_base = base_name.replace(' ', '_').replace('/', '_').replace('\\', '_')
+        # Türkçe karakterleri düzelt
+        safe_base = safe_base.replace('ç', 'c').replace('ğ', 'g').replace('ı', 'i').replace('ö', 'o').replace('ş', 's').replace('ü', 'u')
+        safe_base = safe_base.replace('Ç', 'C').replace('Ğ', 'G').replace('İ', 'I').replace('Ö', 'O').replace('Ş', 'S').replace('Ü', 'U')
+        return f"{safe_base}-Protokol"
+    
+    # Normal alan adları için standart formatlama
     safe_name = name.replace(' ', '_').replace('/', '_').replace('\\', '_')
     
     # Türkçe karakterleri düzelt

@@ -1,5 +1,5 @@
 """
-modules/getir_dm.py - DM (Ders Materyali) İndirme Modülü
+modules/get_dm.py - DM (Ders Materyali) İndirme Modülü
 
 Bu modül, MEB sitesinden Ders Materyali (DM) PDF'lerinin
 linklerini çeker, dosyaları `utils.py` kullanarak indirir ve bu süreçte
@@ -356,7 +356,12 @@ def get_dm_with_cursor(cursor):
                         # Commit otomatik olarak decorator tarafından yapılır
                         saved_alan_count += 1
                         sınıf_sayısı = len(sinif_dm_data)
-                        yield {'type': 'success', 'message': f'📋 {alan_adi} -> URL kaydedildi ({sınıf_sayısı} sınıf)'}
+                        
+                        # Toplam DM sayısını hesapla
+                        toplam_dm_sayisi = sum(len(dm_list) for dm_list in sinif_dm_data.values())
+                        
+                        # Standardize edilmiş konsol çıktısı - alan bazlı toplam
+                        yield {'type': 'progress', 'message': f'{meb_alan_id} - {alan_adi} ({saved_alan_count}/{len(alan_dm_urls)}) Toplam {toplam_dm_sayisi} DM indi.', 'progress': saved_alan_count / len(alan_dm_urls)}
                     else:
                         # Alan veritabanında yoksa otomatik oluştur
                         alan_id = get_or_create_alan(cursor, normalized_alan_adi)

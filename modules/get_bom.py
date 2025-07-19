@@ -419,7 +419,16 @@ def get_bom_with_db_integration(siniflar=["9", "10", "11", "12"]):
                         # Metadata kaydet
                         save_bom_metadata(alan_adi, bom_data, db_areas)
                         ders_sayisi = len(bom_data.get('dersler', []))
-                        yield {'type': 'success', 'message': f"📋 {alan_adi} -> BOM metadata kaydedildi ({ders_sayisi} ders)"}
+                        
+                        # Standardize edilmiş konsol çıktısı - alan bazlı toplam
+                        # BOM için alan adından MEB ID'sini bul
+                        alan_info = db_areas.get(alan_adi) or db_areas.get(normalize_to_title_case_tr(alan_adi))
+                        meb_alan_id = alan_info.get('meb_alan_id') if alan_info else 'XX'
+                        
+                        # Alan için toplam BOM sayısını hesapla
+                        toplam_bom_sayisi = sum(len(ders.get("moduller", [])) for ders in bom_data.get("dersler", []))
+                        
+                        yield {'type': 'progress', 'message': f'{meb_alan_id} - {alan_adi} (1/1) Toplam {toplam_bom_sayisi} BOM indi.', 'progress': 1.0}
                     else:
                         yield {'type': 'info', 'message': f"📋 {alan_adi} -> Veritabanında yok, atlanıyor"}
                 else:

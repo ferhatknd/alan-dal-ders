@@ -53,6 +53,7 @@ def get_areas_from_db(cursor):
 def find_matching_area_id(html_area_name, db_areas):
     """
     HTML'den gelen alan adını veritabanındaki alanlarla eşleştirir.
+    Protokol alanları için öncelik mantığı vardır.
     Returns: (alan_id, matched_name) veya (None, None)
     """
     normalized_html_name = normalize_to_title_case_tr(html_area_name)
@@ -61,10 +62,26 @@ def find_matching_area_id(html_area_name, db_areas):
     if normalized_html_name in db_areas:
         return db_areas[normalized_html_name], normalized_html_name
     
-    # Kısmi eşleşme kontrolü
+    # Protokol alan kontrolü - önce protokol eşleşmelerini ara
+    is_protocol_search = "- Protokol" in normalized_html_name or "protokol" in normalized_html_name.lower()
+    
+    if is_protocol_search:
+        # Protokol alanı arıyoruz - önce protokol eşleşmelerini kontrol et
+        for db_name, area_id in db_areas.items():
+            if "- Protokol" in db_name and (normalized_html_name.lower() in db_name.lower() or db_name.lower() in normalized_html_name.lower()):
+                print(f"Protokol eşleşme bulundu: '{html_area_name}' -> '{db_name}' (ID: {area_id})")
+                return area_id, db_name
+    else:
+        # Normal alan arıyoruz - önce protokol olmayan eşleşmeleri kontrol et  
+        for db_name, area_id in db_areas.items():
+            if "- Protokol" not in db_name and (normalized_html_name.lower() in db_name.lower() or db_name.lower() in normalized_html_name.lower()):
+                print(f"Normal eşleşme bulundu: '{html_area_name}' -> '{db_name}' (ID: {area_id})")
+                return area_id, db_name
+    
+    # Genel kısmi eşleşme kontrolü (eski mantık - fallback)
     for db_name, area_id in db_areas.items():
         if normalized_html_name.lower() in db_name.lower() or db_name.lower() in normalized_html_name.lower():
-            print(f"Kısmi eşleşme bulundu: '{html_area_name}' -> '{db_name}' (ID: {area_id})")
+            print(f"Genel eşleşme bulundu: '{html_area_name}' -> '{db_name}' (ID: {area_id})")
             return area_id, db_name
     
     print(f"Eşleşme bulunamadı: '{html_area_name}' (normalize: '{normalized_html_name}')")
@@ -92,6 +109,11 @@ def get_dbf_data_for_alan_and_sinif(alan_adi, meb_alan_id, sinif_kodu):
             for link in dbf_links:
                 href = link.get('href', '')
                 if href:
+                    # Bozuk URL'leri filtrele (cop9/upload içeren linkler)
+                    if '/cop9/upload/' in href:
+                        print(f"🚫 Bozuk URL atlandı: {href}")
+                        continue
+                    
                     # Tam URL'yi oluştur
                     if href.startswith('http'):
                         dbf_url = href
@@ -112,7 +134,13 @@ def get_dbf_data_for_alan_and_sinif(alan_adi, meb_alan_id, sinif_kodu):
                                 break
                     
                     # Güncelleme yılını çıkar
-                    update_year = extract_update_year(tarih)
+                    update_year = None
+                    if tarih:
+                        year_match = re.search(r'(\d{4})', tarih)
+                        if year_match:
+                            year = int(year_match.group(1))
+                            if 2000 <= year <= 2030:
+                                update_year = str(year)
                     
                     # Alan tipini belirle
                     if is_protokol:
@@ -120,16 +148,18 @@ def get_dbf_data_for_alan_and_sinif(alan_adi, meb_alan_id, sinif_kodu):
                     else:
                         file_alan_adi = alan_adi.replace(" - Protokol", "") if " - Protokol" in alan_adi else alan_adi
                     
-                    found_files[file_alan_adi] = {
-                        "link": dbf_url,
-                        "guncelleme_tarihi": tarih,
-                        "update_year": update_year,
-                        "meb_alan_id": meb_alan_id,
-                        "filename": filename,
-                        "is_protokol": is_protokol
-                    }
-                    
-                    print(f"📋 DBF Dosya tespit edildi: {file_alan_adi} -> {filename} {'(Protokol)' if is_protokol else '(Normal)'}")
+                    # İlk geçerli URL'yi kullan (daha önceden bu alan için URL kaydedilmemişse)
+                    if file_alan_adi not in found_files:
+                        found_files[file_alan_adi] = {
+                            "link": dbf_url,
+                            "guncelleme_tarihi": tarih,
+                            "update_year": update_year,
+                            "meb_alan_id": meb_alan_id,
+                            "filename": filename,
+                            "is_protokol": is_protokol
+                        }
+                        
+                        print(f"📋 DBF Dosya tespit edildi: {file_alan_adi} -> {filename} {'(Protokol)' if is_protokol else '(Normal)'}")
         
         # Çağıran tarafın istediği alan tipini döndür
         return found_files.get(alan_adi)
@@ -156,6 +186,8 @@ def get_all_dbf_files_for_alan_and_sinif(alan_adi, meb_alan_id, sinif_kodu):
         found_files = []  # [{"alan_adi": ..., "data": ...}]
         
         if dbf_links:
+            # Tüm linkleri topla ve URL kalitesine göre sırala
+            all_links = []
             for link in dbf_links:
                 href = link.get('href', '')
                 if href:
@@ -164,6 +196,22 @@ def get_all_dbf_files_for_alan_and_sinif(alan_adi, meb_alan_id, sinif_kodu):
                         dbf_url = href
                     else:
                         dbf_url = requests.compat.urljoin(response.url, href)
+                    
+                    # Bozuk URL'leri filtrele (cop9/upload içeren linkler)
+                    if '/cop9/upload/' in href:
+                        print(f"🚫 Bozuk URL atlandı: {href}")
+                        continue
+                    
+                    # URL kalitesi kontrolü - doğru pattern olmalı (upload/dbf{grade}/)
+                    url_quality = 0
+                    if f'/upload/dbf{sinif_kodu}/' in href:
+                        url_quality = 10  # En iyi - doğru pattern
+                    elif '/upload/' in href and 'dbf' in href:
+                        url_quality = 5   # Orta - upload var ama pattern tam değil
+                    elif not ('cop' in href and 'upload' in href):
+                        url_quality = 1   # Düşük - bozuk pattern değil ama ideal değil
+                    else:
+                        continue  # Bozuk pattern, atla
                     
                     # Dosya adından protokol tespiti yap
                     filename = href.split('/')[-1].lower()
@@ -179,7 +227,13 @@ def get_all_dbf_files_for_alan_and_sinif(alan_adi, meb_alan_id, sinif_kodu):
                                 break
                     
                     # Güncelleme yılını çıkar
-                    update_year = extract_update_year(tarih)
+                    update_year = None
+                    if tarih:
+                        year_match = re.search(r'(\d{4})', tarih)
+                        if year_match:
+                            year = int(year_match.group(1))
+                            if 2000 <= year <= 2030:
+                                update_year = str(year)
                     
                     # Alan adını belirle
                     if is_protokol:
@@ -187,19 +241,44 @@ def get_all_dbf_files_for_alan_and_sinif(alan_adi, meb_alan_id, sinif_kodu):
                     else:
                         file_alan_adi = alan_adi
                     
-                    found_files.append({
+                    all_links.append({
                         "alan_adi": file_alan_adi,
-                        "data": {
-                            "link": dbf_url,
-                            "guncelleme_tarihi": tarih,
-                            "update_year": update_year,
-                            "meb_alan_id": meb_alan_id,
-                            "filename": filename,
-                            "is_protokol": is_protokol
-                        }
+                        "link": dbf_url,
+                        "guncelleme_tarihi": tarih,
+                        "update_year": update_year,
+                        "meb_alan_id": meb_alan_id,
+                        "filename": filename,
+                        "is_protokol": is_protokol,
+                        "url_quality": url_quality,
+                        "href": href
                     })
+            
+            # En kaliteli linkleri seç (alan adına göre grupla ve en iyi kaliteli olanı al)
+            found_files_dict = {}
+            for link_data in sorted(all_links, key=lambda x: x["url_quality"], reverse=True):
+                alan_adi_key = link_data["alan_adi"]
+                
+                # Eğer bu alan için daha iyi bir link yoksa, bu linki kullan
+                if alan_adi_key not in found_files_dict or found_files_dict[alan_adi_key]["url_quality"] < link_data["url_quality"]:
+                    found_files_dict[alan_adi_key] = {
+                        "link": link_data["link"],
+                        "guncelleme_tarihi": link_data["guncelleme_tarihi"],
+                        "update_year": link_data["update_year"],
+                        "meb_alan_id": link_data["meb_alan_id"],
+                        "filename": link_data["filename"],
+                        "is_protokol": link_data["is_protokol"],
+                        "url_quality": link_data["url_quality"]
+                    }
                     
-                    print(f"📋 DBF tespit edildi: {file_alan_adi} -> {filename} {'(Protokol)' if is_protokol else '(Normal)'}")
+                    quality_text = "✅ EN İYİ" if link_data["url_quality"] == 10 else "⚠️ ORTA" if link_data["url_quality"] == 5 else "❓ DÜŞÜK"
+                    print(f"📋 DBF Dosya tespit edildi: {alan_adi_key} -> {link_data['filename']} {'(Protokol)' if link_data['is_protokol'] else '(Normal)'} [{quality_text}]")
+            
+            # Convert to required format
+            for alan_adi_key, data in found_files_dict.items():
+                found_files.append({
+                    "alan_adi": alan_adi_key,
+                    "data": data
+                })
         
         return found_files
         
@@ -270,39 +349,6 @@ def get_dbf_data(siniflar=["9", "10", "11", "12"]):
     
     return all_dbf_data
 
-def extract_update_year(date_string):
-    """
-    Tarih stringinden yıl bilgisini çıkarır.
-    Örnek: "12.12.2024 00:00:00" → "2024"
-    """
-    if not date_string:
-        return None
-    
-    # Tarih formatları için regex pattern'leri
-    patterns = [
-        r'(\d{2})\.(\d{2})\.(\d{4})',  # DD.MM.YYYY formatı
-        r'(\d{4})-(\d{2})-(\d{2})',   # YYYY-MM-DD formatı
-        r'(\d{4})',                   # 4 haneli yıl
-    ]
-    
-    for pattern in patterns:
-        matches = re.findall(pattern, str(date_string))
-        for match in matches:
-            if isinstance(match, tuple):
-                # Tuple'dan yıl bilgisini al
-                for group in match:
-                    if len(group) == 4 and group.isdigit():
-                        year = int(group)
-                        if 2000 <= year <= 2030:  # Mantıklı yıl aralığı
-                            return str(year)
-            else:
-                # Direkt match
-                if len(match) == 4 and match.isdigit():
-                    year = int(match)
-                    if 2000 <= year <= 2030:
-                        return str(year)
-    
-    return None
 
 def sanitize_filename(name):
     """
@@ -376,17 +422,23 @@ def get_dbf(cursor, dbf_data=None):
     for sinif, alanlar in dbf_data.items():
         for alan_adi, info in alanlar.items():
             link = info["link"]
+            is_protokol = info.get("is_protokol", False)
             
             try:
                 # MEB ID'yi çoklu kaynak stratejisi ile al
                 data_meb_id = info.get("meb_alan_id")
                 meb_alan_id, source = get_meb_alan_id_with_fallback(alan_adi, data_meb_id)
                 
-                # Alan ID'sini al veya oluştur
-                area_id, _, matched_name = get_or_create_area_for_download(cursor, alan_adi, meb_alan_ids)
+                # Alan ID'sini al veya oluştur - protokol durumunu kontrol et
+                # Protokol dosyalar için protokol alan adını kullan
+                search_alan_adi = alan_adi
+                if is_protokol and not alan_adi.endswith("- Protokol"):
+                    search_alan_adi = f"{alan_adi} - Protokol"
+                
+                area_id, _, matched_name = get_or_create_area_for_download(cursor, search_alan_adi, meb_alan_ids)
                 
                 # Klasör adını yeni strateji ile belirle
-                folder_name = get_folder_name_for_download(matched_name or alan_adi, meb_alan_id, area_id)
+                folder_name = get_folder_name_for_download(matched_name or search_alan_adi, meb_alan_id, area_id)
                 alan_dir = os.path.join(DBF_ROOT_DIR, folder_name)
                 
                 if meb_alan_id:
@@ -506,7 +558,9 @@ def get_dbf(cursor, dbf_data=None):
                                 
                 saved_alan_count += 1
                 sınıf_sayısı = len(alan_urls)
-                yield {'type': 'success', 'message': f'📋 {alan_adi} -> URL kaydedildi ({sınıf_sayısı} sınıf)'}
+                
+                # Standardize edilmiş konsol çıktısı - alan bazlı toplam
+                yield {'type': 'progress', 'message': f'{meb_alan_id} - {alan_adi} ({saved_alan_count}/{len(alan_dbf_urls)}) Toplam {sınıf_sayısı} DBF indi.', 'progress': saved_alan_count / len(alan_dbf_urls)}
                 
             except Exception as e:
                 yield {'type': 'error', 'message': f'URL kaydetme hatası ({alan_adi}): {e}'}
@@ -515,7 +569,7 @@ def get_dbf(cursor, dbf_data=None):
         
         # Merkezi istatistik fonksiyonunu kullan (CLAUDE.md kuralları)
         try:
-            from .utils_database import get_database_statistics, format_database_statistics_message
+            from .utils_stats import get_database_statistics, format_database_statistics_message
             stats = get_database_statistics()
             stats_message = format_database_statistics_message(stats)
             yield {'type': 'info', 'message': stats_message}

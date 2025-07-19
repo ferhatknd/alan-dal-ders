@@ -92,12 +92,12 @@ Alan (Area) → Dal (Field) → Ders (Course) → Öğrenme Birimi (Learning Uni
 
 ### 📊 Backend Modülleri (modules/ klasörü)
 - **`modules/oku_dbf.py`** - ⭐ **YENİDEN ADLANDIRILDI**: DBF PDF parsing ve içerik analizi (eski: oku.py)
-- **`modules/getir_dbf.py`** - ⭐ **STANDARDİZE**: `get_dbf()` fonksiyonu ile DBF verilerini çeker, RAR/ZIP indirir (açmaz), `data/get_dbf.json` üretir ve `dbf_urls` sütununa JSON kaydeder
-- **`modules/getir_cop.py`** - ⭐ **STANDARDİZE**: `get_cop()` fonksiyonu ile ÇÖP verilerini çeker, PDF indirir (açmaz), `data/get_cop.json` üretir ve `cop_url` sütununa JSON kaydeder
+- **`modules/get_dbf.py`** - ⭐ **STANDARDİZE**: `get_dbf()` fonksiyonu ile DBF verilerini çeker, RAR/ZIP indirir (açmaz), `data/get_dbf.json` üretir ve `dbf_urls` sütununa JSON kaydeder
+- **`modules/get_cop.py`** - ⭐ **STANDARDİZE**: `get_cop()` fonksiyonu ile ÇÖP verilerini çeker, PDF indirir (açmaz), `data/get_cop.json` üretir ve `cop_url` sütununa JSON kaydeder
 - **`modules/oku_cop.py`** - ⭐ **YENİ**: COP PDF parsing ve analiz modülü - Tamamen yeniden yazıldı
-- **`modules/getir_dm.py`** - Ders Materyalleri (DM) verilerini çeker
-- **`modules/getir_bom.py`** - Bireysel Öğrenme Materyalleri (BÖM) verilerini çeker
-- **`modules/getir_dal.py`** - Alan-Dal ilişkilerini çeker
+- **`modules/get_dm.py`** - Ders Materyalleri (DM) verilerini çeker
+- **`modules/get_bom.py`** - Bireysel Öğrenme Materyalleri (BÖM) verilerini çeker
+- **`modules/get_dal.py`** - Alan-Dal ilişkilerini çeker
 - **`modules/utils_normalize.py`** - ⭐ **YENİ AYIRIM**: String normalizasyon fonksiyonları, Türkçe karakter normalizasyonu (eski utils.py'den ayrıştırıldı)
 - **`modules/utils_database.py`** - ⭐ **YENİ**: Veritabanı işlemleri modülü, **database connection decorators**, **MEB ID yönetimi** ve **CRUD operasyonları**
 - **`modules/utils_file_management.py`** - ⭐ **YENİ**: Dosya işlemleri modülü, **ortak alan dosya sistemi**, **duplicate dosya yönetimi** ve **arşiv işlemleri**
@@ -175,12 +175,12 @@ temel_plan_ders_dal
 - **MUTLAKA** yeni standardize edilmiş fonksiyon isimlerini kullan:
   ```python
   # ✅ Doğru - Yeni standardize isimler
-  from modules.getir_cop import get_cop
-  from modules.getir_dbf import get_dbf
+  from modules.get_cop import get_cop
+  from modules.get_dbf import get_dbf
   
   # ❌ Yanlış - Eski isimler
-  from modules.getir_cop import download_all_cop_pdfs_workflow
-  from modules.getir_dbf import download_dbf_without_extract_with_progress
+  from modules.get_cop import download_all_cop_pdfs_workflow
+  from modules.get_dbf import download_dbf_without_extract_with_progress
   ```
 
 ### 2. JSON Çıktı Dosyaları ⭐ **YENİ KURAL**
@@ -242,10 +242,12 @@ temel_plan_ders_dal
 - **Ders Oluşturma**: `ders_adi` kontrolü ile duplicate engelleme
 - **Ders-Dal İlişkisi**: `ders_id + dal_id` kontrolü ile duplicate engelleme
 
-### 8. Ortak Alan Dosya Sistemi ⭐ **YENİ KURAL**
-- **Duplicate dosyalar**: `00_Ortak_Alan_Dersleri` klasörüne otomatik taşınır
-- **Dosya indirme sırası**: Önce mevcut alan → Sonra diğer alanlar → Sonra ortak alan → Son olarak yeni indirme
-- **Otomatik yönetim**: `utils_file_management.py` modülü duplicate'leri otomatik tespit eder ve taşır
+### 8. Protocol Alanları Yeniden Yapılandırması ⭐ **2025-07-19 GÜNCELLEMESİ**
+- **00_Ortak_Alan_Dersleri sistemi kaldırıldı**: Protocol alanları artık kendi dosyalarını kullanır
+- **Özel protocol fonksiyonları kaldırıldı**: `is_protocol_area()`, `get_base_area_name()`, `handle_protocol_area()` vb.
+- **Protocol alanları normal alanlar gibi çalışır**: Tek fark isimlerindeki "- Protokol" eki
+- **MEB ID eşleştirme**: Protocol alanları temel alan adları ile MEB ID eşleştirme yapar
+- **Duplicate dosya yönetimi**: Artık sadece log ile takip edilir, otomatik taşıma yapılmaz
 
 ## 🔌 API Endpoints - Detaylı Referans
 
@@ -273,8 +275,8 @@ temel_plan_ders_dal
 ### Yeni Standardize Fonksiyonlar ⭐ **YENİ**
 ```python
 # Yeni standardize edilmiş fonksiyonlar
-from modules.getir_cop import get_cop
-from modules.getir_dbf import get_dbf
+from modules.get_cop import get_cop
+from modules.get_dbf import get_dbf
 
 # Her iki fonksiyon da aynı pattern'i izler
 # HTML parse → JSON kaydet → İndir (açmaz) → JSON dosyası üret
@@ -348,7 +350,8 @@ python server.py
 - **JSON URL Format**: Tüm URL'ler integer key formatında: `{"9": "url", "10": "url"}`
 - **Database Decorators**: `@with_database` ve `@with_database_json` kullanın
 - **Modüler Import**: `utils.py` ve `utils_file_management.py` modüllerini doğru şekilde import edin
-- **Ortak Alan Sistemi**: Duplicate dosyalar `00_Ortak_Alan_Dersleri` klasöründe otomatik yönetilir
+- **⭐ YENİ 2025-07-19**: Protocol alan sistemi yeniden yapılandırıldı - özel protocol fonksiyonları kaldırıldı
+- **⭐ YENİ 2025-07-19**: 00_Ortak_Alan_Dersleri sistemi kaldırıldı - protocol alanları kendi dosyalarını kullanır
 - **PDF Validation**: Dosya bütünlüğü kontrolü önemli
 - **Error Recovery**: Network hatalarında robust retry mekanizması
 - **⭐ YENİ**: `/api/scrape-to-db` endpoint'i artık yeni standardize fonksiyonları (`get_cop()`, `get_dbf()`) kullanıyor
@@ -356,6 +359,7 @@ python server.py
 - **⭐ YENİ**: Frontend konsol çıktıları iyileştirildi - şehir bazlı okunabilir format
 - **⭐ YENİ**: `/api/oku-dbf` endpoint'i standardize edildi (eski `/api/process-dbf` yerine)
 - **⭐ YENİ**: `getir_dal.py` performans optimizasyonu - time.sleep süreleri azaltıldı (0.3s → 0.1s)
+- **⭐ YENİ 2025-07-19**: Konsol log formatları standardize edildi - tüm dosya indirme süreçlerinde "{meb_alan_id} - {alan_adi} ({sayac}/{toplam}) Toplam {dosya_sayısı} {dosya_tipi} indi." formatı kullanılıyor
 
 ## 🔗 İlişkisel Yapı
 

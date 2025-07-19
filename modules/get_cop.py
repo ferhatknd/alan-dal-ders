@@ -1,5 +1,5 @@
 """
-modules/getir_cop.py - ÇÖP (Çerçeve Öğretim Programı) İndirme Modülü
+modules/get_cop.py - ÇÖP (Çerçeve Öğretim Programı) İndirme Modülü
 
 Bu modül, MEB sitesinden Çerçeve Öğretim Programı (ÇÖP) PDF'lerinin
 linklerini çeker, dosyaları `utils.py` kullanarak indirir ve bu süreçte
@@ -159,8 +159,19 @@ def get_alan_cop_links(sinif):
                     # Eğer alan adı yoksa dosya adından çıkar
                     if not alan_adi:
                         # upload/cop9/adalet_9.pdf -> adalet
+                        # upload/cop10/ayakkabipro_10.pdf -> ayakkabipro
                         filename = href.split('/')[-1].replace('.pdf', '')
-                        alan_adi = filename.replace(f'_{sinif}', '').replace('_', ' ').title()
+                        base_filename = filename.replace(f'_{sinif}', '').replace('_', ' ')
+                        
+                        # Dosya adında 'pro' varsa protokol olabilir - HTML text'ine bakmak gerek
+                        # Şimdilik sadece base filename'i normalize et
+                        alan_adi = base_filename.title()
+                        
+                        # Protokol tespiti için dosya adında 'pro' kontrolü
+                        if 'pro' in filename.lower() and not link_text:
+                            # Bu durumda HTML text'ten alan adını almaya çalış
+                            # Eğer HTML text'i de yoksa fallback olarak filename kullan
+                            alan_adi = base_filename.title()
                     
                     if alan_adi:
                         # PDF URL'sini tam URL'ye çevir
@@ -375,6 +386,10 @@ def get_cop_with_cursor():
                             yield {'type': 'error', 'message': f'PDF kontrol hatası ({alan_adi} {sinif_key}): {e}'}
                     
                     processed_count += 1
+                    
+                    # Standardize edilmiş konsol çıktısı - alan bazlı toplam
+                    alan_cop_count = len(cop_urls_json)
+                    yield {'type': 'progress', 'message': f'{meb_alan_id} - {alan_adi} ({processed_count}/{len(alan_cop_urls)}) Toplam {alan_cop_count} ÇÖP indi.', 'progress': processed_count / len(alan_cop_urls)}
                     
                 except Exception as e:
                     yield {'type': 'error', 'message': f'PDF işleme hatası ({alan_adi}): {e}'}

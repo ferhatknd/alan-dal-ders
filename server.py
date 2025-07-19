@@ -17,12 +17,12 @@ from contextlib import redirect_stdout, redirect_stderr
 from modules.oku_dbf import oku_dbf
 
 # Yeni modülleri import et
-from modules.getir_dbf import get_dbf_data, get_dbf
-from modules.getir_cop import get_cop
+from modules.get_dbf import get_dbf_data, get_dbf
+from modules.get_cop import get_cop
 # from modules.oku_cop import oku_cop_pdf as new_oku_cop_pdf, save_cop_results_to_db as new_save_cop_results_to_db
-from modules.getir_dm import get_dm
-from modules.getir_bom import get_bom
-from modules.getir_dal import get_dal
+from modules.get_dm import get_dm
+from modules.get_bom import get_bom
+from modules.get_dal import get_dal
 
 # Database utilities from utils-database.py
 from modules.utils_database import with_database_json, find_or_create_database, get_or_create_alan
