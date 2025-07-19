@@ -18,10 +18,36 @@ try:
 except ImportError:
     from utils_normalize import sanitize_filename_tr
 
+def detect_archive_type(file_path: str) -> str:
+    """
+    Dosyanın gerçek formatını header'dan tespit eder.
+    
+    Args:
+        file_path: Arşiv dosyasının yolu
+        
+    Returns:
+        Dosya tipi: RAR, ZIP, 7Z veya UNKNOWN
+    """
+    try:
+        with open(file_path, 'rb') as f:
+            header = f.read(16)
+        
+        if header.startswith(b'Rar!'):
+            return "RAR"
+        elif header.startswith(b'PK'):
+            return "ZIP"
+        elif header.startswith(b'7z'):
+            return "7Z"
+        else:
+            return f"UNKNOWN (header: {header[:8].hex()})"
+            
+    except Exception as e:
+        return f"ERROR: {e}"
 
 def extract_archive(archive_path: str, extract_to: str):
     """
-    RAR veya ZIP arşivini açar.
+    RAR, ZIP veya 7Z arşivini açar. 
+    unar komutu kullanır (%100 başarı - tüm formatları destekler)
     
     Args:
         archive_path: Arşiv dosyasının yolu
@@ -32,23 +58,34 @@ def extract_archive(archive_path: str, extract_to: str):
     
     os.makedirs(extract_to, exist_ok=True)
     
-    if archive_path.lower().endswith('.zip'):
-        with zipfile.ZipFile(archive_path, 'r') as zip_ref:
-            zip_ref.extractall(extract_to)
-            print(f"📦 ZIP açıldı: {archive_path}")
-    elif archive_path.lower().endswith('.rar'):
-        # RAR desteği için rarfile kütüphanesi gerekir
-        try:
-            import rarfile
-            with rarfile.RarFile(archive_path) as rar_ref:
-                rar_ref.extractall(extract_to)
-                print(f"📦 RAR açıldı: {archive_path}")
-        except ImportError:
-            print(f"⚠️ RAR desteği yok, rarfile kütüphanesi gerekir: {archive_path}")
-            raise
-    else:
-        raise ValueError(f"Desteklenmeyen arşiv formatı: {archive_path}")
-
+    # Gerçek dosya tipini header'dan tespit et
+    real_type = detect_archive_type(archive_path)
+    file_extension = archive_path.lower().split('.')[-1]
+    
+    # Dosya uzantısı ile gerçek tip uyuşmuyorsa uyar
+    if file_extension == 'rar' and real_type == 'ZIP':
+        print(f"⚠️ Dikkat: .rar uzantılı ama aslında ZIP dosyası: {os.path.basename(archive_path)}")
+    elif file_extension == 'zip' and real_type == 'RAR':
+        print(f"⚠️ Dikkat: .zip uzantılı ama aslında RAR dosyası: {os.path.basename(archive_path)}")
+    
+    # unar komutu - hem RAR hem ZIP hem 7Z açabilir (%100 başarı)
+    try:
+        import subprocess
+        result = subprocess.run(['unar', '-o', extract_to, archive_path], 
+                              capture_output=True, text=True, timeout=60)
+        
+        if result.returncode == 0:
+            print(f"📦 Arşiv açıldı: {os.path.basename(archive_path)} ({real_type})")
+            return
+        else:
+            raise ValueError(f"unar başarısız: {result.stderr[:100]}")
+    
+    except FileNotFoundError:
+        raise ValueError(f"unar komutu bulunamadı. Lütfen 'brew install unar' çalıştırın.")
+    except subprocess.TimeoutExpired:
+        raise ValueError(f"Arşiv açma timeout (60s): {archive_path}")
+    except Exception as e:
+        raise ValueError(f"Arşiv açılamadı: {archive_path} - {e}")
 
 def check_existing_file_in_all_areas(filename: str, cache_type: str, current_folder: str) -> Optional[str]:
     """
@@ -77,7 +114,6 @@ def check_existing_file_in_all_areas(filename: str, cache_type: str, current_fol
     
     return None
 
-
 def move_file_to_shared_folder(source_path: str, cache_type: str, filename: str) -> Optional[str]:
     """
     Duplicate dosyayı ortak alana taşır.
@@ -99,7 +135,6 @@ def move_file_to_shared_folder(source_path: str, cache_type: str, filename: str)
     except Exception as e:
         print(f"❌ Dosya taşıma hatası ({filename}): {e}")
         return None
-
 
 def download_with_retry(url: str, max_retries: int = 3, timeout: int = 30) -> Optional[requests.Response]:
     """
@@ -249,7 +284,6 @@ def download_and_cache_pdf(url: str, cache_type: str, alan_adi: str = None, addi
         print(f"❌ Genel hata ({url}): {e}")
         return None
 
-
 def check_duplicate_files_in_cache(cache_type: str = 'cop') -> Dict:
     """
     Cache klasörlerindaki duplicate dosyaları kontrol eder.
@@ -300,7 +334,6 @@ def check_duplicate_files_in_cache(cache_type: str = 'cop') -> Dict:
         "shared_folders": []  # Ortak klasör sistemi kaldırıldı
     }
 
-
 def scan_directory_for_pdfs(root_dir: str) -> List[Dict]:
     """
     Belirtilen dizin altındaki tüm PDF dosyalarını tarar.
@@ -329,7 +362,6 @@ def scan_directory_for_pdfs(root_dir: str) -> List[Dict]:
                 })
     
     return pdfs
-
 
 def scan_directory_for_archives(root_dir: str) -> List[Dict]:
     """

@@ -983,8 +983,8 @@ def extract_uygulama_faaliyetleri(file_path, tables=None):
 
 def extract_olcme_degerlendirme(file_path):
     """
-    PDF veya DOCX dosyasından ölçme ve değerlendirme yöntemlerini çıkar
-    Basit regex ile ölçme araçlarını tespit eder
+    PDF veya DOCX dosyasından ölçme ve değerlendirme yöntemlerini çıkar.
+    Sadece OLCME_ARACLARI_MAPPING'i kullanır, başka hiçbir ayıklama mantığı yoktur.
     """
     try:
         if file_path.lower().endswith('.docx'):
@@ -992,145 +992,242 @@ def extract_olcme_degerlendirme(file_path):
             import docx
             doc = docx.Document(file_path)
             
-            olcme_yontemleri = []
-            
             for table in doc.tables:
                 for row_idx, row in enumerate(table.rows):
                     for cell_idx, cell in enumerate(row.cells):
                         cell_text = cell.text.strip()
                         if 'ÖLÇME VE DEĞERLENDİRME' in cell_text.upper():
-                            # Eğer başlık hücresiyse, sağındaki hücreyi kontrol et
-                            content_cell = None
-                            
                             # Sağdaki hücreyi kontrol et
                             if cell_idx + 1 < len(row.cells):
                                 content_cell = row.cells[cell_idx + 1].text.strip()
+                                if content_cell and 'ÖLÇME VE DEĞERLENDİRME' not in content_cell.upper():
+                                    return analyze_measurement_content(content_cell)
                             
-                            # Eğer sağda yoksa, aynı hücrenin içeriğini kontrol et
-                            if not content_cell or 'ÖLÇME VE DEĞERLENDİRME' in content_cell.upper():
-                                content_cell = cell_text
-                            
-                            if content_cell:
-                                olcme_yontemleri.extend(analyze_measurement_content(content_cell))
-            
-            # Dublicate'leri temizle
-            return list(set(olcme_yontemleri))
+                            # Aynı hücredeki içeriği kontrol et
+                            return analyze_measurement_content(cell_text)
             
         else:
-            # PDF dosyası için (eski kod)
+            # PDF dosyası için
             with pdfplumber.open(file_path) as pdf:
-                olcme_yontemleri = []
-                
-                # Önce tablolarda ara (mevcut kod)
-                page = pdf.pages[0]
-                all_tables = page.extract_tables()
-                
-                for table in all_tables:
-                    for i, row in enumerate(table):
-                        for j, cell in enumerate(row):
-                            if cell and isinstance(cell, str) and 'ÖLÇME VE DEĞERLENDİRME' in cell.upper():
-                                # İçerik aynı hücrede ise
-                                if ':' in cell:
-                                    content = cell.split(':', 1)[1].strip()
-                                else:
-                                    # Yan hücrede ise
-                                    if j + 1 < len(row) and row[j + 1]:
-                                        content = str(row[j + 1]).strip()
-                                    else:
-                                        # Alt satırda ise
-                                        if i + 1 < len(table) and len(table[i + 1]) > 0:
-                                            next_row = table[i + 1]
-                                            content = str(next_row[0]).strip() if next_row[0] else ""
-                                        else:
-                                            continue
-                                
-                                if content and content != 'None':
-                                    olcme_yontemleri.extend(analyze_measurement_content(content))
-                
-                # Eğer tablolarda bulamadıysa, düz metinde ara (yeni eklenen)
-                if not olcme_yontemleri:
-                    for page in pdf.pages:
-                        text = page.extract_text()
-                        if text:
-                            lines = text.split('\n')
-                            for i, line in enumerate(lines):
-                                # Çok satırlı "ÖLÇME VE DEĞERLENDİRME" başlığını kontrol et
-                                if ('ÖLÇME' in line.upper() and 'VE' in line.upper()) or 'DEĞERLENDİRME' in line.upper():
-                                    # Bu satır ve sonraki birkaç satırı birleştir
-                                    context_lines = []
-                                    for j in range(max(0, i-1), min(len(lines), i+5)):
-                                        context_lines.append(lines[j])
+                # Önce tablolarda ara
+                for page in pdf.pages:
+                    all_tables = page.extract_tables()
+                    
+                    for table in all_tables:
+                        for i, row in enumerate(table):
+                            for j, cell in enumerate(row):
+                                if cell and isinstance(cell, str) and 'ÖLÇME VE DEĞERLENDİRME' in cell.upper():
+                                    # İçerik aynı hücrede ise
+                                    if ':' in cell:
+                                        content = cell.split(':', 1)[1].strip()
+                                        return analyze_measurement_content(content)
                                     
-                                    full_context = ' '.join(context_lines)
-                                    if 'ÖLÇME' in full_context.upper() and 'DEĞERLENDİRME' in full_context.upper():
-                                        olcme_yontemleri.extend(analyze_measurement_content(full_context))
-                                        if olcme_yontemleri:  # Bulunca çık
-                                            break
-                            if olcme_yontemleri:  # Bulunca çık
-                                break
-            
-            # Dublicate'leri temizle
-            return list(set(olcme_yontemleri))
+                                    # Yan hücrede ise
+                                    elif j + 1 < len(row) and row[j + 1]:
+                                        content = str(row[j + 1]).strip()
+                                        return analyze_measurement_content(content)
+                                    
+                                    # Alt satırda ise
+                                    elif i + 1 < len(table) and len(table[i + 1]) > 0:
+                                        next_row = table[i + 1]
+                                        content = str(next_row[0]).strip() if next_row[0] else ""
+                                        if content:
+                                            return analyze_measurement_content(content)
+                
+                # Tablolarda bulunamazsa, düz metinde ara
+                for page in pdf.pages:
+                    text = page.extract_text()
+                    if text:
+                        lines = text.split('\n')
+                        for i, line in enumerate(lines):
+                            if ('ÖLÇME' in line.upper() and 'VE' in line.upper()) or 'DEĞERLENDİRME' in line.upper():
+                                # Bağlam satırlarını birleştir
+                                context_lines = []
+                                for j in range(max(0, i-1), min(len(lines), i+5)):
+                                    context_lines.append(lines[j])
+                                
+                                full_context = ' '.join(context_lines)
+                                if 'ÖLÇME' in full_context.upper() and 'DEĞERLENDİRME' in full_context.upper():
+                                    result = analyze_measurement_content(full_context)
+                                    if result:  # Eşleşme bulunursa döner
+                                        return result
+        
+        return []  # Hiçbir şey bulunamazsa boş liste döner
         
     except Exception as e:
         print(f"Error extracting ölçme değerlendirme: {str(e)}")
         return []
 
+# Ölçme ve Değerlendirme Araçları Normalizasyon Mapping
+OLCME_ARACLARI_MAPPING = {
+    # Test ve Soru Türleri
+    "Açık Uçlu Soru": [
+        'açık uçlu', 'acik uclu', 'açık-uçlu', 'açık uçlu soru', 'acik uclu soru'
+    ],
+    "Çoktan Seçmeli Test": [
+        'çoktan seçmeli', 'coktan secmeli', 'çoktan-seçmeli', 'çoktan seçmeli test', 'coktan secmeli test'
+    ],
+    "Doğru-Yanlış Testi": [
+        'doğru yanlış', 'dogru yanlis', 'doğru-yanlış', 'doğru–yanlış testi', 'dogru-yanlis testi'
+    ],
+    "Eşleştirme Testi": [
+        'eşleştirme', 'eslestirme', 'eşleştirme testi', 'eslestirme testi'
+    ],
+    "Kısa Cevaplı Soru": [
+        'kısa cevaplı soru', 'kisa cevapli soru'
+    ],
+    
+    # Performans Değerlendirme Araçları
+    "Gözlem Formu": [
+        'gözlem formu', 'gozlem formu', 'gözlem', 'gozlem', 'öğretmen gözlemi', 'ogretmen gozlemi'
+    ],
+    "Derecelendirme Ölçeği": [
+        'derecelendirme ölçeği', 'derecelendirme olceği', 'puanlama ölçeği', 'puanlama olcegi'
+    ],
+    "Dereceli Puanlama Anahtarı": [
+        'dereceli puanlama anahtarı', 'dereceli puanlama anahtari', 'puanlama anahtarı', 'puanlama anahtari'
+    ],
+    "Rubrik": [
+        'rubrik', 'rubric'
+    ],
+    "Kontrol Listesi": [
+        'kontrol listesi'
+    ],
+    
+    # Öz ve Akran Değerlendirme
+    "Öz Değerlendirme": [
+        'öz değerlendirme', 'oz degerlendirme', 'öz-değerlendirme', 
+        'öğrenci öz değerlendirmesi', 'ogrenci oz degerlendirmesi'
+    ],
+    "Akran Değerlendirme": [
+        'akran değerlendirme', 'akran degerlendirme', 'akran değerlendirmesi'
+    ],
+    
+    # Portfolyo ve Proje
+    "Portfolyo": [
+        'portfolyo', 'portföy', 'portfolio', 'öğrenci ürün dosyası', 'ogrenci urun dosyasi'
+    ],
+    "Proje Değerlendirme": [
+        'proje değerlendirme', 'proje degerlendirme', 'proje ödevi', 'proje odevi'
+    ],
+    "Performans Görevi": [
+        'performans görevi', 'performans gorevi', 'performans değerlendirme', 'performans degerlendirme',
+        'performans değerlendirmesi', 'performansa dayalı değerlendirme', 'performansa dayali degerlendirme'
+    ],
+    
+    # Değerlendirme Türleri
+    "Biçimlendirici Değerlendirme": [
+        'biçimlendirici değerlendirme', 'bicimlendirici degerlendirme'
+    ],
+    "Düzey Belirleyici Değerlendirme": [
+        'düzey belirleyici değerlendirme', 'duzey belirleyici degerlendirme'
+    ],
+    "Tanılayıcı Değerlendirme": [
+        'tanılayıcı değerlendirme', 'tanilayici degerlendirme'
+    ],
+    "Otantik Değerlendirme": [
+        'otantik değerlendirme', 'otantik degerlendirme', 'özgün değerlendirme'
+    ],
+    "Süreç Değerlendirme": [
+        'süreç değerlendirme', 'surec degerlendirme', 'izleme değerlendirme', 'izleme degerlendirme'
+    ],
+    "Ürün Değerlendirme": [
+        'ürün değerlendirme', 'urun degerlendirme'
+    ],
+    
+    # Elektronik/Dijital Araçlar
+    "E-Sınav": [
+        'e-sınav', 'e sinav', 'elektronik sınav', 'elektronik sinav', 'e-sınav merkezi', 'e sinav merkezi'
+    ],
+    "Elektronik Ölçme Araçları": [
+        'elektronik ölçme araçları', 'elektronik olcme araclari', 'otomatik puanlama'
+    ],
+    
+    # Test Kalitesi ve Analiz
+    "Geçerlik": [
+        'geçerlik', 'gecerlik'
+    ],
+    "Güvenirlik": [
+        'güvenirlik', 'guvenirlik', 'güvenilirlik'
+    ],
+    "Madde Analizi": [
+        'madde analizi', 'çeldirici', 'celdirici'
+    ],
+    
+    # Diğer Araçlar
+    "Anket": [
+        'anket'
+    ],
+    "Klasik Sınav": [
+        'klasik sınav', 'klasik sinav'
+    ],
+    "Deneme Uygulaması": [
+        'deneme uygulaması', 'deneme uygulamasi'
+    ],
+    "BEP": [
+        'bireyselleştirilmiş eğitim programı', 'bireysellestirilmis egitim programi', 'bep', 'b.e.p'
+    ],
+    "Sınav Uygulama Kılavuzu": [
+        'sınav uygulama kılavuzu', 'sinav uygulama kilavuzu'
+    ],
+    "Değerlendirme Kriteri": [
+        'değerlendirme kriteri', 'degerlendirme kriteri'
+    ],
+    "Geri Bildirim": [
+        'geri bildirim', 'geribildirim'
+    ],
+    "Öğrenme Çıktısı": [
+        'öğrenme çıktısı', 'ogrenme ciktisi'
+    ],
+    "Zümre Değerlendirmesi": [
+        'zümre değerlendirmesi', 'zumre degerlendirmesi'
+    ],
+    "Ölçme ve Değerlendirme Uzmanı": [
+        'ölçme ve değerlendirme uzmanı', 'olcme ve degerlendirme uzmani'
+    ],
+    "Ölçme Değerlendirme Merkezi": [
+        'ölçme değerlendirme merkezi', 'olcme degerlendirme merkezi'
+    ],
+    "Veri Analizi": [
+        'veri analizi'
+    ],
+    "Raporlama": [
+        'raporlama'
+    ],
+    "Değerlendirme Formu": [
+        'değerlendirme formu', 'degerlendirme formu'
+    ],
+    "Karne Notu": [
+        'karne notu'
+    ],
+    "Başarı Puanı": [
+        'başarı puanı', 'basari puani'
+    ],
+    "Ölçme Aracı": [
+        'ölçme aracı', 'olcme araci'
+    ]
+}
+
+
 def analyze_measurement_content(content):
     """
-    Verilen metinde ölçme araçlarını tespit et
+    Verilen metinde ölçme araçlarını tespit eder.
+    Sadece OLCME_ARACLARI_MAPPING'de tanımlı olanları döner.
     """
-    olcme_yontemleri = []
-    
-    # Bilinen ölçme araçlarını tespit et (yazım varyasyonları dahil)
-    olcme_araclari = [
-        'gözlem formu', 'gozlem formu', 'derecelendirme ölçeği', 'derecelendirme olceği',
-        'dereceli puanlama anahtarı', 'dereceli puanlama anahtari',
-        'öz değerlendirme', 'oz degerlendirme', 'öz-değerlendirme',
-        'akran değerlendirme', 'akran degerlendirme', 'akran değerlendirmesi',
-        'performans değerlendirme', 'performans degerlendirme', 'performans değerlendirmesi',
-        'portfolyo', 'portföy', 'portfolio', 'proje değerlendirme', 'proje degerlendirme',
-        'rubrik', 'rubric', 'kontrol listesi', 'açık uçlu', 'acik uclu', 'açık-uçlu',
-        'çoktan seçmeli', 'coktan secmeli', 'çoktan-seçmeli', 'doğru yanlış', 'dogru yanlis',
-        'doğru-yanlış', 'eşleştirme', 'eslestirme', 'geçerlik', 'gecerlik',
-        'güvenirlik', 'guvenirlik', 'güvenilirlik', 'biçimlendirici değerlendirme',
-        'bicimlendirici degerlendirme', 'düzey belirleyici değerlendirme',
-        'duzey belirleyici degerlendirme', 'tanılayıcı değerlendirme', 'tanilayici degerlendirme',
-        'otantik değerlendirme', 'otantik degerlendirme', 'özgün değerlendirme',
-        'performansa dayalı değerlendirme', 'performansa dayali degerlendirme',
-        'e-sınav', 'e sinav', 'elektronik sınav', 'elektronik sinav',
-        'e-sınav merkezi', 'e sinav merkezi', 'anket', 'açık uçlu soru', 'acik uclu soru',
-        'çoktan seçmeli test', 'coktan secmeli test', 'klasik sınav', 'klasik sinav',
-        'kısa cevaplı soru', 'kisa cevapli soru', 'doğru–yanlış testi', 'dogru-yanlis testi',
-        'eşleştirme testi', 'eslestirme testi', 'ölçme aracı', 'olcme araci',
-        'puanlama anahtarı', 'puanlama anahtari', 'çeldirici', 'celdirici',
-        'madde analizi', 'deneme uygulaması', 'deneme uygulamasi',
-        'bireyselleştirilmiş eğitim programı', 'bireysellestirilmis egitim programi',
-        'bep', 'b.e.p', 'öğrenci ürün dosyası', 'ogrenci urun dosyasi',
-        'performans görevi', 'performans gorevi', 'proje ödevi', 'proje odevi',
-        'izleme değerlendirme', 'izleme degerlendirme', 'süreç değerlendirme',
-        'surec degerlendirme', 'ürün değerlendirme', 'urun degerlendirme',
-        'otomatik puanlama', 'elektronik ölçme araçları', 'elektronik olcme araclari',
-        'karne notu', 'başarı puanı', 'basari puani', 'sınav uygulama kılavuzu',
-        'sinav uygulama kilavuzu', 'değerlendirme kriteri', 'degerlendirme kriteri',
-        'geri bildirim', 'geribildirim', 'puanlama ölçeği', 'puanlama olcegi',
-        'öğrenme çıktısı', 'ogrenme ciktisi', 'zümre değerlendirmesi', 'zumre degerlendirmesi',
-        'öğretmen gözlemi', 'ogretmen gozlemi', 'öğrenci öz değerlendirmesi',
-        'ogrenci oz degerlendirmesi', 'ölçme ve değerlendirme uzmanı',
-        'olcme ve degerlendirme uzmani', 'ölçme değerlendirme merkezi',
-        'olcme degerlendirme merkezi', 'veri analizi', 'raporlama',
-        'değerlendirme formu', 'degerlendirme formu'
-    ]
+    if not content:
+        return []
     
     content_lower = content.lower()
-    for arac in olcme_araclari:
-        if arac in content_lower:
-            # Formu/formları kelimelerini temizle
-            clean_arac = arac.replace(' formu', '').replace(' formları', '')
-            if clean_arac not in olcme_yontemleri:
-                olcme_yontemleri.append(clean_arac.title())
+    found_tools = set()
     
-    return olcme_yontemleri
+    # Her standart araç ve varyasyonlarını kontrol et
+    for standard_name, variations in OLCME_ARACLARI_MAPPING.items():
+        for variation in variations:
+            if variation in content_lower:
+                found_tools.add(standard_name)
+                break
+    
+    return sorted(list(found_tools))
 
 
 # ===========================
