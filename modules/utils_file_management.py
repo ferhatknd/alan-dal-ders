@@ -11,6 +11,7 @@ import shutil
 import requests
 import zipfile
 import tempfile
+import time
 from typing import List, Dict, Optional
 try:
     from .utils_normalize import sanitize_filename_tr
@@ -100,7 +101,65 @@ def move_file_to_shared_folder(source_path: str, cache_type: str, filename: str)
         return None
 
 
-def download_and_cache_pdf(url: str, cache_type: str, alan_adi: str = None, additional_info: str = None, alan_id: str = None, alan_db_id: int = None, meb_alan_id: str = None) -> Optional[str]:
+def download_with_retry(url: str, max_retries: int = 3, timeout: int = 30) -> Optional[requests.Response]:
+    """
+    Retry mekanizması ile dosya indirir.
+    SOLID S: Single Responsibility - sadece retry logic
+    SOLID O: Open/Closed - farklı retry stratejileri eklenebilir
+    
+    Args:
+        url: İndirilecek URL
+        max_retries: Maksimum deneme sayısı
+        timeout: Request timeout (saniye)
+        
+    Returns:
+        requests.Response veya None
+    """
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+    }
+    
+    for attempt in range(max_retries):
+        try:
+            response = requests.get(url, headers=headers, timeout=timeout)
+            response.raise_for_status()
+            return response
+            
+        except requests.exceptions.Timeout:
+            if attempt < max_retries - 1:
+                wait_time = 2 ** attempt  # Exponential backoff
+                print(f"⏱️ Timeout (deneme {attempt + 1}/{max_retries}), {wait_time}s bekleniyor: {url}")
+                time.sleep(wait_time)
+                continue
+            else:
+                print(f"❌ Timeout (tüm denemeler tükendi): {url}")
+                
+        except requests.exceptions.ConnectionError:
+            if attempt < max_retries - 1:
+                wait_time = 2 ** attempt
+                print(f"🔌 Bağlantı hatası (deneme {attempt + 1}/{max_retries}), {wait_time}s bekleniyor: {url}")
+                time.sleep(wait_time)
+                continue
+            else:
+                print(f"❌ Bağlantı hatası (tüm denemeler tükendi): {url}")
+                
+        except requests.exceptions.HTTPError as e:
+            if e.response and 500 <= e.response.status_code < 600:
+                if attempt < max_retries - 1:
+                    wait_time = 2 ** attempt
+                    print(f"🔧 Sunucu hatası {e.response.status_code} (deneme {attempt + 1}/{max_retries}), {wait_time}s bekleniyor: {url}")
+                    time.sleep(wait_time)
+                    continue
+            print(f"❌ HTTP hatası: {e} - {url}")
+            break
+            
+        except Exception as e:
+            print(f"❌ Genel hata ({url}): {e}")
+            break
+    
+    return None
+
+def download_and_cache_pdf(url: str, cache_type: str, alan_adi: str = None, additional_info: str = None, alan_id: str = None, alan_db_id: int = None, meb_alan_id: str = None, max_retries: int = 3) -> Optional[str]:
     """
     PDF'yi indirir ve organize şekilde cache'ler.
     Duplicate dosyalar için ortak alan klasörü kullanır.
@@ -170,10 +229,11 @@ def download_and_cache_pdf(url: str, cache_type: str, alan_adi: str = None, addi
         
         # 00_Ortak_Alan_Dersleri sistemi kaldırıldı - bu kontrol artık yapılmıyor
         
-        # PDF'yi indir
+        # PDF'yi retry mekanizması ile indir
         print(f"⬇️ İndiriliyor: {url}")
-        response = requests.get(url, timeout=30)
-        response.raise_for_status()
+        response = download_with_retry(url, max_retries=max_retries)
+        if not response:
+            return None
         
         # Dosyayı kaydet
         with open(file_path, 'wb') as f:

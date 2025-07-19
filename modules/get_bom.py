@@ -6,13 +6,16 @@ import sqlite3
 import json
 import time
 from pathlib import Path
+from typing import Tuple, Dict, Optional, Generator
 import re
 try:
     from .utils_normalize import normalize_to_title_case_tr, sanitize_filename_tr
     from .utils_database import with_database
+    from .utils_file_management import download_and_cache_pdf
 except ImportError:
     from utils_normalize import normalize_to_title_case_tr, sanitize_filename_tr
     from utils_database import with_database
+    from utils_file_management import download_and_cache_pdf
 
 # Doğru URL: https://meslek.meb.gov.tr/moduller (debug ile doğrulandı)
 BASE_BOM_URL = "https://meslek.meb.gov.tr/moduller"
@@ -115,12 +118,6 @@ def extract_update_year(date_string):
     
     return None
 
-def sanitize_filename(name):
-    """
-    Dosya/klasör ismi olarak kullanılabilir hale getir.
-    utils.py'deki merkezi sanitize_filename_tr fonksiyonunu kullanır.
-    """
-    return sanitize_filename_tr(name)
 
 def get_alanlar_from_moduller():
     """
@@ -248,212 +245,271 @@ def get_bom_for_alan(alan_id, alan_adi, session):
     
     return bom_data
 
-def download_and_save_bom_pdf(area_name, modul_link, modul_adi, ders_adi, db_areas=None):
+@with_database
+def update_ders_bom_url(cursor, ders_id, bom_url):
     """
-    BOM PDF'ini indirir ve data/bom/{meb_alan_id}_{alan_adi}/ klasörüne kaydeder.
-    Ders klasörü oluşturulmaz, tüm dosyalar direkt alan klasörüne kaydedilir.
-    """
-    try:
-        # Veritabanından alan bilgilerini al (eğer daha önce alınmamışsa)
-        if db_areas is None:
-            db_areas = get_areas_from_db()
+    Dersin bom_url sütununu günceller.
+    SOLID S: Single Responsibility - sadece veritabanı güncelleme
+    
+    Args:
+        cursor: Veritabanı cursor
+        ders_id: Ders ID'si
+        bom_url: BÖM URL'si
         
-        # Alan ID'sini bul
-        area_id, meb_alan_id, matched_name = find_matching_area_id(area_name, db_areas)
-        
-        if area_id:
-            # MEB ID varsa kullan, yoksa database ID kullan
-            if meb_alan_id:
-                folder_name = f"{meb_alan_id}_{sanitize_filename(matched_name)}"
-            else:
-                folder_name = f"{area_id:02d}_{sanitize_filename(matched_name)}"
-            bom_dir = Path(BOM_ROOT_DIR) / folder_name
-        else:
-            # ID bulunamazsa eski sistemi kullan
-            safe_area_name = area_name.replace('/', '_').replace('\\', '_').replace(':', '_')
-            bom_dir = Path(BOM_ROOT_DIR) / safe_area_name
-        
-        # Ana alan klasörünü oluştur (ders alt klasörü oluşturulmaz)
-        bom_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Dosya adını orijinal URL'den çıkar
-        pdf_filename = os.path.basename(modul_link)
-        pdf_path = bom_dir / pdf_filename
-        
-        # Eğer dosya zaten mevcutsa atla
-        if pdf_path.exists():
-            return str(pdf_path), False
-        
-        # PDF'yi indir
-        response = requests.get(modul_link, headers=HEADERS, timeout=30)
-        response.raise_for_status()
-        
-        # Dosyayı kaydet
-        with open(pdf_path, 'wb') as f:
-            f.write(response.content)
-        
-        return str(pdf_path), True
-        
-    except Exception as e:
-        pass  # Error handling moved to caller
-        return None, False
-
-def save_bom_metadata(area_name, bom_data, db_areas=None):
-    """
-    BOM metadata'larını JSON dosyasına kaydeder (yeni dizin yapısında).
+    Returns:
+        bool: Başarı durumu
     """
     try:
-        # Veritabanından alan bilgilerini al (eğer daha önce alınmamışsa)
-        if db_areas is None:
-            db_areas = get_areas_from_db()
-        
-        # Alan ID'sini bul
-        area_id, meb_alan_id, matched_name = find_matching_area_id(area_name, db_areas)
-        
-        if area_id:
-            # MEB ID varsa kullan, yoksa database ID kullan
-            if meb_alan_id:
-                folder_name = f"{meb_alan_id}_{sanitize_filename(matched_name)}"
-            else:
-                folder_name = f"{area_id:02d}_{sanitize_filename(matched_name)}"
-            bom_dir = Path(BOM_ROOT_DIR) / folder_name
-        else:
-            # ID bulunamazsa eski sistemi kullan
-            safe_area_name = area_name.replace('/', '_').replace('\\', '_').replace(':', '_')
-            bom_dir = Path(BOM_ROOT_DIR) / safe_area_name
-        
-        metadata_file = bom_dir / 'bom_metadata.json'
-        
-        metadata = {
-            'alan_adi': area_name,
-            'alan_id': area_id,
-            'matched_name': matched_name,
-            'dersler': bom_data.get('dersler', []),
-            'toplam_ders': len(bom_data.get('dersler', [])),
-            'olusturma_tarihi': time.strftime('%Y-%m-%d %H:%M:%S')
-        }
-        
-        with open(metadata_file, 'w', encoding='utf-8') as f:
-            json.dump(metadata, f, ensure_ascii=False, indent=2)
-        
-        pass  # Success message moved to caller
-        
+        cursor.execute(
+            "UPDATE temel_plan_ders SET bom_url = ? WHERE id = ?",
+            (bom_url, ders_id)
+        )
+        return cursor.rowcount > 0
     except Exception as e:
-        pass  # Error handling moved to caller
+        print(f"❌ Ders BOM URL güncelleme hatası (ID: {ders_id}): {e}")
+        return False
 
+def find_matching_ders_in_db(bom_ders_adi, alan_id, db_ders_dict):
+    """
+    BÖM ders adını veritabanındaki derslerle eşleştirir.
+    SOLID S: Single Responsibility - sadece ders eşleştirme
+    
+    Args:
+        bom_ders_adi: BÖM ders adı
+        alan_id: Alan ID'si
+        db_ders_dict: Veritabanı ders mapping'i
+        
+    Returns:
+        ders_id veya None
+    """
+    # Önce tam eşleşme
+    normalized_bom_ders = normalize_to_title_case_tr(bom_ders_adi)
+    if normalized_bom_ders in db_ders_dict:
+        return db_ders_dict[normalized_bom_ders]
+    
+    # Kısmi eşleşme - anahtar kelimeler
+    bom_keywords = set(normalized_bom_ders.lower().split())
+    
+    for db_ders_adi, ders_id in db_ders_dict.items():
+        db_keywords = set(db_ders_adi.lower().split())
+        
+        # En az 2 ortak kelime veya ders adının %70'i eşleşirse
+        common_words = bom_keywords.intersection(db_keywords)
+        if len(common_words) >= 2 or len(common_words) / len(bom_keywords) >= 0.7:
+            print(f"🔍 Eşleşme: '{bom_ders_adi}' -> '{db_ders_adi}' (ortak: {common_words})")
+            return ders_id
+    
+    return None
+
+# save_bom_metadata fonksiyonu kaldırıldı - BÖM metadata'ya gerek yok
+
+
+def process_bom_data_for_area(alan_adi, bom_data, alan_id, db_ders_dict):
+    """
+    Bir alanın BÖM verilerini işler ve veritabanını günceller.
+    SOLID S: Single Responsibility - alan bazlı BÖM işleme
+    
+    Args:
+        alan_adi: Alan adı
+        bom_data: BÖM verileri
+        alan_id: Veritabanı alan ID'si
+        db_ders_dict: Veritabanı ders mapping'i
+        
+    Yields:
+        dict: İlerleme mesajları
+        
+    Returns:
+        tuple: (total_matched, total_updated)
+    """
+    total_matched = 0
+    total_updated = 0
+    
+    for ders in bom_data.get("dersler", []):
+        ders_adi = ders.get("ders_adi", "")
+        moduller = ders.get("moduller", [])
+        
+        if not ders_adi or not moduller:
+            continue
+            
+        # Dersi veritabanında bul
+        ders_id = find_matching_ders_in_db(ders_adi, alan_id, db_ders_dict)
+        
+        if ders_id:
+            total_matched += 1
+            
+            # İlk modülün linkini al (BÖM URL'si olarak)
+            ilk_modul = moduller[0]
+            bom_url = ilk_modul.get("link", "")
+            
+            if bom_url:
+                # Veritabanını güncelle
+                if update_ders_bom_url(ders_id, bom_url):
+                    total_updated += 1
+                    yield {
+                        'type': 'success', 
+                        'message': f"✅ {alan_adi} -> '{ders_adi}' dersi eşleşti, BÖM URL güncellendi"
+                    }
+                else:
+                    yield {
+                        'type': 'warning', 
+                        'message': f"⚠️ {alan_adi} -> '{ders_adi}' eşleşti ama veritabanı güncellenemedi"
+                    }
+            else:
+                yield {
+                    'type': 'info', 
+                    'message': f"📄 {alan_adi} -> '{ders_adi}' eşleşti ama BÖM URL'si boş"
+                }
+        else:
+            yield {
+                'type': 'info', 
+                'message': f"🔍 {alan_adi} -> '{ders_adi}' eşleşmeyen ders"
+            }
+    
+    return total_matched, total_updated
+
+def process_single_area_bom(alan, db_areas, db_ders_dict):
+    """
+    Tek bir alanın BÖM verilerini işler.
+    SOLID S: Single Responsibility - tek alan BÖM işleme
+    
+    Args:
+        alan: Alan bilgileri dict
+        db_areas: Veritabanı alan bilgileri
+        db_ders_dict: Veritabanı ders mapping'i
+        
+    Yields:
+        dict: İlerleme mesajları
+    """
+    alan_adi = alan['isim']
+    
+    try:
+        # BÖM verilerini çek
+        bom_data = get_bom_for_alan(alan['id'], alan_adi, requests.Session())
+        
+        if bom_data and bom_data.get("dersler"):
+            normalized_area_name = normalize_to_title_case_tr(alan_adi)
+            
+            # Veritabanında alan kontrolü
+            area_info = db_areas.get(alan_adi) or db_areas.get(normalized_area_name)
+            if area_info:
+                alan_id = area_info['id']
+                meb_alan_id = area_info.get('meb_alan_id', 'XX')
+                
+                # BÖM verilerini işle ve veritabanını güncelle
+                total_matched = 0
+                total_updated = 0
+                
+                for message in process_bom_data_for_area(alan_adi, bom_data, alan_id, db_ders_dict):
+                    yield message
+                    if message['type'] == 'success':
+                        total_updated += 1
+                    if message['type'] in ['success', 'warning', 'info'] and 'eşleşti' in message['message']:
+                        total_matched += 1
+                
+                # Özet raporu
+                toplam_bom_dersleri = len(bom_data.get("dersler", []))
+                yield {
+                    'type': 'progress', 
+                    'message': f'{meb_alan_id} - {alan_adi}: {toplam_bom_dersleri} BÖM dersi, {total_matched} eşleşme, {total_updated} güncelleme', 
+                    'progress': 1.0
+                }
+            else:
+                yield {'type': 'info', 'message': f"📋 {alan_adi} -> Veritabanında yok, atlanıyor"}
+        else:
+            yield {'type': 'info', 'message': f"📋 {alan_adi} -> BÖM verisi bulunamadı"}
+            
+    except requests.exceptions.HTTPError as http_err:
+        if http_err.response and 500 <= http_err.response.status_code < 600:
+            yield {'type': 'warning', 'message': f"Sunucu hatası (5xx): '{alan_adi}' alanı işlenemedi."}
+        else:
+            yield {'type': 'warning', 'message': f"HTTP Hatası: '{alan_adi}' - {http_err}"}
+    except Exception as exc:
+        yield {'type': 'warning', 'message': f"Genel Hata: '{alan_adi}' - {exc}"}
 
 def get_bom_with_db_integration(siniflar=["9", "10", "11", "12"]):
     """
-    BOM verilerini veritabanı entegrasyonu ile çeker ve dosyaları organize eder.
-    Generator olarak her adımda ilerleme mesajı döndürür.
-    """
-    yield {'type': 'status', 'message': 'BOM (Bireysel Öğrenme Materyali) verileri işleniyor...'}
+    BÖM verilerini veritabanı entegrasyonu ile çeker ve ders URL'lerini günceller.
+    SOLID S: Single Responsibility - BÖM workflow koordinasyonu
     
-    # Veritabanından alan bilgilerini tek seferde al (performans için)
+    Args:
+        siniflar: İşlenecek sınıflar listesi (BÖM'de kullanılmıyor, uyumluluk için)
+        
+    Yields:
+        dict: İlerleme mesajları
+    """
+    yield {'type': 'status', 'message': 'BÖM (Bireysel Öğrenme Materyali) verileri işleniyor...'}
+    
+    # Veritabanı bilgilerini al
     db_areas = get_areas_from_db()
     if not db_areas:
         yield {'type': 'error', 'message': 'Veritabanında alan bulunamadı! Önce Adım 1\'i çalıştırın.'}
         return
     
-    yield {'type': 'status', 'message': f'Veritabanından {len(db_areas)} alan alındı.'}
+    db_ders_dict = get_ders_ids_from_db()
+    if not db_ders_dict:
+        yield {'type': 'error', 'message': 'Veritabanında ders bulunamadı! Önce dersler yüklenmelidir.'}
+        return
     
-    # Ana dizini oluştur
-    if not os.path.exists(BOM_ROOT_DIR):
-        os.makedirs(BOM_ROOT_DIR)
+    yield {'type': 'status', 'message': f'Veritabanından {len(db_areas)} alan ve {len(db_ders_dict)} ders alındı.'}
     
-    # Tüm sınıflardan benzersiz alanları topla
-    all_alanlar_by_sinif = {sinif: get_alanlar(sinif) for sinif in siniflar}
-    unique_alanlar = list({v['id']:v for k,v_list in all_alanlar_by_sinif.items() for v in v_list}.values())
+    # BÖM alanlarını çek
+    bom_alanlari = get_alanlar_from_moduller()
+    if not bom_alanlari:
+        yield {'type': 'error', 'message': 'BÖM alanları çekilemedi!'}
+        return
+        
+    yield {'type': 'status', 'message': f'{len(bom_alanlari)} BÖM alanı bulundu, işleniyor...'}
     
-    yield {'type': 'status', 'message': f'{len(unique_alanlar)} benzersiz alan için BOM verileri çekiliyor...'}
+    # Sonuçları topla
+    total_areas_processed = 0
+    total_matches = 0
+    total_updates = 0
     
-    area_bom_data = {}
-    total_processed = 0
-    total_downloaded = 0
-    
-    with ThreadPoolExecutor(max_workers=4) as executor:
+    # SOLID D: Dependency Inversion - ThreadPoolExecutor kullanımı
+    with ThreadPoolExecutor(max_workers=3) as executor:  # BÖM için daha az worker
         future_to_alan = {
-            executor.submit(get_bom_for_alan, alan['id'], alan['isim'], requests.Session()): alan 
-            for alan in unique_alanlar if alan['id'] not in ["0", "00"]
+            executor.submit(list, process_single_area_bom(alan, db_areas, db_ders_dict)): alan 
+            for alan in bom_alanlari
         }
         
         for future in as_completed(future_to_alan):
             alan = future_to_alan[future]
-            alan_adi = alan['isim']
-            
             try:
-                bom_data = future.result()
+                messages = future.result(timeout=180)  # 3 dakika timeout
                 
-                if bom_data and bom_data.get("dersler"):
-                    # Alan adını normalize et ve veritabanında olup olmadığını kontrol et
-                    normalized_area_name = normalize_to_title_case_tr(alan_adi)
+                area_processed = False
+                for message in messages:
+                    yield message
                     
-                    # Hem orijinal hem normalize edilmiş isimle kontrol et
-                    if alan_adi in db_areas or normalized_area_name in db_areas:
-                        area_bom_data[alan_adi] = bom_data
+                    # İstatistik toplama
+                    if message.get('type') == 'progress':
+                        area_processed = True
+                        # Mesajdan sayıları çıkar
+                        msg = message.get('message', '')
+                        if 'eşleşme' in msg and 'güncelleme' in msg:
+                            # "Örnek: 5 eşleşme, 3 güncelleme" formatından sayıları çıkar
+                            import re
+                            matches = re.findall(r'(\d+) eşleşme', msg)
+                            updates = re.findall(r'(\d+) güncelleme', msg)
+                            if matches:
+                                total_matches += int(matches[0])
+                            if updates:
+                                total_updates += int(updates[0])
+                
+                if area_processed:
+                    total_areas_processed += 1
                         
-                        # Her ders ve modülü indir
-                        for ders in bom_data.get("dersler", []):
-                            ders_adi = ders.get("ders_adi", "")
-                            for modul in ders.get("moduller", []):
-                                modul_adi = modul.get("isim", "")
-                                modul_link = modul.get("link", "")
-                                
-                                if modul_link:
-                                    pdf_path, downloaded = download_and_save_bom_pdf(
-                                        alan_adi, 
-                                        modul_link, 
-                                        modul_adi, 
-                                        ders_adi,
-                                        db_areas
-                                    )
-                                    
-                                    if pdf_path:
-                                        if downloaded:
-                                            total_downloaded += 1
-                                        total_processed += 1
-                                        yield {'type': 'success', 'message': f"📄 {alan_adi} -> {os.path.basename(pdf_path)} ({ders_adi} - {modul_adi})"}
-                                    else:
-                                        yield {'type': 'warning', 'message': f"❌ {alan_adi} -> BOM indirilemedi ({ders_adi} - {modul_adi})"}
-                        
-                        # Metadata kaydet
-                        save_bom_metadata(alan_adi, bom_data, db_areas)
-                        ders_sayisi = len(bom_data.get('dersler', []))
-                        
-                        # Standardize edilmiş konsol çıktısı - alan bazlı toplam
-                        # BOM için alan adından MEB ID'sini bul
-                        alan_info = db_areas.get(alan_adi) or db_areas.get(normalize_to_title_case_tr(alan_adi))
-                        meb_alan_id = alan_info.get('meb_alan_id') if alan_info else 'XX'
-                        
-                        # Alan için toplam BOM sayısını hesapla
-                        toplam_bom_sayisi = sum(len(ders.get("moduller", [])) for ders in bom_data.get("dersler", []))
-                        
-                        yield {'type': 'progress', 'message': f'{meb_alan_id} - {alan_adi} (1/1) Toplam {toplam_bom_sayisi} BOM indi.', 'progress': 1.0}
-                    else:
-                        yield {'type': 'info', 'message': f"📋 {alan_adi} -> Veritabanında yok, atlanıyor"}
-                else:
-                    yield {'type': 'info', 'message': f"📋 {alan_adi} -> BOM verisi bulunamadı"}
-                    
-            except requests.exceptions.HTTPError as http_err:
-                if http_err.response and 500 <= http_err.response.status_code < 600:
-                    yield {'type': 'warning', 'message': f"Sunucu hatası (5xx): '{alan_adi}' alanı işlenemedi. Sunucu kaynaklı bir sorun olabilir, atlanıyor."}
-                else:
-                    yield {'type': 'warning', 'message': f"HTTP Hatası: '{alan_adi}' alanı işlenirken hata: {http_err}"}
             except Exception as exc:
-                yield {'type': 'warning', 'message': f"Genel Hata: '{alan_adi}' alanı işlenirken hata: {exc}"}
+                yield {'type': 'warning', 'message': f"Future hatası: '{alan['isim']}' - {exc}"}
     
     # Sonuç özeti
     yield {
         'type': 'success', 
-        'message': f'BOM işlemi tamamlandı! {len(area_bom_data)} alan, {total_processed} BOM dosyası işlendi ({total_downloaded} yeni indirme).'
+        'message': f'BÖM işlemi tamamlandı! {total_areas_processed} alan, {total_matches} eşleşme, {total_updates} veritabanı güncellemesi.'
     }
     
-    # Son durum için JSON dosyası da oluştur (yedek)
-    output_filename = "data/get_bom.json"
-    with open(output_filename, 'w', encoding='utf-8') as f:
-        json.dump(area_bom_data, f, ensure_ascii=False, indent=4)
-    
-    yield {'type': 'done', 'message': f'BOM verileri kaydedildi. Yedek dosya: {output_filename}'}
+    # BÖM için JSON dosyası gerekli değil - sadece veritabanı güncellemesi
+    yield {'type': 'done', 'message': 'BÖM URL\'leri veritabanına kaydedildi.'}
 
 def get_bom():
     """
