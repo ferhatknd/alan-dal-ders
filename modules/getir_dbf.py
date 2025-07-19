@@ -3,17 +3,15 @@ import requests
 from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import re
-import sqlite3
+# sqlite3 import kaldırıldı - utils_database.py'de zaten var
 try:
     from .oku_dbf import extract_ders_adi
     from .utils_normalize import normalize_to_title_case_tr, sanitize_filename_tr
-    from .utils_database import with_database, get_or_create_alan, find_or_create_database, get_meb_alan_id_with_fallback, get_folder_name_for_download, get_meb_alan_ids_cached
-    from .utils_file_management import download_and_cache_pdf
+    from .utils_database import with_database, get_or_create_alan, get_meb_alan_id_with_fallback, get_folder_name_for_download, get_meb_alan_ids_cached
 except ImportError:
     from oku_dbf import extract_ders_adi
     from utils_normalize import normalize_to_title_case_tr, sanitize_filename_tr
-    from utils_database import with_database, get_or_create_alan, find_or_create_database, get_meb_alan_id_with_fallback, get_folder_name_for_download, get_meb_alan_ids_cached
-    from utils_file_management import download_and_cache_pdf
+    from utils_database import with_database, get_or_create_alan, get_meb_alan_id_with_fallback, get_folder_name_for_download, get_meb_alan_ids_cached
 
 BASE_DBF_URL = "https://meslek.meb.gov.tr/dbfgoster.aspx"
 HEADERS = {
@@ -75,7 +73,7 @@ def find_matching_area_id(html_area_name, db_areas):
 def get_dbf_data_for_alan_and_sinif(alan_adi, meb_alan_id, sinif_kodu):
     """
     Belirli bir alan ve sınıf için DBF verilerini çeker.
-    COP'daki yöntemle aynı prensip: spesifik alan+sınıf sayfasına git.
+    Hem normal hem protokol dosyalarını tespit eder (dosya adından).
     """
     params = {"kurum_id": "1", "sinif_kodu": sinif_kodu, "alan_id": meb_alan_id}
     
@@ -85,8 +83,10 @@ def get_dbf_data_for_alan_and_sinif(alan_adi, meb_alan_id, sinif_kodu):
         response.encoding = response.apparent_encoding
         soup = BeautifulSoup(response.text, "html.parser")
 
-        # DBF linkini bul (RAR/ZIP dosyası)
+        # DBF linklerini bul (RAR/ZIP dosyası)
         dbf_links = soup.find_all('a', href=lambda x: x and (x.endswith('.rar') or x.endswith('.zip')))
+        
+        found_files = {}  # {alan_type: data}
         
         if dbf_links:
             for link in dbf_links:
@@ -97,6 +97,10 @@ def get_dbf_data_for_alan_and_sinif(alan_adi, meb_alan_id, sinif_kodu):
                         dbf_url = href
                     else:
                         dbf_url = requests.compat.urljoin(response.url, href)
+                    
+                    # Dosya adından protokol tespiti yap
+                    filename = href.split('/')[-1].lower()
+                    is_protokol = any(x in filename for x in ['pro', 'protokol'])
                     
                     # Tarih bilgisini bul
                     tarih = ""
@@ -110,23 +114,103 @@ def get_dbf_data_for_alan_and_sinif(alan_adi, meb_alan_id, sinif_kodu):
                     # Güncelleme yılını çıkar
                     update_year = extract_update_year(tarih)
                     
-                    return {
+                    # Alan tipini belirle
+                    if is_protokol:
+                        file_alan_adi = f"{alan_adi} - Protokol" if not alan_adi.endswith(" - Protokol") else alan_adi
+                    else:
+                        file_alan_adi = alan_adi.replace(" - Protokol", "") if " - Protokol" in alan_adi else alan_adi
+                    
+                    found_files[file_alan_adi] = {
                         "link": dbf_url,
                         "guncelleme_tarihi": tarih,
                         "update_year": update_year,
-                        "meb_alan_id": meb_alan_id
+                        "meb_alan_id": meb_alan_id,
+                        "filename": filename,
+                        "is_protokol": is_protokol
                     }
+                    
+                    print(f"📋 DBF Dosya tespit edildi: {file_alan_adi} -> {filename} {'(Protokol)' if is_protokol else '(Normal)'}")
         
-        return None
+        # Çağıran tarafın istediği alan tipini döndür
+        return found_files.get(alan_adi)
         
     except requests.RequestException as e:
         print(f"DBF Hata: {alan_adi} ({sinif_kodu}. sınıf) sayfası çekilemedi: {e}")
         return None
 
+def get_all_dbf_files_for_alan_and_sinif(alan_adi, meb_alan_id, sinif_kodu):
+    """
+    Belirli bir MEB alan ID ve sınıf için tüm DBF dosyalarını (normal + protokol) çeker.
+    """
+    params = {"kurum_id": "1", "sinif_kodu": sinif_kodu, "alan_id": meb_alan_id}
+    
+    try:
+        response = requests.get(BASE_DBF_URL, params=params, headers=HEADERS, timeout=15)
+        response.raise_for_status()
+        response.encoding = response.apparent_encoding
+        soup = BeautifulSoup(response.text, "html.parser")
+
+        # DBF linklerini bul (RAR/ZIP dosyası)
+        dbf_links = soup.find_all('a', href=lambda x: x and (x.endswith('.rar') or x.endswith('.zip')))
+        
+        found_files = []  # [{"alan_adi": ..., "data": ...}]
+        
+        if dbf_links:
+            for link in dbf_links:
+                href = link.get('href', '')
+                if href:
+                    # Tam URL'yi oluştur
+                    if href.startswith('http'):
+                        dbf_url = href
+                    else:
+                        dbf_url = requests.compat.urljoin(response.url, href)
+                    
+                    # Dosya adından protokol tespiti yap
+                    filename = href.split('/')[-1].lower()
+                    is_protokol = any(x in filename for x in ['pro', 'protokol'])
+                    
+                    # Tarih bilgisini bul
+                    tarih = ""
+                    parent_div = link.find_parent('div')
+                    if parent_div:
+                        for li in parent_div.find_all('li'):
+                            if 'calendar' in str(li) or re.search(r'\d{2}\.\d{2}\.\d{4}', li.get_text()):
+                                tarih = li.get_text(strip=True)
+                                break
+                    
+                    # Güncelleme yılını çıkar
+                    update_year = extract_update_year(tarih)
+                    
+                    # Alan adını belirle
+                    if is_protokol:
+                        file_alan_adi = f"{alan_adi} - Protokol"
+                    else:
+                        file_alan_adi = alan_adi
+                    
+                    found_files.append({
+                        "alan_adi": file_alan_adi,
+                        "data": {
+                            "link": dbf_url,
+                            "guncelleme_tarihi": tarih,
+                            "update_year": update_year,
+                            "meb_alan_id": meb_alan_id,
+                            "filename": filename,
+                            "is_protokol": is_protokol
+                        }
+                    })
+                    
+                    print(f"📋 DBF tespit edildi: {file_alan_adi} -> {filename} {'(Protokol)' if is_protokol else '(Normal)'}")
+        
+        return found_files
+        
+    except requests.RequestException as e:
+        print(f"DBF Hata: {alan_adi} ({sinif_kodu}. sınıf) sayfası çekilemedi: {e}")
+        return []
+
 def get_dbf_data(siniflar=["9", "10", "11", "12"]):
     """
     Tüm sınıflar için DBF (Ders Bilgi Formu) verilerini eşzamanlı olarak çeker.
-    COP'daki yöntemle aynı prensip: önce MEB alan ID'lerini al, sonra her alan+sınıf için spesifik sayfa.
+    Her MEB alan ID sayfasından hem normal hem protokol dosyalarını tespit eder.
     """
     # Önce MEB alan ID'lerini çek (cache'den)
     print("📋 MEB Alan ID'leri çekiliyor...")
@@ -136,9 +220,9 @@ def get_dbf_data(siniflar=["9", "10", "11", "12"]):
         print("❌ MEB Alan ID'leri çekilemedi!")
         return {}
     
-    print(f"🔍 {len(meb_alan_ids)} alan için DBF linkleri çekiliyor...")
+    print(f"🔍 {len(meb_alan_ids)} alan için DBF linkleri çekiliyor (akıllı tespit)...")
     
-    # Tüm alan+sınıf kombinasyonları için task listesi oluştur
+    # Tüm alan+sınıf kombinasyonları için task listesi oluştur (sadece temel alanlar)
     tasks = []
     for alan_adi, meb_alan_id in meb_alan_ids.items():
         for sinif in siniflar:
@@ -151,29 +235,38 @@ def get_dbf_data(siniflar=["9", "10", "11", "12"]):
     with ThreadPoolExecutor(max_workers=len(siniflar)) as executor:
         # Future'ları submit et
         future_to_task = {
-            executor.submit(get_dbf_data_for_alan_and_sinif, alan_adi, meb_alan_id, sinif): (alan_adi, meb_alan_id, sinif)
+            executor.submit(get_all_dbf_files_for_alan_and_sinif, alan_adi, meb_alan_id, sinif): (alan_adi, meb_alan_id, sinif)
             for alan_adi, meb_alan_id, sinif in tasks
         }
         
         # Sonuçları topla
         for future in as_completed(future_to_task):
-            alan_adi, meb_alan_id, sinif = future_to_task[future]
+            base_alan_adi, meb_alan_id, sinif = future_to_task[future]
             
             try:
-                dbf_data = future.result()
+                found_files = future.result()
                 
-                if dbf_data:
+                if found_files:
                     # Sınıf bazında organize et
                     if sinif not in all_dbf_data:
                         all_dbf_data[sinif] = {}
                     
-                    all_dbf_data[sinif][alan_adi] = dbf_data
-                    print(f"📋 {alan_adi} ({sinif}. sınıf) -> DBF bulundu (ID: {meb_alan_id})")
+                    # Her bulunan dosyayı ekle
+                    for file_info in found_files:
+                        alan_adi = file_info["alan_adi"]
+                        dbf_data = file_info["data"]
+                        
+                        all_dbf_data[sinif][alan_adi] = dbf_data
+                        
+                        if dbf_data["is_protokol"]:
+                            print(f"✅ {alan_adi} ({sinif}. sınıf) -> DBF bulundu (Protokol, ID: {meb_alan_id})")
+                        else:
+                            print(f"✅ {alan_adi} ({sinif}. sınıf) -> DBF bulundu (Normal, ID: {meb_alan_id})")
                 else:
-                    print(f"❌ {alan_adi} ({sinif}. sınıf) -> DBF bulunamadı")
+                    print(f"❌ {base_alan_adi} ({sinif}. sınıf) -> DBF bulunamadı")
                     
             except Exception as e:
-                print(f"❌ {alan_adi} ({sinif}. sınıf) DBF işleme hatası: {e}")
+                print(f"❌ {base_alan_adi} ({sinif}. sınıf) DBF işleme hatası: {e}")
     
     return all_dbf_data
 
@@ -218,170 +311,6 @@ def sanitize_filename(name):
     """
     return sanitize_filename_tr(name)
 
-def is_protocol_area(alan_adi):
-    """
-    Alan adının protokol alan olup olmadığını kontrol eder.
-    
-    Args:
-        alan_adi: Kontrol edilecek alan adı
-        
-    Returns:
-        bool: Protokol alan ise True, değilse False
-    """
-    if not alan_adi:
-        return False
-    return "protokol" in alan_adi.lower()
-
-def get_base_area_name(protocol_name):
-    """
-    Protokol alan adından temel alan adını çıkarır.
-    
-    Args:
-        protocol_name: Protokol alan adı
-        
-    Returns:
-        str: Temel alan adı
-    """
-    if not protocol_name:
-        return ""
-    
-    # Farklı protokol formatlarını kaldır
-    # Örnek: "Muhasebe ve Finansman - Protokol" -> "Muhasebe ve Finansman"
-    # Örnek: "Denizcilik - protokol" -> "Denizcilik"
-    # Örnek: "Gazetecilik Protokol" -> "Gazetecilik"
-    
-    base_name = protocol_name
-    
-    # " - Protokol" formatını kaldır (büyük/küçük harf farketmez)
-    import re
-    base_name = re.sub(r'\s*-\s*protokol\s*$', '', base_name, flags=re.IGNORECASE)
-    
-    # Sadece "protokol" kelimesini kaldır (space'li veya space'siz)
-    base_name = re.sub(r'\s*protokol\s*$', '', base_name, flags=re.IGNORECASE)
-    base_name = re.sub(r'\s*protokol\s+', ' ', base_name, flags=re.IGNORECASE)
-    
-    # Boşlukları temizle
-    base_name = base_name.strip()
-    
-    # Normalize et
-    return normalize_to_title_case_tr(base_name)
-
-def link_courses_to_protocol_area(cursor, base_area_id, protocol_area_id):
-    """
-    Temel alandan protokol alana dersleri kopyalar.
-    
-    Args:
-        cursor: Database cursor
-        base_area_id: Temel alan ID'si
-        protocol_area_id: Protokol alan ID'si
-    """
-    try:
-        # Temel alanın dallarını al
-        cursor.execute("""
-            SELECT id FROM temel_plan_dal 
-            WHERE alan_id = ?
-        """, (base_area_id,))
-        base_dallar = cursor.fetchall()
-        
-        if not base_dallar:
-            print(f"⚠️ Temel alan {base_area_id} için dal bulunamadı")
-            return
-        
-        # Protokol alan için dalları oluştur
-        protocol_dallar = []
-        for dal_row in base_dallar:
-            base_dal_id = dal_row['id']
-            
-            # Dal adını al
-            cursor.execute("SELECT dal_adi FROM temel_plan_dal WHERE id = ?", (base_dal_id,))
-            dal_result = cursor.fetchone()
-            if dal_result:
-                dal_adi = dal_result['dal_adi']
-                
-                # Protokol alan için dal oluştur (duplicate check)
-                cursor.execute("SELECT id FROM temel_plan_dal WHERE dal_adi = ? AND alan_id = ?", (dal_adi, protocol_area_id))
-                existing_dal = cursor.fetchone()
-                
-                if existing_dal:
-                    protocol_dal_id = existing_dal['id']
-                else:
-                    cursor.execute("""
-                        INSERT INTO temel_plan_dal (dal_adi, alan_id, created_at, updated_at)
-                        VALUES (?, ?, datetime('now'), datetime('now'))
-                    """, (dal_adi, protocol_area_id))
-                    protocol_dal_id = cursor.lastrowid
-                protocol_dallar.append((base_dal_id, protocol_dal_id))
-        
-        # Ders-dal ilişkilerini kopyala
-        linked_courses = 0
-        for base_dal_id, protocol_dal_id in protocol_dallar:
-            cursor.execute("""
-                SELECT DISTINCT ders_id FROM temel_plan_ders_dal 
-                WHERE dal_id = ?
-            """, (base_dal_id,))
-            
-            ders_ids = cursor.fetchall()
-            
-            for ders_row in ders_ids:
-                ders_id = ders_row['ders_id']
-                
-                # Duplicate kontrolü
-                cursor.execute("""
-                    SELECT COUNT(*) as count FROM temel_plan_ders_dal 
-                    WHERE ders_id = ? AND dal_id = ?
-                """, (ders_id, protocol_dal_id))
-                
-                if cursor.fetchone()['count'] == 0:
-                    cursor.execute("""
-                        INSERT INTO temel_plan_ders_dal (ders_id, dal_id, created_at)
-                        VALUES (?, ?, datetime('now'))
-                    """, (ders_id, protocol_dal_id))
-                    linked_courses += 1
-        
-        print(f"✅ Protokol alan {protocol_area_id} için {linked_courses} ders bağlantısı oluşturuldu")
-        
-    except Exception as e:
-        print(f"❌ Protokol alan ders bağlantısı hatası: {e}")
-
-def handle_protocol_area(cursor, alan_adi, alan_id):
-    """
-    Protokol alan işlemlerini yönetir.
-    
-    Args:
-        cursor: Database cursor
-        alan_adi: Alan adı
-        alan_id: Oluşturulan alan ID'si
-    """
-    if not is_protocol_area(alan_adi):
-        return
-    
-    try:
-        # Temel alan adını bul
-        base_area_name = get_base_area_name(alan_adi)
-        
-        if not base_area_name:
-            print(f"⚠️ Protokol alan '{alan_adi}' için temel alan adı bulunamadı")
-            return
-        
-        # Temel alanı bul
-        cursor.execute("""
-            SELECT id FROM temel_plan_alan 
-            WHERE alan_adi = ?
-        """, (base_area_name,))
-        
-        base_area_result = cursor.fetchone()
-        if base_area_result:
-            base_area_id = base_area_result['id']
-            print(f"🔗 Protokol alan '{alan_adi}' temel alan '{base_area_name}' ile bağlanıyor...")
-            
-            # Dersleri kopyala
-            link_courses_to_protocol_area(cursor, base_area_id, alan_id)
-        else:
-            print(f"⚠️ Protokol alan '{alan_adi}' için temel alan '{base_area_name}' bulunamadı")
-            
-    except Exception as e:
-        print(f"❌ Protokol alan işleme hatası: {e}")
-
 def get_or_create_area_for_download(cursor, alan_adi, meb_alan_ids=None):
     """
     İndirme işlemi için alan ID'sini alır veya oluşturur.
@@ -414,11 +343,7 @@ def get_or_create_area_for_download(cursor, alan_adi, meb_alan_ids=None):
     
     # Alan oluştur
     alan_id = get_or_create_alan(cursor, alan_adi, meb_alan_id=meb_alan_id)
-    
-    # Protokol alan ise işle
-    if is_protocol_area(alan_adi):
-        handle_protocol_area(cursor, alan_adi, alan_id)
-    
+       
     return alan_id, meb_alan_id, alan_adi
 
 # Bu fonksiyon kaldırıldı - unrar işlemleri artık yapılmıyor
@@ -578,11 +503,7 @@ def get_dbf(cursor, dbf_data=None):
                 
                 # Alan ID'sini al veya oluştur (ORJİNAL ALAN ADI ile)
                 alan_id = with_database(lambda c: get_or_create_alan(c, alan_adi, meb_alan_id=meb_alan_id, dbf_urls=alan_urls))()
-                
-                # Protokol alan ise işle (ders bağlantıları için)
-                if is_protocol_area(alan_adi):
-                    handle_protocol_area(cursor, alan_adi, alan_id)
-                
+                                
                 saved_alan_count += 1
                 sınıf_sayısı = len(alan_urls)
                 yield {'type': 'success', 'message': f'📋 {alan_adi} -> URL kaydedildi ({sınıf_sayısı} sınıf)'}
@@ -708,13 +629,12 @@ def scan_dbf_files_and_extract_courses(alan_adi=None):
 def save_dbf_urls_to_database(cursor):
     """
     DBF URL'lerini veritabanına JSON formatında kaydeder.
-    Eksik alanları otomatik oluşturur ve protokol alanlarını işler.
     """
     import json
     
     # DBF verilerini çek
     print("📋 DBF linkleri çekiliyor...")
-    dbf_data = getir_dbf()
+    dbf_data = get_dbf_data()
     
     if not dbf_data:
         print("❌ DBF verileri çekilemedi!")
@@ -734,7 +654,6 @@ def save_dbf_urls_to_database(cursor):
     meb_alan_ids = get_meb_alan_ids_cached()
     
     saved_count = 0
-    protocol_areas = []
     
     for alan_adi, dbf_urls in alan_dbf_urls.items():
         try:
@@ -746,30 +665,16 @@ def save_dbf_urls_to_database(cursor):
             
             # Alan oluştur veya güncelle (otomatik oluşturma)
             alan_id = get_or_create_alan(cursor, alan_adi, meb_alan_id=meb_alan_id, dbf_urls=dbf_urls_json)
-            
-            # Protokol alan ise listeye ekle
-            if is_protocol_area(alan_adi):
-                protocol_areas.append((alan_adi, alan_id))
-                print(f"🔗 Protokol alan tespit edildi: {alan_adi}")
-            
+                        
             saved_count += 1
             print(f"✅ {alan_adi}: {len(dbf_urls)} sınıf URL'si kaydedildi (MEB ID: {meb_alan_id})")
             
         except Exception as e:
             print(f"❌ {alan_adi} kaydetme hatası: {e}")
             continue
-    
-    # Protokol alanlarını işle
-    if protocol_areas:
-        print(f"🔗 {len(protocol_areas)} protokol alan işleniyor...")
-        for alan_adi, alan_id in protocol_areas:
-            try:
-                handle_protocol_area(cursor, alan_adi, alan_id)
-            except Exception as e:
-                print(f"❌ Protokol alan işleme hatası ({alan_adi}): {e}")
-    
+        
     print(f"🎯 Toplam {saved_count} alan için DBF URL'leri veritabanına kaydedildi!")
-    return {"success": True, "count": saved_count, "protocol_areas": len(protocol_areas)}
+    return {"success": True, "count": saved_count}
 
 def main():
     """

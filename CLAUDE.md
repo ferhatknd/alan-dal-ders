@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Bu dosya, Claude Code için MEB Mesleki Eğitim Veri İşleme ve Veritabanı Projesinin kapsamlı birleşik kılavuzudur. README.md, is_akisi.md ve teknik detayların tümünü içerir. Proje mantığını koruyarak her seferinde hata yapmaktan kaçınmak için tüm kritik bilgileri içerir.
 
-**Son Güncelleme**: 2025-07-18 (Database işlemleri modüler ayrımı + utils_database.py modülü eklendi + Dosya işlemleri modüler ayrımı + Ortak alan dosya sistemi + utils_file_management.py modülü eklendi + Workflow endpoint'leri temizlendi + /api/scrape-to-db standardize edildi + Frontend konsol çıktıları iyileştirildi + Endpoint isimlendirme standardizasyonu + getir_dal.py performans optimizasyonu)
+**Son Güncelleme**: 2025-07-19 (Protocol alan sistemi yeniden yapılandırıldı + Tüm özel protocol fonksiyonları kaldırıldı + Protocol alanları normal alanlar gibi çalışır + 00_Ortak_Alan_Dersleri sistemi kaldırıldı + Protocol alanları kendi cop/dbf dosyalarını kullanır + MEB ID eşleştirme protocol alanlar için iyileştirildi + Terminoloji tutarlılığı sağlandı)
 
 ## 🎯 Proje Genel Bakış
 

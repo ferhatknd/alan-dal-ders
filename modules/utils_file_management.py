@@ -1,58 +1,75 @@
 """
-modules/utils_file_management.py - Dosya İşlemleri Yönetimi
+modules/utils_file_management.py - Dosya İşlemleri Modülü
 
-Bu modül, dosya indirme, dizin yönetimi, arşiv işlemleri gibi
-tüm dosya işlemlerini yönetir.
+Bu modül dosya indirme, arşiv işlemleri, duplicate yönetimi ve
+ortak alan dosya sistemi işlemlerini içerir.
 
-Taşınan fonksiyonlar:
-- check_existing_file_in_all_areas
-- move_file_to_shared_folder
-- download_and_cache_pdf
-- get_temp_pdf_path
-- extract_archive
-- scan_directory_for_archives
-- scan_directory_for_pdfs
 """
 
 import os
-import requests
-import hashlib
-from typing import Optional
 import shutil
-
+import requests
+import zipfile
+import tempfile
+from typing import List, Dict, Optional
 try:
     from .utils_normalize import sanitize_filename_tr
 except ImportError:
     from utils_normalize import sanitize_filename_tr
 
 
-def check_existing_file_in_all_areas(filename: str, cache_type: str, current_folder: str = None) -> Optional[str]:
+def extract_archive(archive_path: str, extract_to: str):
     """
-    Bir dosyanın tüm alan klasörlerinde mevcut olup olmadığını kontrol eder.
+    RAR veya ZIP arşivini açar.
     
     Args:
-        filename: Kontrol edilecek dosya adı
-        cache_type: 'cop', 'dbf', 'dm', 'bom' gibi dosya tipi
-        current_folder: Mevcut alan klasörü (bu klasörde atlanır)
+        archive_path: Arşiv dosyasının yolu
+        extract_to: Çıkarılacak klasör
+    """
+    if not os.path.exists(archive_path):
+        raise FileNotFoundError(f"Arşiv dosyası bulunamadı: {archive_path}")
     
+    os.makedirs(extract_to, exist_ok=True)
+    
+    if archive_path.lower().endswith('.zip'):
+        with zipfile.ZipFile(archive_path, 'r') as zip_ref:
+            zip_ref.extractall(extract_to)
+            print(f"📦 ZIP açıldı: {archive_path}")
+    elif archive_path.lower().endswith('.rar'):
+        # RAR desteği için rarfile kütüphanesi gerekir
+        try:
+            import rarfile
+            with rarfile.RarFile(archive_path) as rar_ref:
+                rar_ref.extractall(extract_to)
+                print(f"📦 RAR açıldı: {archive_path}")
+        except ImportError:
+            print(f"⚠️ RAR desteği yok, rarfile kütüphanesi gerekir: {archive_path}")
+            raise
+    else:
+        raise ValueError(f"Desteklenmeyen arşiv formatı: {archive_path}")
+
+
+def check_existing_file_in_all_areas(filename: str, cache_type: str, current_folder: str) -> Optional[str]:
+    """
+    Dosyanın diğer alan klasörlerinde olup olmadığını kontrol eder.
+    
+    Args:
+        filename: Aranacak dosya adı
+        cache_type: Cache tipi (cop, dbf, dm, bom)
+        current_folder: Şu anki klasör (dahil edilmez)
+        
     Returns:
-        Dosyanın bulunduğu ilk yol veya None
+        Bulunan dosyanın tam yolu veya None
     """
     cache_root = os.path.join("data", cache_type)
     if not os.path.exists(cache_root):
         return None
     
-    # Tüm alan klasörlerini tara
     for item in os.listdir(cache_root):
         item_path = os.path.join(cache_root, item)
-        if not os.path.isdir(item_path):
+        if not os.path.isdir(item_path) or item == current_folder:
             continue
-        
-        # Mevcut klasörse atla
-        if current_folder and item == current_folder:
-            continue
-        
-        # Dosya bu klasörde var mı?
+            
         file_path = os.path.join(item_path, filename)
         if os.path.exists(file_path):
             return file_path
@@ -62,27 +79,21 @@ def check_existing_file_in_all_areas(filename: str, cache_type: str, current_fol
 
 def move_file_to_shared_folder(source_path: str, cache_type: str, filename: str) -> Optional[str]:
     """
-    Dosyayı ortak alan klasörüne taşır.
+    Duplicate dosyayı ortak alana taşır.
+    NOT: 00_Ortak_Alan_Dersleri sistemi kaldırıldı.
     
     Args:
         source_path: Kaynak dosya yolu
-        cache_type: 'cop', 'dbf', 'dm', 'bom' gibi dosya tipi
+        cache_type: Cache tipi
         filename: Dosya adı
     
     Returns:
         Taşınan dosyanın yeni yolu veya None
     """
     try:
-        shared_folder = os.path.join("data", cache_type, "00_Ortak_Alan_Dersleri")
-        os.makedirs(shared_folder, exist_ok=True)
-        
-        destination_path = os.path.join(shared_folder, filename)
-        
-        # Dosyayı taşı
-        shutil.move(source_path, destination_path)
-        
-        print(f"📁 Ortak alana taşındı: {filename}")
-        return destination_path
+        # 00_Ortak_Alan_Dersleri sistemi kaldırıldı - dosyalar kendi klasörlerinde kalır
+        print(f"🔄 Duplicate dosya tespit edildi ancak taşınmayacak: {filename}")
+        return None  # Shared folder sistemi kaldırıldı
         
     except Exception as e:
         print(f"❌ Dosya taşıma hatası ({filename}): {e}")
@@ -157,11 +168,7 @@ def download_and_cache_pdf(url: str, cache_type: str, alan_adi: str = None, addi
                 print(f"📁 Ortak alandan kullanılıyor: {shared_path}")
                 return shared_path
         
-        # Ortak alan klasöründe var mı kontrol et
-        shared_file_path = os.path.join("data", cache_type, "00_Ortak_Alan_Dersleri", filename)
-        if os.path.exists(shared_file_path):
-            print(f"📁 Ortak alandan alınıyor: {shared_file_path}")
-            return shared_file_path
+        # 00_Ortak_Alan_Dersleri sistemi kaldırıldı - bu kontrol artık yapılmıyor
         
         # PDF'yi indir
         print(f"⬇️ İndiriliyor: {url}")
@@ -172,111 +179,86 @@ def download_and_cache_pdf(url: str, cache_type: str, alan_adi: str = None, addi
         with open(file_path, 'wb') as f:
             f.write(response.content)
         
-        print(f"💾 Kaydedildi: {file_path}")
+        print(f"✅ İndirildi: {file_path}")
         return file_path
         
+    except requests.RequestException as e:
+        print(f"❌ İndirme hatası ({url}): {e}")
+        return None
     except Exception as e:
-        print(f"❌ Dosya indirme hatası ({url}): {e}")
+        print(f"❌ Genel hata ({url}): {e}")
         return None
 
 
-def get_temp_pdf_path(url: str) -> str:
+def check_duplicate_files_in_cache(cache_type: str = 'cop') -> Dict:
     """
-    Geçici PDF dosyası için güvenli yol oluştur
-    """
-    url_hash = hashlib.md5(url.encode()).hexdigest()[:8]
-    return f"temp_pdf_{url_hash}.pdf"
-
-
-def extract_archive(archive_path, extract_dir):
-    """
-    RAR veya ZIP dosyasını açar. Dosya tipini otomatik algılar.
-    Merkezi arşiv açma fonksiyonu.
+    Cache klasörlerindaki duplicate dosyaları kontrol eder.
+    Ortak alan sistemi kaldırıldığı için sadece bilgi amaçlı.
     
     Args:
-        archive_path: Açılacak arşiv dosyasının yolu
-        extract_dir: Dosyaların çıkarılacağı dizin
-        
-    Raises:
-        Exception: Arşiv açılamadığında hata fırlatır
-    """
-    import rarfile
-    import zipfile
+        cache_type: 'cop', 'dbf', 'dm', 'bom' gibi dosya tipi
     
-    try:
-        with open(archive_path, "rb") as f:
-            magic = f.read(4)
-        
-        is_rar = magic == b"Rar!"
-        is_zip = magic == b"PK\x03\x04"
-        
-        if is_rar:
-            with rarfile.RarFile(archive_path) as rf:
-                rf.extractall(extract_dir)
-        elif is_zip:
-            with zipfile.ZipFile(archive_path) as zf:
-                zf.extractall(extract_dir)
-        else:
-            raise Exception(f"Desteklenmeyen dosya formatı (magic: {magic})")
-    except Exception as e:
-        raise Exception(f"Arşiv açılırken hata: {e}")
-
-
-def scan_directory_for_archives(root_dir, file_extensions=('.rar', '.zip')):
-    """
-    Belirtilen dizinde arşiv dosyalarını tarar.
-    
-    Args:
-        root_dir: Taranacak ana dizin
-        file_extensions: Aranacak dosya uzantıları
-        
     Returns:
-        List[Dict]: Bulunan arşiv dosyaları listesi
-        Format: [{"path": "dosya_yolu", "name": "dosya_adi", "dir": "klasor_adi"}]
+        Dict: Duplicate dosya bilgileri
     """
-    archives = []
+    cache_root = os.path.join("data", cache_type)
+    if not os.path.exists(cache_root):
+        return {"error": f"Cache dizini bulunamadı: {cache_root}"}
     
-    if not os.path.exists(root_dir):
-        return archives
+    # Dosya analizi
+    files_by_name = {}
+    folder_stats = {}
     
-    for item in os.listdir(root_dir):
-        item_path = os.path.join(root_dir, item)
+    for item in os.listdir(cache_root):
+        item_path = os.path.join(cache_root, item)
         if not os.path.isdir(item_path):
             continue
         
-        for fname in os.listdir(item_path):
-            if fname.lower().endswith(file_extensions):
-                archive_path = os.path.join(item_path, fname)
-                archives.append({
-                    "path": archive_path,
-                    "name": fname,
-                    "dir": item
-                })
+        folder_name = item
+        files = [f for f in os.listdir(item_path) if f.lower().endswith(('.pdf', '.rar', '.zip'))]
+        folder_stats[folder_name] = len(files)
+        
+        # Dosya adlarını kaydet
+        if folder_name not in files_by_name:
+            files_by_name[folder_name] = {}
+        
+        for file in files:
+            files_by_name[folder_name][file] = True
+        
+        # 00_Ortak_Alan_Dersleri sistemi kaldırıldı
+        # Duplicate dosyalar artık sadece log ile takip edilir
+        duplicate_count = 0
+        for file in files:
+            if any(file in files_by_name.get(other_folder, {}) for other_folder in files_by_name if other_folder != folder_name):
+                duplicate_count += 1
+        
+        if duplicate_count > 0:
+            print(f"      🔄 Duplicate tespit edildi: {duplicate_count} dosya (artık taşınmıyor)")
     
-    return archives
+    return {
+        "folder_stats": folder_stats,
+        "shared_folders": []  # Ortak klasör sistemi kaldırıldı
+    }
 
 
-def scan_directory_for_pdfs(root_dir, file_extensions=('.pdf', '.docx')):
+def scan_directory_for_pdfs(root_dir: str) -> List[Dict]:
     """
-    Belirtilen dizinde PDF/DOCX dosyalarını tarar.
+    Belirtilen dizin altındaki tüm PDF dosyalarını tarar.
     
     Args:
-        root_dir: Taranacak ana dizin  
-        file_extensions: Aranacak dosya uzantıları
+        root_dir: Taranacak kök dizin
         
     Returns:
-        List[Dict]: Bulunan PDF dosyaları listesi
-        Format: [{"path": "dosya_yolu", "name": "dosya_adi", "relative_path": "relative_yol"}]
+        List[Dict]: PDF dosya bilgileri
     """
     pdfs = []
     
     if not os.path.exists(root_dir):
         return pdfs
     
-    # Recursive search
     for root, dirs, files in os.walk(root_dir):
         for file in files:
-            if file.lower().endswith(file_extensions):
+            if file.lower().endswith('.pdf'):
                 file_path = os.path.join(root, file)
                 relative_path = os.path.relpath(file_path, root_dir)
                 
@@ -289,121 +271,68 @@ def scan_directory_for_pdfs(root_dir, file_extensions=('.pdf', '.docx')):
     return pdfs
 
 
-def fix_protokol_folder_names_with_meb_id(cache_type: str = 'cop'):
+def scan_directory_for_archives(root_dir: str) -> List[Dict]:
     """
-    Protokol klasörlerinin isimlerini MEB ID'li formata çevirir.
+    Belirtilen dizin altındaki tüm arşiv dosyalarını (RAR, ZIP) tarar.
     
-    Örnek:
-    - "Muhasebe_ve_Finansman_-_Protokol" → "38_Muhasebe_ve_Finansman_-_Protokol"
-    - "Radyo-Televizyon_-_Protokol" → "42_Radyo-Televizyon_-_Protokol"
+    Args:
+        root_dir: Taranacak kök dizin
+        
+    Returns:
+        List[Dict]: Arşiv dosya bilgileri
+    """
+    archives = []
+    
+    if not os.path.exists(root_dir):
+        return archives
+    
+    for root, dirs, files in os.walk(root_dir):
+        for file in files:
+            if file.lower().endswith(('.rar', '.zip')):
+                file_path = os.path.join(root, file)
+                relative_path = os.path.relpath(file_path, root_dir)
+                
+                archives.append({
+                    "path": file_path,
+                    "name": file,
+                    "relative_path": relative_path
+                })
+    
+    return archives
+
+def log_duplicate_files_info(cache_type: str = 'cop'):
+    """
+    Duplicate dosyaları konsola loglar. 
+    00_Ortak_Alan_Dersleri sistemi kaldırıldı, sadece bilgi amaçlı.
     
     Args:
         cache_type: 'cop', 'dbf', 'dm', 'bom' gibi dosya tipi
-        
-    Returns:
-        Dict: {"renamed": int, "errors": List[str], "results": List[Dict]}
     """
-    try:
-        # Database fonksiyonlarını import et
-        from .utils_database import with_database, find_meb_alan_id_for_protokol
-    except ImportError:
-        from utils_database import with_database, find_meb_alan_id_for_protokol
-    
     cache_root = os.path.join("data", cache_type)
     if not os.path.exists(cache_root):
-        return {"renamed": 0, "errors": [f"Cache dizini bulunamadı: {cache_root}"], "results": []}
+        print(f"Cache dizini bulunamadı: {cache_root}")
+        return
     
-    results = []
-    errors = []
-    renamed_count = 0
+    # Dosya adı -> klasör listesi mapping
+    file_locations = {}
     
-    @with_database
-    def process_protokol_folders(cursor):
-        nonlocal results, errors, renamed_count
-        
-        # Tüm klasörleri tara
-        for item in os.listdir(cache_root):
-            item_path = os.path.join(cache_root, item)
-            if not os.path.isdir(item_path):
-                continue
+    for item in os.listdir(cache_root):
+        item_path = os.path.join(cache_root, item)
+        if not os.path.isdir(item_path) or item.startswith('00_'):
+            continue
             
-            # Protokol klasörü mü kontrol et
-            if not item.endswith('_-_Protokol'):
-                continue
-            
-            # Zaten MEB ID'li mi kontrol et (rakam ile başlıyor mu)
-            if item[0].isdigit():
-                results.append({
-                    "old_name": item,
-                    "new_name": item,
-                    "status": "already_has_meb_id",
-                    "meb_alan_id": item.split('_')[0]
-                })
-                continue
-            
-            # Alan adını normalize et (dosya sisteminden database formatına)
-            # "Muhasebe_ve_Finansman_-_Protokol" → "Muhasebe ve Finansman - Protokol"
-            protokol_alan_adi = item.replace('_', ' ')
-            
-            # MEB ID'yi bul
-            meb_alan_id = find_meb_alan_id_for_protokol(cursor, protokol_alan_adi)
-            
-            if not meb_alan_id:
-                error_msg = f"MEB ID bulunamadı: {protokol_alan_adi}"
-                errors.append(error_msg)
-                results.append({
-                    "old_name": item,
-                    "new_name": None,
-                    "status": "meb_id_not_found",
-                    "error": error_msg
-                })
-                continue
-            
-            # Yeni klasör adını oluştur
-            new_folder_name = f"{meb_alan_id}_{item}"
-            new_item_path = os.path.join(cache_root, new_folder_name)
-            
-            # Hedef klasör zaten var mı kontrol et
-            if os.path.exists(new_item_path):
-                error_msg = f"Hedef klasör zaten mevcut: {new_folder_name}"
-                errors.append(error_msg)
-                results.append({
-                    "old_name": item,
-                    "new_name": new_folder_name,
-                    "status": "target_exists",
-                    "error": error_msg
-                })
-                continue
-            
-            # Klasörü yeniden adlandır
-            try:
-                os.rename(item_path, new_item_path)
-                renamed_count += 1
-                results.append({
-                    "old_name": item,
-                    "new_name": new_folder_name,
-                    "status": "renamed",
-                    "meb_alan_id": meb_alan_id
-                })
-                print(f"📁 Protokol klasörü yeniden adlandırıldı: {item} → {new_folder_name}")
-                
-            except Exception as e:
-                error_msg = f"Yeniden adlandırma hatası ({item}): {e}"
-                errors.append(error_msg)
-                results.append({
-                    "old_name": item,
-                    "new_name": new_folder_name,
-                    "status": "rename_error",
-                    "error": error_msg
-                })
+        for file in os.listdir(item_path):
+            if file.lower().endswith(('.pdf', '.rar', '.zip')):
+                if file not in file_locations:
+                    file_locations[file] = []
+                file_locations[file].append(item)
     
-    # Database işlemlerini başlat
-    process_result = process_protokol_folders()
-    if isinstance(process_result, dict) and 'error' in process_result:
-        errors.append(f"Database hatası: {process_result['error']}")
+    # Duplicate dosyaları listele
+    duplicates = {file: locations for file, locations in file_locations.items() if len(locations) > 1}
     
-    return {
-        "renamed": renamed_count,
-        "errors": errors,
-        "results": results
-    }
+    if duplicates:
+        print(f"\n🔄 {cache_type.upper()} duplicate dosyalar tespit edildi:")
+        for file, locations in duplicates.items():
+            print(f"  📄 {file} -> {len(locations)} klasörde: {', '.join(locations)}")
+    else:
+        print(f"\n✅ {cache_type.upper()} duplicate dosya bulunamadı")

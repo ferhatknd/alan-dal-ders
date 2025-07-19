@@ -643,6 +643,33 @@ def get_meb_alan_id(alan_adi, data_meb_id=None):
             
             return meb_alan_id, 'cache'
         
+        # Protokol alanlar için özel arama
+        # "Alan - Protokol" -> "Alan" şeklinde arama yap
+        if alan_adi and (" - Protokol" in alan_adi or " - protokol" in alan_adi):
+            import re
+            base_alan_adi = re.sub(r'\s*-\s*[Pp]rotokol\s*$', '', alan_adi).strip()
+            base_alan_adi = normalize_to_title_case_tr(base_alan_adi)
+            
+            if base_alan_adi in meb_alan_ids:
+                meb_alan_id = meb_alan_ids[base_alan_adi]
+                print(f"🔗 Protokol alan MEB ID bulundu: {alan_adi} -> {base_alan_adi} -> {meb_alan_id}")
+                
+                # Veritabanını güncelle (protokol alan adı ile)
+                if db_path:
+                    try:
+                        with sqlite3.connect(db_path, timeout=30.0) as conn:
+                            cursor = conn.cursor()
+                            cursor.execute("""
+                                UPDATE temel_plan_alan 
+                                SET meb_alan_id = ?, updated_at = datetime('now')
+                                WHERE alan_adi = ?
+                            """, (meb_alan_id, normalized_alan_adi))
+                            print(f"📋 Protokol alan MEB ID güncellendi: {alan_adi} -> {meb_alan_id}")
+                    except Exception as e:
+                        print(f"Protokol alan MEB ID güncelleme hatası: {e}")
+                
+                return meb_alan_id, 'cache_protokol'
+        
     except Exception as e:
         print(f"Cache'den MEB ID çekme hatası: {e}")
     
@@ -836,39 +863,3 @@ def create_ders_dal_relation(cursor, ders_id, dal_id):
     """, (ders_id, dal_id))
     
     return True
-
-# ====== Database Statistics Utilities taşındı utils_stats.py'ye ======
-
-def find_meb_alan_id_for_protokol(cursor, protokol_alan_adi):
-    """
-    Protokol alanları için normal alan adından meb_alan_id bulur.
-    
-    Örnek: "Muhasebe ve Finansman - Protokol" → "Muhasebe ve Finansman" alan adından meb_alan_id alır
-    
-    Args:
-        cursor: Database cursor
-        protokol_alan_adi: Protokol alan adı (sonunda " - Protokol" olan)
-        
-    Returns:
-        str: MEB alan ID'si ("38" gibi) veya None
-    """
-    if not protokol_alan_adi or not protokol_alan_adi.endswith(' - Protokol'):
-        return None
-    
-    # " - Protokol" kısmını çıkar
-    normal_alan_adi = protokol_alan_adi.replace(' - Protokol', '').strip()
-    
-    # Normal alan adı ile meb_alan_id'yi bul
-    cursor.execute("""
-        SELECT meb_alan_id FROM temel_plan_alan 
-        WHERE alan_adi = ? AND meb_alan_id IS NOT NULL
-    """, (normal_alan_adi,))
-    
-    result = cursor.fetchone()
-    
-    if result:
-        meb_alan_id = result['meb_alan_id']
-        print(f"      🔍 Protokol alan MEB ID bulundu: {protokol_alan_adi} -> {normal_alan_adi} -> {meb_alan_id}")
-        return meb_alan_id
-    
-    return None

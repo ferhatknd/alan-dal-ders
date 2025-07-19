@@ -207,7 +207,16 @@ def get_cop_links():
                 for alan_adi, link_data in data.items():
                     if isinstance(link_data, dict):
                         # MEB alan ID'sini dropdown'dan eşleştir
+                        # Protokol alanlar için özel eşleştirme
                         meb_alan_id = meb_alan_ids.get(alan_adi)
+                        
+                        # Eğer bulunamadıysa ve protokol alan ise temel alan adı ile ara
+                        if not meb_alan_id and (" - Protokol" in alan_adi or " - protokol" in alan_adi):
+                            import re
+                            base_alan_adi = re.sub(r'\s*-\s*[Pp]rotokol\s*$', '', alan_adi).strip()
+                            meb_alan_id = meb_alan_ids.get(base_alan_adi)
+                            if meb_alan_id:
+                                print(f"🔗 Protokol alan MEB ID eşleştirildi: {alan_adi} -> {base_alan_adi} -> {meb_alan_id}")
                         
                         all_links.append({
                             'alan_adi': alan_adi, 
@@ -219,6 +228,15 @@ def get_cop_links():
                     else:
                         # Backward compatibility için string link desteği
                         meb_alan_id = meb_alan_ids.get(alan_adi)
+                        
+                        # Protokol alanlar için özel eşleştirme
+                        if not meb_alan_id and (" - Protokol" in alan_adi or " - protokol" in alan_adi):
+                            import re
+                            base_alan_adi = re.sub(r'\s*-\s*[Pp]rotokol\s*$', '', alan_adi).strip()
+                            meb_alan_id = meb_alan_ids.get(base_alan_adi)
+                            if meb_alan_id:
+                                print(f"🔗 Protokol alan MEB ID eşleştirildi: {alan_adi} -> {base_alan_adi} -> {meb_alan_id}")
+                        
                         all_links.append({
                             'alan_adi': alan_adi, 
                             'link': link_data, 
