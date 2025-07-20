@@ -131,6 +131,39 @@ class BaseExtractor(ABC):
         exclude_keywords = ['DERSİN', 'ÖĞRENME', 'EĞİTİM', 'ÖLÇME', 'SINIF']
         return not any(keyword in content.upper() for keyword in exclude_keywords)
     
+    def _is_valid_measurement_content(self, content: str) -> bool:
+        """
+        Check if content is valid specifically for measurement and evaluation
+        """
+        if not content or len(content) < 20:  # Minimum length increased
+            return False
+        
+        content_upper = content.upper()
+        
+        # STRICT exclude patterns - if any exist, reject immediately
+        strict_exclude_patterns = [
+            'DERSİN ADI', 'DERSİN SÜRESİ', 'HAFTALIK', 'DERS SAATİ',
+            'YETKİNLİKLER', 'SINIF', 'DERS PROGRAMI', 
+            'KAZANIMLAR', 'ÖĞRENME BİRİMLERİ', 'AMACI'
+        ]
+        
+        for pattern in strict_exclude_patterns:
+            if pattern in content_upper:
+                return False
+        
+        # MANDATORY: Must contain measurement-related words
+        positive_indicators = [
+            'ÖLÇME', 'DEĞERLENDİRME', 'GÖZLEM FORMU', 'PUANLAMA', 
+            'RUBRIK', 'TEST', 'SORU', 'ÖZ DEĞERLENDİRME', 
+            'AKRAN DEĞERLENDİRME', 'PORTFOLYO', 'PERFORMANS', 
+            'BİÇİMLENDİRİCİ', 'ARAÇLARINDAN', 'SEÇİLEREK'
+        ]
+        
+        positive_matches = sum(1 for indicator in positive_indicators if indicator in content_upper)
+        
+        # STRICT: Must have at least 1 measurement keyword
+        return positive_matches >= 1
+    
     def _is_valid_amac_content(self, content: str) -> bool:
         """
         Check if content is valid for dersin amacı (not kazanımlar or noise)
@@ -1009,7 +1042,7 @@ def extract_olcme_degerlendirme(file_path):
         else:
             # PDF dosyası için
             with pdfplumber.open(file_path) as pdf:
-                # Önce tablolarda ara
+                # Önce tablolarda ara - improved approach
                 for page in pdf.pages:
                     all_tables = page.extract_tables()
                     
@@ -1017,40 +1050,183 @@ def extract_olcme_degerlendirme(file_path):
                         for i, row in enumerate(table):
                             for j, cell in enumerate(row):
                                 if cell and isinstance(cell, str) and 'ÖLÇME VE DEĞERLENDİRME' in cell.upper():
-                                    # İçerik aynı hücrede ise
+                                    # Eğer hücre başlık ile içeriği birleştiriyorsa, ayırmaya çalış
+                                    if 'ÖLÇME VE DEĞERLENDİRME' in cell and len(cell) > 30:
+                                        # "ÖLÇME VE DEĞERLENDİRME" sonrasındaki kısmı al
+                                        parts = cell.split('ÖLÇME VE DEĞERLENDİRME', 1)
+                                        if len(parts) > 1:
+                                            content = parts[1].strip()
+                                            # İlk birkaç karakterde whitespace/noktalama varsa temizle
+                                            content = re.sub(r'^[\s\-:;.,]*', '', content)
+                                            # Son kısımdaki gereksiz kelimeleri temizle
+                                            content = re.sub(r'\s*(KAZANIM|YETKİNLİKLER|ÖĞRENME).*$', '', content, flags=re.IGNORECASE)
+                                            # Çoklu boşlukları normalize et
+                                            content = re.sub(r'\s+', ' ', content.strip())
+                                            if content and len(content) > 15:
+                                                return [content]
+                                    
+                                    # İçerik aynı hücrede ise (normal durum)
                                     if ':' in cell:
                                         content = cell.split(':', 1)[1].strip()
-                                        return analyze_measurement_content(content)
+                                        # Temizle ve normalize et
+                                        content = re.sub(r'\s*(KAZANIM|YETKİNLİKLER|ÖĞRENME).*$', '', content, flags=re.IGNORECASE)
+                                        content = re.sub(r'\s+', ' ', content.strip())
+                                        if content and len(content) > 15:
+                                            return [content]
                                     
                                     # Yan hücrede ise
                                     elif j + 1 < len(row) and row[j + 1]:
                                         content = str(row[j + 1]).strip()
-                                        return analyze_measurement_content(content)
+                                        # Temizle ve normalize et
+                                        content = re.sub(r'\s*(KAZANIM|YETKİNLİKLER|ÖĞRENME).*$', '', content, flags=re.IGNORECASE)
+                                        content = re.sub(r'\s+', ' ', content.strip())
+                                        if content and len(content) > 15:
+                                            return [content]
                                     
                                     # Alt satırda ise
                                     elif i + 1 < len(table) and len(table[i + 1]) > 0:
                                         next_row = table[i + 1]
                                         content = str(next_row[0]).strip() if next_row[0] else ""
                                         if content:
-                                            return analyze_measurement_content(content)
+                                            # Temizle ve normalize et
+                                            content = re.sub(r'\s*(KAZANIM|YETKİNLİKLER|ÖĞRENME).*$', '', content, flags=re.IGNORECASE)
+                                            content = re.sub(r'\s+', ' ', content.strip())
+                                            if content and len(content) > 15:
+                                                return [content]
                 
-                # Tablolarda bulunamazsa, düz metinde ara
+                # Alternative approach 1: Try multiple table detection strategies
+                for page in pdf.pages:
+                    table_strategies = [
+                        # Strategy 1: Strict line detection
+                        {
+                            "vertical_strategy": "lines_strict",
+                            "horizontal_strategy": "lines_strict",
+                            "snap_tolerance": 2,
+                            "join_tolerance": 2
+                        },
+                        # Strategy 2: Text-based detection
+                        {
+                            "vertical_strategy": "text",
+                            "horizontal_strategy": "text",
+                            "text_tolerance": 3,
+                            "text_x_tolerance": 5
+                        },
+                        # Strategy 3: Mixed approach
+                        {
+                            "vertical_strategy": "lines",
+                            "horizontal_strategy": "text",
+                            "snap_tolerance": 5,
+                            "text_tolerance": 5
+                        }
+                    ]
+                    
+                    for strategy_idx, table_settings in enumerate(table_strategies):
+                        try:
+                            tables_strict = page.extract_tables(table_settings)
+                            
+                            for table in tables_strict:
+                                for i, row in enumerate(table):
+                                    # Improved header detection
+                                    header_cells = []
+                                    content_cells = []
+                                    
+                                    for j, cell in enumerate(row):
+                                        if cell and isinstance(cell, str):
+                                            cell_upper = str(cell).upper().strip()
+                                            if 'ÖLÇME VE DEĞERLENDİRME' in cell_upper:
+                                                header_cells.append((j, cell))
+                                            elif len(str(cell).strip()) > 20:  # Potential content
+                                                content_cells.append((j, cell))
+                                    
+                                    # Try to pair headers with content
+                                    for header_idx, header_cell in header_cells:
+                                        # Check immediately next cell
+                                        if header_idx + 1 < len(row) and row[header_idx + 1]:
+                                            next_cell = str(row[header_idx + 1]).strip()
+                                            if (next_cell and len(next_cell) > 15 and 
+                                                'ÖLÇME VE DEĞERLENDİRME' not in next_cell.upper() and
+                                                self._is_valid_measurement_content(next_cell)):
+                                                # Temizle ve normalize et
+                                                content = re.sub(r'\s*(KAZANIM|YETKİNLİKLER|ÖĞRENME).*$', '', next_cell, flags=re.IGNORECASE)
+                                                content = re.sub(r'\s+', ' ', content.strip())
+                                                return content
+                                        
+                                        # Check cells in same row (skip immediate neighbors)
+                                        for content_idx, content_cell in content_cells:
+                                            if abs(content_idx - header_idx) > 1:  # Not immediate neighbor
+                                                content_text = str(content_cell).strip()
+                                                if self._is_valid_measurement_content(content_text):
+                                                    # Temizle ve normalize et
+                                                    content = re.sub(r'\s*(KAZANIM|YETKİNLİKLER|ÖĞRENME).*$', '', content_text, flags=re.IGNORECASE)
+                                                    content = re.sub(r'\s+', ' ', content.strip())
+                                                    return content
+                        except Exception as e:
+                            # Strategy failed, try next one
+                            continue
+                
+                # Alternative approach 2: Advanced text-based search
                 for page in pdf.pages:
                     text = page.extract_text()
                     if text:
+                        # Strategy 1: Line-by-line search with context
                         lines = text.split('\n')
                         for i, line in enumerate(lines):
                             if ('ÖLÇME' in line.upper() and 'VE' in line.upper()) or 'DEĞERLENDİRME' in line.upper():
-                                # Bağlam satırlarını birleştir
-                                context_lines = []
-                                for j in range(max(0, i-1), min(len(lines), i+5)):
-                                    context_lines.append(lines[j])
-                                
-                                full_context = ' '.join(context_lines)
-                                if 'ÖLÇME' in full_context.upper() and 'DEĞERLENDİRME' in full_context.upper():
-                                    result = analyze_measurement_content(full_context)
-                                    if result:  # Eşleşme bulunursa döner
-                                        return result
+                                # Try different context window sizes
+                                for context_size in [3, 5, 8]:
+                                    context_lines = []
+                                    for j in range(max(0, i-1), min(len(lines), i+context_size)):
+                                        context_lines.append(lines[j])
+                                    
+                                    full_context = ' '.join(context_lines)
+                                    
+                                    # Apply string split approach on the context
+                                    if 'ÖLÇME VE DEĞERLENDİRME' in full_context.upper():
+                                        parts = full_context.split('ÖLÇME VE DEĞERLENDİRME', 1)
+                                        if len(parts) > 1:
+                                            content = parts[1].strip()
+                                            content = re.sub(r'^[\s\-:;.,]*', '', content)
+                                            # Son kısımdaki gereksiz kelimeleri temizle
+                                            content = re.sub(r'\s*(KAZANIM|YETKİNLİKLER|ÖĞRENME).*$', '', content, flags=re.IGNORECASE)
+                                            # Çoklu boşlukları normalize et
+                                            content = re.sub(r'\s+', ' ', content.strip())
+                                            if content and len(content) > 15 and self._is_valid_measurement_content(content):
+                                                return content
+                        
+                        # Strategy 2: Paragraph-based search
+                        paragraphs = text.split('\n\n')
+                        for paragraph in paragraphs:
+                            if 'ÖLÇME VE DEĞERLENDİRME' in paragraph.upper():
+                                # Try to extract content after the header
+                                parts = paragraph.split('ÖLÇME VE DEĞERLENDİRME', 1)
+                                if len(parts) > 1:
+                                    content = parts[1].strip()
+                                    content = re.sub(r'^[\s\-:;.,]*', '', content)
+                                    if content and len(content) > 20 and self._is_valid_measurement_content(content):
+                                        return content
+                        
+                        # Strategy 3: Sentence-based search (more aggressive)
+                        sentences = re.split(r'[.!?]+', text)
+                        for i, sentence in enumerate(sentences):
+                            if 'ÖLÇME VE DEĞERLENDİRME' in sentence.upper():
+                                # Look at following sentences
+                                following_sentences = sentences[i+1:i+4]  # Next 3 sentences
+                                combined_content = ' '.join(following_sentences).strip()
+                                if combined_content and len(combined_content) > 20 and self._is_valid_measurement_content(combined_content):
+                                    return combined_content
+                
+                # Alternative approach 3: Last resort - only if ÖLÇME VE DEĞERLENDİRME found
+                for page in pdf.pages:
+                    text = page.extract_text()
+                    if text and 'ÖLÇME VE DEĞERLENDİRME' in text.upper():
+                        lines = text.split('\n')
+                        
+                        for line in lines:
+                            line = line.strip()
+                            if (len(line) > 30 and 
+                                self._is_valid_measurement_content(line) and
+                                'ÖLÇME VE DEĞERLENDİRME' not in line.upper()):
+                                return line
         
         return []  # Hiçbir şey bulunamazsa boş liste döner
         

@@ -48,11 +48,9 @@ oku_sonuc.json
 
 # Geçici ve debug dosyaları
 debug_*
-test_*
 *.tmp
 *.bak
 *.old
-test_single_docx.py
 
 # veritabanı
 data/temel_plan.db
