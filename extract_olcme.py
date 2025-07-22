@@ -63,155 +63,6 @@ def extract_fields_from_text(text):
         result[f"Case{i}_{start_match}"] = section
     return result
 
-def extract_ob_tablosu(pdf_path):
-    """PDF'den Öğrenme Birimlerini ve 3 sütunlu tablo yapısını çıkarır"""
-    try:
-        with open(pdf_path, 'rb') as file:
-            pdf_reader = PyPDF2.PdfReader(file)
-            full_text = ""
-            
-            for page in pdf_reader.pages:
-                full_text += page.extract_text() + "\n"
-            
-            # Normalizasyon
-            full_text = re.sub(r'\s+', ' ', full_text)
-            full_text = normalize_turkish_chars(full_text)
-            
-            # extract_kazanim_sayisi_sure_tablosu'ndan OB başlıklarını al
-            kazanim_result = extract_kazanim_sayisi_sure_tablosu(pdf_path)
-            
-            if "KAZANIM SAYISI VE SÜRE TABLOSU:" not in kazanim_result:
-                return "Öğrenme Birimleri bulunamadı"
-            
-            # OB başlıklarını parse et
-            ob_basliklar = []
-            lines = kazanim_result.split('\n')[1:]  # İlk satır başlık
-            for line in lines:
-                if line.strip() and '-' in line:
-                    # Format: "1-Başlık, sayı, sayı, oran"
-                    parts = line.split('-', 1)[1].split(',')[0].strip()
-                    ob_basliklar.append(parts)
-            
-            if not ob_basliklar:
-                return "Öğrenme Birimi başlıkları parse edilemedi"
-            
-            # 3 sütunlu tablo başlıklarını sırayla bul
-            table_headers = [
-                "ÖĞRENME BİRİMİ",
-                "KONULAR", 
-                "ÖĞRENME BİRİMİ KAZANIMLARI",
-                "KAZANIM AÇIKLAMLAARI"
-            ]
-            
-            # Her başlığı regex pattern ile ara
-            table_start_idx = None
-            last_found_end = 0
-            
-            for header in table_headers:
-                # Başlığı regex pattern'e çevir
-                header_pattern = ""
-                for char in header:
-                    if char.isalnum() or char in "ÇĞİÖŞÜ":
-                        header_pattern += char + r"\s*"
-                    elif char == " ":
-                        header_pattern += r"\s+"
-                    else:
-                        header_pattern += re.escape(char) + r"\s*"
-                header_pattern = header_pattern.rstrip(r"\s*")
-                
-                # Son bulunan yerden sonra ara
-                match = re.search(header_pattern, full_text[last_found_end:], re.IGNORECASE)
-                if match:
-                    actual_start = last_found_end + match.start()
-                    actual_end = last_found_end + match.end()
-                    last_found_end = actual_end
-                    table_start_idx = actual_end  # Son başlığın bittiği yer
-            
-            if table_start_idx is None:
-                return "Tablo başlıkları bulunamadı"
-            
-            # Durma kelimelerinden en erken olanını bul (case sensitive)
-            stop_words = ["UYGULAMA", "FAALİYET", "TEMRİN", "DERSİN"]
-            table_end_idx = len(full_text)
-            
-            for stop_word in stop_words:
-                stop_idx = full_text.find(stop_word, table_start_idx)
-                if stop_idx != -1 and stop_idx < table_end_idx:
-                    table_end_idx = stop_idx
-            
-            # Regex ile esnek eşleştirme yaklaşımı
-            result_content = ""
-            current_search_pos = table_start_idx
-            
-            for i, ob_baslik in enumerate(ob_basliklar):
-                # OB başlığını regex pattern'e çevir - her karakterin arasına \s* ekle
-                ob_pattern = ""
-                for char in ob_baslik.upper():
-                    if char.isalnum() or char in "ÇĞİÖŞÜ":
-                        ob_pattern += char + r"\s*"
-                    elif char == " ":
-                        ob_pattern += r"\s+"  # Boşluklar için en az bir boşluk
-                    else:
-                        ob_pattern += re.escape(char) + r"\s*"
-                
-                # Son fazla \s* kaldır
-                ob_pattern = ob_pattern.rstrip(r"\s*")
-                
-                # Mevcut pozisyondan itibaren ara (sıralı arama)
-                match = re.search(ob_pattern, full_text[current_search_pos:], re.IGNORECASE)
-                
-                if not match:
-                    continue
-                
-                # Gerçek pozisyonu hesapla
-                ob_start_idx = current_search_pos + match.start()
-                ob_end_idx = current_search_pos + match.end()
-                
-                # Bir sonraki OB başlığını bul (bitiş noktası için)
-                next_ob_idx = len(full_text)
-                if i + 1 < len(ob_basliklar):
-                    # Bir sonraki OB için pattern oluştur
-                    next_ob_baslik = ob_basliklar[i + 1]
-                    next_pattern = ""
-                    for char in next_ob_baslik.upper():
-                        if char.isalnum() or char in "ÇĞİÖŞÜ":
-                            next_pattern += char + r"\s*"
-                        elif char == " ":
-                            next_pattern += r"\s+"
-                        else:
-                            next_pattern += re.escape(char) + r"\s*"
-                    next_pattern = next_pattern.rstrip(r"\s*")
-                    
-                    next_match = re.search(next_pattern, full_text[ob_end_idx:], re.IGNORECASE)
-                    if next_match:
-                        next_ob_idx = ob_end_idx + next_match.start()
-                else:
-                    # Son OB için durma kelimelerini kontrol et
-                    stop_words = ["UYGULAMA", "FAALİYET", "TEMRİN", "DERSİN"]
-                    for stop_word in stop_words:
-                        stop_idx = full_text.find(stop_word, ob_end_idx)
-                        if stop_idx != -1 and stop_idx < next_ob_idx:
-                            next_ob_idx = stop_idx
-                
-                # Bu OB'nin içeriğini al
-                ob_content_original = full_text[ob_start_idx:next_ob_idx].strip()
-                
-                result_content += f"\n{'='*50}\n"
-                result_content += f"ÖĞRENİM BİRİMİ {i+1}: {ob_baslik}\n"
-                result_content += f"{'='*50}\n"
-                result_content += ob_content_original + "\n"
-                
-                # Bir sonraki arama için pozisyonu güncelle (sıralı işlem)
-                current_search_pos = next_ob_idx
-            
-            if result_content:
-                return f"ÖĞRENİM BİRİMLERİ TABLOSU:{result_content}"
-            else:
-                return "Öğrenım Birimleri metinde bulunamadı"
-            
-    except Exception as e:
-        return f"Hata: {str(e)}"
-
 def extract_kazanim_sayisi_sure_tablosu(pdf_path):
     """PDF'den KAZANIM SAYISI VE SÜRE TABLOSU'nu çıkarır ve formatlı string döndürür"""
     try:
@@ -327,7 +178,199 @@ def extract_kazanim_sayisi_sure_tablosu(pdf_path):
     except Exception as e:
         return f"Hata: {str(e)}"
 
-# Yardımcı fonksiyonlar
+def fuzzy_find_ob_header(header_text, full_text, start_pos=0):
+    """
+    OB başlığını fuzzy matching ile bulur - boşluk, ekstra kelime ve numara toleransı ile
+    """
+    # Başlığı normalize et ve Türkçe karakterleri düzelt
+    header_normalized = normalize_turkish_chars(header_text.strip().upper())
+    header_normalized = re.sub(r'\s+', ' ', header_normalized)
+    
+    # 3 karakterden kısa kelimeleri atla (ve, nın, na gibi)
+    key_words = [word for word in header_normalized.split() if len(word) >= 3]
+    
+    if not key_words:
+        return None
+    
+    # Başlangıç pozisyonundan sonraki metni al ve normalize et
+    search_text = normalize_turkish_chars(full_text[start_pos:].upper())
+    
+    # İlk anahtar kelimeyi ara - öncesinde rakam ve nokta da olabilir
+    first_word = key_words[0]
+    first_word_pos = -1
+    
+    # Önce tam kelimeyi ara
+    search_pos = 0
+    while True:
+        pos = search_text.find(first_word, search_pos)
+        if pos == -1:
+            break
+            
+        # Kelimenin başından önceki karakterleri kontrol et
+        # Rakam ve nokta varsa kabul et (örn: "2. MASİF")
+        prefix_start = pos
+        while prefix_start > 0 and search_text[prefix_start-1].isspace():
+            prefix_start -= 1
+        while prefix_start > 0 and (search_text[prefix_start-1].isdigit() or search_text[prefix_start-1] == '.'):
+            prefix_start -= 1
+        while prefix_start > 0 and search_text[prefix_start-1].isspace():
+            prefix_start -= 1
+            
+        first_word_pos = prefix_start if prefix_start < pos else pos
+        break
+    
+    if first_word_pos == -1:
+        return None
+    
+    # İlk kelimeden başlayarak diğer kelimeleri sırayla ara
+    current_pos = search_text.find(first_word, first_word_pos)
+    match_start = start_pos + first_word_pos
+    current_pos += len(first_word)
+    
+    for word in key_words[1:]:
+        # Mevcut pozisyondan sonra 100 karakter içinde ara
+        word_pos = search_text.find(word, current_pos)
+        if word_pos == -1 or word_pos > current_pos + 100:
+            return None
+        current_pos = word_pos + len(word)
+    
+    # Son kelimenin bittiği yer
+    match_end = start_pos + current_pos
+    
+    return {
+        'start': match_start,
+        'end': match_end,
+        'matched_text': full_text[match_start:match_end]
+    }
+
+def extract_ob_tablosu(pdf_path):
+    """PDF'den Öğrenme Birimlerini ve 3 sütunlu tablo yapısını çıkarır"""
+    try:
+        with open(pdf_path, 'rb') as file:
+            pdf_reader = PyPDF2.PdfReader(file)
+            full_text = ""
+            
+            for page in pdf_reader.pages:
+                full_text += page.extract_text() + "\n"
+            
+            # Normalizasyon
+            full_text = re.sub(r'\s+', ' ', full_text)
+            full_text = normalize_turkish_chars(full_text)
+            
+            # extract_kazanim_sayisi_sure_tablosu'ndan OB başlıklarını al
+            kazanim_result = extract_kazanim_sayisi_sure_tablosu(pdf_path)
+            
+            if "KAZANIM SAYISI VE SÜRE TABLOSU:" not in kazanim_result:
+                return "Öğrenme Birimleri bulunamadı"
+            
+            # OB başlıklarını parse et
+            ob_basliklar = []
+            lines = kazanim_result.split('\n')[1:]  # İlk satır başlık
+            for line in lines:
+                if line.strip() and '-' in line:
+                    # Format: "1-Başlık, sayı, sayı, oran"
+                    parts = line.split('-', 1)[1].split(',')[0].strip()
+                    ob_basliklar.append(parts)
+            
+            if not ob_basliklar:
+                return "Öğrenme Birimi başlıkları parse edilemedi"
+            
+            # 3 sütunlu tablo başlıklarını sırayla bul
+            table_headers = [
+                "ÖĞRENME BİRİMİ",
+                "KONULAR", 
+                "ÖĞRENME BİRİMİ KAZANIMLARI",
+                "KAZANIM AÇIKLAMLAARI"
+            ]
+            
+            # Her başlığı regex pattern ile ara
+            table_start_idx = None
+            last_found_end = 0
+            
+            for header in table_headers:
+                # Başlığı regex pattern'e çevir
+                header_pattern = ""
+                for char in header:
+                    if char.isalnum() or char in "ÇĞİÖŞÜ":
+                        header_pattern += char + r"\s*"
+                    elif char == " ":
+                        header_pattern += r"\s+"
+                    else:
+                        header_pattern += re.escape(char) + r"\s*"
+                header_pattern = header_pattern.rstrip(r"\s*")
+                
+                # Son bulunan yerden sonra ara
+                match = re.search(header_pattern, full_text[last_found_end:], re.IGNORECASE)
+                if match:
+                    actual_start = last_found_end + match.start()
+                    actual_end = last_found_end + match.end()
+                    last_found_end = actual_end
+                    table_start_idx = actual_end  # Son başlığın bittiği yer
+            
+            if table_start_idx is None:
+                return "Tablo başlıkları bulunamadı"
+            
+            # Durma kelimelerinden en erken olanını bul (case sensitive)
+            stop_words = ["UYGULAMA", "FAALİYET", "TEMRİN", "DERSİN", "DERSĠN"]
+            table_end_idx = len(full_text)
+            
+            for stop_word in stop_words:
+                stop_idx = full_text.find(stop_word, table_start_idx)
+                if stop_idx != -1 and stop_idx < table_end_idx:
+                    table_end_idx = stop_idx
+            
+            # Regex ile esnek eşleştirme yaklaşımı
+            result_content = ""
+            current_search_pos = table_start_idx
+            
+            for i, ob_baslik in enumerate(ob_basliklar):
+                # Fuzzy matching ile OB başlığını ara
+                fuzzy_match = fuzzy_find_ob_header(ob_baslik, full_text, current_search_pos)
+                
+                if not fuzzy_match:
+                    continue
+                
+                # Bulunan pozisyonları al
+                ob_start_idx = fuzzy_match['start']
+                ob_end_idx = fuzzy_match['end']
+                
+                # Bir sonraki OB başlığını bul (bitiş noktası için)
+                next_ob_idx = len(full_text)
+                if i + 1 < len(ob_basliklar):
+                    # Bir sonraki OB başlığını fuzzy matching ile ara
+                    next_ob_baslik = ob_basliklar[i + 1]
+                    next_fuzzy_match = fuzzy_find_ob_header(next_ob_baslik, full_text, ob_end_idx)
+                    if next_fuzzy_match:
+                        next_ob_idx = next_fuzzy_match['start']
+                else:
+                    # Son OB için durma kelimelerini kontrol et
+                    stop_words = ["UYGULAMA", "FAALİYET", "TEMRİN", "DERSİN", "DERSĠN"]
+                    for stop_word in stop_words:
+                        stop_idx = full_text.find(stop_word, ob_end_idx)
+                        if stop_idx != -1 and stop_idx < next_ob_idx:
+                            next_ob_idx = stop_idx
+                
+                # Bu OB'nin içeriğini al
+                ob_content_original = full_text[ob_start_idx:next_ob_idx].strip()
+                
+                result_content += f"\n{'='*50}\n"
+                result_content += f"ÖĞRENİM BİRİMİ {i+1}: {ob_baslik}\n"
+                result_content += f"{'='*50}\n"
+                result_content += ob_content_original + "\n"
+                
+                # Bir sonraki arama için pozisyonu güncelle (sıralı işlem)
+                current_search_pos = next_ob_idx
+            
+            if result_content:
+                return f"ÖĞRENİM BİRİMLERİ TABLOSU:{result_content}"
+            else:
+                return "Öğrenım Birimleri metinde bulunamadı"
+            
+    except Exception as e:
+        return f"Hata: {str(e)}"
+
+
+## Yardımcı fonksiyonlar ##
 def find_all_pdfs_in_dbf_directory():
     """data/dbf dizinindeki tüm PDF dosyalarını bulur"""
     base_path = "/Users/ferhat/Library/Mobile Documents/com~apple~CloudDocs/Projeler/ProjectDogru/repos/alan-dal-ders/data/dbf"
