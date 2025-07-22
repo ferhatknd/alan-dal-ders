@@ -45,6 +45,32 @@ def normalize_for_matching(text):
     
     return text
 
+def fuzzy_find(needle, haystack, threshold=90):
+    """Fuzzy matching ile string arama yapar"""
+    import difflib
+    
+    needle_norm = normalize_for_matching(needle)
+    haystack_norm = normalize_for_matching(haystack)
+    
+    # Tam eşleşme kontrolü (mevcut sistem)
+    if needle_norm in haystack_norm:
+        return haystack_norm.find(needle_norm)
+    
+    # Fuzzy matching - sliding window
+    needle_len = len(needle_norm)
+    best_similarity = 0
+    best_position = -1
+    
+    for i in range(len(haystack_norm) - needle_len + 1):
+        window = haystack_norm[i:i + needle_len]
+        # Benzerlik hesaplama (calculate_similarity fonksiyonu entegre edildi)
+        similarity = difflib.SequenceMatcher(None, needle_norm, window).ratio() * 100
+        if similarity >= threshold and similarity > best_similarity:
+            best_similarity = similarity
+            best_position = i
+    
+    return best_position if best_position >= 0 else -1
+
 def extract_fields_from_text(text):
     # Varyasyonlarla case-sensitive yapı
     patterns = [
@@ -276,7 +302,7 @@ def extract_ob_tablosu(pdf_path):
                             except (ValueError, IndexError):
                                 konu_sayisi_int = 0
                             
-                            # Bu başlığın geçerli eşleşmelerini bul - Tam normalizasyon ile
+                            # Bu başlığın geçerli eşleşmelerini bul - Tam normalizasyon ile + fuzzy matching
                             baslik_upper = normalize_for_matching(baslik)
                             ogrenme_upper = normalize_for_matching(ogrenme_birimi_alani)
                             start_pos = 0
@@ -284,7 +310,12 @@ def extract_ob_tablosu(pdf_path):
                             while True:
                                 idx = ogrenme_upper.find(baslik_upper, start_pos)
                                 if idx == -1:
-                                    break
+                                    # Try fuzzy matching when exact match fails
+                                    fuzzy_idx = fuzzy_find(baslik, ogrenme_birimi_alani[start_pos:], threshold=85)
+                                    if fuzzy_idx >= 0:
+                                        idx = start_pos + fuzzy_idx
+                                    else:
+                                        break
                                 
                                 after_baslik = ogrenme_birimi_alani[idx + len(baslik):]
                                 if konu_sayisi_int > 0:
@@ -323,12 +354,17 @@ def extract_ob_tablosu(pdf_path):
                             baslik_upper = normalize_for_matching(baslik)
                             ogrenme_upper = normalize_for_matching(ogrenme_birimi_alani)
                             
-                            # Her potansiyel eşleşmeyi kontrol et
+                            # Her potansiyel eşleşmeyi kontrol et - Fuzzy matching ile
                             start_pos = 0
                             while True:
                                 idx = ogrenme_upper.find(baslik_upper, start_pos)
                                 if idx == -1:
-                                    break
+                                    # Try fuzzy matching when exact match fails
+                                    fuzzy_idx = fuzzy_find(baslik, ogrenme_birimi_alani[start_pos:], threshold=85)
+                                    if fuzzy_idx >= 0:
+                                        idx = start_pos + fuzzy_idx
+                                    else:
+                                        break
                                 
                                 # Başlıktan sonraki metni al
                                 after_baslik = ogrenme_birimi_alani[idx + len(baslik):]
@@ -374,14 +410,19 @@ def extract_ob_tablosu(pdf_path):
                                 baslik_upper = normalize_for_matching(baslik)
                                 ogrenme_upper = normalize_for_matching(ogrenme_birimi_alani)
                                 
-                                # İlk geçerli eşleşmeyi bul
+                                # İlk geçerli eşleşmeyi bul - Fuzzy matching ile
                                 start_pos = 0
                                 first_valid_match_found = False
                                 
                                 while True:
                                     idx = ogrenme_upper.find(baslik_upper, start_pos)
                                     if idx == -1:
-                                        break
+                                        # Try fuzzy matching when exact match fails
+                                        fuzzy_idx = fuzzy_find(baslik, ogrenme_birimi_alani[start_pos:], threshold=85)
+                                        if fuzzy_idx >= 0:
+                                            idx = start_pos + fuzzy_idx
+                                        else:
+                                            break
                                     
                                     # Başlıktan sonraki metni al ve geçerlilik kontrol et
                                     after_baslik = ogrenme_birimi_alani[idx + len(baslik):]
