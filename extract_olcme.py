@@ -27,7 +27,6 @@ def normalize_turkish_chars(text):
     
     return text
 
-
 def semantic_find(needle, haystack, threshold=75):
     """Semantic similarity ile string arama yapar - BERT tabanlı"""
     try:
@@ -282,7 +281,7 @@ def extract_ob_tablosu(pdf_path):
                             
                             while True:
                                 # Use semantic matching directly
-                                semantic_idx = semantic_find(baslik, ogrenme_birimi_alani[start_pos:], threshold=75)
+                                semantic_idx = semantic_find(baslik, ogrenme_birimi_alani[start_pos:], threshold=70)
                                 if semantic_idx >= 0:
                                     idx = start_pos + semantic_idx
                                 else:
@@ -327,7 +326,7 @@ def extract_ob_tablosu(pdf_path):
                             start_pos = 0
                             while True:
                                 # Use semantic matching directly
-                                semantic_idx = semantic_find(baslik, ogrenme_birimi_alani[start_pos:], threshold=75)
+                                semantic_idx = semantic_find(baslik, ogrenme_birimi_alani[start_pos:], threshold=70)
                                 if semantic_idx >= 0:
                                     idx = start_pos + semantic_idx
                                 else:
@@ -380,7 +379,7 @@ def extract_ob_tablosu(pdf_path):
                                 
                                 while True:
                                     # Use semantic matching directly
-                                    semantic_idx = semantic_find(baslik, ogrenme_birimi_alani[start_pos:], threshold=75)
+                                    semantic_idx = semantic_find(baslik, ogrenme_birimi_alani[start_pos:], threshold=70)
                                     if semantic_idx >= 0:
                                         idx = start_pos + semantic_idx
                                     else:
@@ -484,13 +483,28 @@ def _validate_konu_structure(text, baslik_idx, baslik, konu_sayisi, all_matched_
     current_pos = 0
     for konu_no in range(1, konu_sayisi + 1):
         konu_str = str(konu_no)
-        found_pos = work_area.find(konu_str, current_pos)
+        
+        # Madde numarası pattern'lerini dene: "1. " veya "1 "
+        patterns = [f"{konu_str}. ", f"{konu_str} "]
+        found_pos = -1
+        for pattern in patterns:
+            pos = work_area.find(pattern, current_pos)
+            if pos != -1:
+                found_pos = pos
+                break
         
         if found_pos != -1:
             # Sonraki rakama kadar olan metni al
             if konu_no < konu_sayisi:
                 next_konu_str = str(konu_no + 1)
-                next_found_pos = work_area.find(next_konu_str, found_pos + 1)
+                # Sonraki madde numarasını da pattern ile ara
+                next_patterns = [f"{next_konu_str}. ", f"{next_konu_str} "]
+                next_found_pos = -1
+                for next_pattern in next_patterns:
+                    pos = work_area.find(next_pattern, found_pos + 1)
+                    if pos != -1:
+                        next_found_pos = pos
+                        break
                 if next_found_pos != -1:
                     konu_content = work_area[found_pos:next_found_pos].strip()
                 else:
@@ -501,13 +515,11 @@ def _validate_konu_structure(text, baslik_idx, baslik, konu_sayisi, all_matched_
             # Sadece gerçek konu numarasını temizle (tarihleri koruyarak)
             cleaned_content = konu_content.strip()
             
-            # Sadece tam eşleşen konu numarasını sil
+            # Pattern ile bulduğumuz madde numarasını temizle
             if cleaned_content.startswith(f"{konu_no}. "):
                 cleaned_content = cleaned_content.replace(f"{konu_no}. ", "", 1)
-            elif cleaned_content.startswith(str(konu_no)) and len(cleaned_content) > len(str(konu_no)):
-                # Konu numarasından sonra boşluk varsa sil
-                if cleaned_content[len(str(konu_no))].isspace():
-                    cleaned_content = cleaned_content[len(str(konu_no)):].lstrip()
+            elif cleaned_content.startswith(f"{konu_no} "):
+                cleaned_content = cleaned_content.replace(f"{konu_no} ", "", 1)
             
             validation_info.append(f"{konu_no}. {cleaned_content.strip()}")
             current_pos = found_pos + 1
