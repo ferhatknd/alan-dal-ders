@@ -5,39 +5,6 @@ import sys
 import random
 import glob
 
-def normalize_turkish_chars(text):
-    """PDF'den gelen bozuk Türkçe karakterleri düzeltir"""
-    replacements = {
-        'Ġ': 'İ',
-        'ġ': 'ı', 
-        'Ş': 'Ş',
-        'ş': 'ş',
-        'Ğ': 'Ğ',
-        'ğ': 'ğ',
-        'Ü': 'Ü',
-        'ü': 'ü',
-        'Ö': 'Ö',
-        'ö': 'ö',
-        'Ç': 'Ç',
-        'ç': 'ç'
-    }
-    
-    for wrong, correct in replacements.items():
-        text = text.replace(wrong, correct)
-    
-    return text
-
-def semantic_find(needle, haystack, threshold=75):
-    """Semantic similarity ile string arama yapar - BERT tabanlı"""
-    try:
-        from modules.nlp_bert import semantic_find as bert_semantic_find
-        return bert_semantic_find(needle, haystack, threshold / 100.0)
-    except ImportError:
-        # Fallback to simple case-insensitive search if BERT not available
-        needle_norm = needle.upper()
-        haystack_norm = haystack.upper()
-        return haystack_norm.find(needle_norm)
-
 def extract_fields_from_text(text):
     # Varyasyonlarla case-sensitive yapı
     patterns = [
@@ -353,7 +320,7 @@ def extract_ob_tablosu(pdf_path):
                             # Eğer geçerli eşleşme yoksa alternatif arama yap
                             if gecerli_eslesme == 0 and konu_sayisi_int > 0:
                                 # Son eşleşen başlıktan sonra "1" rakamını ara
-                                alternative_match = _find_alternative_match(
+                                alternative_match = extract_ob_tablosu_konu_bulma_yedek_plan(
                                     ogrenme_birimi_alani, baslik, konu_sayisi_int
                                 )
                                 if alternative_match:
@@ -404,7 +371,7 @@ def extract_ob_tablosu(pdf_path):
                                         # Detaylı doğrulama yap
                                         validation_result = ""
                                         if konu_sayisi:
-                                            validation_result = _validate_konu_structure(
+                                            validation_result = extract_ob_tablosu_konu_sinirli_arama(
                                                 ogrenme_birimi_alani, idx, baslik, konu_sayisi, all_matched_headers
                                             )
                                         
@@ -441,7 +408,7 @@ def extract_ob_tablosu(pdf_path):
     except Exception as e:
         return f"Hata: {str(e)}"
 
-def _validate_konu_structure(text, baslik_idx, baslik, konu_sayisi, all_matched_headers=None):
+def extract_ob_tablosu_konu_sinirli_arama(text, baslik_idx, baslik, konu_sayisi, all_matched_headers=None):
     """Başlık eşleşmesinden sonra konu yapısını sıralı rakamlarla doğrular - 2 döngü"""
     import re
     
@@ -528,7 +495,7 @@ def _validate_konu_structure(text, baslik_idx, baslik, konu_sayisi, all_matched_
     
     return "\n".join(validation_info)
 
-def _find_alternative_match(text, original_baslik, konu_sayisi):
+def extract_ob_tablosu_konu_bulma_yedek_plan(text, original_baslik, konu_sayisi):
     """Son eşleşen başlıktan sonra '1' rakamını bulup alternatif eşleşme arar"""
     import re
     
@@ -596,6 +563,40 @@ def find_pdf_by_name(filename):
             if file.lower().endswith('.pdf') and filename.lower() in file.lower():
                 return os.path.join(root, file)
     return None
+
+def normalize_turkish_chars(text):
+    """PDF'den gelen bozuk Türkçe karakterleri düzeltir"""
+    replacements = {
+        'Ġ': 'İ',
+        'ġ': 'ı', 
+        'Ş': 'Ş',
+        'ş': 'ş',
+        'Ğ': 'Ğ',
+        'ğ': 'ğ',
+        'Ü': 'Ü',
+        'ü': 'ü',
+        'Ö': 'Ö',
+        'ö': 'ö',
+        'Ç': 'Ç',
+        'ç': 'ç'
+    }
+    
+    for wrong, correct in replacements.items():
+        text = text.replace(wrong, correct)
+    
+    return text
+
+# modules.nlp_bert çalışmaz ise basit büyük/küçük harf arama yapar.
+def semantic_find(needle, haystack, threshold=75):
+    """Semantic similarity ile string arama yapar - BERT tabanlı"""
+    try:
+        from modules.nlp_bert import semantic_find as bert_semantic_find
+        return bert_semantic_find(needle, haystack, threshold / 100.0)
+    except ImportError:
+        # Fallback to simple case-insensitive search if BERT not available
+        needle_norm = needle.upper()
+        haystack_norm = haystack.upper()
+        return haystack_norm.find(needle_norm)
 
 # Debug için full text body verir.
 def print_full_pdf_text(pdf_path):
