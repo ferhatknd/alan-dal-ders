@@ -27,49 +27,17 @@ def normalize_turkish_chars(text):
     
     return text
 
-def normalize_for_matching(text):
-    """Eşleşme için tam normalizasyon - Türkçe karakterler ve case"""
-    # Önce PDF karakter düzeltmeleri
-    text = normalize_turkish_chars(text)
-    
-    # Sonra uppercase
-    text = text.upper()
-    
-    # Son olarak Türkçe I problemi için standart karakter setine çevir
-    text = text.replace('ı', 'I').replace('İ', 'I')
-    text = text.replace('ğ', 'G').replace('Ğ', 'G')
-    text = text.replace('ü', 'U').replace('Ü', 'U') 
-    text = text.replace('ö', 'O').replace('Ö', 'O')
-    text = text.replace('ş', 'S').replace('Ş', 'S')
-    text = text.replace('ç', 'C').replace('Ç', 'C')
-    
-    return text
 
-def fuzzy_find(needle, haystack, threshold=90):
-    """Fuzzy matching ile string arama yapar"""
-    import difflib
-    
-    needle_norm = normalize_for_matching(needle)
-    haystack_norm = normalize_for_matching(haystack)
-    
-    # Tam eşleşme kontrolü (mevcut sistem)
-    if needle_norm in haystack_norm:
+def semantic_find(needle, haystack, threshold=75):
+    """Semantic similarity ile string arama yapar - BERT tabanlı"""
+    try:
+        from modules.nlp_bert import semantic_find as bert_semantic_find
+        return bert_semantic_find(needle, haystack, threshold / 100.0)
+    except ImportError:
+        # Fallback to simple case-insensitive search if BERT not available
+        needle_norm = needle.upper()
+        haystack_norm = haystack.upper()
         return haystack_norm.find(needle_norm)
-    
-    # Fuzzy matching - sliding window
-    needle_len = len(needle_norm)
-    best_similarity = 0
-    best_position = -1
-    
-    for i in range(len(haystack_norm) - needle_len + 1):
-        window = haystack_norm[i:i + needle_len]
-        # Benzerlik hesaplama (calculate_similarity fonksiyonu entegre edildi)
-        similarity = difflib.SequenceMatcher(None, needle_norm, window).ratio() * 100
-        if similarity >= threshold and similarity > best_similarity:
-            best_similarity = similarity
-            best_position = i
-    
-    return best_position if best_position >= 0 else -1
 
 def extract_fields_from_text(text):
     # Varyasyonlarla case-sensitive yapı
@@ -236,6 +204,13 @@ def extract_ob_tablosu(pdf_path):
             full_text = re.sub(r'\s+', ' ', full_text)
             full_text = normalize_turkish_chars(full_text)
             
+            # BERT-based Turkish text correction
+            try:
+                from modules.nlp_bert import correct_turkish_text_with_bert
+                full_text = correct_turkish_text_with_bert(full_text)
+            except ImportError:
+                print("Warning: BERT text correction module not available. Using original text.")
+            
             # TOPLAM metnini bul (ana başlangıç noktası) - case insensitive
             toplam_idx = full_text.upper().find("TOPLAM")
             
@@ -302,20 +277,16 @@ def extract_ob_tablosu(pdf_path):
                             except (ValueError, IndexError):
                                 konu_sayisi_int = 0
                             
-                            # Bu başlığın geçerli eşleşmelerini bul - Tam normalizasyon ile + fuzzy matching
-                            baslik_upper = normalize_for_matching(baslik)
-                            ogrenme_upper = normalize_for_matching(ogrenme_birimi_alani)
+                            # Bu başlığın geçerli eşleşmelerini bul - Doğrudan semantic matching
                             start_pos = 0
                             
                             while True:
-                                idx = ogrenme_upper.find(baslik_upper, start_pos)
-                                if idx == -1:
-                                    # Try fuzzy matching when exact match fails
-                                    fuzzy_idx = fuzzy_find(baslik, ogrenme_birimi_alani[start_pos:], threshold=85)
-                                    if fuzzy_idx >= 0:
-                                        idx = start_pos + fuzzy_idx
-                                    else:
-                                        break
+                                # Use semantic matching directly
+                                semantic_idx = semantic_find(baslik, ogrenme_birimi_alani[start_pos:], threshold=75)
+                                if semantic_idx >= 0:
+                                    idx = start_pos + semantic_idx
+                                else:
+                                    break
                                 
                                 after_baslik = ogrenme_birimi_alani[idx + len(baslik):]
                                 if konu_sayisi_int > 0:
@@ -351,20 +322,16 @@ def extract_ob_tablosu(pdf_path):
                                 konu_sayisi_int = 0
                             
                             gecerli_eslesme = 0
-                            baslik_upper = normalize_for_matching(baslik)
-                            ogrenme_upper = normalize_for_matching(ogrenme_birimi_alani)
                             
-                            # Her potansiyel eşleşmeyi kontrol et - Fuzzy matching ile
+                            # Her potansiyel eşleşmeyi kontrol et - Doğrudan semantic matching
                             start_pos = 0
                             while True:
-                                idx = ogrenme_upper.find(baslik_upper, start_pos)
-                                if idx == -1:
-                                    # Try fuzzy matching when exact match fails
-                                    fuzzy_idx = fuzzy_find(baslik, ogrenme_birimi_alani[start_pos:], threshold=85)
-                                    if fuzzy_idx >= 0:
-                                        idx = start_pos + fuzzy_idx
-                                    else:
-                                        break
+                                # Use semantic matching directly
+                                semantic_idx = semantic_find(baslik, ogrenme_birimi_alani[start_pos:], threshold=75)
+                                if semantic_idx >= 0:
+                                    idx = start_pos + semantic_idx
+                                else:
+                                    break
                                 
                                 # Başlıktan sonraki metni al
                                 after_baslik = ogrenme_birimi_alani[idx + len(baslik):]
@@ -407,22 +374,17 @@ def extract_ob_tablosu(pdf_path):
                                     except ValueError:
                                         konu_sayisi = None
                                 
-                                baslik_upper = normalize_for_matching(baslik)
-                                ogrenme_upper = normalize_for_matching(ogrenme_birimi_alani)
-                                
-                                # İlk geçerli eşleşmeyi bul - Fuzzy matching ile
+                                # İlk geçerli eşleşmeyi bul - Doğrudan semantic matching
                                 start_pos = 0
                                 first_valid_match_found = False
                                 
                                 while True:
-                                    idx = ogrenme_upper.find(baslik_upper, start_pos)
-                                    if idx == -1:
-                                        # Try fuzzy matching when exact match fails
-                                        fuzzy_idx = fuzzy_find(baslik, ogrenme_birimi_alani[start_pos:], threshold=85)
-                                        if fuzzy_idx >= 0:
-                                            idx = start_pos + fuzzy_idx
-                                        else:
-                                            break
+                                    # Use semantic matching directly
+                                    semantic_idx = semantic_find(baslik, ogrenme_birimi_alani[start_pos:], threshold=75)
+                                    if semantic_idx >= 0:
+                                        idx = start_pos + semantic_idx
+                                    else:
+                                        break
                                     
                                     # Başlıktan sonraki metni al ve geçerlilik kontrol et
                                     after_baslik = ogrenme_birimi_alani[idx + len(baslik):]

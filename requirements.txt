@@ -9,3 +9,7 @@ rarfile
 beautifulsoup4
 requests
 pdfplumber
+torch
+transformers
+sentence-transformers
+nltk
