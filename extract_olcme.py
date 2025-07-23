@@ -60,8 +60,11 @@ def extract_kazanim_sayisi_sure_tablosu(pdf_path):
                 "KAZANIM SAYISI VE SÜRE TABLOSU",
                 "DERSİN KAZANIM TABLOSU",
                 "TABLOSU",
+                "TABLOS U",
                 "TABLO SU",
-                "TAB LOSU"
+                "TABL OSU",
+                "TAB LOSU",
+                "TA BLOSU"
             ]
             
             # Tüm pattern'leri kontrol et ve en erken başlayanı bul
@@ -587,7 +590,7 @@ def normalize_turkish_chars(text):
     return text
 
 # modules.nlp_bert çalışmaz ise basit büyük/küçük harf arama yapar.
-def semantic_find(needle, haystack, threshold=75):
+def semantic_find(needle, haystack, threshold=70):
     """Semantic similarity ile string arama yapar - BERT tabanlı"""
     try:
         from modules.nlp_bert import semantic_find as bert_semantic_find
