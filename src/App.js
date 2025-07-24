@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import './App.css';
+import NLPPage from './NLPPage'; // NLPPage componentini import et
 
 const OrtakAlanlarCell = ({ dersLink, currentAlanId, ortakAlanIndeksi, allAlans }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -1073,6 +1074,7 @@ const DataTable = ({ tableData, searchTerm, onCourseEdit }) => {
 // AlanItem component removed - only table view is used now
 
 function App() {  
+  const [view, setView] = useState('pdf'); // 'pdf' or 'nlp'
   const [data, setData] = useState(null);
   const [tableData, setTableData] = useState([]); // ⭐ New: Database table data
   const [loading, setLoading] = useState(false); // isScraping yerine
@@ -1754,152 +1756,164 @@ console.error(errorMsg);
   
   return (
     <div className="App">
-      <div className="app-header">
-        <h1>meslek.meb (alan-dal-ders) dosyalar</h1>
-        
-      </div>
-      
-      {/* Yeni Tek Satır İş Akışı */}
-      <div className="workflow-container">
-        
-        {/* Tek Satır Buton Dizisi */}
-        <div className="workflow-buttons">
-          {/* 1. Getir Alan ve Dal */}
-          <button
-            onClick={handleGetirAlanDal}
-            disabled={loading}
-            className="workflow-button getir-alan-dal"
-          >
-            <div>Getir Alan/Dal</div>
-            <div>({(stats.alan_count || stats.alan)}/{(stats.dal_count || stats.dal)})</div>
-          </button>
+      <button 
+        className="floating-toggle-button"
+        onClick={() => setView(view === 'pdf' ? 'nlp' : 'pdf')}
+      >
+        {view === 'pdf' ? 'NLP' : 'PDF'}
+      </button>
 
-          {/* 2. Getir COP */}
-          <button
-            onClick={fetchCop}
-            disabled={loading || catLoading === "cop"}
-            className="workflow-button getir-cop"
-          >
-            <div>Getir ÇÖP</div>
-            <div>({stats.cop_pdf} Dosya)</div>
-          </button>
-
-          {/* 3. Getir DBF */}
-          <button
-            onClick={fetchDbf}
-            disabled={loading || catLoading === "dbf"}
-            className="workflow-button getir-dbf"
-          >
-            <div>Getir DBF</div>
-            <div>({stats.dbf_total || (stats.dbf_rar + stats.dbf_pdf + stats.dbf_docx)} Dosya)</div>
-          </button>
-
-          {/* 4. Getir DM */}
-          <button
-            onClick={fetchDm}
-            disabled={loading || catLoading === "dm"}
-            className="workflow-button getir-dm"
-          >
-            <div>Getir DM</div>
-            <div>({stats.dm_pdf} Dosya)</div>
-          </button>
-
-          {/* 5. Getir BOM */}
-          <button
-            onClick={fetchBom}
-            disabled={loading || catLoading === "bom"}
-            className="workflow-button getir-bom"
-          >
-            <div>Getir BOM</div>
-            <div>({stats.bom_total || stats.bom_pdf} Dosya)</div>
-          </button>
-
-          {/* 6. Oku COP */}
-          <button
-            onClick={handleProcessCopPdfs}
-            disabled={loading || copProcessing}
-            className="workflow-button oku-cop"
-          >
-            <div>Oku COP</div>
-            <div>({stats.ders_count} Ders)</div>
-          </button>
-
-          {/* 7. Oku DBF */}
-          <button
-            onClick={handleUpdateDersSaatleri}
-            disabled={loading || dbfProcessing}
-            className="workflow-button oku-dbf"
-          >
-            <div>Oku DBF</div>
-            <div>({stats.ders_count} Ders)</div>
-          </button>
-        </div>
-
-        {/* Durum Göstergeleri */}
-        <div className="workflow-status">
-          {(catLoading || loading || copProcessing || dbfProcessing) && (
-            <div className="workflow-status loading">
-              ⏳ İşlem devam ediyor: {
-                catLoading === "dbf" ? "DBF verileri çekiliyor" :
-                catLoading === "cop" ? "ÇÖP PDF'leri indiriliyor" :
-                catLoading === "dm" ? "DM verileri çekiliyor" :
-                catLoading === "bom" ? "BOM verileri çekiliyor" :
-                copProcessing ? "ÇÖP PDF'leri okunuyor" :
-                dbfProcessing ? "DBF dosyaları okunuyor" :
-                loading ? "Alan-Dal verileri çekiliyor" :
-                "İşlem"
-              }...
-            </div>
-          )}
-          {catError && <div className="workflow-status error">❌ Hata: {catError}</div>}
-        </div>
-      </div>
-
-      {/* Arama Kutusu */}
-      {!initialLoading && tableData.length > 0 && (
-        <div className="search-bar-container">
-          <input
-            type="text"
-            placeholder="Alan, dal veya ders adına göre filtrele..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-input"
-          />
-        </div>
-      )}
-
-
-      {initialLoading ? (
-        <div className="initial-loading">
-          Yükleniyor...
-        </div>
+      {view === 'nlp' ? (
+        <NLPPage />
       ) : (
         <>
-          {/* Ana İçerik */}
-          <div className="main-content">
-            {initialLoading ? (
-              <p>Veriler yükleniyor...</p>
-            ) : error ? (
-              <p className="error-message">{error}</p>
-            ) : (
-              <DataTable 
-                tableData={tableData} 
-                searchTerm={debouncedTerm}
-                onCourseEdit={handleCourseEdit}
-              />
-            )}
+          <div className="app-header">
+            <h1>meslek.meb (alan-dal-ders) dosyalar</h1>
+          </div>
+          
+          {/* Yeni Tek Satır İş Akışı */}
+          <div className="workflow-container">
+            
+            {/* Tek Satır Buton Dizisi */}
+            <div className="workflow-buttons">
+              {/* 1. Getir Alan ve Dal */}
+              <button
+                onClick={handleGetirAlanDal}
+                disabled={loading}
+                className="workflow-button getir-alan-dal"
+              >
+                <div>Getir Alan/Dal</div>
+                <div>({(stats.alan_count || stats.alan)}/{(stats.dal_count || stats.dal)})</div>
+              </button>
+
+              {/* 2. Getir COP */}
+              <button
+                onClick={fetchCop}
+                disabled={loading || catLoading === "cop"}
+                className="workflow-button getir-cop"
+              >
+                <div>Getir ÇÖP</div>
+                <div>({stats.cop_pdf} Dosya)</div>
+              </button>
+
+              {/* 3. Getir DBF */}
+              <button
+                onClick={fetchDbf}
+                disabled={loading || catLoading === "dbf"}
+                className="workflow-button getir-dbf"
+              >
+                <div>Getir DBF</div>
+                <div>({stats.dbf_total || (stats.dbf_rar + stats.dbf_pdf + stats.dbf_docx)} Dosya)</div>
+              </button>
+
+              {/* 4. Getir DM */}
+              <button
+                onClick={fetchDm}
+                disabled={loading || catLoading === "dm"}
+                className="workflow-button getir-dm"
+              >
+                <div>Getir DM</div>
+                <div>({stats.dm_pdf} Dosya)</div>
+              </button>
+
+              {/* 5. Getir BOM */}
+              <button
+                onClick={fetchBom}
+                disabled={loading || catLoading === "bom"}
+                className="workflow-button getir-bom"
+              >
+                <div>Getir BOM</div>
+                <div>({stats.bom_total || stats.bom_pdf} Dosya)</div>
+              </button>
+
+              {/* 6. Oku COP */}
+              <button
+                onClick={handleProcessCopPdfs}
+                disabled={loading || copProcessing}
+                className="workflow-button oku-cop"
+              >
+                <div>Oku COP</div>
+                <div>({stats.ders_count} Ders)</div>
+              </button>
+
+              {/* 7. Oku DBF */}
+              <button
+                onClick={handleUpdateDersSaatleri}
+                disabled={loading || dbfProcessing}
+                className="workflow-button oku-dbf"
+              >
+                <div>Oku DBF</div>
+                <div>({stats.ders_count} Ders)</div>
+              </button>
+            </div>
+
+            {/* Durum Göstergeleri */}
+            <div className="workflow-status">
+              {(catLoading || loading || copProcessing || dbfProcessing) && (
+                <div className="workflow-status loading">
+                  ⏳ İşlem devam ediyor: {
+                    catLoading === "dbf" ? "DBF verileri çekiliyor" :
+                    catLoading === "cop" ? "ÇÖP PDF'leri indiriliyor" :
+                    catLoading === "dm" ? "DM verileri çekiliyor" :
+                    catLoading === "bom" ? "BOM verileri çekiliyor" :
+                    copProcessing ? "ÇÖP PDF'leri okunuyor" :
+                    dbfProcessing ? "DBF dosyaları okunuyor" :
+                    loading ? "Alan-Dal verileri çekiliyor" :
+                    "İşlem"
+                  }...
+                </div>
+              )}
+              {catError && <div className="workflow-status error">❌ Hata: {catError}</div>}
+            </div>
           </div>
 
-          {/* Düzenleme Kenar Çubuğu - Birleşik Split Screen */}
-          <CourseEditSidebar
-            course={editingSidebar.course}
-            isOpen={editingSidebar.isOpen}
-            onClose={handleCloseSidebar}
-            onSave={handleSaveCourse}
-            onShowPDF={handleShowPDF}
-            pdfUrl={pdfSidebar.url}
-            pdfTitle={pdfSidebar.title}
-          />
+          {/* Arama Kutusu */}
+          {!initialLoading && tableData.length > 0 && (
+            <div className="search-bar-container">
+              <input
+                type="text"
+                placeholder="Alan, dal veya ders adına göre filtrele..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="search-input"
+              />
+            </div>
+          )}
+
+
+          {initialLoading ? (
+            <div className="initial-loading">
+              Yükleniyor...
+            </div>
+          ) : (
+            <>
+              {/* Ana İçerik */}
+              <div className="main-content">
+                {initialLoading ? (
+                  <p>Veriler yükleniyor...</p>
+                ) : error ? (
+                  <p className="error-message">{error}</p>
+                ) : (
+                  <DataTable 
+                    tableData={tableData}
+                    searchTerm={debouncedTerm}
+                    onCourseEdit={handleCourseEdit}
+                  />
+                )}
+              </div>
+
+              {/* Düzenleme Kenar Çubuğu - Birleşik Split Screen */}
+              <CourseEditSidebar
+                course={editingSidebar.course}
+                isOpen={editingSidebar.isOpen}
+                onClose={handleCloseSidebar}
+                onSave={handleSaveCourse}
+                onShowPDF={handleShowPDF}
+                pdfUrl={pdfSidebar.url}
+                pdfTitle={pdfSidebar.title}
+              />
+            </>
+          )}
         </>
       )}
     </div>

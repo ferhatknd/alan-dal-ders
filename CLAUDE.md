@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Bu dosya, Claude Code için MEB Mesleki Eğitim Veri İşleme ve Veritabanı Projesinin kapsamlı birleşik kılavuzudur. README.md, is_akisi.md ve teknik detayların tümünü içerir. Proje mantığını koruyarak her seferinde hata yapmaktan kaçınmak için tüm kritik bilgileri içerir.
 
-**Son Güncelleme**: 2025-07-23 (Pure BERT Semantic Matching sistemi aktif + normalize_for_matching() fonksiyonu kaldırıldı + Fuzzy matching tamamen kaldırıldı + Semantic similarity threshold %70'e indirildi + Madde numarası pattern matching düzeltildi + "Bireysel Bütçeleme" ↔ "Bireysel Bütçe" eşleştirme sorunu çözüldü)
+**Son Güncelleme**: 2025-07-24 (NLP Page highlighting sistemi eklendi + BERT düzeltme ve semantik eşleştirme vurgulaması + NLP-specific istatistik tracking sistemi + Real-time highlighting display)
 
 ## 🎯 Proje Genel Bakış
 
@@ -107,6 +107,8 @@ Alan (Area) → Dal (Field) → Ders (Course) → Öğrenme Birimi (Learning Uni
 ### 🌐 Frontend Dosyaları
 - **`src/App.js`** - ⭐ **YENİLENDİ**: Tek satır workflow UI, console panel, JSON popup'sız tasarım
 - **`src/App.css`** - Ana stil dosyası
+- **`src/NLPPage.js`** - ⭐ **2025-07-24 YENİ**: NLP araçları sayfası, BERT düzeltme, semantik benzerlik, highlighting sistemi
+- **`src/NLPPage.css`** - ⭐ **2025-07-24 YENİ**: NLP Page stil dosyası, highlighting CSS
 - **`package.json`** - Node.js bağımlılıkları ve scriptler
 - **`src/index.js`** - React uygulaması entry point
 - **`src/setupProxy.js`** - CORS proxy ayarları
@@ -125,10 +127,12 @@ Alan (Area) → Dal (Field) → Ders (Course) → Öğrenme Birimi (Learning Uni
 
 ### 🐛 Debug ve Test Araçları
 - **`test.py`** - DBF PDF tablo yapısını detaylı analiz eden debug script
-- **`extract_olcme.py`** - ⭐ **2025-07-23 GÜNCELLEME**: DBF PDF analiz ve başlık eşleştirme test script'i
+- **`extract_olcme.py`** - ⭐ **2025-07-24 GÜNCELLEME**: DBF PDF analiz ve başlık eşleştirme test script'i  
   - **Pure Semantic Matching**: normalize_for_matching() kaldırıldı, BERT-based semantic similarity
   - **Pattern Matching**: Madde numaraları için "1. " veya "1 " pattern'i kullanır
   - **Threshold**: %70 (case sensitivity sorunları için optimize edildi)
+  - **✅ YENİ**: BERT-uyumlu detaylı içerik bölümleri çalışıyor ("-> 1. Eşleşme" format)
+  - **✅ YENİ**: Flow control hatası düzeltildi, pattern matching validation BERT text ile uyumlu
 
 ## 🗄️ Veritabanı Yapısı (SQLite)
 
@@ -269,13 +273,21 @@ temel_plan_ders_dal
 - **Case Insensitive**: BERT modeli case farkları için yeterince toleranslı
 - **Turkish Headers**: "Bireysel Bütçeleme" ↔ "Bireysel Bütçe" gibi eşleştirmeler başarılı
 
-### 11. Madde Numarası Pattern Matching ⭐ **2025-07-23 YENİ KURAL**
+### 11. Madde Numarası Pattern Matching ⭐ **2025-07-24 YENİ KURAL**
 - **ASLA** basit `find("2")` kullanma - "15-20. yüzyıllara" içindeki "20"yi bulur (YANLIŞ)
 - **MUTLAKA** pattern kullan: `find("2. ")` veya `find("2 ")` - Sadece gerçek konu numaralarını bulur (DOĞRU)
 - **Tarih Aralıkları**: "15-20", "1950-1960" gibi ifadeler konu numarası olarak algılanmamalı
 - **Sequential Processing**: Konu numaraları sıralı olarak işlenmeli (1, 2, 3, 4, 5...)
+- **✅ YENİ**: BERT-corrected text ile uyumlu validation - periods ve spaces değişse de çalışır
 
-## 🔄 Son Güncelleme Detayları - 2025-07-23
+### 12. Extract OB Tablosu Flow Control ⭐ **2025-07-24 YENİ KURAL**
+- **ASLA** `if gecerli_eslesme == 0:` içinde detaylı validation yapma (YANLIŞ LOGIC)
+- **MUTLAKA** `if gecerli_eslesme > 0:` ile detaylı validation yap (DOĞRU LOGIC)
+- **Detaylı İçerik Bölümleri**: "-> 1. Eşleşme" formatında structured content gösterilmeli
+- **Pattern Validation**: BERT-corrected text format ile uyumlu olmalı
+- **Flow Control**: Alternative matching ÖNCE, detaylı validation SONRA
+
+## 🔄 Son Güncelleme Detayları - 2025-07-24
 
 ### ✅ Başarıyla Çözülen Problemler:
 
@@ -296,6 +308,18 @@ temel_plan_ders_dal
    - **Neden**: Basit `find("2")` kullanımı
    - **Çözüm**: Pattern matching (`find("2. ")` veya `find("2 ")`)
    - **Sonuç**: Tarih aralıkları artık konu numarası olarak algılanmıyor ✅
+
+4. **⭐ YENİ - Kayıp Detaylı İçerik Bölümleri Sorunu**:
+   - **Problem**: "-> 1. Eşleşme" detaylı bölümler görünmüyordu (formatted_content_parts boş)
+   - **Neden**: Flow control hatası - detaylı validation `gecerli_eslesme == 0` içindeydi (YANLIŞ)
+   - **Çözüm**: Detaylı validation'ı `gecerli_eslesme > 0` ile çalışacak şekilde düzeltildi
+   - **Sonuç**: Tüm eşleşen başlıklar artık yapılandırılmış detaylı içerik gösteriyor ✅
+
+5. **⭐ YENİ - BERT-Uyumlu Pattern Validation Sorunu**:
+   - **Problem**: BERT correction sonrası "1. Topic" → "1 Topic2 Next" format değişimi validation'ı bozuyordu
+   - **Neden**: Simple string matching BERT-corrected text format ile uyumsuzdu
+   - **Çözüm**: Pattern-based validation ("1. " ve "1 " pattern'leri) BERT text ile uyumlu hale getirildi
+   - **Sonuç**: Topic detection artık BERT-corrected text format ile çalışıyor ✅
 
 ### 🔧 Teknik Değişiklikler:
 
@@ -332,6 +356,9 @@ temel_plan_ders_dal
 - **Case Tolerance**: %76.7 similarity artık yeterli (%70 threshold)
 - **False Positive Azalma**: Tarih aralıkları konu numarası olarak algılanmıyor
 - **Processing Speed**: Exact match denemesi kaldırıldı, direkt semantic
+- **⭐ YENİ**: Detaylı İçerik Performance - 7.3s total processing time ile optimal
+- **⭐ YENİ**: BERT Optimization - OB section only processing (98.8% of total time)
+- **⭐ YENİ**: Structured Content Display - Numbered topic breakdowns working perfectly
 
 ### 🎯 Sistem Durumu:
 
@@ -341,6 +368,9 @@ temel_plan_ders_dal
 ✅ **Pattern Matching**: Madde numaraları için aktif
 ✅ **Turkish BERT**: sentence-transformers ile çalışıyor
 ✅ **PDF Processing**: Sorunsuz çalışıyor
+✅ **⭐ YENİ**: Detaylı İçerik Bölümleri - "-> 1. Eşleşme" format aktif
+✅ **⭐ YENİ**: BERT-Uyumlu Validation - Pattern matching BERT text ile çalışıyor
+✅ **⭐ YENİ**: Flow Control - Doğru logic ile detaylı validation
 
 ## 🚀 Kullanım Örnekleri:
 
@@ -380,6 +410,7 @@ pos = text.find("2")  # "15-20" içindeki "2"yi de bulur
 
 ### 📈 İstatistik ve Monitoring
 - **`GET /api/get-statistics`** - Gerçek zamanlı sistem istatistikleri
+- **`GET /api/nlp/statistics`** - ⭐ **2025-07-24 YENİ**: NLP işlemleri için özel istatistikler
 
 ### 🔄 PDF ve DBF İşleme Operasyonları
 - **`GET /api/dbf-download-extract`** - DBF dosyalarını toplu indir ve aç (SSE)
