@@ -5,6 +5,15 @@ import sys
 import random
 import glob
 
+# Suppress warnings for cleaner output
+os.environ['TOKENIZERS_PARALLELISM'] = 'false'
+import warnings
+warnings.filterwarnings("ignore", message=".*resume_download.*")
+warnings.filterwarnings("ignore", message=".*torch.load.*")
+
+# Global cache for BERT corrections to improve performance
+_bert_correction_cache = {}
+
 def extract_fields_from_text(text):
     # Varyasyonlarla case-sensitive yapı
     patterns = [
@@ -161,230 +170,374 @@ def extract_kazanim_sayisi_sure_tablosu(pdf_path):
 
 def extract_ob_tablosu(pdf_path):
     """PDF'den Öğrenme Birimi Alanını çıkarır - Sadece başlangıç ve bitiş sınırları arasındaki metni"""
+    global _bert_correction_cache
+    import time
+    
+    print(f"\n🔄 EXTRACT_OB_TABLOSU PROCESSING: {os.path.basename(pdf_path)}")
+    print("=" * 60)
+    total_start = time.time()
+    
     try:
+        # Step 1: PDF Reading
+        step1_start = time.time()
         with open(pdf_path, 'rb') as file:
             pdf_reader = PyPDF2.PdfReader(file)
             full_text = ""
             
             for page in pdf_reader.pages:
                 full_text += page.extract_text() + "\n"
+        
+        step1_time = time.time() - step1_start
+        print(f"📄 Step 1 - PDF Reading: {step1_time:.3f}s ({len(full_text)} chars)")
+        
+        # Step 2: Text Normalization
+        step2_start = time.time()
+        full_text = re.sub(r'\s+', ' ', full_text)
+        full_text = normalize_turkish_chars(full_text)
+        step2_time = time.time() - step2_start
+        print(f"🔧 Step 2 - Text Normalization: {step2_time:.3f}s")
+        
+        # Step 3: Area Extraction (Before BERT for efficiency)
+        step3_start = time.time()
+        
+        # TOPLAM metnini bul (ana başlangıç noktası) - case insensitive
+        toplam_idx = full_text.upper().find("TOPLAM")
+        
+        # Backup plan: If TOPLAM not found, look for "100" (total percentage)
+        if toplam_idx == -1:
+            print("⚠️  TOPLAM not found, trying backup search for '100'...")
             
-            # Normalizasyon
-            full_text = re.sub(r'\s+', ' ', full_text)
-            full_text = normalize_turkish_chars(full_text)
+            # Find all occurrences of "100" 
+            backup_positions = []
+            search_pos = 0
+            while True:
+                pos = full_text.find("100", search_pos)
+                if pos == -1:
+                    break
+                backup_positions.append(pos)
+                search_pos = pos + 1
             
-            # BERT-based Turkish text correction
-            try:
-                from modules.nlp_bert import correct_turkish_text_with_bert
-                full_text = correct_turkish_text_with_bert(full_text)
-            except ImportError:
-                print("Warning: BERT text correction module not available. Using original text.")
+            if not backup_positions:
+                return "Öğrenme Birimi Alanı - TOPLAM metni bulunamadı ve '100' backup da bulunamadı"
             
-            # TOPLAM metnini bul (ana başlangıç noktası) - case insensitive
-            toplam_idx = full_text.upper().find("TOPLAM")
+            # Check each "100" position for validity
+            for pos in backup_positions:
+                # Check the context around "100" (within 9 chars before and after)
+                start_check = max(0, pos - 9)
+                end_check = min(len(full_text), pos + 9)
+                context = full_text[start_check:end_check]
+                
+                print(f"🔍 Checking '100' at position {pos}: '{context}'")
+                
+                # Look for table headers after this "100"
+                search_start = pos + 3  # Start after "100"
+                search_end = min(len(full_text), search_start + 200)  # Search within 200 chars
+                search_area = full_text[search_start:search_end]
+                
+                # Check if any table header appears within reasonable distance
+                table_headers_check = [
+                    "ÖĞRENME BİRİMİ",
+                    "KONULAR", 
+                    "ÖĞRENME BİRİMİ KAZANIMLARI",
+                    "KAZANIM AÇIKLAMLARI",
+                    "AÇIKLAMALARI"
+                ]
+                
+                header_found = False
+                for header in table_headers_check:
+                    if header in search_area:
+                        toplam_idx = pos
+                        header_found = True
+                        print(f"✅ Backup match found! Using '100' at position {pos} (found header: {header})")
+                        break
+                
+                if header_found:
+                    break
             
+            # If still no valid match found
             if toplam_idx == -1:
-                return "Öğrenme Birimi Alanı - TOPLAM metni bulunamadı"
+                return "Öğrenme Birimi Alanı - TOPLAM metni bulunamadı ve '100' backup da geçerli eşleşme vermedi"
+        
+        # TOPLAM'dan sonra başlangıç kelimeleri ara
+        table_headers = [
+            "ÖĞRENME BİRİMİ",
+            "KONULAR", 
+            "ÖĞRENME BİRİMİ KAZANIMLARI",
+            "KAZANIM AÇIKLAMLARI",
+            "AÇIKLAMALARI"
+        ]
+        
+        # TOPLAM'dan sonra başlangıç pozisyonunu bul (en son bulunan başlığın sonundan itibaren)
+        table_start_idx = None
+        last_header_end = None
+        
+        for header in table_headers:
+            idx = full_text.find(header, toplam_idx)
+            if idx != -1:
+                header_end = idx + len(header)
+                if last_header_end is None or header_end > last_header_end:
+                    last_header_end = header_end
+                    table_start_idx = header_end
+        
+        if table_start_idx is None:
+            return "Öğrenme Birimi Alanı - Başlangıç kelimeleri bulunamadı"
+        
+        # Bitiş kelimeleri - herhangi birini bulduğunda bitir
+        stop_words = ["UYGULAMA", "FAALİYET", "TEMRİN", "DERSİN", "DERSĠN"]
+        table_end_idx = len(full_text)
+        
+        for stop_word in stop_words:
+            stop_idx = full_text.find(stop_word, table_start_idx)
+            if stop_idx != -1 and stop_idx < table_end_idx:
+                table_end_idx = stop_idx
+        
+        # Belirlenen alan içindeki metni al
+        ogrenme_birimi_alani = full_text[table_start_idx:table_end_idx].strip()
+        
+        step3_time = time.time() - step3_start
+        print(f"📍 Step 3 - Area Extraction: {step3_time:.3f}s ({len(ogrenme_birimi_alani)} chars)")
+        
+        # Step 4: BERT Text Correction (Only on OB section for efficiency)
+        step4_start = time.time()
+        
+        # Display text preview before BERT processing (on OB section only)
+        if len(ogrenme_birimi_alani) > 400:
+            preview_text = f"OB Section First 200: '{ogrenme_birimi_alani[:200]}'\nOB Section Last 200: '{ogrenme_birimi_alani[-200:]}'"
+        else:
+            preview_text = f"OB Section ({len(ogrenme_birimi_alani)} chars): '{ogrenme_birimi_alani}'"
+        
+        print(f"🔍 Step 4 - BERT Input Preview (OB Section Only):\n{preview_text}")
+        
+        try:
+            from modules.nlp_bert import correct_turkish_text_with_bert
+            ogrenme_birimi_alani = correct_turkish_text_with_bert(ogrenme_birimi_alani)
+            step4_time = time.time() - step4_start
+            print(f"🤖 Step 4 - BERT Correction (OB Section Only): {step4_time:.3f}s")
             
-            # TOPLAM'dan sonra başlangıç kelimeleri ara
-            table_headers = [
-                "ÖĞRENME BİRİMİ",
-                "KONULAR", 
-                "ÖĞRENME BİRİMİ KAZANIMLARI",
-                "KAZANIM AÇIKLAMLARI",
-                "AÇIKLAMALARI"
-            ]
+            # Display corrected text preview
+            if len(ogrenme_birimi_alani) > 400:
+                corrected_preview = f"Corrected OB First 200: '{ogrenme_birimi_alani[:200]}'\nCorrected OB Last 200: '{ogrenme_birimi_alani[-200:]}'"
+            else:
+                corrected_preview = f"Corrected OB Section ({len(ogrenme_birimi_alani)} chars): '{ogrenme_birimi_alani}'"
             
-            # TOPLAM'dan sonra başlangıç pozisyonunu bul (en son bulunan başlığın sonundan itibaren)
-            table_start_idx = None
-            last_header_end = None
+            print(f"✅ Step 4 - BERT Output Preview (OB Section):\n{corrected_preview}")
             
-            for header in table_headers:
-                idx = full_text.find(header, toplam_idx)
-                if idx != -1:
-                    header_end = idx + len(header)
-                    if last_header_end is None or header_end > last_header_end:
-                        last_header_end = header_end
-                        table_start_idx = header_end
+        except ImportError:
+            step4_time = time.time() - step4_start
+            print(f"⚠️  Step 4 - BERT not available: {step4_time:.3f}s")
+        
+        # Step 5: Kazanım Table Processing
+        step5_start = time.time()
+        kazanim_tablosu_result = extract_kazanim_sayisi_sure_tablosu(pdf_path)
+        step5_time = time.time() - step5_start
+        print(f"📊 Step 5 - Kazanım Table Processing: {step5_time:.3f}s")
+        
+        # Step 6: Batch Semantic Matching
+        step6_start = time.time()
+        header_match_info = ""
+        formatted_content = ""
+        
+        if "KAZANIM SAYISI VE SÜRE TABLOSU:" in kazanim_tablosu_result:
+            # Tablo satırlarını al
+            lines = kazanim_tablosu_result.split('\n')[1:]  # İlk satır başlık, onu atla
             
-            if table_start_idx is None:
-                return "Öğrenme Birimi Alanı - Başlangıç kelimeleri bulunamadı"
+            header_match_info = "\n"
+            formatted_content_parts = []
+            all_matched_headers = []  # Tüm eşleşen başlıkların pozisyon bilgileri
             
-            # Bitiş kelimeleri - herhangi birini bulduğunda bitir
-            stop_words = ["UYGULAMA", "FAALİYET", "TEMRİN", "DERSİN", "DERSĠN"]
-            table_end_idx = len(full_text)
-            
-            for stop_word in stop_words:
-                stop_idx = full_text.find(stop_word, table_start_idx)
-                if stop_idx != -1 and stop_idx < table_end_idx:
-                    table_end_idx = stop_idx
-            
-            # Belirlenen alan içindeki metni al
-            ogrenme_birimi_alani = full_text[table_start_idx:table_end_idx].strip()
-            
-            # Kazanım tablosundaki başlıkları çıkar ve eşleşme sayısını bul
-            kazanim_tablosu_result = extract_kazanim_sayisi_sure_tablosu(pdf_path)
-            header_match_info = ""
-            formatted_content = ""
-            
-            if "KAZANIM SAYISI VE SÜRE TABLOSU:" in kazanim_tablosu_result:
-                # Tablo satırlarını al
-                lines = kazanim_tablosu_result.split('\n')[1:]  # İlk satır başlık, onu atla
-                
-                header_match_info = "\n"
-                formatted_content_parts = []
-                all_matched_headers = []  # Tüm eşleşen başlıkların pozisyon bilgileri
-                
-                # Önce tüm eşleşen başlıkları topla
-                for line in lines:
-                    if line.strip() and '-' in line:
-                        parts = line.split('-', 1)[1].split(',')
-                        if parts:
-                            baslik = parts[0].strip()
+            # Önce tüm eşleşen başlıkları topla (sadece pozisyon bilgileri için)
+            for line in lines:
+                if line.strip() and '-' in line:
+                    parts = line.split('-', 1)[1].split(',')
+                    if parts:
+                        baslik = parts[0].strip()
+                        
+                        # Apply cached BERT text correction (performance optimized)
+                        # Pure semantic matching requires corrected text for better accuracy
+                        if baslik in _bert_correction_cache:
+                            baslik_for_matching = _bert_correction_cache[baslik]
+                        else:
                             try:
-                                konu_sayisi_int = int(parts[1].strip())
-                            except (ValueError, IndexError):
-                                konu_sayisi_int = 0
+                                from modules.nlp_bert import correct_turkish_text_with_bert
+                                baslik_for_matching = correct_turkish_text_with_bert(baslik)
+                                _bert_correction_cache[baslik] = baslik_for_matching
+                            except ImportError:
+                                baslik_for_matching = baslik
+                                _bert_correction_cache[baslik] = baslik
+                        
+                        try:
+                            konu_sayisi_int = int(parts[1].strip())
+                        except (ValueError, IndexError):
+                            konu_sayisi_int = 0
+                        
+                        # Bu başlığın geçerli eşleşmelerini bul - Doğrudan semantic matching
+                        start_pos = 0
+                        
+                        while True:
+                            # Use semantic matching directly with corrected title
+                            semantic_idx = bert_semantic_find(baslik_for_matching, ogrenme_birimi_alani[start_pos:], threshold=70)
+                            if semantic_idx >= 0:
+                                idx = start_pos + semantic_idx
+                            else:
+                                break
                             
-                            # Bu başlığın geçerli eşleşmelerini bul - Doğrudan semantic matching
-                            start_pos = 0
+                            after_baslik = ogrenme_birimi_alani[idx + len(baslik):]
+                            if konu_sayisi_int > 0:
+                                found_numbers = 0
+                                for rakam in range(1, konu_sayisi_int + 1):
+                                    if str(rakam) in after_baslik[:500]:
+                                        found_numbers += 1
+                                
+                                if found_numbers == konu_sayisi_int:
+                                    all_matched_headers.append({
+                                        'title': baslik,
+                                        'position': idx,
+                                        'konu_sayisi': konu_sayisi_int
+                                    })
+                                    break  # İlk geçerli eşleşmeyi bulduk
                             
-                            while True:
-                                # Use semantic matching directly
-                                semantic_idx = semantic_find(baslik, ogrenme_birimi_alani[start_pos:], threshold=70)
-                                if semantic_idx >= 0:
-                                    idx = start_pos + semantic_idx
-                                else:
-                                    break
-                                
-                                after_baslik = ogrenme_birimi_alani[idx + len(baslik):]
-                                if konu_sayisi_int > 0:
-                                    found_numbers = 0
-                                    for rakam in range(1, konu_sayisi_int + 1):
-                                        if str(rakam) in after_baslik[:500]:
-                                            found_numbers += 1
-                                    
-                                    if found_numbers == konu_sayisi_int:
-                                        all_matched_headers.append({
-                                            'title': baslik,
-                                            'position': idx,
-                                            'konu_sayisi': konu_sayisi_int
-                                        })
-                                        break  # İlk geçerli eşleşmeyi bulduk
-                                
-                                start_pos = idx + 1
+                            start_pos = idx + 1
                 
-                # Şimdi başlıkları tekrar işle, bu sefer pozisyon bilgilerini kullanarak
-                for line in lines:
-                    if line.strip() and '-' in line:
-                        # Satır formatı: "1-Başlık, kazanim_sayisi, ders_saati, oran"
-                        parts = line.split('-', 1)[1].split(',')
-                        if parts:
-                            baslik = parts[0].strip()
-                            # Konu sayısını al
-                            konu_sayisi_str = parts[1].strip() if len(parts) > 1 else "?"
-                            
-                            # Geçerli eşleşmeleri kontrol et
+            # Şimdi başlıkları işle ve header_match_info oluştur (tek kez)
+            for line in lines:
+                if line.strip() and '-' in line:
+                    # Satır formatı: "1-Başlık, kazanim_sayisi, ders_saati, oran"
+                    # Extract line number from the beginning
+                    line_number = line.split('-')[0].strip()
+                    parts = line.split('-', 1)[1].split(',')
+                    if parts:
+                        baslik = parts[0].strip()
+                        
+                        # Apply cached BERT text correction (performance optimized)
+                        # Pure semantic matching requires corrected text for better accuracy
+                        if baslik in _bert_correction_cache:
+                            baslik_corrected = _bert_correction_cache[baslik]
+                            baslik_for_display = baslik_corrected  # Use corrected version for display
+                            baslik_for_matching = baslik_corrected
+                        else:
                             try:
-                                konu_sayisi_int = int(konu_sayisi_str)
-                            except ValueError:
-                                konu_sayisi_int = 0
+                                from modules.nlp_bert import correct_turkish_text_with_bert
+                                baslik_corrected = correct_turkish_text_with_bert(baslik)
+                                baslik_for_display = baslik_corrected  # Use corrected version for display
+                                baslik_for_matching = baslik_corrected
+                                _bert_correction_cache[baslik] = baslik_corrected
+                            except ImportError:
+                                baslik_for_display = baslik
+                                baslik_for_matching = baslik
+                                _bert_correction_cache[baslik] = baslik
+                        
+                        # Konu sayısını al
+                        konu_sayisi_str = parts[1].strip() if len(parts) > 1 else "?"
+                        
+                        # Geçerli eşleşmeleri kontrol et
+                        try:
+                            konu_sayisi_int = int(konu_sayisi_str)
+                        except ValueError:
+                            konu_sayisi_int = 0
+                        
+                        gecerli_eslesme = 0
+                        
+                        # Her potansiyel eşleşmeyi kontrol et - Doğrudan semantic matching
+                        start_pos = 0
+                        while True:
+                            # Use semantic matching directly with corrected title
+                            semantic_idx = bert_semantic_find(baslik_for_matching, ogrenme_birimi_alani[start_pos:], threshold=70)
+                            if semantic_idx >= 0:
+                                idx = start_pos + semantic_idx
+                            else:
+                                break
                             
-                            gecerli_eslesme = 0
+                            # Başlıktan sonraki metni al
+                            after_baslik = ogrenme_birimi_alani[idx + len(baslik):]
                             
-                            # Her potansiyel eşleşmeyi kontrol et - Doğrudan semantic matching
-                            start_pos = 0
-                            while True:
-                                # Use semantic matching directly
-                                semantic_idx = semantic_find(baslik, ogrenme_birimi_alani[start_pos:], threshold=70)
-                                if semantic_idx >= 0:
-                                    idx = start_pos + semantic_idx
-                                else:
-                                    break
+                            # Konu sayısı kadar rakamı kontrol et
+                            if konu_sayisi_int > 0:
+                                found_numbers = 0
+                                for rakam in range(1, konu_sayisi_int + 1):
+                                    if str(rakam) in after_baslik[:500]:  # İlk 500 karakterde ara
+                                        found_numbers += 1
                                 
-                                # Başlıktan sonraki metni al
-                                after_baslik = ogrenme_birimi_alani[idx + len(baslik):]
-                                
-                                # Konu sayısı kadar rakamı kontrol et
-                                if konu_sayisi_int > 0:
-                                    found_numbers = 0
-                                    for rakam in range(1, konu_sayisi_int + 1):
-                                        if str(rakam) in after_baslik[:500]:  # İlk 500 karakterde ara
-                                            found_numbers += 1
-                                    
-                                    # Tüm rakamlar bulunduysa geçerli eşleşme
-                                    if found_numbers == konu_sayisi_int:
-                                        gecerli_eslesme += 1
-                                
-                                start_pos = idx + 1
+                                # Tüm rakamlar bulunduysa geçerli eşleşme
+                                if found_numbers == konu_sayisi_int:
+                                    gecerli_eslesme += 1
                             
-                            header_match_info += f"{baslik}: {konu_sayisi_str} Konu -> {gecerli_eslesme} eşleşme\n"
-                            
-                            # Eğer geçerli eşleşme yoksa alternatif arama yap
-                            if gecerli_eslesme == 0 and konu_sayisi_int > 0:
-                                # Son eşleşen başlıktan sonra "1" rakamını ara
-                                alternative_match = extract_ob_tablosu_konu_bulma_yedek_plan(
-                                    ogrenme_birimi_alani, baslik, konu_sayisi_int
-                                )
-                                if alternative_match:
-                                    gecerli_eslesme = 1
-                                    header_match_info = header_match_info.replace(
-                                        f"{baslik}: {konu_sayisi_str} Konu -> 0 eşleşme\n",
-                                        f"{baslik}: {konu_sayisi_str} Konu -> 1 eşleşme (alternatif)\n"
+                            start_pos = idx + 1
+                        
+                        header_match_info += f"{line_number}-{baslik_for_display} ({konu_sayisi_str}) -> {gecerli_eslesme} eşleşme\n"
+                        
+                        # Eğer geçerli eşleşme yoksa alternatif arama yap
+                        if gecerli_eslesme == 0 and konu_sayisi_int > 0:
+                            # Son eşleşen başlıktan sonra "1" rakamını ara
+                            alternative_match = extract_ob_tablosu_konu_bulma_yedek_plan(
+                                ogrenme_birimi_alani, baslik_for_matching, konu_sayisi_int
+                            )
+                            if alternative_match:
+                                gecerli_eslesme = 1
+                                header_match_info = header_match_info.replace(
+                                    f"{line_number}-{baslik_for_display} ({konu_sayisi_str}) -> 0 eşleşme\n",
+                                        f"{line_number}-{baslik_for_display} ({konu_sayisi_str}) -> 1 eşleşme (alternatif)\n"
                                     )
+                        
+                        # Geçerli eşleşme varsa, detaylı doğrulama yap
+                        if gecerli_eslesme > 0:
+                            # Kazanım tablosundan konu sayısını al
+                            konu_sayisi = None
+                            if len(parts) > 1:
+                                try:
+                                    konu_sayisi = int(parts[1].strip())
+                                except ValueError:
+                                    konu_sayisi = None
                             
-                            # Geçerli eşleşme varsa, detaylı doğrulama yap
-                            if gecerli_eslesme > 0:
-                                # Kazanım tablosundan konu sayısını al
-                                konu_sayisi = None
-                                if len(parts) > 1:
-                                    try:
-                                        konu_sayisi = int(parts[1].strip())
-                                    except ValueError:
-                                        konu_sayisi = None
+                            # İlk geçerli eşleşmeyi bul - Doğrudan semantic matching
+                            start_pos = 0
+                            first_valid_match_found = False
+                            
+                            while True:
+                                # Use semantic matching directly with corrected title
+                                semantic_idx = bert_semantic_find(baslik_for_matching, ogrenme_birimi_alani[start_pos:], threshold=70)
+                                if semantic_idx >= 0:
+                                    idx = start_pos + semantic_idx
+                                else:
+                                    break
                                 
-                                # İlk geçerli eşleşmeyi bul - Doğrudan semantic matching
-                                start_pos = 0
-                                first_valid_match_found = False
+                                # Başlıktan sonraki metni al ve geçerlilik kontrol et
+                                after_baslik = ogrenme_birimi_alani[idx + len(baslik):]
                                 
-                                while True:
-                                    # Use semantic matching directly
-                                    semantic_idx = semantic_find(baslik, ogrenme_birimi_alani[start_pos:], threshold=70)
-                                    if semantic_idx >= 0:
-                                        idx = start_pos + semantic_idx
-                                    else:
-                                        break
+                                # Konu sayısı kadar rakamı kontrol et (BERT-uyumlu pattern matching)
+                                is_valid_match = True
+                                if konu_sayisi and konu_sayisi > 0:
+                                    found_numbers = 0
+                                    for rakam in range(1, konu_sayisi + 1):
+                                        # BERT-corrected text için pattern matching kullan
+                                        # "1. Topic" veya "1 Topic" formatlarını arar
+                                        patterns = [f"{rakam}. ", f"{rakam} "]
+                                        pattern_found = False
+                                        for pattern in patterns:
+                                            if pattern in after_baslik[:500]:
+                                                pattern_found = True
+                                                break
+                                        if pattern_found:
+                                            found_numbers += 1
+                                    is_valid_match = (found_numbers == konu_sayisi)
+                                
+                                # Sadece ilk geçerli eşleşmeyi işle
+                                if is_valid_match and not first_valid_match_found:
+                                    first_valid_match_found = True
                                     
-                                    # Başlıktan sonraki metni al ve geçerlilik kontrol et
-                                    after_baslik = ogrenme_birimi_alani[idx + len(baslik):]
-                                    
-                                    # Konu sayısı kadar rakamı kontrol et
-                                    is_valid_match = True
-                                    if konu_sayisi and konu_sayisi > 0:
-                                        found_numbers = 0
-                                        for rakam in range(1, konu_sayisi + 1):
-                                            if str(rakam) in after_baslik[:500]:  # İlk 500 karakterde ara
-                                                found_numbers += 1
-                                        is_valid_match = (found_numbers == konu_sayisi)
-                                    
-                                    # Sadece ilk geçerli eşleşmeyi işle
-                                    if is_valid_match and not first_valid_match_found:
-                                        first_valid_match_found = True
-                                        
-                                        # Detaylı doğrulama yap
-                                        validation_result = ""
-                                        if konu_sayisi:
-                                            validation_result = extract_ob_tablosu_konu_sinirli_arama(
-                                                ogrenme_birimi_alani, idx, baslik, konu_sayisi, all_matched_headers
-                                            )
-                                        
-                                        formatted_content_parts.append(
-                                            f"{baslik} -> 1. Eşleşme\n"
-                                            f"{validation_result}\n"
+                                    # Detaylı doğrulama yap
+                                    validation_result = ""
+                                    if konu_sayisi:
+                                        validation_result = extract_ob_tablosu_konu_sinirli_arama(
+                                            ogrenme_birimi_alani, idx, baslik_for_matching, konu_sayisi, all_matched_headers
                                         )
-                                        break  # İlk geçerli eşleşmeyi bulduk, çık
                                     
-                                    start_pos = idx + 1
+                                    formatted_content_parts.append(
+                                        f"{line_number}-{baslik_for_display} ({konu_sayisi}) -> 1. Eşleşme\n"
+                                        f"{validation_result}\n"
+                                    )
+                                    break  # İlk geçerli eşleşmeyi bulduk, çık
+                                
+                                start_pos = idx + 1
                 
                 # Eğer eşleşmeler varsa onları göster, yoksa eski formatı kullan
                 if formatted_content_parts:
@@ -397,16 +550,48 @@ def extract_ob_tablosu(pdf_path):
                         first_200 = ogrenme_birimi_alani[:200]
                         last_200 = ogrenme_birimi_alani[-200:]
                         formatted_content = f"{first_200}\n...\n{last_200}"
+        else:
+            # Kazanım tablosu bulunamadıysa eski formatı kullan
+            if len(ogrenme_birimi_alani) <= 400:
+                formatted_content = ogrenme_birimi_alani
             else:
-                # Kazanım tablosu bulunamadıysa eski formatı kullan
-                if len(ogrenme_birimi_alani) <= 400:
-                    formatted_content = ogrenme_birimi_alani
-                else:
-                    first_200 = ogrenme_birimi_alani[:200]
-                    last_200 = ogrenme_birimi_alani[-200:]
-                    formatted_content = f"{first_200}\n...\n{last_200}"
-            
-            return f"{'-'*50}\nÖğrenme Birimi Alanı:{header_match_info}{'-'*50}\n{formatted_content}"
+                first_200 = ogrenme_birimi_alani[:200]
+                last_200 = ogrenme_birimi_alani[-200:]
+                formatted_content = f"{first_200}\n...\n{last_200}"
+        
+        step6_time = time.time() - step6_start
+        print(f"🎯 Step 6 - Batch Semantic Matching: {step6_time:.3f}s")
+        
+        # Step 7: Results Formatting and Final Statistics
+        step7_start = time.time()
+        result = f"{'-'*50}\nÖğrenme Birimi Alanı:{header_match_info}{'-'*50}\n{formatted_content}"
+        step7_time = time.time() - step7_start
+        print(f"📋 Step 7 - Results Formatting: {step7_time:.3f}s")
+        
+        # Final timing statistics
+        total_time = time.time() - total_start
+        print(f"\n⚡ TOTAL PROCESSING TIME: {total_time:.3f}s")
+        print("=" * 60)
+        print("📊 PERFORMANCE BREAKDOWN:")
+        print(f"📄 PDF Reading: {step1_time:.3f}s ({step1_time/total_time*100:.1f}%)")
+        print(f"🔧 Text Normalization: {step2_time:.3f}s ({step2_time/total_time*100:.1f}%)")
+        print(f"📍 Area Extraction: {step3_time:.3f}s ({step3_time/total_time*100:.1f}%)")
+        print(f"🤖 BERT OB Section Correction: {step4_time:.3f}s ({step4_time/total_time*100:.1f}%)")
+        print(f"📊 Kazanım Table Processing: {step5_time:.3f}s ({step5_time/total_time*100:.1f}%)")
+        print(f"🎯 Batch Semantic Matching: {step6_time:.3f}s ({step6_time/total_time*100:.1f}%)")
+        print(f"📋 Results Formatting: {step7_time:.3f}s ({step7_time/total_time*100:.1f}%)")
+        
+        if step6_time > 20:
+            print(f"\n⚠️  BOTTLENECK IDENTIFIED: Semantic matching taking {step6_time:.1f}s (>{step6_time/total_time*100:.0f}% of total time)")
+            print("💡 OPTIMIZATION TARGET: Batch semantic processing algorithms")
+        elif total_time > 30:
+            print(f"\n⚠️  PERFORMANCE WARNING: Total processing time {total_time:.1f}s >30s")
+        else:
+            print(f"\n✅ PERFORMANCE ACCEPTABLE: {total_time:.1f}s total processing time")
+        
+        print("=" * 60)
+        
+        return result
             
     except Exception as e:
         return f"Hata: {str(e)}"
@@ -590,10 +775,10 @@ def normalize_turkish_chars(text):
     return text
 
 # modules.nlp_bert çalışmaz ise basit büyük/küçük harf arama yapar.
-def semantic_find(needle, haystack, threshold=70):
+def bert_semantic_find(needle, haystack, threshold=70):
     """Semantic similarity ile string arama yapar - BERT tabanlı"""
     try:
-        from modules.nlp_bert import semantic_find as bert_semantic_find
+        from modules.nlp_bert import bert_semantic_find as bert_semantic_find
         return bert_semantic_find(needle, haystack, threshold / 100.0)
     except ImportError:
         # Fallback to simple case-insensitive search if BERT not available

@@ -13,3 +13,5 @@ torch
 transformers
 sentence-transformers
 nltk
+numpy
+scikit-learn
