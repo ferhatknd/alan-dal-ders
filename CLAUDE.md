@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Bu dosya, Claude Code için MEB Mesleki Eğitim Veri İşleme ve Veritabanı Projesinin kapsamlı birleşik kılavuzudur. README.md, is_akisi.md ve teknik detayların tümünü içerir. Proje mantığını koruyarak her seferinde hata yapmaktan kaçınmak için tüm kritik bilgileri içerir.
 
-**Son Güncelleme**: 2025-07-24 (NLP Page highlighting sistemi eklendi + BERT düzeltme ve semantik eşleştirme vurgulaması + NLP-specific istatistik tracking sistemi + Real-time highlighting display)
+**Son Güncelleme**: 2025-07-24 (Yardımcı fonksiyonlar BERT/semantic ile optimize edildi + bert_semantic_find() wrapper kaldırıldı + smart_turkish_correction() BERT-based + smart_topic_number_detection() context-aware + Performance caching 28s)
 
 ## 🎯 Proje Genel Bakış
 
@@ -286,6 +286,14 @@ temel_plan_ders_dal
 - **Detaylı İçerik Bölümleri**: "-> 1. Eşleşme" formatında structured content gösterilmeli
 - **Pattern Validation**: BERT-corrected text format ile uyumlu olmalı
 - **Flow Control**: Alternative matching ÖNCE, detaylı validation SONRA
+
+### 13. Helper Functions Optimization ⭐ **2025-07-24 YENİ KURAL**
+- **ASLA** `bert_semantic_find()` wrapper kullanma - KALDIRILDI
+- **MUTLAKA** `from modules.nlp_bert import semantic_find` direct import kullan
+- **ASLA** manual pattern matching (`str(rakam) in text`) kullanma - Tarih aralıklarını yakalar
+- **MUTLAKA** `smart_topic_number_detection()` context-aware detection kullan
+- **ASLA** büyük metinlerde BERT correction yapma (>1000 chars) - Performance sorunu
+- **MUTLAKA** `smart_turkish_correction()` with caching kullan - OCR + BERT hybrid
 
 ## 🔄 Son Güncelleme Detayları - 2025-07-24
 
