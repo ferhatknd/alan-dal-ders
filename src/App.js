@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import './App.css';
-import NLPPage from './NLPPage'; // NLPPage componentini import et
 
 const OrtakAlanlarCell = ({ dersLink, currentAlanId, ortakAlanIndeksi, allAlans }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -1074,7 +1073,6 @@ const DataTable = ({ tableData, searchTerm, onCourseEdit }) => {
 // AlanItem component removed - only table view is used now
 
 function App() {  
-  const [view, setView] = useState('pdf'); // 'pdf' or 'nlp'
   const [data, setData] = useState(null);
   const [tableData, setTableData] = useState([]); // ⭐ New: Database table data
   const [loading, setLoading] = useState(false); // isScraping yerine
@@ -1756,17 +1754,6 @@ console.error(errorMsg);
   
   return (
     <div className="App">
-      <button 
-        className="floating-toggle-button"
-        onClick={() => setView(view === 'pdf' ? 'nlp' : 'pdf')}
-      >
-        {view === 'pdf' ? 'NLP' : 'PDF'}
-      </button>
-
-      {view === 'nlp' ? (
-        <NLPPage />
-      ) : (
-        <>
           <div className="app-header">
             <h1>meslek.meb (alan-dal-ders) dosyalar</h1>
           </div>
@@ -1912,10 +1899,6 @@ console.error(errorMsg);
                 pdfUrl={pdfSidebar.url}
                 pdfTitle={pdfSidebar.title}
               />
-            </>
-          )}
-        </>
-      )}
     </div>
   );
 }

@@ -168,15 +168,9 @@ def extract_kazanim_sayisi_sure_tablosu(pdf_path):
 
 def extract_ob_tablosu(pdf_path):
     """PDF'den Öğrenme Birimi Alanını çıkarır - Sadece başlangıç ve bitiş sınırları arasındaki metni"""
-    import time
-    
-    print(f"\n🔄 EXTRACT_OB_TABLOSU PROCESSING: {os.path.basename(pdf_path)}")
-    print("=" * 60)
-    total_start = time.time()
     
     try:
-        # Step 1: PDF Reading
-        step1_start = time.time()
+        # PDF Reading
         doc = fitz.open(pdf_path)
         full_text = ""
         
@@ -185,17 +179,10 @@ def extract_ob_tablosu(pdf_path):
         
         doc.close()
         
-        step1_time = time.time() - step1_start
-        print(f"📄 Step 1 - PDF Reading: {step1_time:.3f}s ({len(full_text)} chars)")
-        
-        # Step 2: Text Normalization
-        step2_start = time.time()
+        # Text Normalization
         full_text = re.sub(r'\s+', ' ', full_text)
-        step2_time = time.time() - step2_start
-        print(f"🔧 Step 2 - Text Normalization: {step2_time:.3f}s")
         
-        # Step 3: Area Extraction (Before BERT for efficiency)
-        step3_start = time.time()
+        # Area Extraction
         
         # TOPLAM metnini bul (ana başlangıç noktası) - case insensitive
         toplam_idx = full_text.upper().find("TOPLAM")
@@ -291,41 +278,14 @@ def extract_ob_tablosu(pdf_path):
         # Belirlenen alan içindeki metni al
         ogrenme_birimi_alani = full_text[table_start_idx:table_end_idx].strip()
         
-        step3_time = time.time() - step3_start
-        print(f"📍 Step 3 - Area Extraction: {step3_time:.3f}s ({len(ogrenme_birimi_alani)} chars)")
         
-        # Step 4: BERT Text Correction (Only on OB section for efficiency)
-        step4_start = time.time()
-        
-        # Display text preview before BERT processing (on OB section only)
-        if len(ogrenme_birimi_alani) > 400:
-            preview_text = f"OB Section First 200: '{ogrenme_birimi_alani[:200]}'\nOB Section Last 200: '{ogrenme_birimi_alani[-200:]}'"
-        else:
-            preview_text = f"OB Section ({len(ogrenme_birimi_alani)} chars): '{ogrenme_birimi_alani}'"
-        
-        print(f"🔍 Step 4 - BERT Input Preview (OB Section Only):\n{preview_text}")
-        
-        # Step 4: Basic Text Normalization (BERT removed)
+        # Basic Text Normalization
         ogrenme_birimi_alani = re.sub(r'\s+', ' ', ogrenme_birimi_alani).strip()
-        step4_time = time.time() - step4_start
-        print(f"🔧 Step 4 - Basic Text Normalization: {step4_time:.3f}s")
         
-        # Display normalized text preview
-        if len(ogrenme_birimi_alani) > 400:
-            normalized_preview = f"Normalized OB First 200: '{ogrenme_birimi_alani[:200]}'\nNormalized OB Last 200: '{ogrenme_birimi_alani[-200:]}'"
-        else:
-            normalized_preview = f"Normalized OB Section ({len(ogrenme_birimi_alani)} chars): '{ogrenme_birimi_alani}'"
-        
-        print(f"✅ Step 4 - Normalization Output Preview (OB Section):\n{normalized_preview}")
-        
-        # Step 5: Kazanım Table Processing
-        step5_start = time.time()
+        # Kazanım Table Processing
         kazanim_tablosu_result = extract_kazanim_sayisi_sure_tablosu(pdf_path)
-        step5_time = time.time() - step5_start
-        print(f"📊 Step 5 - Kazanım Table Processing: {step5_time:.3f}s")
         
-        # Step 6: String Matching Processing
-        step6_start = time.time()
+        # String Matching Processing
         header_match_info = ""
         formatted_content = ""
         
@@ -369,7 +329,7 @@ def extract_ob_tablosu(pdf_path):
                             if konu_sayisi_int > 0:
                                 found_numbers = 0
                                 for rakam in range(1, konu_sayisi_int + 1):
-                                    if str(rakam) in after_baslik[:500]:
+                                    if str(rakam) in after_baslik[:1500]:
                                         found_numbers += 1
                                 
                                 if found_numbers == konu_sayisi_int:
@@ -426,7 +386,7 @@ def extract_ob_tablosu(pdf_path):
                             if konu_sayisi_int > 0:
                                 found_numbers = 0
                                 for rakam in range(1, konu_sayisi_int + 1):
-                                    if str(rakam) in after_baslik[:500]:  # İlk 500 karakterde ara
+                                    if str(rakam) in after_baslik[:1500]:  # İlk 1500 karakterde ara
                                         found_numbers += 1
                                 
                                 # Tüm rakamlar bulunduysa geçerli eşleşme
@@ -465,12 +425,45 @@ def extract_ob_tablosu(pdf_path):
                             first_valid_match_found = False
                             
                             while True:
-                                # Use simple case-insensitive string matching
-                                baslik_upper = baslik_for_matching.upper()
-                                content_upper = ogrenme_birimi_alani[start_pos:].upper()
-                                string_idx = content_upper.find(baslik_upper)
+                                # Multi-line text matching with better approach
+                                # Create normalized versions for matching
+                                baslik_normalized = re.sub(r'\s+', ' ', baslik_for_matching.strip().upper())
+                                content_section = ogrenme_birimi_alani[start_pos:]
+                                content_normalized = re.sub(r'\s+', ' ', content_section.strip().upper())
+                                
+                                # Find in normalized text
+                                string_idx = content_normalized.find(baslik_normalized)
                                 if string_idx >= 0:
-                                    idx = start_pos + string_idx
+                                    # Use multi-step approach for accurate position mapping
+                                    # Step 1: Try exact match in original text (handles most cases)
+                                    exact_pos = content_section.upper().find(baslik_for_matching.upper())
+                                    if exact_pos >= 0:
+                                        idx = start_pos + exact_pos
+                                    else:
+                                        # Step 2: Try finding unique words from the title
+                                        words = baslik_for_matching.split()
+                                        unique_words = []
+                                        for word in words:
+                                            if len(word) > 5 and word.upper() not in ["BILGISAYARLA", "PROJE", "ÇIZIMI"]:
+                                                unique_words.append(word)
+                                        
+                                        if unique_words:
+                                            # Use the first unique word to find position
+                                            unique_word = unique_words[0].upper()
+                                            unique_pos = content_section.upper().find(unique_word)
+                                            if unique_pos >= 0:
+                                                # Find the start of this word's line/sentence
+                                                line_start = content_section.rfind('\n', 0, unique_pos)
+                                                if line_start == -1:
+                                                    line_start = 0
+                                                else:
+                                                    line_start += 1
+                                                idx = start_pos + line_start
+                                            else:
+                                                break
+                                        else:
+                                            # Fallback: skip this occurrence
+                                            break
                                 else:
                                     break
                                 
@@ -487,7 +480,7 @@ def extract_ob_tablosu(pdf_path):
                                         patterns = [f"{rakam}. ", f"{rakam} "]
                                         pattern_found = False
                                         for pattern in patterns:
-                                            if pattern in after_baslik[:500]:
+                                            if pattern in after_baslik[:1500]:
                                                 pattern_found = True
                                                 break
                                         if pattern_found:
@@ -533,37 +526,9 @@ def extract_ob_tablosu(pdf_path):
                 last_200 = ogrenme_birimi_alani[-200:]
                 formatted_content = f"{first_200}\n...\n{last_200}"
         
-        step6_time = time.time() - step6_start
-        print(f"🎯 Step 6 - String Matching Processing: {step6_time:.3f}s")
         
-        # Step 7: Results Formatting and Final Statistics
-        step7_start = time.time()
+        # Results Formatting
         result = f"{'-'*50}\nÖğrenme Birimi Alanı:{header_match_info}{'-'*50}\n{formatted_content}"
-        step7_time = time.time() - step7_start
-        print(f"📋 Step 7 - Results Formatting: {step7_time:.3f}s")
-        
-        # Final timing statistics
-        total_time = time.time() - total_start
-        print(f"\n⚡ TOTAL PROCESSING TIME: {total_time:.3f}s")
-        print("=" * 60)
-        print("📊 PERFORMANCE BREAKDOWN:")
-        print(f"📄 PDF Reading: {step1_time:.3f}s ({step1_time/total_time*100:.1f}%)")
-        print(f"🔧 Text Normalization: {step2_time:.3f}s ({step2_time/total_time*100:.1f}%)")
-        print(f"📍 Area Extraction: {step3_time:.3f}s ({step3_time/total_time*100:.1f}%)")
-        print(f"🔧 Basic Text Normalization: {step4_time:.3f}s ({step4_time/total_time*100:.1f}%)")
-        print(f"📊 Kazanım Table Processing: {step5_time:.3f}s ({step5_time/total_time*100:.1f}%)")
-        print(f"🎯 String Matching Processing: {step6_time:.3f}s ({step6_time/total_time*100:.1f}%)")
-        print(f"📋 Results Formatting: {step7_time:.3f}s ({step7_time/total_time*100:.1f}%)")
-        
-        if step6_time > 20:
-            print(f"\n⚠️  BOTTLENECK IDENTIFIED: String matching taking {step6_time:.1f}s (>{step6_time/total_time*100:.0f}% of total time)")
-            print("💡 OPTIMIZATION TARGET: String matching algorithms")
-        elif total_time > 30:
-            print(f"\n⚠️  PERFORMANCE WARNING: Total processing time {total_time:.1f}s >30s")
-        else:
-            print(f"\n✅ PERFORMANCE ACCEPTABLE: {total_time:.1f}s total processing time")
-        
-        print("=" * 60)
         
         return result
             
