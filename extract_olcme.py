@@ -1,4 +1,4 @@
-import PyPDF2
+import fitz  # PyMuPDF
 import re
 import os
 import sys
@@ -11,8 +11,6 @@ import warnings
 warnings.filterwarnings("ignore", message=".*resume_download.*")
 warnings.filterwarnings("ignore", message=".*torch.load.*")
 
-# Global cache for BERT corrections to improve performance
-_bert_correction_cache = {}
 
 def extract_fields_from_text(text):
     # Varyasyonlarla case-sensitive yapı
@@ -53,124 +51,123 @@ def extract_fields_from_text(text):
 def extract_kazanim_sayisi_sure_tablosu(pdf_path):
     """PDF'den KAZANIM SAYISI VE SÜRE TABLOSU'nu çıkarır ve formatlı string döndürür"""
     try:
-        with open(pdf_path, 'rb') as file:
-            pdf_reader = PyPDF2.PdfReader(file)
-            full_text = ""
-            
-            for page in pdf_reader.pages:
-                full_text += page.extract_text() + "\n"
-            
-            # Normalizasyon
-            full_text = re.sub(r'\s+', ' ', full_text)
-            full_text = normalize_turkish_chars(full_text)  # Türkçe karakter düzeltme
-            
-            # KAZANIM SAYISI VE SÜRE TABLOSU bölümünü bul (varyasyonlarla)
-            table_start_patterns = [
-                "KAZANIM SAYISI VE SÜRE TABLOSU",
-                "DERSİN KAZANIM TABLOSU",
-                "TABLOSU",
-                "TABLOS U",
-                "TABLO SU",
-                "TABL OSU",
-                "TAB LOSU",
-                "TA BLOSU"
-            ]
-            
-            # Tüm pattern'leri kontrol et ve en erken başlayanı bul
-            earliest_start = None
-            earliest_idx = len(full_text)
-            table_start = None
-            
-            for pattern in table_start_patterns:
-                if pattern in full_text:
-                    idx = full_text.find(pattern)
-                    if idx < earliest_idx:
-                        earliest_idx = idx
-                        earliest_start = idx + len(pattern)
-                        table_start = pattern
-            
-            start_idx = earliest_start
-            
-            if table_start is None:
-                return "KAZANIM SAYISI VE SÜRE TABLOSU bulunamadı"
-            
-            # Bitiş noktasını bul
-            end_markers = ["TOPLAM", "ÖĞRENME BİRİMİ"]
-            end_idx = len(full_text)
-            for marker in end_markers:
-                idx = full_text.find(marker, start_idx + 50)
-                if idx != -1 and idx < end_idx:
-                    end_idx = idx
-            
-            table_section = full_text[start_idx:end_idx].strip()
-            
-            # TOPLAM satırını bul ve sonrasını kes
-            if "TOPLAM" in table_section:
-                toplam_idx = table_section.find("TOPLAM")
-                # TOPLAM'dan sonra sayıları bul ve ondan sonrasını kes
-                after_toplam = table_section[toplam_idx:]
-                # TOPLAM satırının sonunu bul (genelde 100 ile biter)
-                toplam_end = re.search(r'TOPLAM.*?100', after_toplam)
-                if toplam_end:
-                    table_section = table_section[:toplam_idx + toplam_end.end()]
-            
-            # Başlık satırını kaldır (ÖĞRENME BİRİMİ KAZANIM SAYISI DERS SAATİ ORAN)
-            header_pattern = r'ÖĞRENME BİRİMİ.*?ORAN.*?\(\s*%\s*\)'
-            table_section = re.sub(header_pattern, '', table_section).strip()
-            
-            # Satırları ayır ve parse et
-            lines = []
-            
-            # Her satır: İsim + 2 sayı + 1 sayı veya % pattern'i
-            patterns = [
-                r'([^0-9]+?)\s+(\d+)\s+(\d+)\s*/\s*(\d+)\s+(\d+(?:[,\.]\d+)?)', # Kesirli format + oran
-                r'([^0-9]+?)\s+(\d+)\s+(\d+)\s+(\d+(?:[,\.]\d+)?)',             # Normal format + oran
-                r'([^0-9]+?)\s+(\d+)\s+(\d+)(?:\s|$)'                           # Sadece 2 sütun (oran yok)
-            ]
+        doc = fitz.open(pdf_path)
+        full_text = ""
+        
+        for page in doc:
+            full_text += page.get_text() + "\n"
+        
+        doc.close()
+        
+        # Normalizasyon
+        full_text = re.sub(r'\s+', ' ', full_text)
+        
+        # KAZANIM SAYISI VE SÜRE TABLOSU bölümünü bul (varyasyonlarla)
+        table_start_patterns = [
+            "KAZANIM SAYISI VE SÜRE TABLOSU",
+            "DERSİN KAZANIM TABLOSU",
+            "TABLOSU",
+            "TABLOS U",
+            "TABLO SU",
+            "TABL OSU",
+            "TAB LOSU",
+            "TA BLOSU"
+        ]
+        
+        # Tüm pattern'leri kontrol et ve en erken başlayanı bul
+        earliest_start = None
+        earliest_idx = len(full_text)
+        table_start = None
+        
+        for pattern in table_start_patterns:
+            if pattern in full_text:
+                idx = full_text.find(pattern)
+                if idx < earliest_idx:
+                    earliest_idx = idx
+                    earliest_start = idx + len(pattern)
+                    table_start = pattern
+        
+        start_idx = earliest_start
+        
+        if table_start is None:
+            return "KAZANIM SAYISI VE SÜRE TABLOSU bulunamadı"
+        
+        # Bitiş noktasını bul
+        end_markers = ["TOPLAM", "ÖĞRENME BİRİMİ"]
+        end_idx = len(full_text)
+        for marker in end_markers:
+            idx = full_text.find(marker, start_idx + 50)
+            if idx != -1 and idx < end_idx:
+                end_idx = idx
+        
+        table_section = full_text[start_idx:end_idx].strip()
+        
+        # TOPLAM satırını bul ve sonrasını kes
+        if "TOPLAM" in table_section:
+            toplam_idx = table_section.find("TOPLAM")
+            # TOPLAM'dan sonra sayıları bul ve ondan sonrasını kes
+            after_toplam = table_section[toplam_idx:]
+            # TOPLAM satırının sonunu bul (genelde 100 ile biter)
+            toplam_end = re.search(r'TOPLAM.*?100', after_toplam)
+            if toplam_end:
+                table_section = table_section[:toplam_idx + toplam_end.end()]
+        
+        # Başlık satırını kaldır (ÖĞRENME BİRİMİ KAZANIM SAYISI DERS SAATİ ORAN)
+        header_pattern = r'ÖĞRENME BİRİMİ.*?ORAN.*?\(\s*%\s*\)'
+        table_section = re.sub(header_pattern, '', table_section).strip()
+        
+        # Satırları ayır ve parse et
+        lines = []
+        
+        # Her satır: İsim + 2 sayı + 1 sayı veya % pattern'i
+        patterns = [
+            r'([^0-9]+?)\s+(\d+)\s+(\d+)\s*/\s*(\d+)\s+(\d+(?:[,\.]\d+)?)', # Kesirli format + oran
+            r'([^0-9]+?)\s+(\d+)\s+(\d+)\s+(\d+(?:[,\.]\d+)?)',             # Normal format + oran
+            r'([^0-9]+?)\s+(\d+)\s+(\d+)(?:\s|$)'                           # Sadece 2 sütun (oran yok)
+        ]
 
-            matches = []
-            for pattern in patterns:
-                matches = re.findall(pattern, table_section)
-                if matches:
-                    break
-            
-            for match in matches:
-                ogrenme_birimi = match[0].strip()
-                kazanim_sayisi = match[1]
+        matches = []
+        for pattern in patterns:
+            matches = re.findall(pattern, table_section)
+            if matches:
+                break
+        
+        for match in matches:
+            ogrenme_birimi = match[0].strip()
+            kazanim_sayisi = match[1]
 
-                # Pattern'e göre ders saati ve oran belirleme
-                if len(match) == 3:  # Oran yok
-                    ders_saati = match[2]
-                    oran = "-"  # Boş oran için
-                elif len(match) == 4:  # Normal format
-                    ders_saati = match[2]
-                    oran = match[3]
-                elif len(match) == 5:  # Kesirli format
-                    ders_saati = match[3]  # / sonrası sayı
-                    oran = match[4]
-                
-                # Öğrenme birimi adını temizle
-                ogrenme_birimi = re.sub(r'\s+', ' ', ogrenme_birimi).strip()
-                
-                # TOPLAM satırını atla
-                if ogrenme_birimi.upper() != "TOPLAM":
-                    line = f"{ogrenme_birimi}, {kazanim_sayisi}, {ders_saati}, {oran}"
-                    lines.append(line)
+            # Pattern'e göre ders saati ve oran belirleme
+            if len(match) == 3:  # Oran yok
+                ders_saati = match[2]
+                oran = "-"  # Boş oran için
+            elif len(match) == 4:  # Normal format
+                ders_saati = match[2]
+                oran = match[3]
+            elif len(match) == 5:  # Kesirli format
+                ders_saati = match[3]  # / sonrası sayı
+                oran = match[4]
             
-            if lines:
-                result = "KAZANIM SAYISI VE SÜRE TABLOSU:\n"
-                for idx, line in enumerate(lines, 1):
-                    result += f"{idx}-{line}\n"
-                return result.strip()
-            else:
-                return "Tablo verileri parse edilemedi"
+            # Öğrenme birimi adını temizle
+            ogrenme_birimi = re.sub(r'\s+', ' ', ogrenme_birimi).strip()
+            
+            # TOPLAM satırını atla
+            if ogrenme_birimi.upper() != "TOPLAM":
+                line = f"{ogrenme_birimi}, {kazanim_sayisi}, {ders_saati}, {oran}"
+                lines.append(line)
+        
+        if lines:
+            result = "KAZANIM SAYISI VE SÜRE TABLOSU:\n"
+            for idx, line in enumerate(lines, 1):
+                result += f"{idx}-{line}\n"
+            return result.strip()
+        else:
+            return "Tablo verileri parse edilemedi"
                 
     except Exception as e:
         return f"Hata: {str(e)}"
 
 def extract_ob_tablosu(pdf_path):
     """PDF'den Öğrenme Birimi Alanını çıkarır - Sadece başlangıç ve bitiş sınırları arasındaki metni"""
-    global _bert_correction_cache
     import time
     
     print(f"\n🔄 EXTRACT_OB_TABLOSU PROCESSING: {os.path.basename(pdf_path)}")
@@ -180,12 +177,13 @@ def extract_ob_tablosu(pdf_path):
     try:
         # Step 1: PDF Reading
         step1_start = time.time()
-        with open(pdf_path, 'rb') as file:
-            pdf_reader = PyPDF2.PdfReader(file)
-            full_text = ""
-            
-            for page in pdf_reader.pages:
-                full_text += page.extract_text() + "\n"
+        doc = fitz.open(pdf_path)
+        full_text = ""
+        
+        for page in doc:
+            full_text += page.get_text() + "\n"
+        
+        doc.close()
         
         step1_time = time.time() - step1_start
         print(f"📄 Step 1 - PDF Reading: {step1_time:.3f}s ({len(full_text)} chars)")
@@ -193,7 +191,6 @@ def extract_ob_tablosu(pdf_path):
         # Step 2: Text Normalization
         step2_start = time.time()
         full_text = re.sub(r'\s+', ' ', full_text)
-        full_text = normalize_turkish_chars(full_text)
         step2_time = time.time() - step2_start
         print(f"🔧 Step 2 - Text Normalization: {step2_time:.3f}s")
         
@@ -308,23 +305,18 @@ def extract_ob_tablosu(pdf_path):
         
         print(f"🔍 Step 4 - BERT Input Preview (OB Section Only):\n{preview_text}")
         
-        try:
-            from modules.nlp_bert import correct_turkish_text_with_bert
-            ogrenme_birimi_alani = correct_turkish_text_with_bert(ogrenme_birimi_alani)
-            step4_time = time.time() - step4_start
-            print(f"🤖 Step 4 - BERT Correction (OB Section Only): {step4_time:.3f}s")
-            
-            # Display corrected text preview
-            if len(ogrenme_birimi_alani) > 400:
-                corrected_preview = f"Corrected OB First 200: '{ogrenme_birimi_alani[:200]}'\nCorrected OB Last 200: '{ogrenme_birimi_alani[-200:]}'"
-            else:
-                corrected_preview = f"Corrected OB Section ({len(ogrenme_birimi_alani)} chars): '{ogrenme_birimi_alani}'"
-            
-            print(f"✅ Step 4 - BERT Output Preview (OB Section):\n{corrected_preview}")
-            
-        except ImportError:
-            step4_time = time.time() - step4_start
-            print(f"⚠️  Step 4 - BERT not available: {step4_time:.3f}s")
+        # Step 4: Basic Text Normalization (BERT removed)
+        ogrenme_birimi_alani = re.sub(r'\s+', ' ', ogrenme_birimi_alani).strip()
+        step4_time = time.time() - step4_start
+        print(f"🔧 Step 4 - Basic Text Normalization: {step4_time:.3f}s")
+        
+        # Display normalized text preview
+        if len(ogrenme_birimi_alani) > 400:
+            normalized_preview = f"Normalized OB First 200: '{ogrenme_birimi_alani[:200]}'\nNormalized OB Last 200: '{ogrenme_birimi_alani[-200:]}'"
+        else:
+            normalized_preview = f"Normalized OB Section ({len(ogrenme_birimi_alani)} chars): '{ogrenme_birimi_alani}'"
+        
+        print(f"✅ Step 4 - Normalization Output Preview (OB Section):\n{normalized_preview}")
         
         # Step 5: Kazanım Table Processing
         step5_start = time.time()
@@ -332,7 +324,7 @@ def extract_ob_tablosu(pdf_path):
         step5_time = time.time() - step5_start
         print(f"📊 Step 5 - Kazanım Table Processing: {step5_time:.3f}s")
         
-        # Step 6: Batch Semantic Matching
+        # Step 6: String Matching Processing
         step6_start = time.time()
         header_match_info = ""
         formatted_content = ""
@@ -352,18 +344,8 @@ def extract_ob_tablosu(pdf_path):
                     if parts:
                         baslik = parts[0].strip()
                         
-                        # Apply cached BERT text correction (performance optimized)
-                        # Pure semantic matching requires corrected text for better accuracy
-                        if baslik in _bert_correction_cache:
-                            baslik_for_matching = _bert_correction_cache[baslik]
-                        else:
-                            try:
-                                from modules.nlp_bert import correct_turkish_text_with_bert
-                                baslik_for_matching = correct_turkish_text_with_bert(baslik)
-                                _bert_correction_cache[baslik] = baslik_for_matching
-                            except ImportError:
-                                baslik_for_matching = baslik
-                                _bert_correction_cache[baslik] = baslik
+                        # Simple text normalization (BERT removed)
+                        baslik_for_matching = re.sub(r'\s+', ' ', baslik.strip())
                         
                         try:
                             konu_sayisi_int = int(parts[1].strip())
@@ -374,10 +356,12 @@ def extract_ob_tablosu(pdf_path):
                         start_pos = 0
                         
                         while True:
-                            # Use semantic matching directly with corrected title
-                            semantic_idx = bert_semantic_find(baslik_for_matching, ogrenme_birimi_alani[start_pos:], threshold=70)
-                            if semantic_idx >= 0:
-                                idx = start_pos + semantic_idx
+                            # Use simple case-insensitive string matching (BERT removed)
+                            baslik_upper = baslik_for_matching.upper()
+                            content_upper = ogrenme_birimi_alani[start_pos:].upper()
+                            string_idx = content_upper.find(baslik_upper)
+                            if string_idx >= 0:
+                                idx = start_pos + string_idx
                             else:
                                 break
                             
@@ -408,23 +392,9 @@ def extract_ob_tablosu(pdf_path):
                     if parts:
                         baslik = parts[0].strip()
                         
-                        # Apply cached BERT text correction (performance optimized)
-                        # Pure semantic matching requires corrected text for better accuracy
-                        if baslik in _bert_correction_cache:
-                            baslik_corrected = _bert_correction_cache[baslik]
-                            baslik_for_display = baslik_corrected  # Use corrected version for display
-                            baslik_for_matching = baslik_corrected
-                        else:
-                            try:
-                                from modules.nlp_bert import correct_turkish_text_with_bert
-                                baslik_corrected = correct_turkish_text_with_bert(baslik)
-                                baslik_for_display = baslik_corrected  # Use corrected version for display
-                                baslik_for_matching = baslik_corrected
-                                _bert_correction_cache[baslik] = baslik_corrected
-                            except ImportError:
-                                baslik_for_display = baslik
-                                baslik_for_matching = baslik
-                                _bert_correction_cache[baslik] = baslik
+                        # Simple text normalization (BERT removed)
+                        baslik_for_display = baslik
+                        baslik_for_matching = re.sub(r'\s+', ' ', baslik.strip())
                         
                         # Konu sayısını al
                         konu_sayisi_str = parts[1].strip() if len(parts) > 1 else "?"
@@ -440,10 +410,12 @@ def extract_ob_tablosu(pdf_path):
                         # Her potansiyel eşleşmeyi kontrol et - Doğrudan semantic matching
                         start_pos = 0
                         while True:
-                            # Use semantic matching directly with corrected title
-                            semantic_idx = bert_semantic_find(baslik_for_matching, ogrenme_birimi_alani[start_pos:], threshold=70)
-                            if semantic_idx >= 0:
-                                idx = start_pos + semantic_idx
+                            # Use simple case-insensitive string matching (BERT removed)
+                            baslik_upper = baslik_for_matching.upper()
+                            content_upper = ogrenme_birimi_alani[start_pos:].upper()
+                            string_idx = content_upper.find(baslik_upper)
+                            if string_idx >= 0:
+                                idx = start_pos + string_idx
                             else:
                                 break
                             
@@ -493,15 +465,17 @@ def extract_ob_tablosu(pdf_path):
                             first_valid_match_found = False
                             
                             while True:
-                                # Use semantic matching directly with corrected title
-                                semantic_idx = bert_semantic_find(baslik_for_matching, ogrenme_birimi_alani[start_pos:], threshold=70)
-                                if semantic_idx >= 0:
-                                    idx = start_pos + semantic_idx
+                                # Use simple case-insensitive string matching
+                                baslik_upper = baslik_for_matching.upper()
+                                content_upper = ogrenme_birimi_alani[start_pos:].upper()
+                                string_idx = content_upper.find(baslik_upper)
+                                if string_idx >= 0:
+                                    idx = start_pos + string_idx
                                 else:
                                     break
                                 
                                 # Başlıktan sonraki metni al ve geçerlilik kontrol et
-                                after_baslik = ogrenme_birimi_alani[idx + len(baslik):]
+                                after_baslik = ogrenme_birimi_alani[idx + len(baslik_for_matching):]
                                 
                                 # Konu sayısı kadar rakamı kontrol et (BERT-uyumlu pattern matching)
                                 is_valid_match = True
@@ -560,7 +534,7 @@ def extract_ob_tablosu(pdf_path):
                 formatted_content = f"{first_200}\n...\n{last_200}"
         
         step6_time = time.time() - step6_start
-        print(f"🎯 Step 6 - Batch Semantic Matching: {step6_time:.3f}s")
+        print(f"🎯 Step 6 - String Matching Processing: {step6_time:.3f}s")
         
         # Step 7: Results Formatting and Final Statistics
         step7_start = time.time()
@@ -576,14 +550,14 @@ def extract_ob_tablosu(pdf_path):
         print(f"📄 PDF Reading: {step1_time:.3f}s ({step1_time/total_time*100:.1f}%)")
         print(f"🔧 Text Normalization: {step2_time:.3f}s ({step2_time/total_time*100:.1f}%)")
         print(f"📍 Area Extraction: {step3_time:.3f}s ({step3_time/total_time*100:.1f}%)")
-        print(f"🤖 BERT OB Section Correction: {step4_time:.3f}s ({step4_time/total_time*100:.1f}%)")
+        print(f"🔧 Basic Text Normalization: {step4_time:.3f}s ({step4_time/total_time*100:.1f}%)")
         print(f"📊 Kazanım Table Processing: {step5_time:.3f}s ({step5_time/total_time*100:.1f}%)")
-        print(f"🎯 Batch Semantic Matching: {step6_time:.3f}s ({step6_time/total_time*100:.1f}%)")
+        print(f"🎯 String Matching Processing: {step6_time:.3f}s ({step6_time/total_time*100:.1f}%)")
         print(f"📋 Results Formatting: {step7_time:.3f}s ({step7_time/total_time*100:.1f}%)")
         
         if step6_time > 20:
-            print(f"\n⚠️  BOTTLENECK IDENTIFIED: Semantic matching taking {step6_time:.1f}s (>{step6_time/total_time*100:.0f}% of total time)")
-            print("💡 OPTIMIZATION TARGET: Batch semantic processing algorithms")
+            print(f"\n⚠️  BOTTLENECK IDENTIFIED: String matching taking {step6_time:.1f}s (>{step6_time/total_time*100:.0f}% of total time)")
+            print("💡 OPTIMIZATION TARGET: String matching algorithms")
         elif total_time > 30:
             print(f"\n⚠️  PERFORMANCE WARNING: Total processing time {total_time:.1f}s >30s")
         else:
@@ -752,48 +726,15 @@ def find_pdf_by_name(filename):
                 return os.path.join(root, file)
     return None
 
-def normalize_turkish_chars(text):
-    """PDF'den gelen bozuk Türkçe karakterleri düzeltir"""
-    replacements = {
-        'Ġ': 'İ',
-        'ġ': 'ı', 
-        'Ş': 'Ş',
-        'ş': 'ş',
-        'Ğ': 'Ğ',
-        'ğ': 'ğ',
-        'Ü': 'Ü',
-        'ü': 'ü',
-        'Ö': 'Ö',
-        'ö': 'ö',
-        'Ç': 'Ç',
-        'ç': 'ç'
-    }
-    
-    for wrong, correct in replacements.items():
-        text = text.replace(wrong, correct)
-    
-    return text
-
-# modules.nlp_bert çalışmaz ise basit büyük/küçük harf arama yapar.
-def bert_semantic_find(needle, haystack, threshold=70):
-    """Semantic similarity ile string arama yapar - BERT tabanlı"""
-    try:
-        from modules.nlp_bert import bert_semantic_find as bert_semantic_find
-        return bert_semantic_find(needle, haystack, threshold / 100.0)
-    except ImportError:
-        # Fallback to simple case-insensitive search if BERT not available
-        needle_norm = needle.upper()
-        haystack_norm = haystack.upper()
-        return haystack_norm.find(needle_norm)
 
 # Debug için full text body verir.
 def print_full_pdf_text(pdf_path):
-    with open(pdf_path, 'rb') as file:
-        pdf_reader = PyPDF2.PdfReader(file)
-        full_text = ""
-        for page in pdf_reader.pages:
-            full_text += page.extract_text() + "\n"
-        print(full_text)
+    doc = fitz.open(pdf_path)
+    full_text = ""
+    for page in doc:
+        full_text += page.get_text() + "\n"
+    doc.close()
+    print(full_text)
 
 def main():
     # Komut satırı argümanlarını kontrol et
@@ -845,24 +786,24 @@ def main():
         print("-" * 80)
 
         # PDF'ten tüm metni alalım
-        with open(pdf_path, 'rb') as file:
-            pdf_reader = PyPDF2.PdfReader(file)
-            full_text = ""
-            for page in pdf_reader.pages:
-                full_text += page.extract_text() + "\n"
+        doc = fitz.open(pdf_path)
+        full_text = ""
+        for page in doc:
+            full_text += page.get_text() + "\n"
+        doc.close()
 
         # normalize et
         full_text = re.sub(r'\s+', ' ', full_text)
 
         # Tüm sayfa ekrana yaz.
-        #print_full_pdf_text(pdf_path)  # tüm PDF metni burada görünür
+        # print_full_pdf_text(pdf_path)  # tüm PDF metni burada görünür
         
         # Ardından tüm metin üzerinden başlıkları çıkart
-        #extracted_fields = extract_fields_from_text(full_text)
-        #for key, value in extracted_fields.items():
-        #    title = key.split("_", 1)[-1].capitalize()
-        #    print(f"\n{title}: {value}")
-        #print()
+        extracted_fields = extract_fields_from_text(full_text)
+        for key, value in extracted_fields.items():
+            title = key.split("_", 1)[-1].capitalize()
+            print(f"\n{title}: {value}")
+        print()
 
         # KAZANIM SAYISI VE SÜRE TABLOSU
         result1 = extract_kazanim_sayisi_sure_tablosu(pdf_path)
