@@ -4,8 +4,9 @@ import os
 import sys
 import random
 import glob
+import unicodedata
 
-def extract_fields_from_text(text):
+def ex_temel_bilgiler(text):
     # Varyasyonlarla case-sensitive yapı
     patterns = [
         (["DERSİN ADI", "ADI"], ["DERSİN", "DERSĠN"]),                                  # Dersin Adı
@@ -17,31 +18,50 @@ def extract_fields_from_text(text):
         (["DEĞERLENDİRME"], ["DERSİN", "DERSĠN", "KAZANIM", "ÖĞRENME"]),                # Ölçme-Değerlendirme
     ]
     result = {}
+    
+    # Normalize edilmiş metin sadece eşleştirme için
+    text_normalized = normalize_turkish_text(text)
 
     for i, (start_keys, end_keys) in enumerate(patterns, 1):
         start_index = None
         start_match = ""
+        start_original_idx = None
+        
         for sk in start_keys:
-            idx = text.find(sk)
+            sk_normalized = normalize_turkish_text(sk)
+            idx = text_normalized.find(sk_normalized)
             if idx != -1 and (start_index is None or idx < start_index):
-                start_index = idx + len(sk)
+                start_index = idx + len(sk_normalized)
                 start_match = sk
-        if start_index is None:
+                # Orijinal metinde karşılık gelen pozisyonu bul
+                start_original_idx = text.upper().find(sk.upper())
+                if start_original_idx != -1:
+                    start_original_idx += len(sk)
+        
+        if start_index is None or start_original_idx is None:
             continue
+            
         end_index = None
+        end_original_idx = None
+        
         for ek in end_keys:
-            idx = text.find(ek, start_index)
+            ek_normalized = normalize_turkish_text(ek)
+            idx = text_normalized.find(ek_normalized, start_index)
             if idx != -1 and (end_index is None or idx < end_index):
                 end_index = idx
-        if end_index is not None:
-            section = text[start_index:end_index].strip()
+                # Orijinal metinde karşılık gelen pozisyonu bul
+                end_original_idx = text.upper().find(ek.upper(), start_original_idx)
+                
+        if end_original_idx is not None:
+            section = text[start_original_idx:end_original_idx].strip()
         else:
-            section = text[start_index:].strip()
+            section = text[start_original_idx:].strip()
+            
         section = re.sub(r'\s+', ' ', section)
         result[f"Case{i}_{start_match}"] = section
     return result
 
-def extract_kazanim_sayisi_sure_tablosu(pdf_path):
+def ex_kazanim_tablosu(pdf_path):
     """PDF'den KAZANIM SAYISI VE SÜRE TABLOSU'nu çıkarır ve formatlı string ile yapılandırılmış veri döndürür"""
     try:
         doc = fitz.open(pdf_path)
@@ -57,70 +77,130 @@ def extract_kazanim_sayisi_sure_tablosu(pdf_path):
             "TABLOS U", "TABLO SU", "TABL OSU", "TAB LOSU", "TA BLOSU"
         ]
         
+        # Türkçe karakterleri normalize ederek ara
+        full_text_normalized = normalize_turkish_text(full_text)
+        
         earliest_start = None
-        earliest_idx = len(full_text)
+        earliest_idx = len(full_text_normalized)
         table_start = None
         for pattern in table_start_patterns:
-            if pattern in full_text:
-                idx = full_text.find(pattern)
-                if idx < earliest_idx:
-                    earliest_idx = idx
-                    earliest_start = idx + len(pattern)
-                    table_start = pattern
+            pattern_normalized = normalize_turkish_text(pattern)
+            idx = full_text_normalized.find(pattern_normalized)
+            if idx != -1 and idx < earliest_idx:
+                earliest_idx = idx
+                earliest_start = idx + len(pattern_normalized)
+                table_start = pattern
         
         start_idx = earliest_start
         if table_start is None:
             return "KAZANIM SAYISI VE SÜRE TABLOSU bulunamadı", []
 
         end_markers = ["TOPLAM", "ÖĞRENME BİRİMİ"]
-        end_idx = len(full_text)
+        end_idx = len(full_text_normalized)
         for marker in end_markers:
-            idx = full_text.find(marker, start_idx + 50)
+            marker_normalized = normalize_turkish_text(marker)
+            idx = full_text_normalized.find(marker_normalized, start_idx + 50)
             if idx != -1 and idx < end_idx:
                 end_idx = idx
         
-        table_section = full_text[start_idx:end_idx].strip()
+        # Orijinal metinden section al ama pozisyonları normalize edilmiş metinden bul
+        table_section_original = full_text[start_idx:end_idx].strip()
+        table_section_normalized = full_text_normalized[start_idx:end_idx].strip()
 
-        if "TOPLAM" in table_section:
-            toplam_idx = table_section.find("TOPLAM")
-            after_toplam = table_section[toplam_idx:]
-            toplam_end = re.search(r'TOPLAM.*?100', after_toplam)
+        toplam_normalized = normalize_turkish_text("TOPLAM")
+        if toplam_normalized in table_section_normalized:
+            toplam_idx = table_section_normalized.find(toplam_normalized)
+            after_toplam = table_section_normalized[toplam_idx:]
+            toplam_end = re.search(r'TOPLAM.*?100', after_toplam, re.IGNORECASE)
             if toplam_end:
-                table_section = table_section[:toplam_idx + toplam_end.end()]
+                table_section_original = table_section_original[:toplam_idx + toplam_end.end()]
+                table_section_normalized = table_section_normalized[:toplam_idx + toplam_end.end()]
 
-        header_pattern = r'ÖĞRENME BİRİMİ.*?ORAN.*?\(\s*%\s*\)' 
-        table_section = re.sub(header_pattern, '', table_section).strip()
+        # Başlık satırını kaldır (ÖĞRENME BİRİMİ KAZANIM SAYISI DERS SAATİ ORAN) - Normalize edilmiş karakterlerle
+        header_patterns = [
+            # NORMALIZE EDİLMİŞ KARAKTERLER - table_section_normalized için
+            r'OGRENME.*?\(\s*%\s*\)',
+            r'OGRENME.*?\(%\)',
+            r'OGRENME.*?ORAN.*?\(\s*%\s*\)',
+            r'OGRENME.*?ORAN.*?\(%\)',
+            r'KAZANIM(?:.|\n)*?ORAN\s*\(\s*%\s*\)',  # geniş eşleşme, tüm başlık bloğunu kaldırır
+            r'KAZANIM SAYISI VE\s*SURE TABLOSU\s*OGRENME BIRIMI\s*KAZANIM\s*SAYISI\s*DERS SAATI\s*ORAN\s*\(\s*%\s*\)',  # tam uyumlu eşleşme
+            r'OGRENME(?:.|\n)*?ORAN(?:.|\n)*?\(\s*%\s*\)'  # geniş pattern
+        ]
+        
+        for header_pattern in header_patterns:
+            new_table_section_normalized = re.sub(header_pattern, '', table_section_normalized, flags=re.IGNORECASE | re.DOTALL).strip()
+            if len(new_table_section_normalized) < len(table_section_normalized):
+                table_section_normalized = new_table_section_normalized
+                # Aynı pattern'i orijinal metne de uygula (Türkçe karakterlerle)
+                original_pattern = header_pattern.replace('OGRENME', 'ÖĞRENME').replace('SURE', 'SÜRE').replace('BIRIMI', 'BİRİMİ').replace('SAATI', 'SAATİ')
+                table_section_original = re.sub(original_pattern, '', table_section_original, flags=re.IGNORECASE | re.DOTALL).strip()
+                break
+        
+        # Çıktı için orijinal metni kullan (header kaldırılmış hali)
+        table_section = table_section_original
 
         lines = []
         structured_data = []
         
+        # Her satır: İsim + sayılar + % pattern'i - Git geçmişinden gelişmiş versiyonlar
         patterns = [
-            r'([^0-9]+?)\s+(\d+)\s+(\d+)\s*/\s*(\d+)\s+(\d+(?:[,.]\d+)?)',
-            r'([^0-9]+?)\s+(\d+)\s+(\d+)\s+(\d+(?:[,.]\d+)?)',
-            r'([^0-9]+?)\s+(\d+)\s+(\d+)(?:\s|$)'
+            r'([^0-9]+?)\s+(\d+)\s+(\d+)\s*/\s*(\d+)\s+(\d+(?:[,\.]\d+)?)',  # Kesirli format + oran (18/36)
+            r'([^0-9]+?)\s+(\d+)\s+(\d+)\s+(\d+(?:[,\.]\d+)?)',              # Normal format + oran 
+            r'([^0-9]+?)\s+(\d+)\s+(\d+)(?:\s|$)',                           # Sadece 2 sütun (oran yok)
+            r'([^0-9]+?)\s+(\d+)\s+(\d+(?:[,\.]\d+)?)\s*%?',                 # Yüzde işareti opsiyonel
+            r'([^0-9]+?)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+(?:[,\.]\d+)?)',      # 5 sütun format
+            r'([^0-9]+?)\s+(\d+)\s+(\d+(?:[,\.]\d+)?)',                      # Basit 2 sütun format
         ]
 
         matches = []
         for pattern in patterns:
-            matches = re.findall(pattern, table_section)
-            if matches:
-                break
+            # Normalize edilmiş metinde pattern ara ama orijinal metinden değerleri al
+            normalized_matches = re.findall(pattern, table_section_normalized)
+            if normalized_matches:
+                # Orijinal metinde de aynı pattern'i ara
+                original_matches = re.findall(pattern, table_section_original)
+                if original_matches:
+                    matches = original_matches
+                    break
         
         for match in matches:
             ogrenme_birimi = re.sub(r'\s+', ' ', match[0].strip()).strip()
             kazanim_sayisi = match[1]
-
-            if len(match) == 3:
+            
+            # Gelişmiş pattern matching: 2-6 grup desteği
+            if len(match) == 2:
+                # Sadece isim + kazanım sayısı
+                ders_saati = "-"
+                oran = "-"
+            elif len(match) == 3:
+                # İsim + kazanım + ders saati/oran
                 ders_saati = match[2]
                 oran = "-"
+                # Eğer 3. alan % içeriyorsa oran olabilir
+                if '%' in str(match[2]) or ',' in str(match[2]) or '.' in str(match[2]):
+                    oran = match[2]
+                    ders_saati = "-"
             elif len(match) == 4:
+                # İsim + kazanım + ders saati + oran
                 ders_saati = match[2]
                 oran = match[3]
             elif len(match) == 5:
-                ders_saati = match[3]
-                oran = match[4]
+                # İsim + kazanım + ders saati + kesir + oran veya 5 sütun format
+                if '/' in str(match[3]):
+                    # Kesirli format: isim + kazanım + ders saati + kesir + oran
+                    ders_saati = f"{match[2]}/{match[3]}"
+                    oran = match[4]
+                else:
+                    # 5 sütun format: isim + kazanım + sütun3 + ders saati + oran
+                    ders_saati = match[3]
+                    oran = match[4]
+            elif len(match) == 6:
+                # Tam format: isim + kazanım + sütun3 + sütun4 + ders saati + oran
+                ders_saati = match[4]
+                oran = match[5]
             
-            if ogrenme_birimi.upper() != "TOPLAM":
+            if normalize_turkish_text(ogrenme_birimi) != normalize_turkish_text("TOPLAM"):
                 lines.append(f"{ogrenme_birimi}, {kazanim_sayisi}, {ders_saati}, {oran}")
                 structured_data.append({
                     'title': ogrenme_birimi,
@@ -151,7 +231,8 @@ def extract_ob_tablosu(pdf_path):
 
         full_text = re.sub(r'\s+', ' ', full_text)
 
-        toplam_idx = full_text.upper().find("TOPLAM")
+        full_text_normalized_for_search = normalize_turkish_text(full_text)
+        toplam_idx = full_text_normalized_for_search.find(normalize_turkish_text("TOPLAM"))
         if toplam_idx == -1:
             # Backup plan for TOPLAM
             pass
@@ -163,9 +244,10 @@ def extract_ob_tablosu(pdf_path):
         table_start_idx = None
         last_header_end = None
         for header in table_headers:
-            idx = full_text.find(header, toplam_idx)
+            header_normalized = normalize_turkish_text(header)
+            idx = full_text_normalized_for_search.find(header_normalized, toplam_idx)
             if idx != -1:
-                header_end = idx + len(header)
+                header_end = idx + len(header_normalized)
                 if last_header_end is None or header_end > last_header_end:
                     last_header_end = header_end
                     table_start_idx = header_end
@@ -174,16 +256,18 @@ def extract_ob_tablosu(pdf_path):
             return "Öğrenme Birimi Alanı - Başlangıç kelimeleri bulunamadı"
 
         stop_words = ["UYGULAMA", "FAALİYET", "TEMRİN", "DERSİN", "DERSĠN"]
-        table_end_idx = len(full_text)
+        table_end_idx = len(full_text_normalized_for_search)
         for stop_word in stop_words:
-            stop_idx = full_text.find(stop_word, table_start_idx)
+            stop_word_normalized = normalize_turkish_text(stop_word)
+            stop_idx = full_text_normalized_for_search.find(stop_word_normalized, table_start_idx)
             if stop_idx != -1 and stop_idx < table_end_idx:
                 table_end_idx = stop_idx
         
+        # Orijinal metinden al ama pozisyonları normalize edilmiş metinden bul
         ogrenme_birimi_alani = full_text[table_start_idx:table_end_idx].strip()
         ogrenme_birimi_alani = re.sub(r'\s+', ' ', ogrenme_birimi_alani).strip()
 
-        kazanim_tablosu_str, kazanim_tablosu_data = extract_kazanim_sayisi_sure_tablosu(pdf_path)
+        kazanim_tablosu_str, kazanim_tablosu_data = ex_kazanim_tablosu(pdf_path)
 
         header_match_info = ""
         formatted_content = ""
@@ -200,9 +284,9 @@ def extract_ob_tablosu(pdf_path):
                 
                 start_pos = 0
                 while True:
-                    baslik_upper = baslik_for_matching.upper()
-                    content_upper = ogrenme_birimi_alani[start_pos:].upper()
-                    string_idx = content_upper.find(baslik_upper)
+                    baslik_normalized = normalize_turkish_text(baslik_for_matching)
+                    content_normalized = normalize_turkish_text(ogrenme_birimi_alani[start_pos:])
+                    string_idx = content_normalized.find(baslik_normalized)
                     if string_idx >= 0:
                         idx = start_pos + string_idx
                     else:
@@ -234,9 +318,9 @@ def extract_ob_tablosu(pdf_path):
                 gecerli_eslesme = 0
                 start_pos = 0
                 while True:
-                    baslik_upper = baslik_for_matching.upper()
-                    content_upper = ogrenme_birimi_alani[start_pos:].upper()
-                    string_idx = content_upper.find(baslik_upper)
+                    baslik_normalized = normalize_turkish_text(baslik_for_matching)
+                    content_normalized = normalize_turkish_text(ogrenme_birimi_alani[start_pos:])
+                    string_idx = content_normalized.find(baslik_normalized)
                     if string_idx >= 0:
                         idx = start_pos + string_idx
                     else:
@@ -269,12 +353,12 @@ def extract_ob_tablosu(pdf_path):
                     start_pos = 0
                     first_valid_match_found = False
                     while True:
-                        baslik_normalized = re.sub(r'\s+', ' ', baslik_for_matching.strip().upper())
+                        baslik_normalized = normalize_turkish_text(baslik_for_matching)
                         content_section = ogrenme_birimi_alani[start_pos:]
-                        content_normalized = re.sub(r'\s+', ' ', content_section.strip().upper())
+                        content_normalized = normalize_turkish_text(content_section)
                         string_idx = content_normalized.find(baslik_normalized)
                         if string_idx >= 0:
-                            idx = start_pos + content_section.upper().find(baslik_for_matching.upper())
+                            idx = start_pos + string_idx
                         else:
                             break
                         
@@ -457,34 +541,76 @@ def extract_ob_tablosu_konu_bulma_yedek_plan(text, original_baslik, konu_sayisi)
     return None
 
 ## Yardımcı fonksiyonlar ##
-def find_all_pdfs_in_dbf_directory():
-    """data/dbf dizinindeki tüm PDF dosyalarını bulur"""
+def komutlar(param=None):
+    """
+    DBF PDF ve DOCX dosyalarını bulma ve yönetme fonksiyonu
+    
+    Args:
+        param (str/int/None): 
+            - None: Tüm dosyaları listele
+            - int: Rastgele N dosya seç
+            - str: İsme göre dosya ara
+    
+    Returns:
+        list: PDF ve DOCX dosya yolları listesi
+    """
     base_path = "/Users/ferhat/Library/Mobile Documents/com~apple~CloudDocs/Projeler/ProjectDogru/repos/alan-dal-ders/data/dbf"
     
-    # Tüm PDF dosyalarını bul
-    pdf_files = []
+    # Tüm PDF ve DOCX dosyalarını bul
+    all_files = []
+    supported_extensions = ('.pdf', '.docx')
     for root, dirs, files in os.walk(base_path):
         for file in files:
-            if file.lower().endswith('.pdf'):
-                pdf_files.append(os.path.join(root, file))
+            if file.lower().endswith(supported_extensions):
+                all_files.append(os.path.join(root, file))
     
-    return pdf_files
+    # Parametre yoksa tüm dosyaları döndür
+    if param is None:
+        return all_files
+    
+    # Sayı ise rastgele seçim yap
+    if isinstance(param, int) or (isinstance(param, str) and param.isdigit()):
+        sample_count = int(param)
+        if sample_count <= 0:
+            return []
+        if sample_count >= len(all_files):
+            return all_files
+        import random
+        return random.sample(all_files, sample_count)
+    
+    # String ise isim arama yap
+    if isinstance(param, str):
+        matching_files = []
+        for file_path in all_files:
+            filename = os.path.basename(file_path)
+            if param.lower() in filename.lower():
+                matching_files.append(file_path)
+        return matching_files
+    
+    return all_files
 
-def find_pdf_by_name(filename):
-    """data/dbf dizininde dosya adına göre ilk eşleşen PDF'i bulur"""
-    base_path = "/Users/ferhat/Library/Mobile Documents/com~apple~CloudDocs/Projeler/ProjectDogru/repos/alan-dal-ders/data/dbf"
+def normalize_turkish_text(text):
+    """Türkçe karakterleri normalize eder ve case-insensitive karşılaştırma için hazırlar"""
+    if not text:
+        return ""
     
-    for root, dirs, files in os.walk(base_path):
-        for file in files:
-            if file.lower().endswith('.pdf') and filename.lower() in file.lower():
-                return os.path.join(root, file)
-    return None
-    doc = fitz.open(pdf_path)
-    full_text = ""
-    for page in doc:
-        full_text += page.get_text() + "\n"
-    doc.close()
-    print(full_text)
+    # Türkçe karakterleri ASCII'ye dönüştür ve büyük harfe çevir
+    # İ -> I, i -> i, ğ -> g, ü -> u, ş -> s, ö -> o, ç -> c
+    char_map = {
+        'İ': 'I', 'ı': 'i', 'Ğ': 'G', 'ğ': 'g',
+        'Ü': 'U', 'ü': 'u', 'Ş': 'S', 'ş': 's', 
+        'Ö': 'O', 'ö': 'o', 'Ç': 'C', 'ç': 'c'
+    }
+    
+    # Karakterleri değiştir
+    normalized = text
+    for turkish_char, ascii_char in char_map.items():
+        normalized = normalized.replace(turkish_char, ascii_char)
+    
+    # Büyük harfe çevir ve whitespace normalize et
+    normalized = re.sub(r'\s+', ' ', normalized.upper().strip())
+    
+    return normalized
 
 def main():
     # Komut satırı argümanlarını kontrol et
@@ -503,40 +629,37 @@ def main():
             print("Hata: Sayı parametresi pozitif bir tam sayı olmalıdır.")
             sys.exit(1)
         
-        all_pdfs = find_all_pdfs_in_dbf_directory()
+        all_files = komutlar()
         
-        if not all_pdfs:
-            print("data/dbf dizininde hiç PDF dosyası bulunamadı.")
+        if not all_files:
+            print("data/dbf dizininde hiç PDF/DOCX dosyası bulunamadı.")
             sys.exit(1)
            
         # Rastgele örnekleme yap
-        if sample_count > len(all_pdfs):
-            print(f"Uyarı: İstenen sayı ({sample_count}) toplam dosya sayısından ({len(all_pdfs)}) büyük. Tüm dosyalar işlenecek.")
-            selected_pdfs = all_pdfs
-        else:
-            selected_pdfs = random.sample(all_pdfs, sample_count)
+        selected_files = komutlar(sample_count)
+        if len(selected_files) < sample_count:
+            print(f"Uyarı: İstenen sayı ({sample_count}) toplam dosya sayısından ({len(all_files)}) büyük. {len(selected_files)} dosya işlenecek.")
     except ValueError:
         # Dosya adı ise
-        found_pdf = find_pdf_by_name(param)
-        if found_pdf:
-            selected_pdfs = [found_pdf]
-            all_pdfs = find_all_pdfs_in_dbf_directory()  # Toplam sayı için
+        selected_files = komutlar(param)
+        if selected_files:
+            all_files = komutlar()  # Toplam sayı için
         else:
             print(f"'{param}' adında dosya data/dbf dizininde bulunamadı.")
             sys.exit(1)
     
-    print(f"Seçilen {len(selected_pdfs)}/{len(all_pdfs)} dosya işleniyor...\n")
+    print(f"Seçilen {len(selected_files)}/{len(all_files)} dosya işleniyor...\n")
     
     # Her dosyayı işle
-    for i, pdf_path in enumerate(selected_pdfs, 1):
+    for i, file_path in enumerate(selected_files, 1):
         # 1. Dizin ve dosya adı satırı
-        print(pdf_path)
+        print(file_path)
         
         # 2. Çizgi
         print("-" * 80)
 
-        # PDF'ten tüm metni alalım
-        doc = fitz.open(pdf_path)
+        # Dosyadan tüm metni alalım (PDF veya DOCX)
+        doc = fitz.open(file_path)
         full_text = ""
         for page in doc:
             full_text += page.get_text() + "\n"
@@ -546,24 +669,24 @@ def main():
         full_text = re.sub(r'\s+', ' ', full_text)
 
         # Tüm sayfa ekrana yaz.
-        # print(full_text)
+        print(full_text)
         
         # Ardından tüm metin üzerinden başlıkları çıkart
-        extracted_fields = extract_fields_from_text(full_text)
+        extracted_fields = ex_temel_bilgiler(full_text)
         for key, value in extracted_fields.items():
             title = key.split("_", 1)[-1].capitalize()
             print(f"\n{title}: {value}")
         print()
 
         # KAZANIM SAYISI VE SÜRE TABLOSU
-        result1 = extract_kazanim_sayisi_sure_tablosu(pdf_path)
-        print(result1)
+        kazanim_tablosu_str, kazanim_tablosu_data = ex_kazanim_tablosu(file_path)
+        print(kazanim_tablosu_str)
         
         # ÖĞRENİM BİRİMLERİ TABLOSU
-        result2 = extract_ob_tablosu(pdf_path)
+        result2 = extract_ob_tablosu(file_path)
         print(result2)
         print("-"*80)
-        print(pdf_path)
+        print(file_path)
 
 if __name__ == "__main__":
     main()

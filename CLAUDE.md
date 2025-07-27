@@ -129,6 +129,8 @@ Alan (Area) → Dal (Field) → Ders (Course) → Öğrenme Birimi (Learning Uni
   - **Pattern Matching**: Madde numaraları için "1. " veya "1 " pattern'i kullanır
   - **PyMuPDF**: PDF okuma işlemleri PyPDF2'den PyMuPDF'e dönüştürüldü
   - **✅ YENİ**: Basit text normalizasyonu ve hızlı string eşleştirme sistemi
+  - **📝 Fonksiyon Adları**: `ex_kazanim_tablosu()` - Kazanım tablosu çıkarma, `ex_temel_bilgiler()` - Temel ders bilgilerini çıkarma, `komutlar()` - PDF/DOCX dosya yönetimi
+  - **🔧 Header Pattern**: Çoklu pattern sistemi ile farklı tablo başlık formatlarını destekler (5 farklı pattern)
 
 ## 🗄️ Veritabanı Yapısı (SQLite)
 
@@ -296,7 +298,7 @@ temel_plan_ders_dal
 
 ### 🔧 Teknik Değişiklikler:
 
-1. **extract_olcme.py - BERT Sistemi Kaldırıldı**:
+1. **extract_olcme.py - BERT Sistemi Kaldırıldı (Fonksiyonlar: ex_kazanim_tablosu, ex_temel_bilgiler)**:
    ```python
    # ❌ KALDIRILAN (BERT-based)
    from modules.nlp_bert import semantic_find, correct_turkish_text_with_bert
@@ -379,6 +381,24 @@ pos = text.find("2")  # "15-20" içindeki "2"yi de bulur
 # Sadece whitespace normalizasyonu
 def normalize_text(text):
     return re.sub(r'\s+', ' ', text.strip())
+```
+
+### Extract Olcme.py Fonksiyonları:
+```python
+# PDF'ten temel ders bilgilerini çıkar
+from extract_olcme import ex_temel_bilgiler
+extracted_fields = ex_temel_bilgiler(full_text)
+
+# PDF'ten kazanım tablosunu çıkar
+from extract_olcme import ex_kazanim_tablosu
+kazanim_str, kazanim_data = ex_kazanim_tablosu(pdf_path)
+
+# PDF/DOCX dosya yönetimi - Birleşik komutlar fonksiyonu
+from extract_olcme import komutlar
+all_files = komutlar()                   # Tüm PDF/DOCX dosyaları listele
+random_files = komutlar(5)               # Rastgele 5 dosya seç
+search_files = komutlar("bilişim")       # İsme göre ara
+docx_files = komutlar(".docx")           # Sadece DOCX dosyaları
 ```
 
 ## 🔌 API Endpoints - Detaylı Referans
