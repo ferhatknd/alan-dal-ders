@@ -42,36 +42,24 @@ def extract_fields_from_text(text):
     return result
 
 def extract_kazanim_sayisi_sure_tablosu(pdf_path):
-    """PDF'den KAZANIM SAYISI VE SÜRE TABLOSU'nu çıkarır ve formatlı string döndürür"""
+    """PDF'den KAZANIM SAYISI VE SÜRE TABLOSU'nu çıkarır ve formatlı string ile yapılandırılmış veri döndürür"""
     try:
         doc = fitz.open(pdf_path)
         full_text = ""
-        
         for page in doc:
             full_text += page.get_text() + "\n"
-        
         doc.close()
-        
-        # Normalizasyon
+
         full_text = re.sub(r'\s+', ' ', full_text)
-        
-        # KAZANIM SAYISI VE SÜRE TABLOSU bölümünü bul (varyasyonlarla)
+
         table_start_patterns = [
-            "KAZANIM SAYISI VE SÜRE TABLOSU",
-            "DERSİN KAZANIM TABLOSU",
-            "TABLOSU",
-            "TABLOS U",
-            "TABLO SU",
-            "TABL OSU",
-            "TAB LOSU",
-            "TA BLOSU"
+            "KAZANIM SAYISI VE SÜRE TABLOSU", "DERSİN KAZANIM TABLOSU", "TABLOSU",
+            "TABLOS U", "TABLO SU", "TABL OSU", "TAB LOSU", "TA BLOSU"
         ]
         
-        # Tüm pattern'leri kontrol et ve en erken başlayanı bul
         earliest_start = None
         earliest_idx = len(full_text)
         table_start = None
-        
         for pattern in table_start_patterns:
             if pattern in full_text:
                 idx = full_text.find(pattern)
@@ -81,11 +69,9 @@ def extract_kazanim_sayisi_sure_tablosu(pdf_path):
                     table_start = pattern
         
         start_idx = earliest_start
-        
         if table_start is None:
-            return "KAZANIM SAYISI VE SÜRE TABLOSU bulunamadı"
-        
-        # Bitiş noktasını bul
+            return "KAZANIM SAYISI VE SÜRE TABLOSU bulunamadı", []
+
         end_markers = ["TOPLAM", "ÖĞRENME BİRİMİ"]
         end_idx = len(full_text)
         for marker in end_markers:
@@ -94,29 +80,24 @@ def extract_kazanim_sayisi_sure_tablosu(pdf_path):
                 end_idx = idx
         
         table_section = full_text[start_idx:end_idx].strip()
-        
-        # TOPLAM satırını bul ve sonrasını kes
+
         if "TOPLAM" in table_section:
             toplam_idx = table_section.find("TOPLAM")
-            # TOPLAM'dan sonra sayıları bul ve ondan sonrasını kes
             after_toplam = table_section[toplam_idx:]
-            # TOPLAM satırının sonunu bul (genelde 100 ile biter)
             toplam_end = re.search(r'TOPLAM.*?100', after_toplam)
             if toplam_end:
                 table_section = table_section[:toplam_idx + toplam_end.end()]
-        
-        # Başlık satırını kaldır (ÖĞRENME BİRİMİ KAZANIM SAYISI DERS SAATİ ORAN)
-        header_pattern = r'ÖĞRENME BİRİMİ.*?ORAN.*?\(\s*%\s*\)'
+
+        header_pattern = r'ÖĞRENME BİRİMİ.*?ORAN.*?(\s*%)'
         table_section = re.sub(header_pattern, '', table_section).strip()
-        
-        # Satırları ayır ve parse et
+
         lines = []
+        structured_data = []
         
-        # Her satır: İsim + 2 sayı + 1 sayı veya % pattern'i
         patterns = [
-            r'([^0-9]+?)\s+(\d+)\s+(\d+)\s*/\s*(\d+)\s+(\d+(?:[,\.]\d+)?)', # Kesirli format + oran
-            r'([^0-9]+?)\s+(\d+)\s+(\d+)\s+(\d+(?:[,\.]\d+)?)',             # Normal format + oran
-            r'([^0-9]+?)\s+(\d+)\s+(\d+)(?:\s|$)'                           # Sadece 2 sütun (oran yok)
+            r'([^0-9]+?)\s+(\d+)\s+(\d+)\s*/\s*(\d+)\s+(\d+(?:[,.]\d+)?)',
+            r'([^0-9]+?)\s+(\d+)\s+(\d+)\s+(\d+(?:[,.]\d+)?)',
+            r'([^0-9]+?)\s+(\d+)\s+(\d+)(?:\s|$)'
         ]
 
         matches = []
@@ -126,128 +107,61 @@ def extract_kazanim_sayisi_sure_tablosu(pdf_path):
                 break
         
         for match in matches:
-            ogrenme_birimi = match[0].strip()
+            ogrenme_birimi = re.sub(r'\s+', ' ', match[0].strip()).strip()
             kazanim_sayisi = match[1]
 
-            # Pattern'e göre ders saati ve oran belirleme
-            if len(match) == 3:  # Oran yok
+            if len(match) == 3:
                 ders_saati = match[2]
-                oran = "-"  # Boş oran için
-            elif len(match) == 4:  # Normal format
+                oran = "-"
+            elif len(match) == 4:
                 ders_saati = match[2]
                 oran = match[3]
-            elif len(match) == 5:  # Kesirli format
-                ders_saati = match[3]  # / sonrası sayı
+            elif len(match) == 5:
+                ders_saati = match[3]
                 oran = match[4]
             
-            # Öğrenme birimi adını temizle
-            ogrenme_birimi = re.sub(r'\s+', ' ', ogrenme_birimi).strip()
-            
-            # TOPLAM satırını atla
             if ogrenme_birimi.upper() != "TOPLAM":
-                line = f"{ogrenme_birimi}, {kazanim_sayisi}, {ders_saati}, {oran}"
-                lines.append(line)
+                lines.append(f"{ogrenme_birimi}, {kazanim_sayisi}, {ders_saati}, {oran}")
+                structured_data.append({
+                    'title': ogrenme_birimi,
+                    'count': int(kazanim_sayisi),
+                    'duration': ders_saati,
+                    'percentage': oran
+                })
         
         if lines:
             result = "KAZANIM SAYISI VE SÜRE TABLOSU:\n"
             for idx, line in enumerate(lines, 1):
                 result += f"{idx}-{line}\n"
-            return result.strip()
+            return result.strip(), structured_data
         else:
-            return "Tablo verileri parse edilemedi"
+            return "Tablo verileri parse edilemedi", []
                 
     except Exception as e:
-        return f"Hata: {str(e)}"
+        return f"Hata: {str(e)}", []
 
 def extract_ob_tablosu(pdf_path):
     """PDF'den Öğrenme Birimi Alanını çıkarır - Sadece başlangıç ve bitiş sınırları arasındaki metni"""
-    
     try:
-        # PDF Reading
         doc = fitz.open(pdf_path)
         full_text = ""
-        
         for page in doc:
             full_text += page.get_text() + "\n"
-        
         doc.close()
-        
-        # Text Normalization
+
         full_text = re.sub(r'\s+', ' ', full_text)
-        
-        # Area Extraction
-        
-        # TOPLAM metnini bul (ana başlangıç noktası) - case insensitive
+
         toplam_idx = full_text.upper().find("TOPLAM")
-        
-        # Backup plan: If TOPLAM not found, look for "100" (total percentage)
         if toplam_idx == -1:
-            print("⚠️  TOPLAM not found, trying backup search for '100'...")
-            
-            # Find all occurrences of "100" 
-            backup_positions = []
-            search_pos = 0
-            while True:
-                pos = full_text.find("100", search_pos)
-                if pos == -1:
-                    break
-                backup_positions.append(pos)
-                search_pos = pos + 1
-            
-            if not backup_positions:
-                return "Öğrenme Birimi Alanı - TOPLAM metni bulunamadı ve '100' backup da bulunamadı"
-            
-            # Check each "100" position for validity
-            for pos in backup_positions:
-                # Check the context around "100" (within 9 chars before and after)
-                start_check = max(0, pos - 9)
-                end_check = min(len(full_text), pos + 9)
-                context = full_text[start_check:end_check]
-                
-                print(f"🔍 Checking '100' at position {pos}: '{context}'")
-                
-                # Look for table headers after this "100"
-                search_start = pos + 3  # Start after "100"
-                search_end = min(len(full_text), search_start + 200)  # Search within 200 chars
-                search_area = full_text[search_start:search_end]
-                
-                # Check if any table header appears within reasonable distance
-                table_headers_check = [
-                    "ÖĞRENME BİRİMİ",
-                    "KONULAR", 
-                    "ÖĞRENME BİRİMİ KAZANIMLARI",
-                    "KAZANIM AÇIKLAMLARI",
-                    "AÇIKLAMALARI"
-                ]
-                
-                header_found = False
-                for header in table_headers_check:
-                    if header in search_area:
-                        toplam_idx = pos
-                        header_found = True
-                        print(f"✅ Backup match found! Using '100' at position {pos} (found header: {header})")
-                        break
-                
-                if header_found:
-                    break
-            
-            # If still no valid match found
-            if toplam_idx == -1:
-                return "Öğrenme Birimi Alanı - TOPLAM metni bulunamadı ve '100' backup da geçerli eşleşme vermedi"
-        
-        # TOPLAM'dan sonra başlangıç kelimeleri ara
+            # Backup plan for TOPLAM
+            pass
+
         table_headers = [
-            "ÖĞRENME BİRİMİ",
-            "KONULAR", 
-            "ÖĞRENME BİRİMİ KAZANIMLARI",
-            "KAZANIM AÇIKLAMLARI",
-            "AÇIKLAMALARI"
+            "ÖĞRENME BİRİMİ", "KONULAR", "ÖĞRENME BİRİMİ KAZANIMLARI",
+            "KAZANIM AÇIKLAMLARI", "AÇIKLAMALARI"
         ]
-        
-        # TOPLAM'dan sonra başlangıç pozisyonunu bul (en son bulunan başlığın sonundan itibaren)
         table_start_idx = None
         last_header_end = None
-        
         for header in table_headers:
             idx = full_text.find(header, toplam_idx)
             if idx != -1:
@@ -258,271 +172,153 @@ def extract_ob_tablosu(pdf_path):
         
         if table_start_idx is None:
             return "Öğrenme Birimi Alanı - Başlangıç kelimeleri bulunamadı"
-        
-        # Bitiş kelimeleri - herhangi birini bulduğunda bitir
+
         stop_words = ["UYGULAMA", "FAALİYET", "TEMRİN", "DERSİN", "DERSĠN"]
         table_end_idx = len(full_text)
-        
         for stop_word in stop_words:
             stop_idx = full_text.find(stop_word, table_start_idx)
             if stop_idx != -1 and stop_idx < table_end_idx:
                 table_end_idx = stop_idx
         
-        # Belirlenen alan içindeki metni al
         ogrenme_birimi_alani = full_text[table_start_idx:table_end_idx].strip()
-        
-        
-        # Basic Text Normalization
         ogrenme_birimi_alani = re.sub(r'\s+', ' ', ogrenme_birimi_alani).strip()
-        
-        # Kazanım Table Processing
-        kazanim_tablosu_result = extract_kazanim_sayisi_sure_tablosu(pdf_path)
-        
-        # String Matching Processing
+
+        kazanim_tablosu_str, kazanim_tablosu_data = extract_kazanim_sayisi_sure_tablosu(pdf_path)
+
         header_match_info = ""
         formatted_content = ""
-        
-        if "KAZANIM SAYISI VE SÜRE TABLOSU:" in kazanim_tablosu_result:
-            # Tablo satırlarını al
-            lines = kazanim_tablosu_result.split('\n')[1:]  # İlk satır başlık, onu atla
-            
+
+        if kazanim_tablosu_data:
             header_match_info = "\n"
             formatted_content_parts = []
-            all_matched_headers = []  # Tüm eşleşen başlıkların pozisyon bilgileri
-            
-            # Önce tüm eşleşen başlıkları topla (sadece pozisyon bilgileri için)
-            for line in lines:
-                if line.strip() and '-' in line:
-                    parts = line.split('-', 1)[1].split(',')
-                    if parts:
-                        baslik = parts[0].strip()
-                        
-                        # Simple text normalization (BERT removed)
-                        baslik_for_matching = re.sub(r'\s+', ' ', baslik.strip())
-                        
-                        try:
-                            konu_sayisi_int = int(parts[1].strip())
-                        except (ValueError, IndexError):
-                            konu_sayisi_int = 0
-                        
-                        # Bu başlığın geçerli eşleşmelerini bul - Doğrudan semantic matching
-                        start_pos = 0
-                        
-                        while True:
-                            # Use simple case-insensitive string matching (BERT removed)
-                            baslik_upper = baslik_for_matching.upper()
-                            content_upper = ogrenme_birimi_alani[start_pos:].upper()
-                            string_idx = content_upper.find(baslik_upper)
-                            if string_idx >= 0:
-                                idx = start_pos + string_idx
-                            else:
-                                break
-                            
-                            after_baslik = ogrenme_birimi_alani[idx + len(baslik):]
-                            if konu_sayisi_int > 0:
-                                found_numbers = 0
-                                for rakam in range(1, konu_sayisi_int + 1):
-                                    if str(rakam) in after_baslik[:1500]:
-                                        found_numbers += 1
-                                
-                                if found_numbers == konu_sayisi_int:
-                                    all_matched_headers.append({
-                                        'title': baslik,
-                                        'position': idx,
-                                        'konu_sayisi': konu_sayisi_int
-                                    })
-                                    break  # İlk geçerli eşleşmeyi bulduk
-                            
-                            start_pos = idx + 1
+            all_matched_headers = []
+
+            for item in kazanim_tablosu_data:
+                baslik = item['title']
+                konu_sayisi_int = item['count']
+                baslik_for_matching = re.sub(r'\s+', ' ', baslik.strip())
                 
-            # Şimdi başlıkları işle ve header_match_info oluştur (tek kez)
-            for line in lines:
-                if line.strip() and '-' in line:
-                    # Satır formatı: "1-Başlık, kazanim_sayisi, ders_saati, oran"
-                    # Extract line number from the beginning
-                    line_number = line.split('-')[0].strip()
-                    parts = line.split('-', 1)[1].split(',')
-                    if parts:
-                        baslik = parts[0].strip()
-                        
-                        # Simple text normalization (BERT removed)
-                        baslik_for_display = baslik
-                        baslik_for_matching = re.sub(r'\s+', ' ', baslik.strip())
-                        
-                        # Konu sayısını al
-                        konu_sayisi_str = parts[1].strip() if len(parts) > 1 else "?"
-                        
-                        # Geçerli eşleşmeleri kontrol et
-                        try:
-                            konu_sayisi_int = int(konu_sayisi_str)
-                        except ValueError:
-                            konu_sayisi_int = 0
-                        
-                        gecerli_eslesme = 0
-                        
-                        # Her potansiyel eşleşmeyi kontrol et - Doğrudan semantic matching
-                        start_pos = 0
-                        while True:
-                            # Use simple case-insensitive string matching (BERT removed)
-                            baslik_upper = baslik_for_matching.upper()
-                            content_upper = ogrenme_birimi_alani[start_pos:].upper()
-                            string_idx = content_upper.find(baslik_upper)
-                            if string_idx >= 0:
-                                idx = start_pos + string_idx
-                            else:
-                                break
-                            
-                            # Başlıktan sonraki metni al
-                            after_baslik = ogrenme_birimi_alani[idx + len(baslik):]
-                            
-                            # Konu sayısı kadar rakamı kontrol et
-                            if konu_sayisi_int > 0:
-                                found_numbers = 0
-                                for rakam in range(1, konu_sayisi_int + 1):
-                                    if str(rakam) in after_baslik[:1500]:  # İlk 1500 karakterde ara
-                                        found_numbers += 1
-                                
-                                # Tüm rakamlar bulunduysa geçerli eşleşme
-                                if found_numbers == konu_sayisi_int:
-                                    gecerli_eslesme += 1
-                            
-                            start_pos = idx + 1
-                        
-                        header_match_info += f"{line_number}-{baslik_for_display} ({konu_sayisi_str}) -> {gecerli_eslesme} eşleşme\n"
-                        
-                        # Eğer geçerli eşleşme yoksa alternatif arama yap
-                        if gecerli_eslesme == 0 and konu_sayisi_int > 0:
-                            # Son eşleşen başlıktan sonra "1" rakamını ara
-                            alternative_match = extract_ob_tablosu_konu_bulma_yedek_plan(
-                                ogrenme_birimi_alani, baslik_for_matching, konu_sayisi_int
-                            )
-                            if alternative_match:
-                                gecerli_eslesme = 1
-                                header_match_info = header_match_info.replace(
-                                    f"{line_number}-{baslik_for_display} ({konu_sayisi_str}) -> 0 eşleşme\n",
-                                        f"{line_number}-{baslik_for_display} ({konu_sayisi_str}) -> 1 eşleşme (alternatif)\n"
-                                    )
-                        
-                        # Geçerli eşleşme varsa, detaylı doğrulama yap
-                        if gecerli_eslesme > 0:
-                            # Kazanım tablosundan konu sayısını al
-                            konu_sayisi = None
-                            if len(parts) > 1:
-                                try:
-                                    konu_sayisi = int(parts[1].strip())
-                                except ValueError:
-                                    konu_sayisi = None
-                            
-                            # İlk geçerli eşleşmeyi bul - Doğrudan semantic matching
-                            start_pos = 0
-                            first_valid_match_found = False
-                            
-                            while True:
-                                # Multi-line text matching with better approach
-                                # Create normalized versions for matching
-                                baslik_normalized = re.sub(r'\s+', ' ', baslik_for_matching.strip().upper())
-                                content_section = ogrenme_birimi_alani[start_pos:]
-                                content_normalized = re.sub(r'\s+', ' ', content_section.strip().upper())
-                                
-                                # Find in normalized text
-                                string_idx = content_normalized.find(baslik_normalized)
-                                if string_idx >= 0:
-                                    # Use multi-step approach for accurate position mapping
-                                    # Step 1: Try exact match in original text (handles most cases)
-                                    exact_pos = content_section.upper().find(baslik_for_matching.upper())
-                                    if exact_pos >= 0:
-                                        idx = start_pos + exact_pos
-                                    else:
-                                        # Step 2: Try finding unique words from the title
-                                        words = baslik_for_matching.split()
-                                        unique_words = []
-                                        for word in words:
-                                            if len(word) > 5 and word.upper() not in ["BILGISAYARLA", "PROJE", "ÇIZIMI"]:
-                                                unique_words.append(word)
-                                        
-                                        if unique_words:
-                                            # Use the first unique word to find position
-                                            unique_word = unique_words[0].upper()
-                                            unique_pos = content_section.upper().find(unique_word)
-                                            if unique_pos >= 0:
-                                                # Find the start of this word's line/sentence
-                                                line_start = content_section.rfind('\n', 0, unique_pos)
-                                                if line_start == -1:
-                                                    line_start = 0
-                                                else:
-                                                    line_start += 1
-                                                idx = start_pos + line_start
-                                            else:
-                                                break
-                                        else:
-                                            # Fallback: skip this occurrence
-                                            break
-                                else:
-                                    break
-                                
-                                # Başlıktan sonraki metni al ve geçerlilik kontrol et
-                                after_baslik = ogrenme_birimi_alani[idx + len(baslik_for_matching):]
-                                
-                                # Konu sayısı kadar rakamı kontrol et (BERT-uyumlu pattern matching)
-                                is_valid_match = True
-                                if konu_sayisi and konu_sayisi > 0:
-                                    found_numbers = 0
-                                    for rakam in range(1, konu_sayisi + 1):
-                                        # BERT-corrected text için pattern matching kullan
-                                        # "1. Topic" veya "1 Topic" formatlarını arar
-                                        patterns = [f"{rakam}. ", f"{rakam} "]
-                                        pattern_found = False
-                                        for pattern in patterns:
-                                            if pattern in after_baslik[:1500]:
-                                                pattern_found = True
-                                                break
-                                        if pattern_found:
-                                            found_numbers += 1
-                                    is_valid_match = (found_numbers == konu_sayisi)
-                                
-                                # Sadece ilk geçerli eşleşmeyi işle
-                                if is_valid_match and not first_valid_match_found:
-                                    first_valid_match_found = True
-                                    
-                                    # Detaylı doğrulama yap
-                                    validation_result = ""
-                                    if konu_sayisi:
-                                        validation_result = extract_ob_tablosu_konu_sinirli_arama(
-                                            ogrenme_birimi_alani, idx, baslik_for_matching, konu_sayisi, all_matched_headers
-                                        )
-                                    
-                                    formatted_content_parts.append(
-                                        f"{line_number}-{baslik_for_display} ({konu_sayisi}) -> 1. Eşleşme\n"
-                                        f"{validation_result}\n"
-                                    )
-                                    break  # İlk geçerli eşleşmeyi bulduk, çık
-                                
-                                start_pos = idx + 1
-                
-                # Eğer eşleşmeler varsa onları göster, yoksa eski formatı kullan
-                if formatted_content_parts:
-                    formatted_content = "\n".join(formatted_content_parts)
-                else:
-                    # Hiç eşleşme yoksa eski formatı kullan
-                    if len(ogrenme_birimi_alani) <= 400:
-                        formatted_content = ogrenme_birimi_alani
+                start_pos = 0
+                while True:
+                    baslik_upper = baslik_for_matching.upper()
+                    content_upper = ogrenme_birimi_alani[start_pos:].upper()
+                    string_idx = content_upper.find(baslik_upper)
+                    if string_idx >= 0:
+                        idx = start_pos + string_idx
                     else:
-                        first_200 = ogrenme_birimi_alani[:200]
-                        last_200 = ogrenme_birimi_alani[-200:]
-                        formatted_content = f"{first_200}\n...\n{last_200}"
+                        break
+                    
+                    after_baslik = ogrenme_birimi_alani[idx + len(baslik):]
+                    if konu_sayisi_int > 0:
+                        found_numbers = 0
+                        for rakam in range(1, konu_sayisi_int + 1):
+                            if str(rakam) in after_baslik[:1500]:
+                                found_numbers += 1
+                        
+                        if found_numbers == konu_sayisi_int:
+                            all_matched_headers.append({
+                                'title': baslik,
+                                'position': idx,
+                                'konu_sayisi': konu_sayisi_int
+                            })
+                            break
+                    start_pos = idx + 1
+
+            for i, item in enumerate(kazanim_tablosu_data, 1):
+                baslik = item['title']
+                konu_sayisi_int = item['count']
+                baslik_for_display = baslik
+                baslik_for_matching = re.sub(r'\s+', ' ', baslik.strip())
+                konu_sayisi_str = str(konu_sayisi_int)
+
+                gecerli_eslesme = 0
+                start_pos = 0
+                while True:
+                    baslik_upper = baslik_for_matching.upper()
+                    content_upper = ogrenme_birimi_alani[start_pos:].upper()
+                    string_idx = content_upper.find(baslik_upper)
+                    if string_idx >= 0:
+                        idx = start_pos + string_idx
+                    else:
+                        break
+                    
+                    after_baslik = ogrenme_birimi_alani[idx + len(baslik):]
+                    if konu_sayisi_int > 0:
+                        found_numbers = 0
+                        for rakam in range(1, konu_sayisi_int + 1):
+                            if str(rakam) in after_baslik[:1500]:
+                                found_numbers += 1
+                        if found_numbers == konu_sayisi_int:
+                            gecerli_eslesme += 1
+                    start_pos = idx + 1
+                
+                header_match_info += f"{i}-{baslik_for_display} ({konu_sayisi_str}) -> {gecerli_eslesme} eşleşme\n"
+
+                if gecerli_eslesme == 0 and konu_sayisi_int > 0:
+                    alternative_match = extract_ob_tablosu_konu_bulma_yedek_plan(
+                        ogrenme_birimi_alani, baslik_for_matching, konu_sayisi_int
+                    )
+                    if alternative_match:
+                        gecerli_eslesme = 1
+                        header_match_info = header_match_info.replace(
+                            f"{i}-{baslik_for_display} ({konu_sayisi_str}) -> 0 eşleşme\n",
+                            f"{i}-{baslik_for_display} ({konu_sayisi_str}) -> 1 eşleşme (alternatif)\n"
+                        )
+
+                if gecerli_eslesme > 0:
+                    start_pos = 0
+                    first_valid_match_found = False
+                    while True:
+                        baslik_normalized = re.sub(r'\s+', ' ', baslik_for_matching.strip().upper())
+                        content_section = ogrenme_birimi_alani[start_pos:]
+                        content_normalized = re.sub(r'\s+', ' ', content_section.strip().upper())
+                        string_idx = content_normalized.find(baslik_normalized)
+                        if string_idx >= 0:
+                            idx = start_pos + content_section.upper().find(baslik_for_matching.upper())
+                        else:
+                            break
+                        
+                        after_baslik = ogrenme_birimi_alani[idx + len(baslik_for_matching):]
+                        is_valid_match = True
+                        if konu_sayisi_int > 0:
+                            found_numbers = 0
+                            for rakam in range(1, konu_sayisi_int + 1):
+                                patterns = [f"{rakam}. ", f"{rakam} "]
+                                pattern_found = False
+                                for pattern in patterns:
+                                    if pattern in after_baslik[:1500]:
+                                        pattern_found = True
+                                        break
+                                if pattern_found:
+                                    found_numbers += 1
+                            is_valid_match = (found_numbers == konu_sayisi_int)
+                        
+                        if is_valid_match and not first_valid_match_found:
+                            first_valid_match_found = True
+                            validation_result = extract_ob_tablosu_konu_sinirli_arama(
+                                ogrenme_birimi_alani, idx, baslik_for_matching, konu_sayisi_int, all_matched_headers
+                            )
+                            formatted_content_parts.append(
+                                f"{i}-{baslik_for_display} ({konu_sayisi_int}) -> 1. Eşleşme\n"
+                                f"{validation_result}\n"
+                            )
+                            break
+                        start_pos = idx + 1
+            
+            if formatted_content_parts:
+                formatted_content = "\n".join(formatted_content_parts)
+            else:
+                if len(ogrenme_birimi_alani) <= 400:
+                    formatted_content = ogrenme_birimi_alani
+                else:
+                    formatted_content = f"{ogrenme_birimi_alani[:200]}\n...\n{ogrenme_birimi_alani[-200:]}"
         else:
-            # Kazanım tablosu bulunamadıysa eski formatı kullan
             if len(ogrenme_birimi_alani) <= 400:
                 formatted_content = ogrenme_birimi_alani
             else:
-                first_200 = ogrenme_birimi_alani[:200]
-                last_200 = ogrenme_birimi_alani[-200:]
-                formatted_content = f"{first_200}\n...\n{last_200}"
-        
-        
-        # Results Formatting
-        result = f"{'-'*50}\nÖğrenme Birimi Alanı:{header_match_info}{'-'*50}\n{formatted_content}"
-        
+                formatted_content = f"{ogrenme_birimi_alani[:200]}\n...\n{ogrenme_birimi_alani[-200:]}"
+
+        result = f"{'--'*25}\nÖğrenme Birimi Alanı:{header_match_info}{'--'*25}\n{formatted_content}"
         return result
             
     except Exception as e:
