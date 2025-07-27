@@ -5,13 +5,6 @@ import sys
 import random
 import glob
 
-# Suppress warnings for cleaner output
-os.environ['TOKENIZERS_PARALLELISM'] = 'false'
-import warnings
-warnings.filterwarnings("ignore", message=".*resume_download.*")
-warnings.filterwarnings("ignore", message=".*torch.load.*")
-
-
 def extract_fields_from_text(text):
     # Varyasyonlarla case-sensitive yapı
     patterns = [
@@ -690,10 +683,6 @@ def find_pdf_by_name(filename):
             if file.lower().endswith('.pdf') and filename.lower() in file.lower():
                 return os.path.join(root, file)
     return None
-
-
-# Debug için full text body verir.
-def print_full_pdf_text(pdf_path):
     doc = fitz.open(pdf_path)
     full_text = ""
     for page in doc:
@@ -761,7 +750,7 @@ def main():
         full_text = re.sub(r'\s+', ' ', full_text)
 
         # Tüm sayfa ekrana yaz.
-        # print_full_pdf_text(pdf_path)  # tüm PDF metni burada görünür
+        # print(full_text)
         
         # Ardından tüm metin üzerinden başlıkları çıkart
         extracted_fields = extract_fields_from_text(full_text)
