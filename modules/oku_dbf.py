@@ -1,5 +1,5 @@
 import pdfplumber
-import docx
+import fitz  # PyMuPDF
 import re
 import os
 import json
@@ -33,13 +33,18 @@ class BaseExtractor(ABC):
                 for page in pdf.pages:
                     tables.extend(page.extract_tables())
         elif file_path.lower().endswith('.docx'):
-            doc = docx.Document(file_path)
-            for table in doc.tables:
-                current_table = []
-                for row in table.rows:
-                    current_row = [cell.text.strip() for cell in row.cells]
-                    current_table.append(current_row)
-                tables.append(current_table)
+            doc = fitz.open(file_path)
+            for page_num in range(len(doc)):
+                page = doc.load_page(page_num)
+                page_tables = page.find_tables()
+                for table in page_tables:
+                    current_table = []
+                    table_data = table.extract()
+                    for row in table_data:
+                        current_row = [str(cell).strip() if cell else "" for cell in row]
+                        current_table.append(current_row)
+                    tables.append(current_table)
+            doc.close()
         return tables
     
     def clean_text(self, text: str) -> str:
@@ -1021,23 +1026,30 @@ def extract_olcme_degerlendirme(file_path):
     """
     try:
         if file_path.lower().endswith('.docx'):
-            # DOCX dosyası için
-            import docx
-            doc = docx.Document(file_path)
+            # DOCX dosyası için PyMuPDF kullan
+            doc = fitz.open(file_path)
             
-            for table in doc.tables:
-                for row_idx, row in enumerate(table.rows):
-                    for cell_idx, cell in enumerate(row.cells):
-                        cell_text = cell.text.strip()
-                        if 'ÖLÇME VE DEĞERLENDİRME' in cell_text.upper():
-                            # Sağdaki hücreyi kontrol et
-                            if cell_idx + 1 < len(row.cells):
-                                content_cell = row.cells[cell_idx + 1].text.strip()
-                                if content_cell and 'ÖLÇME VE DEĞERLENDİRME' not in content_cell.upper():
-                                    return analyze_measurement_content(content_cell)
-                            
-                            # Aynı hücredeki içeriği kontrol et
-                            return analyze_measurement_content(cell_text)
+            for page_num in range(len(doc)):
+                page = doc.load_page(page_num)
+                page_tables = page.find_tables()
+                
+                for table in page_tables:
+                    table_data = table.extract()
+                    for row_idx, row in enumerate(table_data):
+                        for cell_idx, cell in enumerate(row):
+                            cell_text = str(cell).strip() if cell else ""
+                            if 'ÖLÇME VE DEĞERLENDİRME' in cell_text.upper():
+                                # Sağdaki hücreyi kontrol et
+                                if cell_idx + 1 < len(row):
+                                    content_cell = str(row[cell_idx + 1]).strip() if row[cell_idx + 1] else ""
+                                    if content_cell and 'ÖLÇME VE DEĞERLENDİRME' not in content_cell.upper():
+                                        doc.close()
+                                        return analyze_measurement_content(content_cell)
+                                
+                                # Aynı hücredeki içeriği kontrol et
+                                doc.close()
+                                return analyze_measurement_content(cell_text)
+            doc.close()
             
         else:
             # PDF dosyası için

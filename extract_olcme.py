@@ -255,19 +255,29 @@ def extract_ob_tablosu(pdf_path):
         if table_start_idx is None:
             return "Öğrenme Birimi Alanı - Başlangıç kelimeleri bulunamadı"
 
-        stop_words = ["UYGULAMA", "FAALİYET", "TEMRİN", "DERSİN", "DERSĠN"]
-        table_end_idx = len(full_text_normalized_for_search)
-        for stop_word in stop_words:
-            stop_word_normalized = normalize_turkish_text(stop_word)
-            stop_idx = full_text_normalized_for_search.find(stop_word_normalized, table_start_idx)
-            if stop_idx != -1 and stop_idx < table_end_idx:
-                table_end_idx = stop_idx
+        kazanim_tablosu_str, kazanim_tablosu_data = ex_kazanim_tablosu(pdf_path)
         
-        # Orijinal metinden al ama pozisyonları normalize edilmiş metinden bul
+        # İlk başlığın (örn. Programlama Yapıları) gerçek pozisyonunu bul
+        if kazanim_tablosu_data:
+            first_title = kazanim_tablosu_data[0]['title']
+            first_title_normalized = normalize_turkish_text(first_title)
+            first_title_idx = full_text_normalized_for_search.find(first_title_normalized, table_start_idx)
+            if first_title_idx != -1:
+                table_start_idx = first_title_idx
+
+        stop_words = ["UYGULAMA", "FAALİYET", "TEMRİN", "DERSİN", "DERSĠN"] #her zaman büyük harf ile eşleşmeli.
+        table_end_idx = len(full_text_normalized_for_search)
+        search_area = full_text[table_start_idx:].upper()
+        for stop_word in stop_words:
+            word_pattern = r'\b' + re.escape(stop_word) + r'\b'
+            match = re.search(word_pattern, full_text[table_start_idx:])  # case-sensitive, olduğu gibi arar
+            if match:
+                stop_idx = table_start_idx + match.start()
+                if stop_idx < table_end_idx:
+                    table_end_idx = stop_idx
+        
         ogrenme_birimi_alani = full_text[table_start_idx:table_end_idx].strip()
         ogrenme_birimi_alani = re.sub(r'\s+', ' ', ogrenme_birimi_alani).strip()
-
-        kazanim_tablosu_str, kazanim_tablosu_data = ex_kazanim_tablosu(pdf_path)
 
         header_match_info = ""
         formatted_content = ""
@@ -296,7 +306,13 @@ def extract_ob_tablosu(pdf_path):
                     if konu_sayisi_int > 0:
                         found_numbers = 0
                         for rakam in range(1, konu_sayisi_int + 1):
-                            if str(rakam) in after_baslik[:1500]:
+                            patterns = [f"{rakam}. ", f"{rakam} "]
+                            pattern_found = False
+                            for pattern in patterns:
+                                if pattern in after_baslik[:1500]:
+                                    pattern_found = True
+                                    break
+                            if pattern_found:
                                 found_numbers += 1
                         
                         if found_numbers == konu_sayisi_int:

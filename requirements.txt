@@ -1,7 +1,6 @@
 Flask
 Flask-Cors
 pandas
-python-docx
 selenium
 webdriver-manager
 tqdm
