@@ -61,20 +61,19 @@ def ex_temel_bilgiler(text):
         result[f"Case{i}_{start_match}"] = section
     return result
 
-def ex_kazanim_tablosu(pdf_path):
+def ex_kazanim_tablosu(full_text):
     """PDF'den KAZANIM SAYISI VE SÜRE TABLOSU'nu çıkarır ve formatlı string ile yapılandırılmış veri döndürür"""
     try:
-        doc = fitz.open(pdf_path)
-        full_text = ""
-        for page in doc:
-            full_text += page.get_text() + "\n"
-        doc.close()
-
-        full_text = re.sub(r'\s+', ' ', full_text)
 
         table_start_patterns = [
-            "KAZANIM SAYISI VE SÜRE TABLOSU", "DERSİN KAZANIM TABLOSU", "TABLOSU",
-            "TABLOS U", "TABLO SU", "TABL OSU", "TAB LOSU", "TA BLOSU"
+            "KAZANIM SAYISI VE SÜRE TABLOSU", 
+            "DERSİN KAZANIM TABLOSU", 
+            "TABLOSU",
+            "TABLOS U", 
+            "TABLO SU", 
+            "TABL OSU", 
+            "TAB LOSU", 
+            "TA BLOSU"
         ]
         
         # Türkçe karakterleri normalize ederek ara
@@ -220,16 +219,9 @@ def ex_kazanim_tablosu(pdf_path):
     except Exception as e:
         return f"Hata: {str(e)}", []
 
-def extract_ob_tablosu(pdf_path):
+def extract_ob_tablosu(full_text):
     """PDF'den Öğrenme Birimi Alanını çıkarır - Sadece başlangıç ve bitiş sınırları arasındaki metni"""
     try:
-        doc = fitz.open(pdf_path)
-        full_text = ""
-        for page in doc:
-            full_text += page.get_text() + "\n"
-        doc.close()
-
-        full_text = re.sub(r'\s+', ' ', full_text)
 
         full_text_normalized_for_search = normalize_turkish_text(full_text)
         toplam_idx = full_text_normalized_for_search.find(normalize_turkish_text("TOPLAM"))
@@ -255,7 +247,7 @@ def extract_ob_tablosu(pdf_path):
         if table_start_idx is None:
             return "Öğrenme Birimi Alanı - Başlangıç kelimeleri bulunamadı"
 
-        kazanim_tablosu_str, kazanim_tablosu_data = ex_kazanim_tablosu(pdf_path)
+        kazanim_tablosu_str, kazanim_tablosu_data = ex_kazanim_tablosu(full_text=full_text)
         
         # İlk başlığın (örn. Programlama Yapıları) gerçek pozisyonunu bul
         if kazanim_tablosu_data:
@@ -613,9 +605,18 @@ def normalize_turkish_text(text):
     # Türkçe karakterleri ASCII'ye dönüştür ve büyük harfe çevir
     # İ -> I, i -> i, ğ -> g, ü -> u, ş -> s, ö -> o, ç -> c
     char_map = {
-        'İ': 'I', 'ı': 'i', 'Ğ': 'G', 'ğ': 'g',
-        'Ü': 'U', 'ü': 'u', 'Ş': 'S', 'ş': 's', 
-        'Ö': 'O', 'ö': 'o', 'Ç': 'C', 'ç': 'c'
+        'İ': 'I', 
+        'ı': 'i', 
+        'Ğ': 'G', 
+        'ğ': 'g',
+        'Ü': 'U', 
+        'ü': 'u', 
+        'Ş': 'S', 
+        'ş': 's', 
+        'Ö': 'O', 
+        'ö': 'o', 
+        'Ç': 'C', 
+        'ç': 'c'
     }
     
     # Karakterleri değiştir
@@ -685,21 +686,21 @@ def main():
         full_text = re.sub(r'\s+', ' ', full_text)
 
         # Tüm sayfa ekrana yaz.
-        print(full_text)
+        #print(full_text)
         
         # Ardından tüm metin üzerinden başlıkları çıkart
-        extracted_fields = ex_temel_bilgiler(full_text)
-        for key, value in extracted_fields.items():
-            title = key.split("_", 1)[-1].capitalize()
-            print(f"\n{title}: {value}")
-        print()
+        #extracted_fields = ex_temel_bilgiler(full_text)
+        #for key, value in extracted_fields.items():
+        #    title = key.split("_", 1)[-1].capitalize()
+        #    print(f"\n{title}: {value}")
+        #print()
 
         # KAZANIM SAYISI VE SÜRE TABLOSU
-        kazanim_tablosu_str, kazanim_tablosu_data = ex_kazanim_tablosu(file_path)
+        kazanim_tablosu_str, kazanim_tablosu_data = ex_kazanim_tablosu(full_text=full_text)
         print(kazanim_tablosu_str)
         
         # ÖĞRENİM BİRİMLERİ TABLOSU
-        result2 = extract_ob_tablosu(file_path)
+        result2 = extract_ob_tablosu(full_text=full_text)
         print(result2)
         print("-"*80)
         print(file_path)

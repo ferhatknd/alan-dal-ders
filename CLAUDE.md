@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Bu dosya, Claude Code için MEB Mesleki Eğitim Veri İşleme ve Veritabanı Projesinin kapsamlı birleşik kılavuzudur. README.md, is_akisi.md ve teknik detayların tümünü içerir. Proje mantığını koruyarak her seferinde hata yapmaktan kaçınmak için tüm kritik bilgileri içerir.
 
-**Son Güncelleme**: 2025-07-26 (BERT/NLP/Semantic Similarity sistemleri tamamen kaldırıldı, basit string matching ile değiştirildi)
+**Son Güncelleme**: 2025-07-27 (python-docx kaldırıldı, PyMuPDF'e migration tamamlandı, README.md yeniden düzenlendi)
 
 ## 🎯 Proje Genel Bakış
 
@@ -91,7 +91,7 @@ Alan (Area) → Dal (Field) → Ders (Course) → Öğrenme Birimi (Learning Uni
   - ⭐ **YENİ**: Merkezi database connection decorator sistemi kullanıyor
 
 ### 📊 Backend Modülleri (modules/ klasörü)
-- **`modules/oku_dbf.py`** - ⭐ **YENİDEN ADLANDIRILDI**: DBF PDF parsing ve içerik analizi (eski: oku.py)
+- **`modules/oku_dbf.py`** - ⭐ **PyMuPDF Migration**: DBF PDF parsing ve içerik analizi (python-docx kaldırıldı, PyMuPDF'e dönüştürüldü)
 - **`modules/get_dbf.py`** - ⭐ **STANDARDİZE**: `get_dbf()` fonksiyonu ile DBF verilerini çeker, RAR/ZIP indirir (açmaz), `data/get_dbf.json` üretir ve `dbf_urls` sütununa JSON kaydeder
 - **`modules/get_cop.py`** - ⭐ **STANDARDİZE**: `get_cop()` fonksiyonu ile ÇÖP verilerini çeker, PDF indirir (açmaz), `data/get_cop.json` üretir ve `cop_url` sütununa JSON kaydeder
 - **`modules/oku_cop.py`** - ⭐ **YENİ**: COP PDF parsing ve analiz modülü - Tamamen yeniden yazıldı
@@ -175,7 +175,250 @@ temel_plan_ders_dal
 -- temel_plan_kazanim, temel_plan_arac, temel_plan_olcme, vb. bunların hepsi DBF PDF'ten oku_dbf.py ile alınır.
 ```
 
-[Remaining content stays the same, I'll add the memory at the end]
+### 📚 PDFPlumber Kullanan Fonksiyonlar
+- **`modules/oku_dbf.py`** (3 fonksiyon):
+  - `get_tables()` metodu (`BaseExtractor` sınıfı) - PDF tablo çıkarma
+  - `extract_ogrenme_birimleri_detayli()` - Öğrenme birimi detay analizi
+  - `extract_olcme_degerlendirme()` - Ölçme-değerlendirme veri çıkarma
+- **`modules/oku_cop.py`** (3 fonksiyon):
+  - `extract_alan_dal_from_table_headers()` - Alan/dal bilgisi çıkarma
+  - `extract_ders_info_from_schedules()` - Ders programı analizi  
+  - `process_cop_file()` - Ana ÇÖP dosya işleme
+
+## 🚨 Kritik Hatalardan Kaçınma Kuralları
+
+### 1. Fonksiyon İsimleri ⭐ **YENİ KURAL**
+- **ASLA** eski fonksiyon isimlerini kullanma
+- **MUTLAKA** yeni standardize edilmiş fonksiyon isimlerini kullan:
+  ```python
+  # ✅ Doğru - Yeni standardize isimler
+  from modules.get_cop import get_cop
+  from modules.get_dbf import get_dbf
+  
+  # ❌ Yanlış - Eski isimler
+  from modules.get_cop import download_all_cop_pdfs_workflow
+  from modules.get_dbf import download_dbf_without_extract_with_progress
+  ```
+
+### 2. JSON Çıktı Dosyaları ⭐ **YENİ KURAL**
+- **Her iki fonksiyon da JSON üretir**:
+  - `get_cop()` → `data/get_cop.json`
+  - `get_dbf()` → `data/get_dbf.json`
+- **Dosya formatı**: Alan bazında sınıf URL'leri
+
+### 3. Veritabanı Sütunları ⭐ **YENİ KURAL**
+- **COP**: `cop_url` sütununa JSON formatında URL'ler (mevcut)
+- **DBF**: `dbf_urls` sütununa JSON formatında URL'ler (yeni)
+- **Her iki sütun da JSON string formatında saklanır**
+
+### 4. Database Connection ⭐ **YENİ KURAL**
+- **ASLA** manuel `sqlite3.connect()` kullanma
+- **MUTLAKA** `utils_database.py`'deki decorator'ları kullan:
+  ```python
+  # ✅ Doğru - Flask endpoint'leri için
+  @app.route('/api/endpoint')
+  @with_database_json
+  def my_endpoint(cursor):
+      cursor.execute("SELECT * FROM table")
+      return {"data": cursor.fetchall()}
+  
+  # ✅ Doğru - Genel fonksiyonlar için
+  @with_database
+  def my_function(cursor, params):
+      cursor.execute("INSERT...")
+      return result
+  ```
+
+### 5. Modüler Import Sistemi ⭐ **YENİ KURAL**
+- **String/normalizasyon işlemleri**: `utils_normalize.py` modülünü kullan
+- **Database işlemleri**: `utils_database.py` modülünü kullan
+- **Dosya işlemleri**: `utils_file_management.py` modülünü kullan
+- **İstatistik işlemleri**: `utils_stats.py` modülünü kullan
+- **ASLA** karışık import yapma:
+  ```python
+  # ✅ Doğru - Yeni modüler import sistemi
+  from modules.utils_normalize import normalize_to_title_case_tr, sanitize_filename_tr
+  from modules.utils_database import with_database, get_or_create_alan
+  from modules.utils_file_management import download_and_cache_pdf, extract_archive
+  from modules.utils_stats import get_database_statistics, format_database_statistics_message
+  
+  # ❌ Yanlış - Eski import'lar
+  from modules.utils import normalize_to_title_case_tr  # utils.py artık yok!
+  from modules.utils_database import get_database_statistics  # İstatistikler utils_stats.py'de!
+  ```
+
+### 6. PyMuPDF Migration Kuralları ⭐ **2025-07-27 YENİ**
+- **DOCX İşleme**: Artık PyMuPDF ile yapılır, python-docx tamamen kaldırıldı
+- **Unified Processing**: PDF ve DOCX dosyaları aynı API ile işlenir (`fitz.open`)
+- **Table Extraction**: `page.find_tables()` ve `table.extract()` kullanılır
+- **Dependency Cleanup**: requirements.txt'den python-docx kaldırıldı
+- **Performance**: Tek kütüphane kullanımı ile daha tutarlı performans
+- **Code Examples**:
+  ```python
+  # ✅ YENİ YÖNTEM (PyMuPDF for DOCX)
+  doc = fitz.open(file_path)  # PDF ve DOCX için aynı
+  for page_num in range(len(doc)):
+      page = doc.load_page(page_num)
+      tables = page.find_tables()
+      for table in tables:
+          data = table.extract()
+  
+  # ❌ ESKİ YÖNTEM (python-docx - Kaldırıldı)
+  doc = docx.Document(file_path)
+  for table in doc.tables:
+      for row in table.rows:
+          for cell in row.cells:
+              text = cell.text
+  ```
+
+### 7. Simple String Matching Kuralları ⭐ **2025-07-26 YENİ YAKLAŞIM**
+- **Case-Insensitive Matching**: `.upper()` kullanarak büyük/küçük harf farkını yok say
+- **Pattern Matching**: Madde numaraları için "1. " veya "1 " pattern'i kullan, basit find() değil
+- **Basic Normalization**: Sadece `re.sub(r'\\s+', ' ', text.strip())` ile whitespace normalizasyonu
+- **Performance**: BERT/AI işlemlerine göre çok daha hızlı, basit string operations
+
+### 8. Madde Numarası Pattern Matching ⭐ **KORUNAN KURAL**
+- **ASLA** basit `find("2")` kullanma - "15-20. yüzyıllara" içindeki "20"yi bulur (YANLIŞ)
+- **MUTLAKA** pattern kullan: `find("2. ")` veya `find("2 ")` - Sadece gerçek konu numaralarını bulur (DOĞRU)
+- **Tarih Aralıkları**: "15-20", "1950-1960" gibi ifadeler konu numarası olarak algılanmamalı
+- **Sequential Processing**: Konu numaraları sıralı olarak işlenmeli (1, 2, 3, 4, 5...)
+
+## 🔄 Son Güncelleme Detayları - 2025-07-27
+
+### ✅ PyMuPDF Migration Tamamlandı:
+
+1. **python-docx Dependency Kaldırıldı**:
+   - **Kaldırılan**: python-docx paketi requirements.txt'den kaldırıldı
+   - **Sonuç**: Daha az dependency, daha temiz kurulum ✅
+
+2. **DOCX Processing → PyMuPDF**:
+   - **Eski Sistem**: python-docx ile DOCX tablo okuma (ayrı API)
+   - **Yeni Sistem**: PyMuPDF ile PDF ve DOCX için unified processing (tek API)
+   - **Performance**: Daha tutarlı ve güvenilir tablo çıkarma ✅
+
+3. **Code Standardization**:
+   - **Unified API**: `fitz.open()` ile PDF ve DOCX dosyaları aynı şekilde işlenir
+   - **Table Processing**: `page.find_tables()` ve `table.extract()` standardı
+   - **Sonuç**: Daha temiz ve maintainable kod ✅
+
+### 🔧 Teknik Değişiklikler:
+
+1. **modules/oku_dbf.py - PyMuPDF Migration**:
+   ```python
+   # ❌ KALDIRILAN (python-docx)
+   import docx
+   doc = docx.Document(file_path)
+   for table in doc.tables:
+       for row in table.rows:
+           for cell in row.cells:
+               text = cell.text
+   
+   # ✅ YENİ YÖNTEM (PyMuPDF)
+   import fitz
+   doc = fitz.open(file_path)
+   for page_num in range(len(doc)):
+       page = doc.load_page(page_num)
+       tables = page.find_tables()
+       for table in tables:
+           data = table.extract()
+   ```
+
+## 🔌 API Endpoints - Detaylı Referans
+
+### 📥 Temel Veri Çekme
+- **`GET /api/get-cached-data`** - Önbellekteki JSON verilerini getir
+- **`GET /api/scrape-to-db`** - Tüm veri kaynaklarını (DM, DBF, COP, BOM) tek seferde çeker ve DB'ye kaydeder (SSE) ⭐ **STANDARDİZE**
+
+### 📊 Kategorik Veri Endpoint'leri
+- **`GET /api/get-dbf`** - DBF verilerini `get_dbf()` fonksiyonu ile çeker (SSE)
+- **`GET /api/get-cop`** - ÇÖP verilerini `get_cop()` fonksiyonu ile çeker (SSE)
+- **`GET /api/get-dm`** - DM verilerini `get_dm()` fonksiyonu ile çeker (SSE)
+- **`GET /api/get-bom`** - BÖM verilerini getir
+- **`GET /api/get-dal`** - Alan-Dal ilişkilerini getir
+
+### 📈 İstatistik ve Monitoring
+- **`GET /api/get-statistics`** - Gerçek zamanlı sistem istatistikleri
+
+### 🔄 PDF ve DBF İşleme Operasyonları
+- **`GET /api/dbf-download-extract`** - DBF dosyalarını toplu indir ve aç (SSE)
+- **`GET /api/oku-cop`** - ÇÖP PDF'lerini analiz et ve DB'ye kaydet (SSE)
+- **`GET /api/oku-dbf`** - ⭐ **STANDARDİZE**: DBF dosyalarını okur ve ders saatlerini günceller (SSE)
+
+## 🔄 Sık Kullanılan İşlemler
+
+### Yeni Standardize Fonksiyonlar ⭐ **YENİ**
+```python
+# Yeni standardize edilmiş fonksiyonlar
+from modules.get_cop import get_cop
+from modules.get_dbf import get_dbf
+
+# Her iki fonksiyon da aynı pattern'i izler
+# HTML parse → JSON kaydet → İndir (açmaz) → JSON dosyası üret
+for message in get_cop():
+    print(message)
+
+for message in get_dbf():
+    print(message)
+```
+
+### Database İşlemleri ⭐ **YENİ**
+```python
+from modules.utils_database import with_database_json, with_database
+
+# Flask endpoint için
+@app.route('/api/endpoint')
+@with_database_json
+def my_endpoint(cursor):
+    cursor.execute("SELECT * FROM table")
+    return {"data": cursor.fetchall()}
+
+# Genel fonksiyon için
+@with_database
+def my_function(cursor, param):
+    cursor.execute("INSERT INTO table VALUES (?)", (param,))
+    return {"success": True}
+```
+
+### PyMuPDF Unified Processing ⭐ **YENİ**
+```python
+import fitz
+
+# PDF ve DOCX için aynı API
+doc = fitz.open(file_path)  # .pdf veya .docx dosyası
+
+# Tablo çıkarma
+for page_num in range(len(doc)):
+    page = doc.load_page(page_num)
+    tables = page.find_tables()
+    for table in tables:
+        data = table.extract()
+        # data[row_idx][col_idx] şeklinde erişim
+
+doc.close()
+```
+
+## 🚨 Önemli Notlar
+
+- **Fonksiyon İsimleri**: `get_cop()` ve `get_dbf()` kullanın, eski isimleri kullanmayın
+- **JSON Çıktıları**: Her iki fonksiyon da `data/` klasöründe JSON dosyası üretir
+- **Veritabanı Sütunları**: `cop_url` ve `dbf_urls` sütunları JSON formatında URL'ler içerir
+- **Database Decorators**: `@with_database` ve `@with_database_json` kullanın
+- **Modüler Import**: Doğru modüllerden import yapın (`utils_*.py`)
+- **⭐ YENİ 2025-07-27**: PyMuPDF unified processing - PDF ve DOCX için tek API
+- **⭐ YENİ 2025-07-27**: python-docx tamamen kaldırıldı, dependencies azaltıldı
+- **⭐ KORUNAN**: Pattern Matching - "1. " veya "1 " kullanın, basit find() değil
+- **⭐ YENİ 2025-07-26**: Simple String Matching sistemi - case-insensitive `.upper()` kullanın
+
+## 📄 Lisans
+
+Bu proje MIT Lisansı altında lisanslanmıştır.
+
+---
+
+🔗 **MEB Kaynak:** https://meslek.meb.gov.tr/  
+📧 **Destek:** Projeyle ilgili sorular için issue açabilirsiniz
+
+📊 **Bu CLAUDE.md dosyası, projenin tüm kritik bilgilerini içerir ve Claude Code'un tutarlı çalışması için tasarlanmıştır.**
 
 ## Uygulama Mimarisi Notları
 
