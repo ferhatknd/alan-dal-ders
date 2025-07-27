@@ -88,7 +88,7 @@ def extract_kazanim_sayisi_sure_tablosu(pdf_path):
             if toplam_end:
                 table_section = table_section[:toplam_idx + toplam_end.end()]
 
-        header_pattern = r'ÖĞRENME BİRİMİ.*?ORAN.*?(\s*%)'
+        header_pattern = r'ÖĞRENME BİRİMİ.*?ORAN.*?\(\s*%\s*\)' 
         table_section = re.sub(header_pattern, '', table_section).strip()
 
         lines = []
