@@ -24,7 +24,10 @@ from datetime import datetime
 
 # extract_olcme.py'den fonksiyonları import et
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from extract_olcme import ex_kazanim_tablosu, extract_ob_tablosu, komutlar, normalize_turkish_text, ex_temel_bilgiler
+from extract_olcme import ex_kazanim_tablosu, extract_ob_tablosu, normalize_turkish_text, ex_temel_bilgiler
+
+# Yeni modüler sistemden dosya listesi al
+from modules.utils_oku_dbf import get_all_dbf_files
 
 class DBFProcessingStats:
     """DBF dosya işleme istatistiklerini takip eden sınıf"""
@@ -286,7 +289,7 @@ def main():
     print("📋 Dosya bütünlüğü kontrolü yapılıyor...")
     
     # Tüm dosyaları bul (dosya bütünlüğü kontrolü ile)
-    all_files = komutlar(validate_files=True)
+    all_files = get_all_dbf_files(validate_files=True)
     
     if not all_files:
         print("❌ HATA: data/dbf dizininde hiç PDF/DOCX dosyası bulunamadı.")

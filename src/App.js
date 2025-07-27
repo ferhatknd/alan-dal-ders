@@ -1899,6 +1899,8 @@ console.error(errorMsg);
                 pdfUrl={pdfSidebar.url}
                 pdfTitle={pdfSidebar.title}
               />
+            </>
+          )}
     </div>
   );
 }

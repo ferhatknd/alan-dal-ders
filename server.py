@@ -14,7 +14,7 @@ from contextlib import redirect_stdout, redirect_stderr
 # artık alanlar_ve_dersler3.py kullanmıyoruz, getir_* modülleri kullanıyoruz
 
 # oku_dbf.py'den fonksiyonları import ediyoruz
-from modules.oku_dbf import oku_dbf
+from modules.oku_dbf import link_dbf_files_to_database
 
 # Yeni modülleri import et
 from modules.get_dbf import get_dbf_data, get_dbf
@@ -276,72 +276,16 @@ def api_oku_cop():
 @app.route('/api/oku-dbf')
 def api_oku_dbf():
     """
-    DBF dosyalarını işleyip mevcut derslerin ders saatlerini günceller.
+    DBF dosyalarını tarar, ders adıyla eşleştirir ve temel_plan_ders tablosundaki
+    dbf_url alanını günceller. İşlem ilerlemesini SSE ile iletir.
     """
     def generate():
         try:
-            # Veritabanını bul/oluştur
-            db_path = find_or_create_database()
-            if not db_path:
-                yield f"data: {json.dumps({'type': 'error', 'message': 'Veritabanı bulunamadı veya oluşturulamadı'})}\\n\\n"
-                return
-            
-            # DBF klasörünü kontrol et
-            dbf_folder = "dbf"
-            if not os.path.exists(dbf_folder):
-                yield f"data: {json.dumps({'type': 'error', 'message': 'DBF klasörü bulunamadı. Önce DBF dosyalarını indirin.'})}\\n\\n"
-                return
-            
-            yield f"data: {json.dumps({'type': 'status', 'message': 'DBF dosyaları taranıyor...'})}\\n\\n"
-            
-            total_updated = 0
-            total_processed = 0
-            
-            # DBF klasöründeki tüm PDF ve DOCX dosyalarını bul
-            dbf_files = []
-            for root, dirs, files in os.walk(dbf_folder):
-                for file in files:
-                    if file.lower().endswith(('.pdf', '.docx')):
-                        dbf_files.append(os.path.join(root, file))
-            
-            yield f"data: {json.dumps({'type': 'status', 'message': f'{len(dbf_files)} DBF dosyası bulundu. İşleniyor...'})}\\n\\n"
-            
-            with sqlite3.connect(db_path) as conn:
-                cursor = conn.cursor()
-                
-                for dbf_file in dbf_files:
-                    try:
-                        yield f"data: {json.dumps({'type': 'status', 'message': f'{os.path.basename(dbf_file)} işleniyor...'})}\\n\\n"
-                        
-                        # oku_dbf.py ile DBF dosyasını işle
-                        with redirect_stdout(io.StringIO()):
-                            parsed_data = oku_dbf(dbf_file)
-                        
-                        if parsed_data:
-                            updated_count = update_ders_saati_from_dbf_data(cursor, parsed_data)
-                            total_updated += updated_count
-                            
-                            if updated_count > 0:
-                                yield f"data: {json.dumps({'type': 'success', 'message': f'{os.path.basename(dbf_file)}: {updated_count} ders güncellendi'})}\\n\\n"
-                        
-                        total_processed += 1
-                        
-                        # Her 10 dosyada bir commit yap
-                        if total_processed % 10 == 0:
-                            conn.commit()
-                            yield f"data: {json.dumps({'type': 'info', 'message': f'{total_processed}/{len(dbf_files)} dosya işlendi...'})}\\n\\n"
-                            
-                    except Exception as e:
-                        yield f"data: {json.dumps({'type': 'error', 'message': f'{os.path.basename(dbf_file)} işlenirken hata: {str(e)}'})}\\n\\n"
-                
-                # Final commit
-                conn.commit()
-            
-            yield f"data: {json.dumps({'type': 'done', 'message': f'İşlem tamamlandı! {total_processed} DBF dosyası işlendi, {total_updated} ders saati güncellendi.'})}\\n\\n"
-            
+            for message in link_dbf_files_to_database():
+                yield f"data: {json.dumps(message)}\n\n"
+                time.sleep(0.05)
         except Exception as e:
-            yield f"data: {json.dumps({'type': 'error', 'message': f'Genel hata: {str(e)}'})}\\n\\n"
-    
+            yield f"data: {json.dumps({'type': 'error', 'message': f'DBF işlemi hatası: {str(e)}'})}\n\n"
     return Response(generate(), mimetype='text/event-stream')
 
 @app.route('/api/scrape-to-db')

@@ -3,15 +3,8 @@ import requests
 from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import re
-# sqlite3 import kaldırıldı - utils_database.py'de zaten var
-try:
-    from .oku_dbf import extract_ders_adi
-    from .utils_normalize import normalize_to_title_case_tr, sanitize_filename_tr
-    from .utils_database import with_database, get_or_create_alan, get_meb_alan_id_with_fallback, get_folder_name_for_download, get_meb_alan_ids_cached
-except ImportError:
-    from oku_dbf import extract_ders_adi
-    from utils_normalize import normalize_to_title_case_tr, sanitize_filename_tr
-    from utils_database import with_database, get_or_create_alan, get_meb_alan_id_with_fallback, get_folder_name_for_download, get_meb_alan_ids_cached
+from .utils_normalize import normalize_to_title_case_tr, sanitize_filename_tr
+from .utils_database import with_database, get_or_create_alan, get_meb_alan_id_with_fallback, get_folder_name_for_download, get_meb_alan_ids_cached
 
 BASE_DBF_URL = "https://meslek.meb.gov.tr/dbfgoster.aspx"
 HEADERS = {
@@ -605,11 +598,17 @@ def extract_course_name_from_dbf(dbf_file_path):
     """
     try:
         if os.path.exists(dbf_file_path) and dbf_file_path.lower().endswith(('.pdf', '.docx')):
+            # extract_ders_adi importu kaldırıldı, burada fonksiyon çağrısı eksik olabilir
+            # Ancak legacy uyumluluk için alias eklenecek
+            from .oku_dbf import extract_ders_adi
             ders_adi = extract_ders_adi(dbf_file_path)
             return ders_adi.strip() if ders_adi else None
     except Exception as e:
         print(f"DBF dosyası okuma hatası ({dbf_file_path}): {e}")
     return None
+
+# Alias for legacy compatibility
+extract_ders_adi = extract_course_name_from_dbf
 
 def match_dbf_to_course_by_content(dbf_file_path, course_name):
     """

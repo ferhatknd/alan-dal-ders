@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Bu dosya, Claude Code için MEB Mesleki Eğitim Veri İşleme ve Veritabanı Projesinin kapsamlı birleşik kılavuzudur. README.md, is_akisi.md ve teknik detayların tümünü içerir. Proje mantığını koruyarak her seferinde hata yapmaktan kaçınmak için tüm kritik bilgileri içerir.
 
-**Son Güncelleme**: 2025-07-27 (python-docx kaldırıldı, PyMuPDF'e migration tamamlandı, README.md yeniden düzenlendi)
+**Son Güncelleme**: 2025-07-27 (Modüler API sistemi tamamlandı, komutlar() fonksiyonu get_all_dbf_files() olarak güncellendi)
 
 ## 🎯 Proje Genel Bakış
 
@@ -91,7 +91,8 @@ Alan (Area) → Dal (Field) → Ders (Course) → Öğrenme Birimi (Learning Uni
   - ⭐ **YENİ**: Merkezi database connection decorator sistemi kullanıyor
 
 ### 📊 Backend Modülleri (modules/ klasörü)
-- **`modules/oku_dbf.py`** - ⭐ **PyMuPDF Migration**: DBF PDF parsing ve içerik analizi (python-docx kaldırıldı, PyMuPDF'e dönüştürüldü)
+- **`modules/oku_dbf.py`** - ⭐ **DBF Koordinatörü**: PDF okuma işlemleri utils_oku_dbf.py'ye taşındı, sadece koordinasyon ve veritabanı entegrasyonu yapar
+- **`modules/utils_oku_dbf.py`** - ⭐ **YENİ MODÜL**: DBF PDF okuma fonksiyonları (extract_olcme.py'den kopyalandı, 48.4% başarı oranı)
 - **`modules/get_dbf.py`** - ⭐ **STANDARDİZE**: `get_dbf()` fonksiyonu ile DBF verilerini çeker, RAR/ZIP indirir (açmaz), `data/get_dbf.json` üretir ve `dbf_urls` sütununa JSON kaydeder
 - **`modules/get_cop.py`** - ⭐ **STANDARDİZE**: `get_cop()` fonksiyonu ile ÇÖP verilerini çeker, PDF indirir (açmaz), `data/get_cop.json` üretir ve `cop_url` sütununa JSON kaydeder
 - **`modules/oku_cop.py`** - ⭐ **YENİ**: COP PDF parsing ve analiz modülü - Tamamen yeniden yazıldı
@@ -129,7 +130,7 @@ Alan (Area) → Dal (Field) → Ders (Course) → Öğrenme Birimi (Learning Uni
   - **Pattern Matching**: Madde numaraları için "1. " veya "1 " pattern'i kullanır
   - **PyMuPDF**: PDF okuma işlemleri PyPDF2'den PyMuPDF'e dönüştürüldü
   - **✅ YENİ**: Basit text normalizasyonu ve hızlı string eşleştirme sistemi
-  - **📝 Fonksiyon Adları**: `ex_kazanim_tablosu()` - Kazanım tablosu çıkarma, `ex_temel_bilgiler()` - Temel ders bilgilerini çıkarma, `komutlar()` - PDF/DOCX dosya yönetimi
+  - **📝 Fonksiyon Adları**: `ex_kazanim_tablosu()` - Kazanım tablosu çıkarma, `ex_temel_bilgiler()` - Temel ders bilgilerini çıkarma, `get_all_dbf_files()` - PDF/DOCX dosya yönetimi (API optimize)
   - **🔧 Header Pattern**: Çoklu pattern sistemi ile farklı tablo başlık formatlarını destekler (5 farklı pattern)
 
 ## 🗄️ Veritabanı Yapısı (SQLite)
@@ -175,12 +176,19 @@ temel_plan_ders_dal
 -- temel_plan_kazanim, temel_plan_arac, temel_plan_olcme, vb. bunların hepsi DBF PDF'ten oku_dbf.py ile alınır.
 ```
 
-### 📚 PDFPlumber Kullanan Fonksiyonlar
-- **`modules/oku_dbf.py`** (3 fonksiyon):
-  - `get_tables()` metodu (`BaseExtractor` sınıfı) - PDF tablo çıkarma
-  - `extract_ogrenme_birimleri_detayli()` - Öğrenme birimi detay analizi
-  - `extract_olcme_degerlendirme()` - Ölçme-değerlendirme veri çıkarma
-- **`modules/oku_cop.py`** (3 fonksiyon):
+### 📚 Modüler Sistem Yapısı
+- **`modules/utils_oku_dbf.py`** (Ana PDF işleme fonksiyonları):
+  - `process_dbf_file()` - Tek DBF dosyası işleme
+  - `process_multiple_dbf_files()` - Çoklu DBF dosyası işleme
+  - `get_all_dbf_files()` - Dosya tarama ve validation
+  - `ex_kazanim_tablosu()` - Kazanım tablosu çıkarma
+  - `ex_temel_bilgiler()` - Temel ders bilgileri çıkarma
+  - `extract_ob_tablosu()` - Öğrenme birimi analizi
+- **`modules/oku_dbf.py`** (Koordinasyon fonksiyonları):
+  - `DBFProcessor` sınıfı - Koordinasyon ve istatistik yönetimi
+  - `oku_dbf()` - Legacy uyumluluk fonksiyonu
+  - `process_dbf_archives_and_read()` - Arşiv işleme workflow
+- **`modules/oku_cop.py`** (COP işleme fonksiyonları):
   - `extract_alan_dal_from_table_headers()` - Alan/dal bilgisi çıkarma
   - `extract_ders_info_from_schedules()` - Ders programı analizi  
   - `process_cop_file()` - Ana ÇÖP dosya işleme
@@ -285,6 +293,24 @@ temel_plan_ders_dal
 
 ## 🔄 Son Güncelleme Detayları - 2025-07-27
 
+### ✅ Modüler API Sistemi Tamamlandı:
+
+1. **Fonksiyon Adı Güncelleme**:
+   - **Eski**: `komutlar()` fonksiyonu (komut satırı aracı döneminden kalma)
+   - **Yeni**: `get_all_dbf_files()` fonksiyonu (API sistemi için optimize)
+   - **Amaç**: Sadece API istekleri ile çalışma, komut satırı aracı özelliklerinin kaldırılması ✅
+
+2. **Kod Temizleme**:
+   - **Kaldırılan**: `komutlar()` fonksiyonundaki rastgele seçim, string arama gibi komut satırı özellikleri
+   - **Korunan**: Dosya validation, bozuk dosya tespiti, PyMuPDF unified processing
+   - **Sonuç**: Daha temiz ve API odaklı kod yapısı ✅
+
+3. **Import Güncelleme**:
+   - **server.py**: `komutlar` → `get_all_dbf_files` 
+   - **modules/oku_dbf.py**: Import güncellendi
+   - **dbf_isleme_istatistik.py**: Test scripti güncellendi
+   - **Sonuç**: Tüm sistem yeni API yapısına uyumlu ✅
+
 ### ✅ PyMuPDF Migration Tamamlandı:
 
 1. **python-docx Dependency Kaldırıldı**:
@@ -361,6 +387,20 @@ for message in get_dbf():
     print(message)
 ```
 
+### DBF İşleme Sistemi ⭐ **YENİ**
+```python
+from modules.utils_oku_dbf import get_all_dbf_files, process_dbf_file
+
+# Tüm DBF dosyalarını API sistemi için al
+all_files = get_all_dbf_files(validate_files=True)
+
+# Tek dosya işle
+result = process_dbf_file(file_path)
+print(f"Başarı: {result['success']}")
+print(f"Temel bilgiler: {result['temel_bilgiler']}")
+print(f"Kazanım tablosu: {result['kazanim_tablosu_data']}")
+```
+
 ### Database İşlemleri ⭐ **YENİ**
 ```python
 from modules.utils_database import with_database_json, with_database
@@ -408,6 +448,7 @@ doc.close()
 - **⭐ YENİ 2025-07-27**: python-docx tamamen kaldırıldı, dependencies azaltıldı
 - **⭐ KORUNAN**: Pattern Matching - "1. " veya "1 " kullanın, basit find() değil
 - **⭐ YENİ 2025-07-26**: Simple String Matching sistemi - case-insensitive `.upper()` kullanın
+- **⭐ YENİ 2025-07-27**: `komutlar()` → `get_all_dbf_files()` - API sistemi optimize
 
 ## 📄 Lisans
 

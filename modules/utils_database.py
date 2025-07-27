@@ -77,7 +77,9 @@ def with_database(func: Callable) -> Callable:
                 cursor = conn.cursor()
                 
                 # İlk parametre olarak cursor'ı geç
-                return func(cursor, *args, **kwargs)
+                result = func(cursor, *args, **kwargs)
+                conn.commit() # Değişiklikleri kaydet
+                return result
                 
         except Exception as e:
             print(f"❌ Database error in {func.__name__}: {e}")
