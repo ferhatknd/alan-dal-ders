@@ -420,6 +420,167 @@ Bu proje MIT Lisansı altında lisanslanmıştır.
 
 📊 **Bu CLAUDE.md dosyası, projenin tüm kritik bilgilerini içerir ve Claude Code'un tutarlı çalışması için tasarlanmıştır.**
 
+## 🗺️ DBF İşleme Migration Yol Haritası - 2025-07-27
+
+### 🎯 Migration Hedefi
+`extract_olcme.py` dosyasındaki başarılı fonksiyonları `modules/oku_dbf.py` modülüne entegre etmek ve relasyonel veritabanı yapısına uygun hale getirmek.
+
+### 📊 Mevcut Başarı Oranları (dbf_isleme_istatistik.py ile doğrulandı)
+- **585 TAM EŞLEŞME** (48.4% başarı oranı)
+- **1,164 toplam başlık eşleşmesi** olan dosya
+- **2,407 toplam işlenen dosya**
+
+### 🔄 Migration Fazları
+
+#### **Faz 1: Core Function Integration**
+**Target**: `extract_olcme.py` → `modules/oku_dbf.py`
+```python
+# Entegre edilecek fonksiyonlar:
+- ex_kazanim_tablosu() → DBFExtractor.extract_kazanim_tablosu()
+- extract_ob_tablosu() → DBFExtractor.extract_ogrenme_birimleri()
+- ex_temel_bilgiler() → DBFExtractor.extract_course_info()
+- normalize_turkish_text() → utils_normalize.py'den kullan
+```
+
+**✅ Migration Prensipleri:**
+- PyMuPDF unified processing (mevcut)
+- Simple string matching (case-insensitive `.upper()`)
+- Pattern matching: "1. " veya "1 " kullanımı
+- File integrity validation
+
+#### **Faz 1.5: String Parsing & Hierarchy**
+**Target**: String tabanlı verileri relasyonel yapıya dönüştürme
+```python
+# Hedef parsing sistemi:
+"1. Öğrenme Birimi Adı" → temel_plan_ogrenme_birimi table
+"  1.1. Konu Adı" → temel_plan_konu table  
+"    1.1.1. Kazanım açıklaması" → temel_plan_kazanim table
+
+# Parser fonksiyonları:
+- parse_ob_hierarchy() - Öğrenme birimi ayrıştırma
+- parse_konu_items() - Konu maddeleri ayrıştırma
+- parse_kazanim_items() - Kazanım maddeleri ayrıştırma
+```
+
+#### **Faz 2: Database Integration** 
+**Target**: Relasyonel veritabanı kaydetme sistemi
+```python
+# utils_database.py prensipleri ile:
+@with_database
+def save_dbf_data_relational(cursor, course_data):
+    # 1. Course name resolution via COP integration
+    course_name = resolve_course_name_from_cop(course_data['ders_adi'])
+    
+    # 2. INSERT OR IGNORE pattern (ders_adi unique key)
+    cursor.execute("INSERT OR IGNORE INTO temel_plan_ders (ders_adi, ...) VALUES (?, ...)", 
+                   (course_name, ...))
+    
+    # 3. Foreign key hierarchy: Ders → OB → Konu → Kazanım
+    for ob in course_data['ogrenme_birimleri']:
+        ob_id = insert_or_get_ob(cursor, ders_id, ob)
+        for konu in ob['konular']:
+            konu_id = insert_or_get_konu(cursor, ob_id, konu)
+            for kazanim in konu['kazanimlar']:
+                insert_kazanim(cursor, konu_id, kazanim)
+```
+
+#### **Faz 3: COP Integration**
+**Target**: `modules/oku_cop.py` ile ders adı çözümleme
+```python
+from modules.oku_cop import resolve_course_name_from_cop
+
+# Ders adı resolution sistemi:
+def resolve_course_name_from_cop(dbf_course_name):
+    """
+    DBF'teki ders adını COP verilerinden normalize edilmiş 
+    ders adı ile eşleştir
+    """
+    # COP veritabanından eşleşen ders adını bul
+    # INSERT OR IGNORE için unique key olarak kullan
+    return normalized_course_name
+```
+
+#### **Faz 4: API Enhancement**
+**Target**: Mevcut `/api/oku-dbf` endpoint'ini geliştirme (YENİ ENDPOINT YARATMIYORUZ)
+```python
+@app.route('/api/oku-dbf')
+@with_database_json
+def oku_dbf_enhanced(cursor):
+    """
+    Mevcut endpoint'i enhancement:
+    1. extract_olcme.py fonksiyonlarını kullan
+    2. Relasyonel DB kaydetme yap
+    3. COP integration ile ders adı çözümle
+    4. SSE ile progress tracking
+    """
+    # Mevcut API pattern'i koruyarak enhancement
+```
+
+#### **Faz 5: Testing & Validation**
+**Target**: Migration doğrulama sistemi
+```python
+# Test senaryoları:
+1. 585 TAM EŞLEŞME dosyasının doğru parse edilmesi
+2. Relasyonel veri bütünlüğü kontrolü
+3. COP integration doğrulaması
+4. Performance karşılaştırması (eski vs yeni sistem)
+```
+
+### 🔧 Teknik Implementation Detayları
+
+#### **Database Schema Updates**
+```sql
+-- Gerekli yeni sütunlar/tablolar:
+ALTER TABLE temel_plan_ders ADD COLUMN dbf_processed_at TIMESTAMP;
+ALTER TABLE temel_plan_ders ADD COLUMN processing_method TEXT; -- 'extract_olcme' vs 'legacy'
+
+-- Foreign key integrity:
+temel_plan_ders (ders_adi UNIQUE) ← temel_plan_ogrenme_birimi.ders_id
+temel_plan_ogrenme_birimi.id ← temel_plan_konu.ogrenme_birimi_id  
+temel_plan_konu.id ← temel_plan_kazanim.konu_id
+```
+
+#### **Migration Safety**
+```python
+# Backward compatibility:
+- Mevcut oku_dbf.py fonksiyonları deprecated olarak işaretle
+- extract_olcme.py fonksiyonları side-by-side çalışsın
+- Gradual migration: dosya dosya geçiş yapılabilir
+- Rollback capability: eski sisteme dönüş mümkün olsun
+
+# Error handling:
+- File corruption detection (mevcut)
+- Parse error recovery
+- Database transaction rollback
+- Progress tracking ve resume capability
+```
+
+### 🎯 Success Metrics
+1. **585 perfect match dosyasının %100'ü başarılı işlenmeli**
+2. **Relasyonel data integrity %100 korunmalı** 
+3. **COP integration ile course name resolution %95+ başarı**
+4. **Processing speed: Current system ile aynı veya daha hızlı**
+5. **API backward compatibility: Mevcut frontend çalışmaya devam etmeli**
+
+### 📋 Implementation Order
+```
+✅ Faz 1: Core Function Integration (Priority: HIGH)
+✅ Faz 1.5: String Parsing & Hierarchy (Priority: HIGH)  
+✅ Faz 2: Database Integration (Priority: HIGH)
+✅ Faz 3: COP Integration (Priority: MEDIUM)
+✅ Faz 4: API Enhancement (Priority: MEDIUM)
+✅ Faz 5: Testing & Validation (Priority: MEDIUM)
+```
+
+### 🔗 Dependencies
+- `modules/utils_database.py` - Database decorators ve CRUD
+- `modules/utils_normalize.py` - String normalization
+- `modules/oku_cop.py` - Course name resolution
+- `extract_olcme.py` - Source functions (migration source)
+- `dbf_isleme_istatistik.py` - Success validation tool
+
+**🎯 Bu roadmap, user feedback'i doğrultusunda mevcut `/api/oku-dbf` endpoint'ini enhance etmeyi, COP integration yapmayı ve INSERT OR IGNORE pattern'ini kullanmayı hedefler.**
+
 ## Uygulama Mimarisi Notları
 
 ### Yeni Standart Kurallar

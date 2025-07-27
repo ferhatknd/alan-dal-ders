@@ -14,6 +14,7 @@ import requests
 import json
 import re
 import time
+import unicodedata
 from bs4 import BeautifulSoup
 
 def sanitize_filename_tr(name: str) -> str:
@@ -35,17 +36,24 @@ def sanitize_filename_tr(name: str) -> str:
         # "Alan Adı - Protokol" -> "Alan_Adi-Protokol" formatında
         base_name = name.replace(" - Protokol", "")
         safe_base = base_name.replace(' ', '_').replace('/', '_').replace('\\', '_')
-        # Türkçe karakterleri düzelt
+        # Türkçe karakterleri düzelt (normal + PDF'den gelen bozuk karakterler)
         safe_base = safe_base.replace('ç', 'c').replace('ğ', 'g').replace('ı', 'i').replace('ö', 'o').replace('ş', 's').replace('ü', 'u')
         safe_base = safe_base.replace('Ç', 'C').replace('Ğ', 'G').replace('İ', 'I').replace('Ö', 'O').replace('Ş', 'S').replace('Ü', 'U')
+        # PDF'den gelen bozuk karakterleri düzelt
+        safe_base = safe_base.replace('Ġ', 'I').replace('ġ', 'i').replace('Ģ', 'S').replace('ģ', 's')
+        safe_base = safe_base.replace('Ĝ', 'G').replace('ĝ', 'g')
         return f"{safe_base}-Protokol"
     
     # Normal alan adları için standart formatlama
     safe_name = name.replace(' ', '_').replace('/', '_').replace('\\', '_')
     
-    # Türkçe karakterleri düzelt
+    # Türkçe karakterleri düzelt (normal + PDF'den gelen bozuk karakterler)
     safe_name = safe_name.replace('ç', 'c').replace('ğ', 'g').replace('ı', 'i').replace('ö', 'o').replace('ş', 's').replace('ü', 'u')
     safe_name = safe_name.replace('Ç', 'C').replace('Ğ', 'G').replace('İ', 'I').replace('Ö', 'O').replace('Ş', 'S').replace('Ü', 'U')
+    
+    # PDF'den gelen bozuk karakterleri düzelt (PyMuPDF extraction sorunları)
+    safe_name = safe_name.replace('Ġ', 'I').replace('ġ', 'i').replace('Ģ', 'S').replace('ģ', 's')
+    safe_name = safe_name.replace('Ĝ', 'G').replace('ĝ', 'g')
     
     return safe_name
 

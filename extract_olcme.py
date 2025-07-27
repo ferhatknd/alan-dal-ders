@@ -301,9 +301,12 @@ def extract_ob_tablosu(full_text):
                             patterns = [f"{rakam}. ", f"{rakam} "]
                             pattern_found = False
                             for pattern in patterns:
-                                if pattern in after_baslik[:1500]:
-                                    pattern_found = True
-                                    break
+                                pos = after_baslik[:1500].find(pattern)
+                                if pos != -1:
+                                    # Context-aware validation: gerçek madde başlığı mı?
+                                    if is_valid_madde_baslik(after_baslik[:1500], pos, rakam):
+                                        pattern_found = True
+                                        break
                             if pattern_found:
                                 found_numbers += 1
                         
@@ -338,7 +341,16 @@ def extract_ob_tablosu(full_text):
                     if konu_sayisi_int > 0:
                         found_numbers = 0
                         for rakam in range(1, konu_sayisi_int + 1):
-                            if str(rakam) in after_baslik[:1500]:
+                            patterns = [f"{rakam}. ", f"{rakam} "]
+                            pattern_found = False
+                            for pattern in patterns:
+                                pos = after_baslik[:1500].find(pattern)
+                                if pos != -1:
+                                    # Context-aware validation: gerçek madde başlığı mı?
+                                    if is_valid_madde_baslik(after_baslik[:1500], pos, rakam):
+                                        pattern_found = True
+                                        break
+                            if pattern_found:
                                 found_numbers += 1
                         if found_numbers == konu_sayisi_int:
                             gecerli_eslesme += 1
@@ -378,9 +390,12 @@ def extract_ob_tablosu(full_text):
                                 patterns = [f"{rakam}. ", f"{rakam} "]
                                 pattern_found = False
                                 for pattern in patterns:
-                                    if pattern in after_baslik[:1500]:
-                                        pattern_found = True
-                                        break
+                                    pos = after_baslik[:1500].find(pattern)
+                                    if pos != -1:
+                                        # Context-aware validation: gerçek madde başlığı mı?
+                                        if is_valid_madde_baslik(after_baslik[:1500], pos, rakam):
+                                            pattern_found = True
+                                            break
                                 if pattern_found:
                                     found_numbers += 1
                             is_valid_match = (found_numbers == konu_sayisi_int)
@@ -465,8 +480,10 @@ def extract_ob_tablosu_konu_sinirli_arama(text, baslik_idx, baslik, konu_sayisi,
         for pattern in patterns:
             pos = work_area.find(pattern, current_pos)
             if pos != -1:
-                found_pos = pos
-                break
+                # Context-aware validation: gerçek madde başlığı mı?
+                if is_valid_madde_baslik(work_area, pos, konu_no):
+                    found_pos = pos
+                    break
         
         if found_pos != -1:
             # Sonraki rakama kadar olan metni al
@@ -478,8 +495,10 @@ def extract_ob_tablosu_konu_sinirli_arama(text, baslik_idx, baslik, konu_sayisi,
                 for next_pattern in next_patterns:
                     pos = work_area.find(next_pattern, found_pos + 1)
                     if pos != -1:
-                        next_found_pos = pos
-                        break
+                        # Context-aware validation: gerçek madde başlığı mı?
+                        if is_valid_madde_baslik(work_area, pos, konu_no + 1):
+                            next_found_pos = pos
+                            break
                 if next_found_pos != -1:
                     konu_content = work_area[found_pos:next_found_pos].strip()
                 else:
@@ -507,8 +526,8 @@ def extract_ob_tablosu_konu_bulma_yedek_plan(text, original_baslik, konu_sayisi)
     """Son eşleşen başlıktan sonra '1' rakamını bulup alternatif eşleşme arar"""
     import re
     
-    # "1" rakamını ara (cümle başında veya nokta sonrası)
-    one_pattern = r'(?:^|\.|\\n|\\s)1(?:\.|\\s)'
+    # "1" rakamını ara - daha basit pattern
+    one_pattern = r'1\.'
     matches = list(re.finditer(one_pattern, text))
     
     if not matches:
@@ -535,7 +554,16 @@ def extract_ob_tablosu_konu_bulma_yedek_plan(text, original_baslik, konu_sayisi)
             after_one = text[one_pos:]
             found_numbers = 0
             for rakam in range(1, konu_sayisi + 1):
-                if str(rakam) in after_one[:500]:  # İlk 500 karakterde ara
+                patterns = [f"{rakam}. ", f"{rakam} "]
+                pattern_found = False
+                for pattern in patterns:
+                    pos = after_one[:500].find(pattern)  # İlk 500 karakterde ara
+                    if pos != -1:
+                        # Context-aware validation: gerçek madde başlığı mı?
+                        if is_valid_madde_baslik(after_one[:500], pos, rakam):
+                            pattern_found = True
+                            break
+                if pattern_found:
                     found_numbers += 1
             
             # Tüm rakamlar bulunduysa alternatif eşleşme geçerli
@@ -549,7 +577,61 @@ def extract_ob_tablosu_konu_bulma_yedek_plan(text, original_baslik, konu_sayisi)
     return None
 
 ## Yardımcı fonksiyonlar ##
-def komutlar(param=None):
+def is_valid_madde_baslik(text, pos, rakam):
+    """
+    Bulunan rakam pattern'inin gerçek madde numarası mı yoksa tarih/yüzyıl mı olduğunu kontrol eder.
+    
+    Args:
+        text (str): Aranacak metin
+        pos (int): Bulunan pattern pozisyonu
+        rakam (int): Aranan rakam (1, 2, 3...)
+        
+    Returns:
+        bool: True = gerçek madde başlığı, False = tarih/yüzyıl
+    """
+    import re
+    
+    # Pattern'den sonraki metni al
+    pattern_len = len(f"{rakam}. ")
+    after_pattern = text[pos + pattern_len:] if pos + pattern_len < len(text) else ""
+    
+    if not after_pattern.strip():
+        return False
+    
+    # İlk kelimeyi bul
+    words = after_pattern.strip().split()
+    if not words:
+        return False
+        
+    first_word = words[0].lower()
+    
+    # Zaman belirten kelimeler listesi
+    time_words = [
+        "yüzyıl", "yüzyılda", "yüzyıldan", "yüzyılın", "yüzyıla", 
+        "asır", "asırda", "asırdan", "asırın", "asıra",
+        "dönem", "dönemde", "dönemden", "dönemin", "döneme",
+        "yıl", "yılda", "yıldan", "yılın", "yıla",
+        "sene", "senede", "seneden", "senenin", "seneye"
+    ]
+    
+    # Eğer ilk kelime zaman belirtiyorsa madde başlığı değil
+    if first_word in time_words:
+        return False
+    
+    # Satır başında mı kontrol et (madde başlıkları genelde satır başında olur)
+    if pos > 0:
+        char_before = text[pos - 1]
+        # Öncesinde yeni satır, boşluk veya tab olmalı
+        if char_before not in ['\n', '\r', ' ', '\t']:
+            return False
+    
+    # İlk kelime büyük harfle başlıyor mu? (madde başlıkları büyük harfle başlar)
+    if not (words[0] and words[0][0].isupper()):
+        return False
+        
+    return True
+
+def komutlar(param=None, validate_files=True):
     """
     DBF PDF ve DOCX dosyalarını bulma ve yönetme fonksiyonu
     
@@ -558,19 +640,63 @@ def komutlar(param=None):
             - None: Tüm dosyaları listele
             - int: Rastgele N dosya seç
             - str: İsme göre dosya ara
+        validate_files (bool): Dosya bütünlüğü kontrolü yap (varsayılan: True)
     
     Returns:
-        list: PDF ve DOCX dosya yolları listesi
+        list: PDF ve DOCX dosya yolları listesi (sadece geçerli dosyalar)
     """
     base_path = "/Users/ferhat/Library/Mobile Documents/com~apple~CloudDocs/Projeler/ProjectDogru/repos/alan-dal-ders/data/dbf"
     
-    # Tüm PDF ve DOCX dosyalarını bul
+    def is_valid_document(file_path):
+        """Dosyanın geçerli bir PDF veya DOCX dosyası olup olmadığını kontrol eder"""
+        if not validate_files:
+            return True
+            
+        try:
+            # PyMuPDF ile dosyayı açmayı dene
+            doc = fitz.open(file_path)
+            
+            # Dosya açılabildi, temel kontroller yap
+            page_count = len(doc)
+            if page_count == 0:
+                doc.close()
+                return False
+            
+            # İlk sayfayı okumayı dene
+            page = doc.load_page(0)
+            text = page.get_text()
+            doc.close()
+            
+            # Eğer hiç metin yoksa ve sayfa sayısı 1'den azsa bozuk olabilir
+            if not text.strip() and page_count <= 1:
+                return False
+                
+            return True
+            
+        except Exception as e:
+            # Dosya açılamıyorsa veya hata varsa geçersiz
+            print(f"⚠️  Bozuk dosya atlandı: {os.path.basename(file_path)} - {str(e)}")
+            return False
+    
+    # Tüm PDF ve DOCX dosyalarını bul ve validate et
     all_files = []
     supported_extensions = ('.pdf', '.docx')
+    skipped_files = 0
+    
     for root, dirs, files in os.walk(base_path):
         for file in files:
             if file.lower().endswith(supported_extensions):
-                all_files.append(os.path.join(root, file))
+                file_path = os.path.join(root, file)
+                
+                # Dosya bütünlüğü kontrolü
+                if is_valid_document(file_path):
+                    all_files.append(file_path)
+                else:
+                    skipped_files += 1
+    
+    # Atılan dosya sayısını bildir
+    if validate_files and skipped_files > 0:
+        print(f"📊 Toplam {skipped_files} bozuk dosya işleme alınmadı.")
     
     # Parametre yoksa tüm dosyaları döndür
     if param is None:
@@ -597,32 +723,19 @@ def komutlar(param=None):
     
     return all_files
 
+from modules.utils_normalize import sanitize_filename_tr
+
 def normalize_turkish_text(text):
     """Türkçe karakterleri normalize eder ve case-insensitive karşılaştırma için hazırlar"""
     if not text:
         return ""
     
-    # Türkçe karakterleri ASCII'ye dönüştür ve büyük harfe çevir
-    # İ -> I, i -> i, ğ -> g, ü -> u, ş -> s, ö -> o, ç -> c
-    char_map = {
-        'İ': 'I', 
-        'ı': 'i', 
-        'Ğ': 'G', 
-        'ğ': 'g',
-        'Ü': 'U', 
-        'ü': 'u', 
-        'Ş': 'S', 
-        'ş': 's', 
-        'Ö': 'O', 
-        'ö': 'o', 
-        'Ç': 'C', 
-        'ç': 'c'
-    }
+    # Mevcut utils_normalize fonksiyonunu kullan ve ASCII'ye dönüştür
+    # sanitize_filename_tr zaten bozuk karakterleri düzeltiyor
+    normalized = sanitize_filename_tr(text)
     
-    # Karakterleri değiştir
-    normalized = text
-    for turkish_char, ascii_char in char_map.items():
-        normalized = normalized.replace(turkish_char, ascii_char)
+    # Underscore'ları boşluğa çevir (sanitize_filename_tr boşlukları _ yapar)
+    normalized = normalized.replace('_', ' ')
     
     # Büyük harfe çevir ve whitespace normalize et
     normalized = re.sub(r'\s+', ' ', normalized.upper().strip())
