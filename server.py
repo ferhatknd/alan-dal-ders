@@ -24,7 +24,7 @@ from modules.get_dm import get_dm
 from modules.get_bom import get_bom
 from modules.get_dal import get_dal
 
-# Database utilities from utils-database.py
+# Database utilities from utils_database.py
 from modules.utils_database import with_database_json, find_or_create_database, get_or_create_alan
 from modules.utils_normalize import normalize_to_title_case_tr
 
@@ -722,15 +722,17 @@ def save():
 def init_database():
     """
     Veritabanını başlatır ve gerekli tabloları oluşturur.
+    utils_database.py'deki find_or_create_database() kullanır.
     """
-    db_path = find_or_create_database()
+    from modules.utils_database import find_or_create_database as utils_find_db
+    
+    db_path = utils_find_db()
     
     try:
         with sqlite3.connect(db_path) as conn:
             # Schema dosyasını oku ve çalıştır - PROJECT_ROOT bazlı
-            from dotenv import load_dotenv
-            load_dotenv()
-            project_root = os.getenv('PROJECT_ROOT', os.getcwd())
+            from modules.utils_env import get_project_root
+            project_root = get_project_root()
             schema_path = os.path.join(project_root, "data", "schema.sql")
             
             if os.path.exists(schema_path):
@@ -758,39 +760,7 @@ def init_database():
     
     return db_path
 
-def find_or_create_database():
-    """
-    Veritabanını bulur veya oluşturur. PROJECT_ROOT env variable'ını kullanır.
-    """
-    from dotenv import load_dotenv
-    
-    # .env dosyasını yükle
-    load_dotenv()
-    
-    # PROJECT_ROOT'u .env'den al, yoksa mevcut çalışma dizinini kullan
-    project_root = os.getenv('PROJECT_ROOT', os.getcwd())
-    
-    # Olası veritabanı dosya yolları (PROJECT_ROOT bazlı)
-    possible_paths = [
-        os.path.join(project_root, "database.db"),
-        os.path.join(project_root, "data", "database.db"), 
-        os.path.join(project_root, "temel_plan.db"),
-        os.path.join(project_root, "data", "temel_plan.db")
-    ]
-    
-    print(f"📍 Veritabanı aranıyor, PROJECT_ROOT: {project_root}")
-    
-    for path in possible_paths:
-        if os.path.exists(path):
-            print(f"📍 Veritabanı bulundu: {path}")
-            return path
-    
-    # Hiçbiri yoksa varsayılan yolu oluştur
-    data_dir = os.path.join(project_root, "data")
-    os.makedirs(data_dir, exist_ok=True)
-    db_path = os.path.join(data_dir, "temel_plan.db")
-    print(f"📍 Yeni veritabanı oluşturuluyor: {db_path}")
-    return db_path
+# Removed duplicate function - using modules.utils_database.find_or_create_database() instead
 
 def save_single_course(cursor, course):
     """
