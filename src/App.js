@@ -318,36 +318,39 @@ function App() {
 
   const handleSaveCourse = useCallback(async (editedData) => {
     try {
-      const response = await fetch('http://localhost:5001/api/update-table-row', {
+      const response = await fetch('http://localhost:5001/api/save', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           ders_id: editedData.ders_id,
-          updates: {
-            ders_adi: editedData.ders_adi,
-            sinif: editedData.sinif,
-            ders_saati: editedData.ders_saati || 0,
-            amac: editedData.amac,
-            dm_url: editedData.dm_url,
-            dbf_url: editedData.dbf_url,
-            bom_url: editedData.bom_url
-          }
+          ders_adi: editedData.ders_adi,
+          sinif: editedData.sinif,
+          ders_saati: editedData.ders_saati || 0,
+          amac: editedData.amac,
+          dm_url: editedData.dm_url,
+          dbf_url: editedData.dbf_url,
+          bom_url: editedData.bom_url
         })
       });
 
       const result = await response.json();
       
-      if (!response.ok) {
+      if (!response.ok || !result.success) {
         throw new Error(result.error || 'Sunucu hatası');
       }
 
       console.log(`"${editedData.ders_adi}" dersi başarıyla güncellendi.`);
       await loadTableData();
       
+      // Return success to indicate completion
+      return { success: true };
+      
     } catch (error) {
       console.error(`Ders güncelleme hatası: ${error.message}`);
+      // Re-throw the error so CourseEditor can catch it and show error feedback
+      throw error;
     }
   }, [loadTableData]);
 

@@ -41,6 +41,18 @@ npm test
 # 1. .env dosyasını kontrol et ve PROJECT_ROOT'u ayarlama örneği:
 # PROJECT_ROOT=/Users/ferhat/Library/Mobile Documents/com~apple~CloudDocs/Projeler/ProjectDogru/repos/alan-dal-ders
 
+# 2. DOCX to PDF conversion için LibreOffice kurulumu (opsiyonel, ama önerilen):
+# macOS:
+brew install --cask libreoffice
+
+# Ubuntu/Debian:
+sudo apt-get update && sudo apt-get install libreoffice
+
+# Windows:
+# https://www.libreoffice.org/download/download/ adresinden indirin
+
+# LibreOffice kurulu değilse PyMuPDF fallback kullanılır (düşük kalite)
+
 ### Ana Amaç
 Türkiye Cumhuriyeti Millî Eğitim Bakanlığı'na (MEB) bağlı Mesleki ve Teknik Eğitim Genel Müdürlüğü'nün web sitesinden (`meslek.meb.gov.tr`) mesleki eğitim verilerini otomatik olarak çeker, işler ve SQLite veritabanında yapılandırılmış şekilde saklar. Bu yapılandırılmış veri tabanı https://github.com/dogrucevap/node-yillikplan adresinde reposu bulunan ve https://plan.dogru.app adresinde online yayında olan projenin yıllık plan arşivini oluşturur. 
 
@@ -490,6 +502,16 @@ temel_plan_ders_dal
 ### 📈 İstatistik ve Monitoring
 - **`GET /api/get-statistics`** - Gerçek zamanlı sistem istatistikleri
 
+### 💾 Unified Data Management ⭐ **YENİ 2025-07-28**
+- **`GET /api/load`** - ⭐ **UNİFİED LOAD ENDPOINT**: Alan, dal, ders, konu, kazanım verilerini çeker
+  - **Query Parameters**: `type` (alan|dal|ders|konu|kazanim), `id` (entity ID), `parent_id` (parent entity ID)
+  - **Examples**: 
+    - `/api/load?type=ders&id=123` → Tek ders fresh data (sidebar için)
+    - `/api/load?type=alan` → Tüm alanlar
+    - `/api/load?type=dal&parent_id=5` → Belirli alanın dalları
+    - `/api/load?type=konu&parent_id=10` → Belirli öğrenme biriminin konuları
+- **`POST /api/save`** - ⭐ **UNİFİED SAVE ENDPOINT**: Tek ders güncelleme (update mode) veya çoklu ders kaydetme (batch mode) destekler
+
 ### 🔄 Document Conversion Operations ⭐ **YENİ 2025-07-28**
 - **`POST /api/convert-docx-to-pdf`** - DOC/DOCX dosyalarını PDF'e çevirir (cache-aware, same directory storage)
 
@@ -620,6 +642,37 @@ cop_json = get_output_json_path("get_cop.json")  # PROJECT_ROOT/data/get_cop.jso
 dbf_json = get_output_json_path("get_dbf.json")  # PROJECT_ROOT/data/get_dbf.json
 ```
 
+### /api/save Endpoint Kullanımı ⭐ **YENİ 2025-07-28**
+```javascript
+// Tek course güncelleme (Update Mode)
+const response = await fetch('http://localhost:5001/api/save', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    ders_id: 123,
+    ders_adi: "Güncellenmiş Ders Adı",
+    sinif: 9,
+    ders_saati: 4,
+    amac: "Ders amacı metni",
+    dm_url: "https://example.com/dm.pdf",
+    dbf_url: "data/dbf/alan/ders.pdf",
+    bom_url: "https://example.com/bom.pdf"
+  })
+});
+
+// Çoklu course kaydetme (Batch Mode)
+const response = await fetch('http://localhost:5001/api/save', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    courses: [
+      { ders_adi: "Ders 1", sinif: 9, ders_saati: 2 },
+      { ders_adi: "Ders 2", sinif: 10, ders_saati: 3 }
+    ]
+  })
+});
+```
+
 ## 🚨 Önemli Notlar
 
 - **Fonksiyon İsimleri**: `get_cop()` ve `get_dbf()` kullanın, eski isimleri kullanmayın
@@ -640,6 +693,87 @@ dbf_json = get_output_json_path("get_dbf.json")  # PROJECT_ROOT/data/get_dbf.jso
 - **⭐ YENİ 2025-07-26**: Simple String Matching sistemi - case-insensitive `.upper()` kullanın
 - **⭐ YENİ 2025-07-27**: `komutlar()` → `get_all_dbf_files()` - API sistemi optimize
 - **⭐ YENİ 2025-07-28**: Frontend UI/UX İyileştirmeleri - PDF viewer loading fix, split-screen layout, flexible sidebar, unified dropdowns, header redesign
+- **⭐ YENİ 2025-07-28**: `/api/save` Unified Endpoint - Tek ders güncelleme ve çoklu ders kaydetme tek endpoint'te birleştirildi, `/api/update-table-row` kaldırıldı
+- **⭐ YENİ 2025-07-28**: `/api/load` Unified Endpoint - Alan, dal, ders, konu, kazanım tüm veri tiplerini destekler, `/api/course/<id>` kaldırıldı
+- **⭐ YENİ 2025-07-28**: Fresh Data Loading - CourseEditor sidebar açıldığında DB'den en güncel veri çeker (cached table data değil)
+- **⭐ YENİ 2025-07-28**: Save Feedback System - Kaydet butonunda success/error feedback, disabled state ve visual indicators
+
+### 🌐 Unified API System ⭐ **YENİ 2025-07-28**
+
+#### **1. /api/load Endpoint Usage**
+- **ASLA** eski endpoint'leri kullanma: `/api/course/<id>` (kaldırıldı)
+- **MUTLAKA** yeni unified endpoint kullan:
+  ```javascript
+  // ✅ Doğru - Fresh ders data loading
+  const response = await fetch(`/api/load?type=ders&id=${course.ders_id}`);
+  const result = await response.json();
+  if (result.success) {
+    setEditData(result.data); // Fresh data from DB
+  }
+  
+  // ✅ Doğru - Tüm alanları yükle
+  const response = await fetch('/api/load?type=alan');
+  
+  // ✅ Doğru - Belirli alanın dalları
+  const response = await fetch(`/api/load?type=dal&parent_id=${alanId}`);
+  
+  // ❌ Yanlış - Eski endpoint
+  const response = await fetch(`/api/course/${courseId}`); // Artık yok!
+  ```
+
+#### **2. Save Feedback Implementation**
+- **ASLA** onSave'den sonra hemen sidebar kapat
+- **MUTLAKA** save feedback göster:
+  ```javascript
+  // ✅ Doğru - Save feedback ile async handling
+  const handleSave = async () => {
+    setSaveStatus('saving');
+    setSaveMessage('Kaydediliyor...');
+    
+    try {
+      await onSave(editData); // Wait for completion
+      setSaveStatus('success');
+      setSaveMessage('✅ Başarıyla kaydedildi!');
+      setTimeout(() => onClose(), 1500); // Delay close
+    } catch (error) {
+      setSaveStatus('error');
+      setSaveMessage(`❌ Hata: ${error.message}`);
+    }
+  };
+  
+  // ❌ Yanlış - Hemen kapat, feedback yok
+  const handleSave = () => {
+    onSave(editData);
+    onClose(); // Kullanıcı kaydetme durumunu göremez
+  };
+  ```
+
+#### **3. Fresh Data Loading Pattern**
+- **ASLA** sadece prop'tan gelen course data kullan
+- **MUTLAKA** DB'den fresh data çek:
+  ```javascript
+  // ✅ Doğru - Fresh data priority
+  useEffect(() => {
+    if (course && course.ders_id && isOpen) {
+      fetch(`/api/load?type=ders&id=${course.ders_id}`)
+        .then(res => res.json())
+        .then(result => {
+          if (result.success) {
+            setEditData(result.data); // Fresh DB data
+          } else {
+            setEditData(course); // Fallback to prop data
+          }
+        });
+    }
+  }, [course, isOpen]);
+  
+  // ❌ Yanlış - Sadece prop data
+  useEffect(() => {
+    if (course && isOpen) {
+      setEditData(course); // Cached table data, fresh değil
+    }
+  }, [course, isOpen]);
+  ```
 
 ### 📱 Frontend UI/UX Kuralları ⭐ **YENİ 2025-07-28**
 

@@ -223,7 +223,15 @@ const DocxToPdfViewer = ({ url, title, onLoad, onError }) => {
         setPdfUrl(result.pdf_url);
         setCacheStatus(result.cached);
         setConversionState('success');
-        console.log('✅ DOCX to PDF conversion successful:', result.pdf_url);
+        
+        // LibreOffice vs PyMuPDF feedback
+        if (result.message && result.message.includes('Warning')) {
+          console.log('⚠️ DOCX to PDF (PyMuPDF fallback):', result.pdf_url);
+          setErrorMessage(result.message); // Show warning about image quality
+        } else {
+          console.log('✅ DOCX to PDF (LibreOffice):', result.pdf_url);
+        }
+        
         onLoad && onLoad();
       } else {
         console.error('❌ DOCX to PDF conversion failed:', result.error);
@@ -283,7 +291,24 @@ const DocxToPdfViewer = ({ url, title, onLoad, onError }) => {
             zIndex: 10
           }}>
             {cacheStatus ? '💾 Cache' : '🔄 Yeni'}
+            {errorMessage && errorMessage.includes('Warning') && ' ⚠️'}
           </div>
+          {errorMessage && errorMessage.includes('Warning') && (
+            <div style={{ 
+              position: 'absolute', 
+              bottom: '10px', 
+              left: '10px', 
+              right: '10px',
+              background: 'rgba(255,193,7,0.9)', 
+              color: '#856404',
+              padding: '8px', 
+              borderRadius: '4px', 
+              fontSize: '12px',
+              zIndex: 10
+            }}>
+              ⚠️ LibreOffice bulunamadı, görüntü kalitesi düşük olabilir
+            </div>
+          )}
           <iframe
             src={pdfUrl}
             style={{ width: '100%', height: '100%', border: 'none' }}
@@ -612,6 +637,10 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
   const [pdfLoading, setPdfLoading] = useState(true);
   const [pdfError, setPdfError] = useState(null);
   
+  // Save feedback states
+  const [saveStatus, setSaveStatus] = useState('idle'); // 'idle', 'saving', 'success', 'error'
+  const [saveMessage, setSaveMessage] = useState('');
+  
   // Split screen mode - PDF açık mı?
   const isSplitMode = Boolean(pdfUrl);
   
@@ -633,6 +662,64 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
   
   const sidebarStyle = calculateFlexibleSidebarStyle();
 
+  // Fresh ders data'yı yükle - DB'den en güncel veriyi al
+  useEffect(() => {
+    if (course && course.ders_id && isOpen) {
+      console.log(`🔄 Loading fresh data for ders_id: ${course.ders_id}`);
+      
+      fetch(`http://localhost:5001/api/load?type=ders&id=${course.ders_id}`)
+        .then(response => response.json())
+        .then(result => {
+          if (result.success && result.data) {
+            console.log('✅ Fresh ders data loaded:', result.data);
+            setEditData({
+              ders_id: result.data.ders_id || '',
+              ders_adi: result.data.ders_adi || '',
+              sinif: result.data.sinif || '',
+              ders_saati: result.data.ders_saati || '',
+              alan_id: result.data.alan_id || '',
+              dal_id: result.data.dal_id || '',
+              dm_url: result.data.dm_url || '',
+              dbf_url: result.data.dbf_url || '',
+              bom_url: result.data.bom_url || '',
+              amac: result.data.amac || ''
+            });
+          } else {
+            console.error('❌ Fresh data loading failed:', result.error);
+            // Fallback to passed course data
+            setEditData({
+              ders_id: course.ders_id || '',
+              ders_adi: course.ders_adi || '',
+              sinif: course.sinif || '',
+              ders_saati: course.ders_saati || '',
+              alan_id: course.alan_id || '',
+              dal_id: course.dal_id || '',
+              dm_url: course.dm_url || '',
+              dbf_url: course.dbf_url || '',
+              bom_url: course.bom_url || '',
+              amac: course.amac || ''
+            });
+          }
+        })
+        .catch(error => {
+          console.error('❌ Fresh data loading error:', error);
+          // Fallback to passed course data
+          setEditData({
+            ders_id: course.ders_id || '',
+            ders_adi: course.ders_adi || '',
+            sinif: course.sinif || '',
+            ders_saati: course.ders_saati || '',
+            alan_id: course.alan_id || '',
+            dal_id: course.dal_id || '',
+            dm_url: course.dm_url || '',
+            dbf_url: course.dbf_url || '',
+            bom_url: course.bom_url || '',
+            amac: course.amac || ''
+          });
+        });
+    }
+  }, [course, isOpen]);
+
   // Alan-Dal seçeneklerini yükle
   useEffect(() => {
     if (isOpen) {
@@ -646,22 +733,6 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
     }
   }, [isOpen]);
 
-  useEffect(() => {
-    if (course && isOpen) {
-      setEditData({
-        ders_id: course.ders_id || '',
-        ders_adi: course.ders_adi || '',
-        sinif: course.sinif || '',
-        ders_saati: course.ders_saati || '',
-        alan_id: course.alan_id || '',
-        dal_id: course.dal_id || '',
-        dm_url: course.dm_url || '',
-        dbf_url: course.dbf_url || '',
-        bom_url: course.bom_url || '',
-        amac: course.amac || ''
-      });
-    }
-  }, [course, isOpen]);
 
   // COP ve DBF URL'lerini alan_id değiştiğinde güncelle
   useEffect(() => {
@@ -757,9 +828,45 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
     setEditData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSave = () => {
-    onSave(editData);
-    onClose();
+  const handleSave = async () => {
+    setSaveStatus('saving');
+    setSaveMessage('Kaydediliyor...');
+    
+    try {
+      // Call the parent's onSave function and wait for it to complete
+      await new Promise((resolve, reject) => {
+        // Since onSave might not return a promise, we simulate an async operation
+        const result = onSave(editData);
+        
+        // If onSave returns a promise, wait for it
+        if (result && typeof result.then === 'function') {
+          result.then(resolve).catch(reject);
+        } else {
+          // Simulate a brief delay for better UX
+          setTimeout(resolve, 500);
+        }
+      });
+      
+      setSaveStatus('success');
+      setSaveMessage('✅ Başarıyla kaydedildi!');
+      
+      // Auto-hide success message and close sidebar after 1.5 seconds
+      setTimeout(() => {
+        setSaveStatus('idle');
+        setSaveMessage('');
+        onClose();
+      }, 1500);
+      
+    } catch (error) {
+      setSaveStatus('error');
+      setSaveMessage(`❌ Kaydetme hatası: ${error.message || 'Bilinmeyen hata'}`);
+      
+      // Auto-hide error message after 3 seconds
+      setTimeout(() => {
+        setSaveStatus('idle');
+        setSaveMessage('');
+      }, 3000);
+    }
   };
 
   const handleCopy = async () => {
@@ -803,15 +910,7 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
     onShowPDF(pdfUrl, title);
   };
   
-  // Handle DBF PDF selection
-  const handleDbfSelect = (pdfUrl, title) => {
-    onShowPDF(pdfUrl, title);
-  };
-  
-  // Handle PDF button clicks
-  const handlePdfButtonClick = (url, title) => {
-    onShowPDF(url, title);
-  };
+  // Note: DBF dropdown currently disabled (uses RAR files, not direct PDFs)
 
   if (!isOpen) return null;
 
@@ -891,7 +990,7 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
               <div className="dbf-dropdown-wrapper">
                 <DbfDropdown 
                   dbfUrls={dbfUrls} 
-                  onSelectDbf={handleDbfSelect}
+                  onSelectDbf={() => {}} // Disabled for now
                 />
               </div>
             </div>
@@ -942,10 +1041,22 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
             />
           </div>
 
+          {/* Save Feedback */}
+          {saveMessage && (
+            <div className={`save-feedback ${saveStatus}`}>
+              {saveMessage}
+            </div>
+          )}
+
           {/* Action Buttons */}
           <div className="form-actions">
-            <button onClick={handleSave} className="save-button">
-              Kaydet
+            <button 
+              onClick={handleSave} 
+              className={`save-button ${saveStatus}`}
+              disabled={saveStatus === 'saving'}
+            >
+              {saveStatus === 'saving' ? 'Kaydediliyor...' : 
+               saveStatus === 'success' ? '✅ Kaydedildi' : 'Kaydet'}
             </button>
             <button onClick={handleCopy} className="copy-button">
               Kopyala
@@ -1065,7 +1176,7 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
               <div className="dbf-dropdown-wrapper">
                 <DbfDropdown 
                   dbfUrls={dbfUrls} 
-                  onSelectDbf={handleDbfSelect}
+                  onSelectDbf={() => {}} // Disabled for now
                 />
               </div>
             </div>
@@ -1116,10 +1227,22 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
             />
           </div>
 
+          {/* Save Feedback */}
+          {saveMessage && (
+            <div className={`save-feedback ${saveStatus}`}>
+              {saveMessage}
+            </div>
+          )}
+
           {/* Action Buttons */}
           <div className="form-actions">
-            <button onClick={handleSave} className="save-button">
-              Kaydet
+            <button 
+              onClick={handleSave} 
+              className={`save-button ${saveStatus}`}
+              disabled={saveStatus === 'saving'}
+            >
+              {saveStatus === 'saving' ? 'Kaydediliyor...' : 
+               saveStatus === 'success' ? '✅ Kaydedildi' : 'Kaydet'}
             </button>
             <button onClick={handleCopy} className="copy-button">
               Kopyala

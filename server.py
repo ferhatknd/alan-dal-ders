@@ -550,58 +550,6 @@ def get_table_data():
         print(f"Tablo verisi alınırken hata oluştu: {e}")
         return jsonify({"error": str(e)}), 500
 
-@app.route('/api/update-table-row', methods=['POST'])
-def update_table_row():
-    """
-    Tablodaki bir satırı (ders) günceller.
-    """
-    try:
-        data = request.get_json()
-        ders_id = data.get('ders_id')
-        updates = data.get('updates', {})
-        
-        if not ders_id:
-            return jsonify({"error": "ders_id gerekli"}), 400
-        
-        db_path = find_or_create_database()
-        if not db_path:
-            return jsonify({"error": "Veritabanı bulunamadı"}), 500
-        
-        # Güncelleme alanlarını hazırla
-        allowed_fields = ['ders_adi', 'sinif', 'ders_saati', 'amac', 'dm_url', 'dbf_url', 'bom_url']
-        set_clauses = []
-        values = []
-        
-        for field, value in updates.items():
-            if field in allowed_fields:
-                set_clauses.append(f"{field} = ?")
-                values.append(value)
-        
-        if not set_clauses:
-            return jsonify({"error": "Güncellenecek geçerli alan bulunamadı"}), 400
-        
-        values.append(ders_id)  # WHERE koşulu için
-        
-        with sqlite3.connect(db_path) as conn:
-            cursor = conn.cursor()
-            
-            sql = f"UPDATE temel_plan_ders SET {', '.join(set_clauses)} WHERE id = ?"
-            cursor.execute(sql, values)
-            
-            if cursor.rowcount == 0:
-                return jsonify({"error": "Ders bulunamadı"}), 404
-            
-            conn.commit()
-            
-            return jsonify({
-                "success": True,
-                "message": f"Ders başarıyla güncellendi",
-                "updated_count": cursor.rowcount
-            })
-            
-    except Exception as e:
-        print(f"Ders güncelleme hatası: {e}")
-        return jsonify({"error": str(e)}), 500
 
 @app.route('/api/copy-course', methods=['POST'])
 def copy_course():
@@ -668,28 +616,80 @@ def copy_course():
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/save', methods=['POST'])
-def save():
+@with_database_json
+def save(cursor):
     """
     Düzenlenmiş ders verilerini temel_plan_* tablolarına kaydeder.
+    Tek course (update mode) veya çoklu course (batch mode) destekler.
+    
+    CLAUDE.md prensibi: @with_database_json decorator kullanır
+    
+    Update mode (tek course):
+    {
+        "ders_id": 123,
+        "ders_adi": "Ders Adı",
+        "sinif": 9,
+        "ders_saati": 4,
+        "amac": "Ders amacı",
+        "dm_url": "url",
+        "dbf_url": "url", 
+        "bom_url": "url"
+    }
+    
+    Batch mode (çoklu course):
+    {
+        "courses": [
+            {"ders_adi": "Ders 1", ...},
+            {"ders_adi": "Ders 2", ...}
+        ]
+    }
     """
     try:
         data = request.get_json()
-        if not data or 'courses' not in data:
-            return jsonify({"error": "Geçersiz veri formatı"}), 400
+        if not data:
+            return {"error": "Geçersiz veri formatı"}
         
-        courses = data['courses']
-        if not courses:
-            return jsonify({"error": "Kaydedilecek ders bulunamadı"}), 400
+        # Tek course update mode mu kontrol et
+        if 'ders_id' in data:
+            # Update mode - tek course güncelleme
+            ders_id = data.get('ders_id')
+            if not ders_id:
+                return {"error": "ders_id gerekli"}
             
-        # SQLite veritabanını bul/oluştur
-        db_path = find_or_create_database()
-        if not db_path:
-            return jsonify({"error": "Veritabanı bulunamadı veya oluşturulamadı"}), 500
+            # Güncelleme alanlarını hazırla
+            allowed_fields = ['ders_adi', 'sinif', 'ders_saati', 'amac', 'dm_url', 'dbf_url', 'bom_url']
+            set_clauses = []
+            values = []
             
-        results = []
+            for field in allowed_fields:
+                if field in data:
+                    set_clauses.append(f"{field} = ?")
+                    values.append(data[field])
+            
+            if not set_clauses:
+                return {"error": "Güncellenecek geçerli alan bulunamadı"}
+            
+            values.append(ders_id)  # WHERE koşulu için
+            
+            sql = f"UPDATE temel_plan_ders SET {', '.join(set_clauses)} WHERE id = ?"
+            cursor.execute(sql, values)
+            
+            if cursor.rowcount == 0:
+                return {"error": "Ders bulunamadı"}
+            
+            return {
+                "success": True,
+                "message": "Ders başarıyla güncellendi",
+                "updated_count": cursor.rowcount
+            }
         
-        with sqlite3.connect(db_path) as conn:
-            cursor = conn.cursor()
+        # Batch mode - çoklu course kaydetme
+        elif 'courses' in data:
+            courses = data['courses']
+            if not courses:
+                return {"error": "Kaydedilecek ders bulunamadı"}
+            
+            results = []
             
             for course in courses:
                 try:
@@ -702,22 +702,213 @@ def save():
                         "message": str(e)
                     })
             
-            conn.commit()
+            # Başarı raporu
+            success_count = len([r for r in results if r.get('status') == 'success'])
+            error_count = len(results) - success_count
+            
+            return {
+                "success": True,
+                "message": f"{success_count} ders kaydedildi, {error_count} hata",
+                "results": results,
+                "success_count": success_count,
+                "error_count": error_count
+            }
         
-        # Başarı raporu
-        success_count = len([r for r in results if r.get('status') == 'success'])
-        error_count = len(results) - success_count
-        
-        return jsonify({
-            "message": f"{success_count} ders başarıyla kaydedildi, {error_count} hatada oluştu",
-            "results": results,
-            "total": len(results),
-            "success": success_count,
-            "errors": error_count
-        })
+        else:
+            return {"error": "Geçersiz veri formatı - 'ders_id' (update) veya 'courses' (batch) gerekli"}
         
     except Exception as e:
-        return jsonify({"error": f"Veritabanı hatası: {str(e)}"}), 500
+        print(f"Save endpoint hatası: {e}")
+        return {"error": str(e)}
+
+@app.route('/api/load', methods=['GET'])
+@with_database_json
+def load_data(cursor):
+    """
+    Unified data loading endpoint - alan, dal, ders, konu, kazanım verilerini çeker.
+    
+    CLAUDE.md prensibi: @with_database_json decorator kullanır
+    Sidebar açılışında fresh data için kullanılır.
+    
+    Query Parameters:
+    - type: Veri tipi (alan, dal, ders, konu, kazanim)
+    - id: İlgili veri ID'si
+    - parent_id: Parent entity ID'si (opsiyonel)
+    
+    Examples:
+    - /api/load?type=ders&id=123 -> Tek ders bilgisi
+    - /api/load?type=alan -> Tüm alanlar
+    - /api/load?type=dal&parent_id=5 -> Belirli alan'ın dalları
+    - /api/load?type=konu&parent_id=10 -> Belirli öğrenme biriminin konuları
+    """
+    try:
+        data_type = request.args.get('type', '').lower()
+        entity_id = request.args.get('id')
+        parent_id = request.args.get('parent_id')
+        
+        if not data_type:
+            return {"error": "Veri tipi (type) parametresi gerekli"}
+        
+        if data_type == 'ders':
+            # Ders bilgilerini çek
+            if not entity_id:
+                return {"error": "Ders ID'si gerekli"}
+                
+            cursor.execute("""
+                SELECT 
+                    d.id as ders_id,
+                    d.ders_adi,
+                    d.sinif,
+                    d.ders_saati,
+                    d.amac,
+                    d.dm_url,
+                    d.dbf_url,
+                    d.bom_url,
+                    dd.alan_id,
+                    dd.dal_id
+                FROM temel_plan_ders d
+                LEFT JOIN temel_plan_ders_dal dd ON d.id = dd.ders_id
+                WHERE d.id = ?
+                LIMIT 1
+            """, (entity_id,))
+            
+            result = cursor.fetchone()
+            if not result:
+                return {"error": "Ders bulunamadı"}
+            
+            columns = ['ders_id', 'ders_adi', 'sinif', 'ders_saati', 'amac', 'dm_url', 'dbf_url', 'bom_url', 'alan_id', 'dal_id']
+            ders_data = dict(zip(columns, result))
+            
+            # None values'ları boş string'e çevir
+            for key, value in ders_data.items():
+                if value is None:
+                    ders_data[key] = ''
+            
+            return {"success": True, "data": ders_data}
+            
+        elif data_type == 'alan':
+            # Alan bilgilerini çek
+            if entity_id:
+                # Tek alan
+                cursor.execute("SELECT id, alan_adi, meb_alan_id, cop_url, dbf_urls FROM temel_plan_alan WHERE id = ?", (entity_id,))
+                result = cursor.fetchone()
+                if not result:
+                    return {"error": "Alan bulunamadı"}
+                columns = ['id', 'alan_adi', 'meb_alan_id', 'cop_url', 'dbf_urls']
+                alan_data = dict(zip(columns, result))
+                return {"success": True, "data": alan_data}
+            else:
+                # Tüm alanlar
+                cursor.execute("SELECT id, alan_adi, meb_alan_id, cop_url, dbf_urls FROM temel_plan_alan ORDER BY alan_adi")
+                results = cursor.fetchall()
+                alanlar = []
+                for result in results:
+                    columns = ['id', 'alan_adi', 'meb_alan_id', 'cop_url', 'dbf_urls']
+                    alan_data = dict(zip(columns, result))
+                    alanlar.append(alan_data)
+                return {"success": True, "data": alanlar}
+                
+        elif data_type == 'dal':
+            # Dal bilgilerini çek
+            if entity_id:
+                # Tek dal
+                cursor.execute("SELECT id, dal_adi, alan_id FROM temel_plan_dal WHERE id = ?", (entity_id,))
+                result = cursor.fetchone()
+                if not result:
+                    return {"error": "Dal bulunamadı"}
+                columns = ['id', 'dal_adi', 'alan_id']
+                dal_data = dict(zip(columns, result))
+                return {"success": True, "data": dal_data}
+            elif parent_id:
+                # Belirli alan'ın dalları
+                cursor.execute("SELECT id, dal_adi, alan_id FROM temel_plan_dal WHERE alan_id = ? ORDER BY dal_adi", (parent_id,))
+                results = cursor.fetchall()
+                dallar = []
+                for result in results:
+                    columns = ['id', 'dal_adi', 'alan_id']
+                    dal_data = dict(zip(columns, result))
+                    dallar.append(dal_data)
+                return {"success": True, "data": dallar}
+            else:
+                # Tüm dallar
+                cursor.execute("SELECT id, dal_adi, alan_id FROM temel_plan_dal ORDER BY dal_adi")
+                results = cursor.fetchall()
+                dallar = []
+                for result in results:
+                    columns = ['id', 'dal_adi', 'alan_id']
+                    dal_data = dict(zip(columns, result))
+                    dallar.append(dal_data)
+                return {"success": True, "data": dallar}
+                
+        elif data_type == 'konu':
+            # Konu bilgilerini çek
+            if entity_id:
+                # Tek konu
+                cursor.execute("SELECT id, ogrenme_birimi_id, konu_adi, detay, sira FROM temel_plan_konu WHERE id = ?", (entity_id,))
+                result = cursor.fetchone()
+                if not result:
+                    return {"error": "Konu bulunamadı"}
+                columns = ['id', 'ogrenme_birimi_id', 'konu_adi', 'detay', 'sira']
+                konu_data = dict(zip(columns, result))
+                return {"success": True, "data": konu_data}
+            elif parent_id:
+                # Belirli öğrenme biriminin konuları
+                cursor.execute("SELECT id, ogrenme_birimi_id, konu_adi, detay, sira FROM temel_plan_konu WHERE ogrenme_birimi_id = ? ORDER BY sira, konu_adi", (parent_id,))
+                results = cursor.fetchall()
+                konular = []
+                for result in results:
+                    columns = ['id', 'ogrenme_birimi_id', 'konu_adi', 'detay', 'sira']
+                    konu_data = dict(zip(columns, result))
+                    konular.append(konu_data)
+                return {"success": True, "data": konular}
+            else:
+                # Tüm konular
+                cursor.execute("SELECT id, ogrenme_birimi_id, konu_adi, detay, sira FROM temel_plan_konu ORDER BY konu_adi")
+                results = cursor.fetchall()
+                konular = []
+                for result in results:
+                    columns = ['id', 'ogrenme_birimi_id', 'konu_adi', 'detay', 'sira']
+                    konu_data = dict(zip(columns, result))
+                    konular.append(konu_data)
+                return {"success": True, "data": konular}
+                
+        elif data_type == 'kazanim':
+            # Kazanım bilgilerini çek
+            if entity_id:
+                # Tek kazanım
+                cursor.execute("SELECT id, konu_id, kazanim_adi, seviye, kod, sira FROM temel_plan_kazanim WHERE id = ?", (entity_id,))
+                result = cursor.fetchone()
+                if not result:
+                    return {"error": "Kazanım bulunamadı"}
+                columns = ['id', 'konu_id', 'kazanim_adi', 'seviye', 'kod', 'sira']
+                kazanim_data = dict(zip(columns, result))
+                return {"success": True, "data": kazanim_data}
+            elif parent_id:
+                # Belirli konunun kazanımları
+                cursor.execute("SELECT id, konu_id, kazanim_adi, seviye, kod, sira FROM temel_plan_kazanim WHERE konu_id = ? ORDER BY sira, kazanim_adi", (parent_id,))
+                results = cursor.fetchall()
+                kazanimlar = []
+                for result in results:
+                    columns = ['id', 'konu_id', 'kazanim_adi', 'seviye', 'kod', 'sira']
+                    kazanim_data = dict(zip(columns, result))
+                    kazanimlar.append(kazanim_data)
+                return {"success": True, "data": kazanimlar}
+            else:
+                # Tüm kazanımlar
+                cursor.execute("SELECT id, konu_id, kazanim_adi, seviye, kod, sira FROM temel_plan_kazanim ORDER BY kazanim_adi")
+                results = cursor.fetchall()
+                kazanimlar = []
+                for result in results:
+                    columns = ['id', 'konu_id', 'kazanim_adi', 'seviye', 'kod', 'sira']
+                    kazanim_data = dict(zip(columns, result))
+                    kazanimlar.append(kazanim_data)
+                return {"success": True, "data": kazanimlar}
+        else:
+            return {"error": f"Desteklenmeyen veri tipi: {data_type}. Desteklenen tipler: alan, dal, ders, konu, kazanim"}
+        
+    except Exception as e:
+        print(f"Load data hatası: {e}")
+        return {"error": str(e)}
 
 def init_database():
     """

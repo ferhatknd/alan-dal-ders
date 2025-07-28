@@ -19,6 +19,8 @@ import fitz  # PyMuPDF - zaten mevcut dependency
 from pathlib import Path
 import logging
 from typing import Optional, Tuple
+import subprocess
+import shutil
 
 # CLAUDE.md Prensibi: Modüler Import Sistemi
 from modules.utils_env import get_project_root
@@ -98,11 +100,104 @@ class DocxToPdfConverter:
         file_ext = Path(file_path).suffix
         return file_ext in self.SUPPORTED_EXTENSIONS
     
+    def convert_to_pdf_libreoffice(self, doc_path: str, cached_pdf_path: str) -> Tuple[bool, str]:
+        """
+        LibreOffice ile DOC/DOCX'i PDF'e çevirir (tablo yapısını korur)
+        """
+        try:
+            # LibreOffice var mı kontrol et
+            if not shutil.which('libreoffice') and not shutil.which('soffice'):
+                return False, "LibreOffice bulunamadı"
+            
+            # LibreOffice komutunu belirle
+            libreoffice_cmd = 'libreoffice' if shutil.which('libreoffice') else 'soffice'
+            
+            # Output directory
+            output_dir = Path(cached_pdf_path).parent
+            
+            # LibreOffice headless conversion
+            cmd = [
+                libreoffice_cmd,
+                '--headless',
+                '--convert-to', 'pdf',
+                '--outdir', str(output_dir),
+                doc_path
+            ]
+            
+            logger.info(f"🔄 LibreOffice conversion: {' '.join(cmd)}")
+            
+            # Run LibreOffice conversion
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=30  # 30 second timeout
+            )
+            
+            if result.returncode == 0:
+                # LibreOffice creates filename.pdf, we need filename_converted.pdf
+                original_pdf = output_dir / f"{Path(doc_path).stem}.pdf"
+                if original_pdf.exists():
+                    # Rename to our cache naming convention
+                    shutil.move(str(original_pdf), cached_pdf_path)
+                    logger.info(f"✅ LibreOffice conversion successful: {cached_pdf_path}")
+                    return True, ""
+                else:
+                    return False, "LibreOffice conversion failed - output not found"
+            else:
+                error_msg = f"LibreOffice error: {result.stderr}"
+                logger.error(f"❌ {error_msg}")
+                return False, error_msg
+                
+        except subprocess.TimeoutExpired:
+            return False, "LibreOffice conversion timeout"
+        except Exception as e:
+            return False, f"LibreOffice conversion error: {str(e)}"
+    
+    def convert_to_pdf_pymupdf_fallback(self, doc_path: str, cached_pdf_path: str) -> Tuple[bool, str]:
+        """
+        PyMuPDF ile fallback conversion (görüntü kalitesi düşük ama her zaman çalışır)
+        """
+        try:
+            # PyMuPDF ile DOC/DOCX açma
+            doc = fitz.open(doc_path)
+            
+            if len(doc) == 0:
+                doc.close()
+                return False, "Belge boş veya okunamıyor"
+            
+            # PDF'e dönüştürme - PyMuPDF pixmap method
+            pdf_doc = fitz.open()  # Yeni PDF oluştur
+            
+            for page_num in range(len(doc)):
+                page = doc.load_page(page_num)
+                
+                # Page'i pixmap'e çevir (high resolution)
+                pix = page.get_pixmap(matrix=fitz.Matrix(2.0, 2.0))  # 2x resolution
+                
+                # Yeni PDF page oluştur ve pixmap'i ekle
+                pdf_page = pdf_doc.new_page(width=pix.width, height=pix.height)
+                pdf_page.insert_image(pdf_page.rect, pixmap=pix)
+            
+            doc.close()
+            
+            # PDF'i kaydet
+            pdf_doc.save(cached_pdf_path)
+            pdf_doc.close()
+            
+            logger.info(f"✅ PyMuPDF fallback conversion successful: {cached_pdf_path}")
+            return True, ""
+            
+        except Exception as e:
+            return False, f"PyMuPDF conversion error: {str(e)}"
+
     def convert_to_pdf(self, doc_path: str) -> Tuple[bool, str, str]:
         """
-        DOC/DOCX dosyasını PDF'e çevirir
+        DOC/DOCX dosyasını PDF'e çevirir - Multiple methods with priority
         
-        CLAUDE.md Prensibi: PyMuPDF unified processing
+        Priority:
+        1. LibreOffice (best quality, preserves tables/formatting)
+        2. PyMuPDF (fallback, image quality)
         
         Args:
             doc_path: DOC/DOCX dosya yolu
@@ -125,33 +220,23 @@ class DocxToPdfConverter:
             
             logger.info(f"🔄 Converting {doc_path} to PDF...")
             
-            # PyMuPDF ile DOC/DOCX açma
-            doc = fitz.open(doc_path)
+            # Method 1: LibreOffice (preferred - preserves formatting)
+            success, error = self.convert_to_pdf_libreoffice(doc_path, cached_pdf_path)
+            if success:
+                return True, cached_pdf_path, ""
             
-            if len(doc) == 0:
-                doc.close()
-                return False, "", "Belge boş veya okunamıyor"
+            logger.warning(f"⚠️ LibreOffice conversion failed: {error}")
+            logger.info(f"🔄 Trying PyMuPDF fallback...")
             
-            # PDF'e dönüştürme
-            pdf_doc = fitz.open()  # Yeni PDF oluştur
+            # Method 2: PyMuPDF fallback (image quality)
+            success, error = self.convert_to_pdf_pymupdf_fallback(doc_path, cached_pdf_path)
+            if success:
+                return True, cached_pdf_path, f"Warning: Using image conversion (LibreOffice not available)"
             
-            for page_num in range(len(doc)):
-                page = doc.load_page(page_num)
-                
-                # Page'i PDF page'e çevir
-                pix = page.get_pixmap(matrix=fitz.Matrix(1.5, 1.5))  # 1.5x resolution
-                img_pdf = fitz.open("pdf", pix.tobytes("pdf"))
-                pdf_doc.insert_pdf(img_pdf)
-                img_pdf.close()
-            
-            doc.close()
-            
-            # PDF'i kaydet
-            pdf_doc.save(cached_pdf_path)
-            pdf_doc.close()
-            
-            logger.info(f"✅ Conversion successful: {cached_pdf_path}")
-            return True, cached_pdf_path, ""
+            # Both methods failed
+            error_msg = f"All conversion methods failed. LibreOffice: {error}"
+            logger.error(f"❌ {error_msg}")
+            return False, "", error_msg
             
         except Exception as e:
             error_msg = f"Conversion error: {str(e)}"
