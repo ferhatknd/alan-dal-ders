@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Bu dosya, Claude Code için MEB Mesleki Eğitim Veri İşleme ve Veritabanı Projesinin kapsamlı birleşik kılavuzudur. README.md, is_akisi.md ve teknik detayların tümünü içerir. Proje mantığını koruyarak her seferinde hata yapmaktan kaçınmak için tüm kritik bilgileri içerir.
 
-**Son Güncelleme**: 2025-07-28 (Environment Variable sistemi eklendi - çoklu bilgisayar desteği)
+**Son Güncelleme**: 2025-07-28 (Frontend Reorganizasyonu tamamlandı - modüler bileşen sistemi)
 
 ## 🎯 Proje Genel Bakış
 
@@ -90,6 +90,7 @@ Alan (Area) → Dal (Field) → Ders (Course) → Öğrenme Birimi (Learning Uni
 - Framework: React 18.2.0
 - Build Tool: react-scripts
 - Proxy: Setup for API calls to backend
+- Architecture: Modular component system with separation of concerns
 
 **Data Processing Pipeline:**
 1. Scraping Layer: Web scraping from meslek.meb.gov.tr
@@ -329,6 +330,35 @@ temel_plan_ders_dal
   ```
 - **Çoklu Bilgisayar Desteği**: `.env` dosyasında PROJECT_ROOT tanımla, her bilgisayarda farklı olabilir
 - **Fallback Davranış**: PROJECT_ROOT tanımlı değilse `os.getcwd()` kullanılır
+
+### 10. Database Schema Tutarlılığı ⭐ **YENİ 2025-07-28**
+- **ASLA** `server.py`'de duplicate database fonksiyonları yazma
+- **MUTLAKA** `utils_database.py`'deki merkezi fonksiyonları kullan:
+  ```python
+  # ✅ Doğru - Merkezi database fonksiyonları
+  from modules.utils_database import find_or_create_database, get_or_create_alan, create_or_get_ders
+  
+  # ❌ Yanlış - server.py'de duplicate fonksiyonlar
+  def find_or_create_database():  # Bu fonksiyon zaten utils_database.py'de var!
+      pass
+  ```
+- **Schema ile Uyumlu Tablo Adları**: Sadece `data/schema.sql`'deki tablo adlarını kullan:
+  - ✅ `temel_plan_ogrenme_birimi` (schema'da var)
+  - ❌ `temel_plan_ders_ogrenme_birimi` (schema'da yok)
+  - ✅ `temel_plan_konu` (schema'da var)  
+  - ❌ `temel_plan_ders_ob_konu` (schema'da yok)
+  - ✅ `temel_plan_kazanim` (schema'da var)
+  - ❌ `temel_plan_ders_ob_konu_kazanim` (schema'da yok)
+- **Schema ile Uyumlu Sütun Adları**: Sadece `data/schema.sql`'deki sütun adlarını kullan:
+  - ✅ `arac_adi` (schema'da var)
+  - ❌ `arac_gerec` (schema'da yok)
+  - ✅ `olcme_adi` (schema'da var)
+  - ❌ `olcme_degerlendirme` (schema'da yok)
+  - ✅ `birim_adi` (schema'da var)
+  - ❌ `ogrenme_birimi` (schema'da yok)
+  - ✅ `sure` (schema'da var)
+  - ❌ `ders_saati` (öğrenme birimi tablosunda yok)
+- **Database İşlemlerinde Consistency**: Her yeni database işlemi öncesi schema.sql ile uyumluluğu kontrol et
 
 ## 🔄 Son Güncelleme Detayları - 2025-07-28
 

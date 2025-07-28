@@ -1259,9 +1259,9 @@ def update_ders_saati_from_dbf_data(cursor, parsed_data):
                         if birim_adi and birim_saati and str(birim_saati).isdigit():
                             # Öğrenme birimini bul ve güncelle
                             cursor.execute("""
-                                UPDATE temel_plan_ders_ogrenme_birimi 
-                                SET ders_saati = ? 
-                                WHERE ders_id = ? AND ogrenme_birimi LIKE ? AND (ders_saati IS NULL OR ders_saati = 0)
+                                UPDATE temel_plan_ogrenme_birimi 
+                                SET sure = ? 
+                                WHERE ders_id = ? AND birim_adi LIKE ? AND (sure IS NULL OR sure = 0)
                             """, (int(birim_saati), course_id, f"%{birim_adi.strip()}%"))
     
     except Exception as e:

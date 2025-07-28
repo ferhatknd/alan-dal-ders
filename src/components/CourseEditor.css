@@ -1,0 +1,514 @@
+/* CourseEditor.css - Sidebar ve Document Viewer stilleri */
+
+/* Sidebar Container Styles */
+.edit-sidebar-container {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 400px;
+  height: 100vh;
+  background: white;
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+}
+
+.edit-sidebar-split-screen {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 100vw;
+  height: 100vh;
+  background: white;
+  z-index: 1000;
+  display: flex;
+}
+
+/* Sidebar Header */
+.edit-sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 20px;
+  border-bottom: 1px solid #e0e0e0;
+  background: #f8f9fa;
+  min-height: 80px;
+}
+
+.edit-sidebar-header h3 {
+  margin: 0 0 10px 0;
+  color: #333;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.edit-sidebar-pdf-links {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.edit-sidebar-pdf-button {
+  padding: 4px 8px;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.edit-sidebar-pdf-button.dm {
+  background: #e7f3ff;
+  color: #0066cc;
+}
+
+.edit-sidebar-pdf-button.dbf {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.edit-sidebar-pdf-button.bom {
+  background: #d4edda;
+  color: #155724;
+}
+
+.edit-sidebar-pdf-button:hover {
+  opacity: 0.8;
+  transform: translateY(-1px);
+}
+
+.edit-sidebar-close-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  padding: 5px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.edit-sidebar-close-button:hover {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.current-document-info {
+  margin-top: 8px;
+}
+
+.document-title {
+  font-size: 14px;
+  color: #666;
+  font-weight: normal;
+  background: #f0f0f0;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+/* Sidebar Content */
+.edit-sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+/* Split Screen Panels */
+.split-left-panel {
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #e0e0e0;
+}
+
+.split-right-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Resize Handle */
+.resize-handle {
+  width: 8px;
+  background: #f0f0f0;
+  cursor: col-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.resize-handle:hover {
+  background: #e0e0e0;
+}
+
+.resize-line {
+  width: 2px;
+  height: 30px;
+  background: #ccc;
+  border-radius: 1px;
+}
+
+/* Form Sections */
+.alan-dal-selection-section {
+  margin-bottom: 24px;
+}
+
+.alan-dal-selection-container {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  align-items: flex-end;
+}
+
+.form-section {
+  margin-bottom: 24px;
+}
+
+.ders-bilgileri-section .material-textfield {
+  margin-bottom: 16px;
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.save-button,
+.copy-button {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.save-button {
+  background: #28a745;
+  color: white;
+}
+
+.save-button:hover {
+  background: #218838;
+  transform: translateY(-1px);
+}
+
+.copy-button {
+  background: #6c757d;
+  color: white;
+}
+
+.copy-button:hover {
+  background: #5a6268;
+  transform: translateY(-1px);
+}
+
+/* COP ve DBF Dropdown Styles */
+.cop-dropdown-container,
+.dbf-dropdown-container {
+  position: relative;
+}
+
+.cop-dropdown-toggle,
+.dbf-dropdown-toggle {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  font-size: 12px;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.cop-dropdown-toggle:hover,
+.dbf-dropdown-toggle:hover {
+  border-color: #007bff;
+  background: #f8f9ff;
+}
+
+.dbf-dropdown-container.disabled .dbf-dropdown-toggle {
+  background: #f8f9fa;
+  color: #6c757d;
+  cursor: not-allowed;
+}
+
+.cop-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.cop-dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.2s;
+}
+
+.cop-dropdown-item:hover {
+  background: #f8f9fa;
+}
+
+/* Material TextField Styles */
+.material-textfield {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.material-textfield.always-floating label {
+  position: absolute;
+  top: -8px;
+  left: 12px;
+  background: white;
+  padding: 0 4px;
+  font-size: 12px;
+  color: #666;
+  pointer-events: none;
+  transition: all 0.2s ease;
+}
+
+.material-textfield.focused label {
+  color: #007bff;
+}
+
+.material-textfield.error label {
+  color: #dc3545;
+}
+
+.material-textfield input,
+.material-textfield select,
+.material-textfield textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.material-textfield.focused input,
+.material-textfield.focused select,
+.material-textfield.focused textarea {
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.material-textfield.error input,
+.material-textfield.error select,
+.material-textfield.error textarea {
+  border-color: #dc3545;
+  box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.25);
+}
+
+.material-textfield.disabled input,
+.material-textfield.disabled select,
+.material-textfield.disabled textarea {
+  background: #f8f9fa;
+  color: #6c757d;
+  cursor: not-allowed;
+}
+
+.material-textfield.disabled label {
+  color: #6c757d;
+}
+
+/* Document Viewer Styles */
+.document-viewer-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #f8f9fa;
+}
+
+.document-viewer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: white;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.document-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.document-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.external-link-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.external-link-btn:hover {
+  background: #f0f0f0;
+}
+
+.document-viewer-content {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.document-viewer-content.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.document-viewer-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* Loading States */
+.document-viewer-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #666;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-timeout-info {
+  font-size: 12px;
+  color: #999;
+  margin-top: 8px;
+}
+
+/* Error States */
+.document-viewer-error,
+.document-viewer-unknown {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #666;
+  text-align: center;
+  padding: 20px;
+}
+
+.error-icon,
+.unknown-file-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.file-type-info {
+  font-size: 12px;
+  color: #999;
+  margin-bottom: 16px;
+}
+
+.open-external-btn {
+  padding: 8px 16px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.open-external-btn:hover {
+  background: #0056b3;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .edit-sidebar-container {
+    width: 350px;
+  }
+  
+  .alan-dal-selection-container {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .edit-sidebar-container {
+    width: 100vw;
+  }
+  
+  .edit-sidebar-split-screen {
+    flex-direction: column;
+  }
+  
+  .split-left-panel,
+  .split-right-panel {
+    width: 100% !important;
+    height: 50%;
+  }
+  
+  .resize-handle {
+    width: 100%;
+    height: 8px;
+    cursor: row-resize;
+  }
+  
+  .resize-line {
+    width: 30px;
+    height: 2px;
+  }
+  
+  .edit-sidebar-header {
+    padding: 16px;
+  }
+  
+  .edit-sidebar-content {
+    padding: 16px;
+  }
+}
