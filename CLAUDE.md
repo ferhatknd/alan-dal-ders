@@ -107,6 +107,7 @@ Alan (Area) → Dal (Field) → Ders (Course) → Öğrenme Birimi (Learning Uni
 - **`modules/oku_dbf.py`** - ⭐ **DBF Koordinatörü**: PDF okuma işlemleri utils_oku_dbf.py'ye taşındı, sadece koordinasyon ve veritabanı entegrasyonu yapar
 - **`modules/utils_oku_dbf.py`** - ⭐ **YENİ MODÜL**: DBF PDF okuma fonksiyonları (extract_olcme.py'den kopyalandı, 48.4% başarı oranı)
 - **`modules/get_dbf.py`** - ⭐ **STANDARDİZE**: `get_dbf()` fonksiyonu ile DBF verilerini çeker, RAR/ZIP indirir (açmaz), `data/get_dbf.json` üretir ve `dbf_urls` sütununa JSON kaydeder
+- **`test_unzip.py`** - ⭐ **YENİ AYIRIM**: DBF RAR/ZIP dosyalarını açan standalone script, `modules.utils_file_management.extract_archive` kullanır
 - **`modules/get_cop.py`** - ⭐ **STANDARDİZE**: `get_cop()` fonksiyonu ile ÇÖP verilerini çeker, PDF indirir (açmaz), `data/get_cop.json` üretir ve `cop_url` sütununa JSON kaydeder
 - **`modules/oku_cop.py`** - ⭐ **YENİ**: COP PDF parsing ve analiz modülü - Tamamen yeniden yazıldı
 - **`modules/get_dm.py`** - Ders Materyalleri (DM) verilerini çeker
@@ -429,9 +430,48 @@ temel_plan_ders_dal
 - **`GET /api/get-statistics`** - Gerçek zamanlı sistem istatistikleri
 
 ### 🔄 PDF ve DBF İşleme Operasyonları
-- **`GET /api/dbf-download-extract`** - DBF dosyalarını toplu indir ve aç (SSE)
+- **`GET /api/dbf-download-extract`** - ⭐ **ESKİ SİSTEM**: DBF dosyalarını toplu indir ve aç (SSE) - Artık manuel unzip kullanılıyor
 - **`GET /api/oku-cop`** - ÇÖP PDF'lerini analiz et ve DB'ye kaydet (SSE)
-- **`GET /api/oku-dbf`** - ⭐ **STANDARDİZE**: DBF dosyalarını okur ve ders saatlerini günceller (SSE)
+- **`GET /api/oku-dbf`** - ⭐ **STANDARDİZE**: Çıkarılmış DBF PDF/DOCX dosyalarını okur ve `temel_plan_ders.dbf_url` sütununa kaydeder (SSE)
+
+## 🔄 DBF İşleme Workflow - 3 Aşamalı Sistem ⭐ **YENİ AÇIKLAMA**
+
+### Aşama 1: DBF RAR Dosyalarını İndirme
+```bash
+# Frontend: "Getir DBF" butonuna basıldığında
+GET /api/get-dbf
+```
+- `modules/get_dbf.py` ile meslek.meb.gov.tr'den RAR/ZIP dosyaları indirilir
+- İndirilen dosyalar `data/dbf/alan_adi/` klasörlerine kaydedilir
+- `temel_plan_alan.dbf_urls` sütununa JSON formatında RAR URL'leri kaydedilir
+- **ÖNEMLI**: Bu aşamada RAR dosyaları açılmaz, sadece indirilir
+
+### Aşama 2: RAR Dosyalarını Manuel Açma
+```bash
+# Terminal'de manuel çalıştırma
+python test_unzip.py data/dbf
+```
+- `test_unzip.py` script'i `data/dbf/` dizinindeki tüm RAR/ZIP dosyalarını tarar
+- `modules.utils_file_management.extract_archive` fonksiyonu ile dosyalar açılır
+- Açılan PDF/DOCX dosyaları alan klasörleri içinde organize edilir
+- Her RAR dosyası kendi klasöründe açılır (örn: `data/dbf/Bilisim_Teknolojileri/9_sinif_ders.pdf`)
+
+### Aşama 3: PDF/DOCX Dosyalarını Okuma ve Veritabanı Kaydı
+```bash
+# Frontend: "Oku DBF" butonuna basıldığında
+GET /api/oku-dbf
+```
+- `modules/oku_dbf.py` ile açılmış PDF/DOCX dosyaları okunur
+- Her dosyadan ders bilgileri, öğrenme birimleri, konular ve kazanımlar çıkarılır
+- Ders adı eşleştirmesi yapılarak `temel_plan_ders.dbf_url` sütununa dosya yolu kaydedilir
+- İlişkisel tablolara (ogrenme_birimi, konu, kazanim) veriler eklenir
+
+### İş Akışı Özeti
+```
+1. "Getir DBF" → RAR indir → temel_plan_alan.dbf_urls (JSON)
+2. "python test_unzip.py data/dbf" → RAR aç → PDF/DOCX dosyaları
+3. "Oku DBF" → PDF oku → temel_plan_ders.dbf_url (dosya yolu)
+```
 
 ## 🔄 Sık Kullanılan İşlemler
 
@@ -520,7 +560,11 @@ dbf_json = get_output_json_path("get_dbf.json")  # PROJECT_ROOT/data/get_dbf.jso
 
 - **Fonksiyon İsimleri**: `get_cop()` ve `get_dbf()` kullanın, eski isimleri kullanmayın
 - **JSON Çıktıları**: Her iki fonksiyon da `data/` klasöründe JSON dosyası üretir
-- **Veritabanı Sütunları**: `cop_url` ve `dbf_urls` sütunları JSON formatında URL'ler içerir
+- **Veritabanı Sütunları**: 
+  - `temel_plan_alan.cop_url` - ÇÖP PDF URL'leri (JSON format)
+  - `temel_plan_alan.dbf_urls` - DBF RAR dosya URL'leri (JSON format)
+  - `temel_plan_ders.dbf_url` - İşlenmiş DBF PDF/DOCX dosya yolları (string format)
+- **⭐ YENİ DBF Workflow**: 3 aşamalı sistem - İndir RAR → Manuel unzip → Oku PDF/DOCX
 - **Database Decorators**: `@with_database` ve `@with_database_json` kullanın
 - **Modüler Import**: Doğru modüllerden import yapın (`utils_*.py`)
 - **⭐ YENİ 2025-07-28**: Environment Variable sistemi - çoklu bilgisayar desteği

@@ -99,8 +99,17 @@ def link_dbf_files_to_database(cursor):
 
             if ders_id:
                 matched_count += 1
-                updates_to_execute.append((file_path, ders_id))
-                yield {"type": "success", "message": f"Eşleşti: '{ders_adi_extracted}' -> DB ID: {ders_id}"}
+                # Path'i PROJECT_ROOT'a göre relative yap
+                try:
+                    from .utils_env import get_project_root
+                    project_root = get_project_root()
+                    relative_path = os.path.relpath(file_path, project_root)
+                    updates_to_execute.append((relative_path, ders_id))
+                    yield {"type": "success", "message": f"Eşleşti: '{ders_adi_extracted}' -> DB ID: {ders_id} -> {relative_path}"}
+                except Exception as e:
+                    # Fallback: tam path'i kullan
+                    updates_to_execute.append((file_path, ders_id))
+                    yield {"type": "success", "message": f"Eşleşti: '{ders_adi_extracted}' -> DB ID: {ders_id} (tam path)"}
             else:
                 yield {"type": "info", "message": f"Eşleşmedi: '{ders_adi_extracted}' veritabanında bulunamadı."}
 

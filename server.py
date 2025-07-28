@@ -1,4 +1,4 @@
-from flask import Flask, Response, jsonify, request
+from flask import Flask, Response, jsonify, request, send_file, abort
 from flask_cors import CORS, cross_origin
 import json
 import time
@@ -453,9 +453,9 @@ def get_alan_dal_options(cursor):
     Dropdown'lar için alan ve dal seçeneklerini döndürür.
     """
     try:
-        # Alanları al (COP URL'leri ile birlikte)
-        cursor.execute("SELECT id, alan_adi, cop_url FROM temel_plan_alan ORDER BY alan_adi")
-        alanlar = [{"id": row[0], "adi": row[1], "cop_url": row[2]} for row in cursor.fetchall()]
+        # Alanları al (COP ve DBF URL'leri ile birlikte)
+        cursor.execute("SELECT id, alan_adi, cop_url, dbf_urls FROM temel_plan_alan ORDER BY alan_adi")
+        alanlar = [{"id": row[0], "adi": row[1], "cop_url": row[2], "dbf_urls": row[3]} for row in cursor.fetchall()]
         
         # Her alan için dalları al
         dallar = {}
@@ -521,6 +521,15 @@ def get_table_data():
             
             table_data = []
             for row in rows:
+                # DBF URL'ini file server URL'ine dönüştür
+                dbf_url = row[9]  # dbf_url
+                if dbf_url:
+                    # Eğer relative path ise file server URL'ine dönüştür
+                    if not dbf_url.startswith('http'):
+                        import urllib.parse
+                        encoded_path = urllib.parse.quote(dbf_url)
+                        dbf_url = f"http://localhost:5001/api/files/{encoded_path}"
+                
                 table_data.append({
                     'alan_id': row[0],    # Sıra numarası güncellendi
                     'alan_adi': row[1],
@@ -531,7 +540,7 @@ def get_table_data():
                     'sinif': row[6],
                     'ders_saati': row[7],
                     'dm_url': row[8],
-                    'dbf_url': row[9],
+                    'dbf_url': dbf_url,  # Dönüştürülmüş URL
                     'bom_url': row[10]
                 })
             
@@ -1289,6 +1298,45 @@ def update_ders_saati_from_dbf_data(cursor, parsed_data):
         print(f"DBF ders saati güncelleme hatası: {str(e)}")
     
     return updated_count
+
+@app.route('/api/files/<path:file_path>')
+def serve_file(file_path):
+    """
+    Dosya serving endpoint - DBF, PDF ve diğer dosyaları serve eder
+    URL format: /api/files/data/dbf/01_Adalet/adalet/11.SINIF/file.pdf
+    """
+    try:
+        from modules.utils_env import get_project_root
+        import urllib.parse
+        
+        # URL decode et (Türkçe karakterler için)
+        file_path = urllib.parse.unquote(file_path)
+        
+        # PROJECT_ROOT'u al
+        project_root = get_project_root()
+        
+        # Güvenlik: path traversal saldırılarını engelle
+        if '..' in file_path or file_path.startswith('/'):
+            abort(403)
+        
+        # Tam dosya yolu
+        full_path = os.path.join(project_root, file_path)
+        
+        # Dosya var mı kontrol et
+        if not os.path.exists(full_path) or not os.path.isfile(full_path):
+            abort(404)
+            
+        # Güvenlik: sadece proje klasörü altındaki dosyalara izin ver
+        real_path = os.path.realpath(full_path)
+        real_project_root = os.path.realpath(project_root)
+        if not real_path.startswith(real_project_root):
+            abort(403)
+            
+        return send_file(full_path)
+        
+    except Exception as e:
+        print(f"File serving error: {e}")
+        abort(500)
 
 if __name__ == '__main__':
     # Database'i başlat

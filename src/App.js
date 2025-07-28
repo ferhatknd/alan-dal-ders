@@ -74,51 +74,40 @@ const CopDropdown = ({ copUrls, onSelectCop }) => {
   );
 };
 
-// DBF Dropdown Bileşeni
-const DbfDropdown = ({ dbfUrls, onSelectDbf }) => {
-  const [isOpen, setIsOpen] = useState(false);
+// DBF Dropdown Bileşeni - Ders Bazlı Sistem
+const DbfDropdown = ({ courseDbfUrl, onSelectDbf }) => {
+  console.log('DbfDropdown render - courseDbfUrl:', courseDbfUrl);
+  console.log('DbfDropdown - courseDbfUrl type:', typeof courseDbfUrl);
   
-  console.log('DbfDropdown render - dbfUrls:', dbfUrls);
-  console.log('DbfDropdown - dbfUrls type:', typeof dbfUrls);
-  console.log('DbfDropdown - dbfUrls keys:', Object.keys(dbfUrls));
-  
-  if (!dbfUrls || Object.keys(dbfUrls).length === 0) {
-    console.log('DbfDropdown: DBF URL\'leri bulunamadı veya boş - return null');
-    return null;
+  // Eğer ders için DBF dosyası yoksa gösterme
+  if (!courseDbfUrl || courseDbfUrl.trim() === '') {
+    console.log('DbfDropdown: Bu ders için DBF dosyası bulunamadı');
+    return (
+      <div className="dbf-dropdown-container disabled">
+        <button className="dbf-dropdown-toggle disabled" type="button" disabled>
+          DBF Dosyası Yok ❌
+        </button>
+      </div>
+    );
   }
   
-  const dbfList = Object.entries(dbfUrls).map(([key, url]) => ({
-    label: key.includes('sinif_') ? `${key.split('_')[1]}. Sınıf` : /^\d+$/.test(key) ? `${key}. Sınıf` : key,
-    url: url,
-    key: key
-  }));
+  // Dosya adını path'den çıkar
+  const fileName = courseDbfUrl.split('/').pop() || courseDbfUrl;
+  const fileExtension = fileName.split('.').pop()?.toUpperCase() || 'Dosya';
   
-  console.log('DbfDropdown: DBF listesi oluşturuldu:', dbfList);
+  console.log('DbfDropdown: DBF dosyası mevcut:', fileName);
   
   return (
     <div className="dbf-dropdown-container">
       <button 
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          console.log('DBF dosyası açılıyor:', courseDbfUrl);
+          onSelectDbf(courseDbfUrl, `DBF - ${fileName}`);
+        }}
         className="dbf-dropdown-toggle"
       >
-        DBF {isOpen ? '▲' : '▼'}
+        📄 {fileExtension} Dosyasını Aç
       </button>
-      {isOpen && (
-        <div className="dbf-dropdown-menu">
-          {dbfList.map(item => (
-            <button
-              key={item.key}
-              onClick={() => {
-                onSelectDbf(item.url, `DBF - ${item.label}`);
-                setIsOpen(false);
-              }}
-              className="dbf-dropdown-item"
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
-      )}
     </div>
   );
 };
@@ -163,7 +152,6 @@ const CourseEditSidebar = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl,
   
   const [alanDalOptions, setAlanDalOptions] = useState({ alanlar: [], dallar: {} });
   const [copUrls, setCopUrls] = useState({});
-  const [dbfUrls, setDbfUrls] = useState({});
   
   // Split pane için state'ler
   const [leftWidth, setLeftWidth] = useState(50); // Percentage
@@ -229,21 +217,7 @@ const CourseEditSidebar = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl,
         setCopUrls({});
       }
       
-      // DBF URL'lerini güncelle
-      if (selectedAlan && selectedAlan.dbf_urls) {
-        try {
-          const dbfData = JSON.parse(selectedAlan.dbf_urls);
-          console.log('DBF verisi parse edildi:', dbfData);
-          setDbfUrls(dbfData);
-        } catch (e) {
-          console.log('DBF verisi JSON değil, string olarak işleniyor:', selectedAlan.dbf_urls);
-          setDbfUrls({ 'dbf_urls': selectedAlan.dbf_urls });
-        }
-      } else {
-        console.log('Seçilen alan için DBF verisi bulunamadı, selectedAlan:', selectedAlan);
-        console.log('selectedAlan.dbf_urls:', selectedAlan && selectedAlan.dbf_urls);
-        setDbfUrls({});
-      }
+      // DBF artık ders bazlı olduğu için alan bazlı DBF URL'leri kaldırıldı
     }
   }, [editData.alan_id, alanDalOptions.alanlar]);
 
@@ -426,7 +400,7 @@ const CourseEditSidebar = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl,
               />
               
               <DbfDropdown 
-                dbfUrls={dbfUrls} 
+                courseDbfUrl={editData.dbf_url} 
                 onSelectDbf={handleDbfSelect}
               />
             </div>
@@ -456,7 +430,296 @@ const CourseEditSidebar = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl,
   // Split screen mode - PDF açık
   return (
     <div className="edit-sidebar-split-screen">
-      {/* Split screen implementation */}
+      {/* Sol Panel - İşlemler */}
+      <div 
+        className="split-left-panel" 
+        style={{ width: `${leftWidth}%` }}
+      >
+        {/* Header */}
+        <div className="edit-sidebar-header">
+          <div>
+            <h3>{editData.ders_adi || 'Ders Adı'}</h3>
+            <div className="current-document-info">
+              <span className="document-title">{pdfTitle}</span>
+            </div>
+          </div>
+          <button 
+            onClick={onClose}
+            className="edit-sidebar-close-button"
+          >
+            ×
+          </button>
+        </div>
+
+        {/* Form Content - Scrollable */}
+        <div className="edit-sidebar-content">
+          {/* Alan-Dal Seçimi */}
+          <div className="alan-dal-selection-section">
+            <div className="alan-dal-selection-container">
+              <MaterialTextField
+                label="Alan"
+                value={editData.alan_id}
+                onChange={(value) => handleAlanChange(value)}
+                select={true}
+                options={alanDalOptions.alanlar.map(alan => ({
+                  value: alan.id,
+                  label: alan.adi
+                }))}
+              />
+              
+              <CopDropdown 
+                copUrls={copUrls} 
+                onSelectCop={handleCopSelect}
+              />
+              
+              <DbfDropdown 
+                courseDbfUrl={editData.dbf_url} 
+                onSelectDbf={handleDbfSelect}
+              />
+            </div>
+            
+            <MaterialTextField
+              label="Dal"
+              value={editData.dal_id}
+              onChange={(value) => handleInputChange('dal_id', value)}
+              select={true}
+              disabled={!editData.alan_id}
+              options={editData.alan_id ? (alanDalOptions.dallar[editData.alan_id] || []).map(dal => ({
+                value: dal.id,
+                label: dal.adi
+              })) : []}
+            />
+          </div>
+
+          {/* Ders Bilgileri */}
+          <div className="form-section ders-bilgileri-section">
+            <MaterialTextField
+              label="Ders Adı"
+              value={editData.ders_adi}
+              onChange={(value) => handleInputChange('ders_adi', value)}
+            />
+            
+            <MaterialTextField
+              label="Sınıf"
+              value={editData.sinif}
+              onChange={(value) => handleInputChange('sinif', value)}
+              type="number"
+            />
+            
+            <MaterialTextField
+              label="Ders Saati"
+              value={editData.ders_saati}
+              onChange={(value) => handleInputChange('ders_saati', value)}
+              type="number"
+            />
+          </div>
+
+          {/* Action Buttons */}
+          <div className="form-actions">
+            <button onClick={handleSave} className="save-button">
+              Kaydet
+            </button>
+            <button onClick={handleCopy} className="copy-button">
+              Kopyala
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Resize Handle */}
+      <div 
+        className="resize-handle"
+        onMouseDown={handleMouseDown}
+        style={{ cursor: isResizing ? 'col-resize' : 'col-resize' }}
+      >
+        <div className="resize-line"></div>
+      </div>
+
+      {/* Sağ Panel - Document Viewer */}
+      <div 
+        className="split-right-panel" 
+        style={{ width: `${100 - leftWidth}%` }}
+      >
+        {pdfUrl && (
+          <DocumentViewer 
+            url={pdfUrl} 
+            title={pdfTitle}
+            onLoad={handlePdfLoad}
+            onError={handlePdfError}
+            loading={pdfLoading}
+            error={pdfError}
+          />
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Document Viewer Component - supports both PDF and DOCX
+const DocumentViewer = ({ url, title, onLoad, onError, loading, error }) => {
+  const [viewerType, setViewerType] = useState(null);
+  const [internalLoading, setInternalLoading] = useState(true);
+  
+  // Detect file type from URL
+  const detectFileType = (fileUrl) => {
+    if (!fileUrl) return 'unknown';
+    const cleanUrl = fileUrl.split('?')[0].toLowerCase();
+    if (cleanUrl.endsWith('.pdf')) return 'pdf';
+    if (cleanUrl.endsWith('.docx') || cleanUrl.endsWith('.doc')) return 'docx';
+    return 'unknown';
+  };
+
+  useEffect(() => {
+    const fileType = detectFileType(url);
+    setViewerType(fileType);
+    setInternalLoading(true);
+    
+    // Auto-hide loading after 5 seconds as fallback
+    const timer = setTimeout(() => {
+      setInternalLoading(false);
+      console.log('Loading timeout reached, showing content anyway');
+    }, 5000);
+    
+    return () => clearTimeout(timer);
+  }, [url]);
+
+  const handleLoad = () => {
+    console.log('Document loaded successfully');
+    setInternalLoading(false);
+    onLoad && onLoad();
+  };
+
+  const handleError = () => {
+    console.log('Document loading error');
+    setInternalLoading(false);
+    onError && onError();
+  };
+
+  const renderViewer = () => {
+    // Show loading only if explicitly loading from parent OR internal loading is true
+    const showLoading = loading || (internalLoading && viewerType !== null);
+    
+    if (showLoading) {
+      return (
+        <div className="document-viewer-loading">
+          <div className="loading-spinner"></div>
+          <p>Belge yükleniyor...</p>
+          <p className="loading-timeout-info">
+            {internalLoading ? 'İçerik yükleniyor...' : 'Yükleme tamamlanıyor...'}
+          </p>
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className="document-viewer-error">
+          <div className="error-icon">⚠️</div>
+          <p>{error}</p>
+          <button onClick={() => window.open(url, '_blank')} className="open-external-btn">
+            Harici Olarak Aç
+          </button>
+        </div>
+      );
+    }
+
+    switch (viewerType) {
+      case 'pdf':
+        // For PDF, hide loading immediately after render
+        setTimeout(() => {
+          if (internalLoading) {
+            setInternalLoading(false);
+            console.log('PDF object rendered, hiding loading');
+          }
+        }, 1000);
+        
+        return (
+          <object
+            data={url}
+            type="application/pdf"
+            className="document-viewer-frame"
+            onLoad={handleLoad}
+            onError={(e) => {
+              console.error('PDF object load error:', e);
+              handleError(e);
+            }}
+            title={title}
+          >
+            <div style={{padding: '20px', textAlign: 'center'}}>
+              <p>PDF görüntülenemiyor.</p>
+              <a 
+                href={url} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                style={{
+                  display: 'inline-block',
+                  padding: '10px 20px',
+                  backgroundColor: '#007bff',
+                  color: 'white',
+                  textDecoration: 'none',
+                  borderRadius: '4px',
+                  marginTop: '10px'
+                }}
+              >
+                📄 Dosyayı Yeni Sekmede Aç
+              </a>
+            </div>
+          </object>
+        );
+      
+      case 'docx':
+        // For DOCX files, we'll use ViewerJS or Office Online Viewer
+        const viewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(url)}`;
+        
+        // For DOCX, hide loading after 2 seconds (Office Online takes longer)
+        setTimeout(() => {
+          if (internalLoading) {
+            setInternalLoading(false);
+            console.log('DOCX iframe rendered, hiding loading');
+          }
+        }, 2000);
+        
+        return (
+          <iframe
+            src={viewerUrl}
+            className="document-viewer-frame"
+            onLoad={handleLoad}
+            onError={handleError}
+            title={title}
+          />
+        );
+      
+      default:
+        return (
+          <div className="document-viewer-unknown">
+            <div className="unknown-file-icon">📄</div>
+            <p>Bu dosya türü önizlenemiyor</p>
+            <p className="file-type-info">Desteklenen: PDF, DOCX</p>
+            <button onClick={() => window.open(url, '_blank')} className="open-external-btn">
+              Dosyayı İndir/Aç
+            </button>
+          </div>
+        );
+    }
+  };
+
+  return (
+    <div className="document-viewer-container">
+      <div className="document-viewer-header">
+        <span className="document-title">{title}</span>
+        <div className="document-actions">
+          <button 
+            onClick={() => window.open(url, '_blank')} 
+            className="external-link-btn"
+            title="Yeni sekmede aç"
+          >
+            ↗️
+          </button>
+        </div>
+      </div>
+      <div className={`document-viewer-content ${(loading || internalLoading) ? 'loading' : ''}`}>
+        {renderViewer()}
+      </div>
     </div>
   );
 };
@@ -851,7 +1114,7 @@ const FilterDropdown = ({
   );
 };
 
-const DataTable = ({ tableData, searchTerm, onCourseEdit }) => {
+const DataTable = ({ tableData, searchTerm, onCourseEdit, onDocumentView }) => {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [selectedFilters, setSelectedFilters] = useState({
     alan_adi: [],
@@ -1062,7 +1325,49 @@ const DataTable = ({ tableData, searchTerm, onCourseEdit }) => {
         </thead>
         <tbody>
           {sortedData.map((row, index) => (
-            <tr key={`${row.alan_id}-${row.dal_id}-${row.ders_id || 'empty'}-${index}`}><td>{row.alan_adi || '-'}</td><td>{row.dal_adi || '-'}</td><td>{row.ders_adi || '-'}</td><td>{row.sinif || '-'}</td><td>{row.ders_saati || 0}</td><td>{row.dm_url ? (<a href={row.dm_url} target="_blank" rel="noopener noreferrer" className="ders-link">📄 DM</a>) : ("-")}</td><td>{row.dbf_url ? (<a href={row.dbf_url} target="_blank" rel="noopener noreferrer" className="dbf-link">📄 DBF</a>) : ("-")}</td><td>{row.bom_url ? (<a href={row.bom_url} target="_blank" rel="noopener noreferrer" className="bom-link">📄 BOM</a>) : ("-")}</td><td>{row.ders_id ? (<button className="edit-btn" onClick={() => onCourseEdit && onCourseEdit(row)}title="Düzenle">✏️</button>) : ("-")}</td></tr>
+            <tr key={`${row.alan_id}-${row.dal_id}-${row.ders_id || 'empty'}-${index}`}>
+              <td>{row.alan_adi || '-'}</td>
+              <td>{row.dal_adi || '-'}</td>
+              <td>{row.ders_adi || '-'}</td>
+              <td>{row.sinif || '-'}</td>
+              <td>{row.ders_saati || 0}</td>
+              <td>
+                {row.dm_url ? (
+                  <a href={row.dm_url} target="_blank" rel="noopener noreferrer" className="ders-link">
+                    📄 DM
+                  </a>
+                ) : ("-")}
+              </td>
+              <td>
+                {row.dbf_url ? (
+                  <button 
+                    onClick={() => onDocumentView && onDocumentView(row, row.dbf_url, 'DBF')}
+                    className="dbf-link-btn"
+                    title="DBF dosyasını görüntüle"
+                  >
+                    📄 DBF
+                  </button>
+                ) : ("-")}
+              </td>
+              <td>
+                {row.bom_url ? (
+                  <a href={row.bom_url} target="_blank" rel="noopener noreferrer" className="bom-link">
+                    📄 BOM
+                  </a>
+                ) : ("-")}
+              </td>
+              <td>
+                {row.ders_id && row.dbf_url && row.dbf_url.trim() !== '' ? (
+                  <button 
+                    className="edit-btn" 
+                    onClick={() => onCourseEdit && onCourseEdit(row)}
+                    title="Düzenle"
+                  >
+                    ✏️
+                  </button>
+                ) : ("-")}
+              </td>
+            </tr>
           ))}
         </tbody>
       </table>
@@ -1467,6 +1772,13 @@ console.error(errorMsg);
   }, []);
 
   const handleShowPDF = useCallback((url, title) => {
+    setPdfSidebar({ isOpen: true, url, title });
+  }, []);
+
+  // DBF document viewer handler
+  const handleDocumentView = useCallback((course, url, title) => {
+    // Open the course editor and show the document
+    setEditingSidebar({ isOpen: true, course });
     setPdfSidebar({ isOpen: true, url, title });
   }, []);
 
@@ -1885,6 +2197,7 @@ console.error(errorMsg);
                     tableData={tableData}
                     searchTerm={debouncedTerm}
                     onCourseEdit={handleCourseEdit}
+                    onDocumentView={handleDocumentView}
                   />
                 )}
               </div>
