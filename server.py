@@ -718,8 +718,11 @@ def init_database():
     
     try:
         with sqlite3.connect(db_path) as conn:
-            # Schema dosyasını oku ve çalıştır
-            schema_path = os.path.join(os.path.dirname(db_path), "schema.sql")
+            # Schema dosyasını oku ve çalıştır - PROJECT_ROOT bazlı
+            from dotenv import load_dotenv
+            load_dotenv()
+            project_root = os.getenv('PROJECT_ROOT', os.getcwd())
+            schema_path = os.path.join(project_root, "data", "schema.sql")
             
             if os.path.exists(schema_path):
                 with open(schema_path, 'r', encoding='utf-8') as f:
@@ -748,23 +751,37 @@ def init_database():
 
 def find_or_create_database():
     """
-    Veritabanını bulur veya oluşturur.
+    Veritabanını bulur veya oluşturur. PROJECT_ROOT env variable'ını kullanır.
     """
-    # Olası veritabanı dosya yolları
+    from dotenv import load_dotenv
+    
+    # .env dosyasını yükle
+    load_dotenv()
+    
+    # PROJECT_ROOT'u .env'den al, yoksa mevcut çalışma dizinini kullan
+    project_root = os.getenv('PROJECT_ROOT', os.getcwd())
+    
+    # Olası veritabanı dosya yolları (PROJECT_ROOT bazlı)
     possible_paths = [
-        "database.db",
-        "data/database.db", 
-        "temel_plan.db",
-        "data/temel_plan.db"
+        os.path.join(project_root, "database.db"),
+        os.path.join(project_root, "data", "database.db"), 
+        os.path.join(project_root, "temel_plan.db"),
+        os.path.join(project_root, "data", "temel_plan.db")
     ]
+    
+    print(f"📍 Veritabanı aranıyor, PROJECT_ROOT: {project_root}")
     
     for path in possible_paths:
         if os.path.exists(path):
+            print(f"📍 Veritabanı bulundu: {path}")
             return path
     
     # Hiçbiri yoksa varsayılan yolu oluştur
-    os.makedirs("data", exist_ok=True)
-    return "data/temel_plan.db"
+    data_dir = os.path.join(project_root, "data")
+    os.makedirs(data_dir, exist_ok=True)
+    db_path = os.path.join(data_dir, "temel_plan.db")
+    print(f"📍 Yeni veritabanı oluşturuluyor: {db_path}")
+    return db_path
 
 def save_single_course(cursor, course):
     """

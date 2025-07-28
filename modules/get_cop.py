@@ -396,7 +396,8 @@ def get_cop_with_cursor():
                     continue
 
             # JSON çıktı dosyası oluştur
-            output_filename = "data/get_cop.json"
+            from .utils_env import get_output_json_path
+            output_filename = get_output_json_path("get_cop.json")
             try:
                 with open(output_filename, 'w', encoding='utf-8') as f:
                     json.dump(alan_cop_urls, f, ensure_ascii=False, indent=2)

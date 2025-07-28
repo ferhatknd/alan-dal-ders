@@ -688,7 +688,21 @@ def get_all_dbf_files(validate_files=True):
     Returns:
         list: PDF ve DOCX dosya yolları listesi (sadece geçerli dosyalar)
     """
-    base_path = "/Users/ferhat/Library/Mobile Documents/com~apple~CloudDocs/Projeler/ProjectDogru/repos/alan-dal-ders/data/dbf"
+    import os
+    
+    # utils_env modülünü kullan
+    try:
+        from .utils_env import get_data_path, get_project_root
+    except ImportError:
+        from modules.utils_env import get_data_path, get_project_root
+    
+    project_root = get_project_root()
+    base_path = get_data_path("dbf")
+    
+    # Debug: base_path'i konsola yazdır
+    print(f"📍 PROJECT_ROOT: {project_root}")
+    print(f"📍 DBF tarama yolu: {base_path}")
+    print(f"📍 Klasör mevcut mu: {os.path.exists(base_path)}")
     
     def is_valid_document(file_path):
         """Dosyanın geçerli bir PDF veya DOCX dosyası olup olmadığını kontrol eder"""
@@ -737,7 +751,8 @@ def get_all_dbf_files(validate_files=True):
                 else:
                     skipped_files += 1
     
-    # Atılan dosya sayısını bildir
+    # Sonuç bilgilerini yazdır
+    print(f"📊 Toplam {len(all_files)} geçerli dosya bulundu")
     if validate_files and skipped_files > 0:
         print(f"📊 Toplam {skipped_files} bozuk dosya işleme alınmadı.")
     

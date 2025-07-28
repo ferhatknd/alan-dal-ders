@@ -417,7 +417,8 @@ def get_dm_with_cursor(cursor):
                     continue
             
             # JSON çıktı dosyası oluştur
-            output_filename = "data/get_dm.json"
+            from .utils_env import get_output_json_path
+            output_filename = get_output_json_path("get_dm.json")
             try:
                 with open(output_filename, 'w', encoding='utf-8') as f:
                     json.dump(alan_dm_urls, f, ensure_ascii=False, indent=2)

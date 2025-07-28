@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Bu dosya, Claude Code için MEB Mesleki Eğitim Veri İşleme ve Veritabanı Projesinin kapsamlı birleşik kılavuzudur. README.md, is_akisi.md ve teknik detayların tümünü içerir. Proje mantığını koruyarak her seferinde hata yapmaktan kaçınmak için tüm kritik bilgileri içerir.
 
-**Son Güncelleme**: 2025-07-27 (Modüler API sistemi tamamlandı, komutlar() fonksiyonu get_all_dbf_files() olarak güncellendi)
+**Son Güncelleme**: 2025-07-28 (Environment Variable sistemi eklendi - çoklu bilgisayar desteği)
 
 ## 🎯 Proje Genel Bakış
 
@@ -36,11 +36,24 @@ npm run build
 npm test
 ```
 
+**Environment Setup (Çoklu Bilgisayar Desteği):**
+```bash
+# 1. .env dosyasını kontrol et ve PROJECT_ROOT'u ayarla
+# İş bilgisayarı (mevcut):
+# PROJECT_ROOT=/Volumes/Dropbox2TB/Estherian Dropbox/Ferhat Kondakcı/github/alan-dal-ders
+
+# Ev bilgisayarı için örnek:
+# PROJECT_ROOT=C:\Users\YourName\Documents\GitHub\alan-dal-ders
+
+# 2. python-dotenv paketini yükle (yeni dependency)
+pip install python-dotenv
+
+# 3. Sunucuyu başlat
+python server.py  # İlk çalıştırmada otomatik setup
+```
+
 **Ortak Geliştirme Komutları:**
 ```bash
-# Veritabanı ve schema otomatik kurulum
-python server.py  # İlk çalıştırmada otomatik setup
-
 # always use single responsibility principle when creating new method
 
 # Test debugging
@@ -103,6 +116,7 @@ Alan (Area) → Dal (Field) → Ders (Course) → Öğrenme Birimi (Learning Uni
 - **`modules/utils_database.py`** - ⭐ **YENİ**: Veritabanı işlemleri modülü, **database connection decorators**, **MEB ID yönetimi** ve **CRUD operasyonları**
 - **`modules/utils_file_management.py`** - ⭐ **YENİ**: Dosya işlemleri modülü, **ortak alan dosya sistemi**, **duplicate dosya yönetimi** ve **arşiv işlemleri**
 - **`modules/utils_stats.py`** - ⭐ **YENİ AYIRIM**: İstatistik ve monitoring fonksiyonları (utils_database.py'den ayrıştırıldı)
+- **`modules/utils_env.py`** - ⭐ **YENİ 2025-07-28**: Environment variable yönetimi, PROJECT_ROOT desteği, çoklu bilgisayar uyumluluğu
 
 ### 🌐 Frontend Dosyaları
 - **`src/App.js`** - ⭐ **YENİLENDİ**: Tek satır workflow UI, console panel, JSON popup'sız tasarım
@@ -113,11 +127,13 @@ Alan (Area) → Dal (Field) → Ders (Course) → Öğrenme Birimi (Learning Uni
 - **`src/reportWebVitals.js`** - Performance monitoring
 
 ### 🗂️ Veri ve Veritabanı
-- **`data/temel_plan.db`** - SQLite veritabanı dosyası
-- **`data/schema.sql`** - Veritabanı schema dosyası
-- **`data/get_cop.json`** - ⭐ **YENİ**: COP verilerinin JSON çıktısı
-- **`data/get_dbf.json`** - ⭐ **YENİ**: DBF verilerinin JSON çıktısı
-- **`data/`** - JSON cache dosyaları, veritabanı ve schema dosyaları
+- **`data/temel_plan.db`** - SQLite veritabanı dosyası ⭐ **UPDATED**: PROJECT_ROOT env variable bazlı path
+- **`data/schema.sql`** - Veritabanı schema dosyası ⭐ **UPDATED**: PROJECT_ROOT env variable bazlı path
+- **`data/get_cop.json`** - ⭐ **UPDATED**: COP verilerinin JSON çıktısı (env aware path)
+- **`data/get_dbf.json`** - ⭐ **UPDATED**: DBF verilerinin JSON çıktısı (env aware path)
+- **`data/get_dm.json`** - ⭐ **UPDATED**: DM verilerinin JSON çıktısı (env aware path)
+- **`.env`** - ⭐ **YENİ 2025-07-28**: Environment variables (PROJECT_ROOT tanımı)
+- **`data/`** - JSON cache dosyaları, veritabanı ve schema dosyaları ⭐ **UPDATED**: Tüm path'ler PROJECT_ROOT bazlı
   - `dbf/` - İndirilen DBF dosyaları (alan klasörleri halinde)
   - `cop/` - ÇÖP PDF dosyaları
   - `dm/` - Ders Materyali dosyaları ⭐ **YENİ**: `00_Ortak_Alan_Dersleri` klasörü ile duplicate dosya yönetimi
@@ -192,6 +208,10 @@ temel_plan_ders_dal
   - `extract_alan_dal_from_table_headers()` - Alan/dal bilgisi çıkarma
   - `extract_ders_info_from_schedules()` - Ders programı analizi  
   - `process_cop_file()` - Ana ÇÖP dosya işleme
+- **`modules/utils_env.py`** (Environment yönetimi - YENİ 2025-07-28):
+  - `get_project_root()` - PROJECT_ROOT environment variable okuma
+  - `get_data_path()` - data/ klasörü altında path oluşturma
+  - `get_output_json_path()` - JSON çıktı dosyası path'leri
 
 ## 🚨 Kritik Hatalardan Kaçınma Kuralları
 
@@ -291,7 +311,50 @@ temel_plan_ders_dal
 - **Tarih Aralıkları**: "15-20", "1950-1960" gibi ifadeler konu numarası olarak algılanmamalı
 - **Sequential Processing**: Konu numaraları sıralı olarak işlenmeli (1, 2, 3, 4, 5...)
 
-## 🔄 Son Güncelleme Detayları - 2025-07-27
+### 9. Environment Variable Path Management ⭐ **YENİ 2025-07-28**
+- **ASLA** hardcoded path kullanma - `/Users/ferhat/...` veya `C:\Users\...` gibi
+- **MUTLAKA** `utils_env.py` modülünü kullan:
+  ```python
+  # ✅ Doğru - Environment aware path sistemi
+  from modules.utils_env import get_project_root, get_data_path, get_output_json_path
+  
+  project_root = get_project_root()  # .env'den PROJECT_ROOT okur
+  dbf_path = get_data_path("dbf")    # PROJECT_ROOT/data/dbf
+  json_path = get_output_json_path("get_cop.json")  # PROJECT_ROOT/data/get_cop.json
+  
+  # ❌ Yanlış - Hardcoded paths
+  base_path = "/Users/ferhat/github/alan-dal-ders/data/dbf"  # Sadece bir bilgisayarda çalışır!
+  json_path = "data/get_cop.json"  # Relative path, çalışma dizinine bağımlı
+  ```
+- **Çoklu Bilgisayar Desteği**: `.env` dosyasında PROJECT_ROOT tanımla, her bilgisayarda farklı olabilir
+- **Fallback Davranış**: PROJECT_ROOT tanımlı değilse `os.getcwd()` kullanılır
+
+## 🔄 Son Güncelleme Detayları - 2025-07-28
+
+### ✅ Environment Variable Sistemi Eklendi:
+
+1. **Çoklu Bilgisayar Desteği**:
+   - **Yeni Modül**: `modules/utils_env.py` - Environment variable yönetimi
+   - **PROJECT_ROOT**: `.env` dosyasından path okuma sistemi
+   - **Cross-Platform**: Windows, macOS, Linux desteği ✅
+
+2. **Path Management Sistemi**:
+   - **Hardcoded Path'ler Kaldırıldı**: `/Users/ferhat/...` gibi sabit path'ler kaldırıldı
+   - **Dynamic Path**: `get_project_root()`, `get_data_path()`, `get_output_json_path()` fonksiyonları
+   - **Fallback Mechanism**: PROJECT_ROOT yoksa `os.getcwd()` kullanılır ✅
+
+3. **Güncellenen Modüller**:
+   - **utils_oku_dbf.py**: DBF dosya tarama sistemi env aware
+   - **server.py**: Veritabanı ve schema path'leri env bazlı
+   - **get_cop.py, get_dbf.py, get_dm.py**: JSON output path'leri env aware
+   - **requirements.txt**: `python-dotenv` dependency eklendi ✅
+
+4. **Configuration**:
+   - **`.env` Dosyası**: PROJECT_ROOT tanımı ve örnekler
+   - **Setup Instructions**: İş/ev bilgisayarı için farklı path ayarları
+   - **Debug Output**: Path kontrolü için konsol mesajları ✅
+
+## 🔄 Önceki Güncelleme Detayları - 2025-07-27
 
 ### ✅ Modüler API Sistemi Tamamlandı:
 
@@ -437,6 +500,22 @@ for page_num in range(len(doc)):
 doc.close()
 ```
 
+### Environment İşlemleri ⭐ **YENİ 2025-07-28**
+```python
+from modules.utils_env import get_project_root, get_data_path, get_output_json_path
+
+# PROJECT_ROOT'u al
+project_root = get_project_root()  # .env'den PROJECT_ROOT okur
+
+# Data klasörü path'leri
+dbf_path = get_data_path("dbf")    # PROJECT_ROOT/data/dbf
+cop_path = get_data_path("cop")    # PROJECT_ROOT/data/cop
+
+# JSON output path'leri  
+cop_json = get_output_json_path("get_cop.json")  # PROJECT_ROOT/data/get_cop.json
+dbf_json = get_output_json_path("get_dbf.json")  # PROJECT_ROOT/data/get_dbf.json
+```
+
 ## 🚨 Önemli Notlar
 
 - **Fonksiyon İsimleri**: `get_cop()` ve `get_dbf()` kullanın, eski isimleri kullanmayın
@@ -444,6 +523,9 @@ doc.close()
 - **Veritabanı Sütunları**: `cop_url` ve `dbf_urls` sütunları JSON formatında URL'ler içerir
 - **Database Decorators**: `@with_database` ve `@with_database_json` kullanın
 - **Modüler Import**: Doğru modüllerden import yapın (`utils_*.py`)
+- **⭐ YENİ 2025-07-28**: Environment Variable sistemi - çoklu bilgisayar desteği
+- **⭐ YENİ 2025-07-28**: `utils_env.py` modülü - PROJECT_ROOT bazlı path yönetimi
+- **⭐ YENİ 2025-07-28**: `.env` dosyası desteği - `python-dotenv` dependency
 - **⭐ YENİ 2025-07-27**: PyMuPDF unified processing - PDF ve DOCX için tek API
 - **⭐ YENİ 2025-07-27**: python-docx tamamen kaldırıldı, dependencies azaltıldı
 - **⭐ KORUNAN**: Pattern Matching - "1. " veya "1 " kullanın, basit find() değil

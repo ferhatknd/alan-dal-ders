@@ -570,7 +570,8 @@ def get_dbf(cursor, dbf_data=None):
             yield {'type': 'warning', 'message': f'İstatistik alınamadı: {e}'}
         
         # JSON çıktı dosyası oluştur
-        output_filename = "data/get_dbf.json"
+        from .utils_env import get_output_json_path
+        output_filename = get_output_json_path("get_dbf.json")
         try:
             with open(output_filename, 'w', encoding='utf-8') as f:
                 json.dump(alan_dbf_urls, f, ensure_ascii=False, indent=2)
