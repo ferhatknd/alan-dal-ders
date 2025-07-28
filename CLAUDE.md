@@ -120,9 +120,13 @@ Alan (Area) → Dal (Field) → Ders (Course) → Öğrenme Birimi (Learning Uni
 - **`modules/utils_stats.py`** - ⭐ **YENİ AYIRIM**: İstatistik ve monitoring fonksiyonları (utils_database.py'den ayrıştırıldı)
 - **`modules/utils_env.py`** - ⭐ **YENİ 2025-07-28**: Environment variable yönetimi, PROJECT_ROOT desteği, çoklu bilgisayar uyumluluğu
 
-### 🌐 Frontend Dosyaları
-- **`src/App.js`** - ⭐ **YENİLENDİ**: Tek satır workflow UI, console panel, JSON popup'sız tasarım
-- **`src/App.css`** - Ana stil dosyası
+### 🌐 Frontend Dosyaları ⭐ **MODÜLER SİSTEM**
+- **`src/App.js`** - ⭐ **REORGANIZE**: Ana layout ve API bağlantıları, workflow yönetimi
+- **`src/App.css`** - Ana layout ve workflow stilleri
+- **`src/components/DataTable.js`** - ⭐ **YENİ**: Tablo yönetimi bileşeni (filtreleme, sıralama, arama)
+- **`src/components/DataTable.css`** - Tablo ile ilgili tüm stiller
+- **`src/components/CourseEditor.js`** - ⭐ **YENİ**: Sidebar ve document viewer bileşeni (split-screen, PDF görüntüleme)
+- **`src/components/CourseEditor.css`** - Sidebar ve document viewer stilleri
 - **`package.json`** - Node.js bağımlılıkları ve scriptler
 - **`src/index.js`** - React uygulaması entry point
 - **`src/setupProxy.js`** - CORS proxy ayarları

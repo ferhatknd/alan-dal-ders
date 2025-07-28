@@ -157,49 +157,79 @@ const MaterialTextField = ({
   );
 };
 
-// Document Viewer Component - supports both PDF and DOCX
+// Document Viewer Component - supports both PDF and DOCX with enhanced debugging
 const DocumentViewer = ({ url, title, onLoad, onError, loading, error }) => {
   const [viewerType, setViewerType] = useState(null);
   const [internalLoading, setInternalLoading] = useState(true);
+  const [debugInfo, setDebugInfo] = useState('');
+  const [loadTimer, setLoadTimer] = useState(null);
   
   // Detect file type from URL
   const detectFileType = (fileUrl) => {
     if (!fileUrl) return 'unknown';
     const cleanUrl = fileUrl.split('?')[0].toLowerCase();
+    console.log('🔍 Debug - File URL:', fileUrl);
+    console.log('🔍 Debug - Clean URL:', cleanUrl);
+    
     if (cleanUrl.endsWith('.pdf')) return 'pdf';
     if (cleanUrl.endsWith('.docx') || cleanUrl.endsWith('.doc')) return 'docx';
     return 'unknown';
   };
 
   useEffect(() => {
+    console.log('📄 DocumentViewer - URL değişti:', url);
+    
+    if (!url) {
+      setDebugInfo('URL boş');
+      return;
+    }
+    
     const fileType = detectFileType(url);
     setViewerType(fileType);
     setInternalLoading(true);
+    setDebugInfo(`Dosya tipi: ${fileType}, URL: ${url}`);
     
-    // Auto-hide loading after 5 seconds as fallback
+    console.log('📄 DocumentViewer - Dosya tipi:', fileType);
+    
+    // Clear any existing timer
+    if (loadTimer) {
+      clearTimeout(loadTimer);
+    }
+    
+    // Auto-hide loading after timeout based on file type
+    const timeout = fileType === 'docx' ? 8000 : 3000; // DOCX longer timeout
     const timer = setTimeout(() => {
+      console.log('⏰ Loading timeout reached, showing content anyway');
       setInternalLoading(false);
-      console.log('Loading timeout reached, showing content anyway');
-    }, 5000);
+      setDebugInfo(prev => prev + ' | Timeout reached');
+    }, timeout);
     
-    return () => clearTimeout(timer);
+    setLoadTimer(timer);
+    
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
   }, [url]);
 
   const handleLoad = () => {
-    console.log('Document loaded successfully');
+    console.log('✅ Document loaded successfully');
     setInternalLoading(false);
+    setDebugInfo(prev => prev + ' | Loaded');
+    if (loadTimer) clearTimeout(loadTimer);
     onLoad && onLoad();
   };
 
-  const handleError = () => {
-    console.log('Document loading error');
+  const handleError = (e) => {
+    console.log('❌ Document loading error:', e);
     setInternalLoading(false);
+    setDebugInfo(prev => prev + ' | Error');
+    if (loadTimer) clearTimeout(loadTimer);
     onError && onError();
   };
 
   const renderViewer = () => {
     // Show loading only if explicitly loading from parent OR internal loading is true
-    const showLoading = loading || (internalLoading && viewerType !== null);
+    const showLoading = loading || internalLoading;
     
     if (showLoading) {
       return (
@@ -207,7 +237,10 @@ const DocumentViewer = ({ url, title, onLoad, onError, loading, error }) => {
           <div className="loading-spinner"></div>
           <p>Belge yükleniyor...</p>
           <p className="loading-timeout-info">
-            {internalLoading ? 'İçerik yükleniyor...' : 'Yükleme tamamlanıyor...'}
+            {viewerType && `Dosya tipi: ${viewerType.toUpperCase()}`}
+          </p>
+          <p className="debug-info" style={{fontSize: '11px', color: '#999', marginTop: '8px'}}>
+            Debug: {debugInfo}
           </p>
         </div>
       );
@@ -218,6 +251,9 @@ const DocumentViewer = ({ url, title, onLoad, onError, loading, error }) => {
         <div className="document-viewer-error">
           <div className="error-icon">⚠️</div>
           <p>{error}</p>
+          <p className="debug-info" style={{fontSize: '11px', color: '#666'}}>
+            Debug: {debugInfo}
+          </p>
           <button onClick={() => window.open(url, '_blank')} className="open-external-btn">
             Harici Olarak Aç
           </button>
@@ -225,30 +261,25 @@ const DocumentViewer = ({ url, title, onLoad, onError, loading, error }) => {
       );
     }
 
+    console.log('🎯 Rendering viewer for type:', viewerType);
+
     switch (viewerType) {
       case 'pdf':
-        // For PDF, hide loading immediately after render
-        setTimeout(() => {
-          if (internalLoading) {
-            setInternalLoading(false);
-            console.log('PDF object rendered, hiding loading');
-          }
-        }, 1000);
-        
         return (
           <object
             data={url}
             type="application/pdf"
             className="document-viewer-frame"
             onLoad={handleLoad}
-            onError={(e) => {
-              console.error('PDF object load error:', e);
-              handleError(e);
-            }}
+            onError={handleError}
             title={title}
+            style={{ width: '100%', height: '100%' }}
           >
             <div style={{padding: '20px', textAlign: 'center'}}>
               <p>PDF görüntülenemiyor.</p>
+              <p style={{fontSize: '12px', color: '#666', marginBottom: '16px'}}>
+                URL: {url}
+              </p>
               <a 
                 href={url} 
                 target="_blank" 
@@ -270,25 +301,24 @@ const DocumentViewer = ({ url, title, onLoad, onError, loading, error }) => {
         );
       
       case 'docx':
-        // For DOCX files, we'll use ViewerJS or Office Online Viewer
-        const viewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(url)}`;
-        
-        // For DOCX, hide loading after 2 seconds (Office Online takes longer)
-        setTimeout(() => {
-          if (internalLoading) {
-            setInternalLoading(false);
-            console.log('DOCX iframe rendered, hiding loading');
-          }
-        }, 2000);
+        // DOCX dosyaları için yerel dosya desteği - Google Docs Viewer kullan
+        const viewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`;
+        console.log('📊 DOCX Viewer URL:', viewerUrl);
         
         return (
-          <iframe
-            src={viewerUrl}
-            className="document-viewer-frame"
-            onLoad={handleLoad}
-            onError={handleError}
-            title={title}
-          />
+          <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ padding: '8px', background: '#f0f0f0', fontSize: '12px', color: '#666' }}>
+              DOCX Viewer | URL: {url}
+            </div>
+            <iframe
+              src={viewerUrl}
+              className="document-viewer-frame"
+              onLoad={handleLoad}
+              onError={handleError}
+              title={title}
+              style={{ flex: 1, border: 'none' }}
+            />
+          </div>
         );
       
       default:
@@ -297,6 +327,9 @@ const DocumentViewer = ({ url, title, onLoad, onError, loading, error }) => {
             <div className="unknown-file-icon">📄</div>
             <p>Bu dosya türü önizlenemiyor</p>
             <p className="file-type-info">Desteklenen: PDF, DOCX</p>
+            <p style={{fontSize: '11px', color: '#666', margin: '8px 0'}}>
+              Debug: {debugInfo}
+            </p>
             <button onClick={() => window.open(url, '_blank')} className="open-external-btn">
               Dosyayı İndir/Aç
             </button>
@@ -308,8 +341,21 @@ const DocumentViewer = ({ url, title, onLoad, onError, loading, error }) => {
   return (
     <div className="document-viewer-container">
       <div className="document-viewer-header">
-        <span className="document-title">{title}</span>
+        <div className="document-title-section">
+          <span className="document-title">{title}</span>
+          <div className="debug-panel" style={{fontSize: '10px', color: '#666', marginTop: '2px'}}>
+            Type: {viewerType || 'detecting...'} | Loading: {internalLoading ? 'yes' : 'no'} | {debugInfo}
+          </div>
+        </div>
         <div className="document-actions">
+          <button 
+            onClick={() => console.log('🔗 Full URL:', url)} 
+            className="external-link-btn"
+            title="URL'yi konsola yazdır"
+            style={{marginRight: '4px'}}
+          >
+            🔍
+          </button>
           <button 
             onClick={() => window.open(url, '_blank')} 
             className="external-link-btn"
