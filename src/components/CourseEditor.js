@@ -1,45 +1,61 @@
 import React, { useState, useEffect } from 'react';
 import './CourseEditor.css';
 
-// COP Dropdown Bileşeni
+// COP Dropdown Bileşeni - DBF ile aynı yapıda
 const CopDropdown = ({ copUrls, onSelectCop }) => {
   const [isOpen, setIsOpen] = useState(false);
   
-  console.log('CopDropdown render - copUrls:', copUrls);
+  console.log('🔍 CopDropdown render - copUrls:', copUrls);
+  console.log('🔍 CopDropdown - copUrls type:', typeof copUrls);
+  console.log('🔍 CopDropdown - keys:', copUrls ? Object.keys(copUrls) : 'null');
   
   if (!copUrls || Object.keys(copUrls).length === 0) {
-    console.log('CopDropdown: COP URL\'leri bulunamadı veya boş');
-    return null;
+    console.log('❌ CopDropdown: COP URL\'leri bulunamadı veya boş');
+    return (
+      <div className="dropdown-container disabled">
+        <button className="dropdown-toggle disabled" disabled>
+          ÇÖP Yok ❌
+        </button>
+      </div>
+    );
   }
   
-  const copList = Object.entries(copUrls).map(([key, url]) => ({
-    label: key.includes('sinif_') ? `${key.split('_')[1]}. Sınıf` : /^\d+$/.test(key) ? `${key}. Sınıf` : key,
-    url: url,
-    key: key
-  }));
+  const copList = Object.entries(copUrls).map(([key, urlData]) => {
+    // URL data can be string or object
+    const actualUrl = typeof urlData === 'object' && urlData.url ? urlData.url : urlData;
+    const updateYear = typeof urlData === 'object' && urlData.update_year ? urlData.update_year : '';
+    
+    return {
+      label: key.includes('sinif_') ? `${key.split('_')[1]}. Sınıf` : /^\d+$/.test(key) ? `${key}. Sınıf` : key,
+      url: actualUrl,
+      updateYear: updateYear,
+      key: key
+    };
+  });
   
   console.log('CopDropdown: COP listesi oluşturuldu:', copList);
   
   return (
-    <div className="cop-dropdown-container">
+    <div className="dropdown-container">
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="cop-dropdown-toggle"
+        className="dropdown-toggle"
       >
         ÇÖP {isOpen ? '▲' : '▼'}
       </button>
       {isOpen && (
-        <div className="cop-dropdown-menu">
+        <div className="dropdown-menu">
           {copList.map(item => (
             <button
               key={item.key}
               onClick={() => {
+                console.log('🔗 COP seçildi:', item.url);
                 onSelectCop(item.url, `ÇÖP - ${item.label}`);
                 setIsOpen(false);
               }}
-              className="cop-dropdown-item"
+              className="dropdown-item"
             >
-              {item.label}
+              {item.label} {item.updateYear && `(${item.updateYear})`}
             </button>
           ))}
         </div>
@@ -48,40 +64,57 @@ const CopDropdown = ({ copUrls, onSelectCop }) => {
   );
 };
 
-// DBF Dropdown Bileşeni - Ders Bazlı Sistem
-const DbfDropdown = ({ courseDbfUrl, onSelectDbf }) => {
-  console.log('DbfDropdown render - courseDbfUrl:', courseDbfUrl);
-  console.log('DbfDropdown - courseDbfUrl type:', typeof courseDbfUrl);
+// DBF Dropdown Bileşeni - COP ile aynı yapıda
+const DbfDropdown = ({ dbfUrls, onSelectDbf }) => {
+  const [isOpen, setIsOpen] = useState(false);
   
-  // Eğer ders için DBF dosyası yoksa gösterme
-  if (!courseDbfUrl || courseDbfUrl.trim() === '') {
-    console.log('DbfDropdown: Bu ders için DBF dosyası bulunamadı');
+  console.log('🔍 DbfDropdown render - dbfUrls:', dbfUrls);
+  console.log('🔍 DbfDropdown - dbfUrls type:', typeof dbfUrls);
+  console.log('🔍 DbfDropdown - keys:', dbfUrls ? Object.keys(dbfUrls) : 'null');
+  
+  if (!dbfUrls || Object.keys(dbfUrls).length === 0) {
+    console.log('❌ DbfDropdown: DBF URL\'leri bulunamadı veya boş');
     return (
-      <div className="dbf-dropdown-container disabled">
-        <button className="dbf-dropdown-toggle disabled" type="button" disabled>
-          DBF Dosyası Yok ❌
+      <div className="dropdown-container disabled">
+        <button className="dropdown-toggle disabled" disabled>
+          DBF Yok ❌
         </button>
       </div>
     );
   }
   
-  // Dosya adını path'den çıkar
-  const fileName = courseDbfUrl.split('/').pop() || courseDbfUrl;
-  const fileExtension = fileName.split('.').pop()?.toUpperCase() || 'Dosya';
+  const dbfList = Object.entries(dbfUrls).map(([key, url]) => ({
+    label: key.includes('sinif_') ? `${key.split('_')[1]}. Sınıf` : /^\d+$/.test(key) ? `${key}. Sınıf` : key,
+    url: url,
+    key: key
+  }));
   
-  console.log('DbfDropdown: DBF dosyası mevcut:', fileName);
+  console.log('DbfDropdown: DBF listesi oluşturuldu:', dbfList);
   
   return (
-    <div className="dbf-dropdown-container">
+    <div className="dropdown-container">
       <button 
-        onClick={() => {
-          console.log('DBF dosyası açılıyor:', courseDbfUrl);
-          onSelectDbf(courseDbfUrl, `DBF - ${fileName}`);
-        }}
-        className="dbf-dropdown-toggle"
+        onClick={() => setIsOpen(!isOpen)}
+        className="dropdown-toggle"
       >
-        📄 {fileExtension} Dosyasını Aç
+        DBF {isOpen ? '▲' : '▼'}
       </button>
+      {isOpen && (
+        <div className="dropdown-menu">
+          {dbfList.map(item => (
+            <button
+              key={item.key}
+              onClick={() => {
+                window.open(item.url, '_blank');
+                setIsOpen(false);
+              }}
+              className="dropdown-item"
+            >
+              {item.label} (RAR)
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
@@ -157,6 +190,203 @@ const MaterialTextField = ({
   );
 };
 
+// DOCX to PDF Converter Component - CLAUDE.md prensibi: cache-aware conversion
+const DocxToPdfViewer = ({ url, title, onLoad, onError }) => {
+  const [conversionState, setConversionState] = useState('idle'); // idle, converting, success, error, fallback
+  const [pdfUrl, setPdfUrl] = useState(null);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [cacheStatus, setCacheStatus] = useState(false);
+
+  const convertToPdf = async () => {
+    try {
+      setConversionState('converting');
+      
+      // URL'den relative path'i çıkar (localhost:5001/api/files/ kısmını kaldır)
+      const relativePath = url.replace('http://localhost:5001/api/files/', '');
+      const decodedPath = decodeURIComponent(relativePath);
+      
+      console.log('🔄 Converting DOCX to PDF:', decodedPath);
+      
+      const response = await fetch('http://localhost:5001/api/convert-docx-to-pdf', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          file_path: decodedPath
+        })
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        setPdfUrl(result.pdf_url);
+        setCacheStatus(result.cached);
+        setConversionState('success');
+        console.log('✅ DOCX to PDF conversion successful:', result.pdf_url);
+        onLoad && onLoad();
+      } else {
+        console.error('❌ DOCX to PDF conversion failed:', result.error);
+        setErrorMessage(result.error);
+        setConversionState('fallback'); // Fallback to download interface
+      }
+      
+    } catch (error) {
+      console.error('❌ DOCX to PDF request failed:', error);
+      setErrorMessage(error.message);
+      setConversionState('fallback'); // Fallback to download interface
+    }
+  };
+
+  useEffect(() => {
+    if (url && conversionState === 'idle') {
+      convertToPdf();
+    }
+  }, [url]);
+
+  // Render based on conversion state
+  switch (conversionState) {
+    case 'converting':
+      return (
+        <div style={{ 
+          height: '100%', 
+          display: 'flex', 
+          flexDirection: 'column',
+          alignItems: 'center', 
+          justifyContent: 'center',
+          padding: '40px',
+          textAlign: 'center',
+          background: '#f8f9fa'
+        }}>
+          <div style={{ fontSize: '48px', marginBottom: '20px' }}>🔄</div>
+          <h3 style={{ margin: '0 0 10px 0', color: '#333' }}>DOCX → PDF Dönüştürülüyor</h3>
+          <p style={{ margin: '0 0 20px 0', color: '#666', fontSize: '14px' }}>
+            Lütfen bekleyin, belge PDF formatına çevriliyor...
+          </p>
+          <div className="loading-spinner"></div>
+        </div>
+      );
+      
+    case 'success':
+      // PDF başarıyla oluşturuldu, PDF viewer'ı göster
+      return (
+        <div style={{ height: '100%', width: '100%', position: 'relative' }}>
+          <div style={{ 
+            position: 'absolute', 
+            top: '5px', 
+            right: '10px', 
+            background: 'rgba(0,0,0,0.7)', 
+            color: 'white', 
+            padding: '4px 8px', 
+            borderRadius: '4px', 
+            fontSize: '12px',
+            zIndex: 10
+          }}>
+            {cacheStatus ? '💾 Cache' : '🔄 Yeni'}
+          </div>
+          <iframe
+            src={pdfUrl}
+            style={{ width: '100%', height: '100%', border: 'none' }}
+            title={`${title} (PDF)`}
+            onLoad={() => {
+              console.log('✅ Converted PDF loaded successfully');
+              onLoad && onLoad();
+            }}
+            onError={(e) => {
+              console.log('❌ Converted PDF loading error:', e);
+              setConversionState('fallback');
+              onError && onError();
+            }}
+          />
+        </div>
+      );
+      
+    case 'fallback':
+    case 'error':
+    default:
+      // Conversion başarısız, download interface'e fallback
+      return (
+        <div style={{ 
+          height: '100%', 
+          width: '100%', 
+          display: 'flex', 
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '40px',
+          textAlign: 'center',
+          background: '#f8f9fa'
+        }}>
+          <div style={{ fontSize: '48px', marginBottom: '20px' }}>📄</div>
+          <h3 style={{ margin: '0 0 10px 0', color: '#333' }}>DOCX Dosyası</h3>
+          <p style={{ margin: '0 0 10px 0', color: '#666', fontSize: '14px' }}>
+            PDF dönüştürme başarısız oldu
+          </p>
+          {errorMessage && (
+            <p style={{ margin: '0 0 20px 0', color: '#e74c3c', fontSize: '12px' }}>
+              Hata: {errorMessage}
+            </p>
+          )}
+          <div style={{ display: 'flex', gap: '12px', flexDirection: 'column' }}>
+            <button 
+              onClick={convertToPdf}
+              style={{
+                padding: '12px 24px',
+                backgroundColor: '#28a745',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                fontWeight: '500',
+                fontSize: '14px',
+                cursor: 'pointer'
+              }}
+            >
+              🔄 Tekrar Dönüştür
+            </button>
+            <a 
+              href={url} 
+              download
+              style={{
+                display: 'inline-block',
+                padding: '12px 24px',
+                backgroundColor: '#007bff',
+                color: 'white',
+                textDecoration: 'none',
+                borderRadius: '6px',
+                fontWeight: '500',
+                fontSize: '14px'
+              }}
+            >
+              📥 Dosyayı İndir
+            </a>
+            <button 
+              onClick={() => window.open(url, '_blank')}
+              style={{
+                padding: '10px 20px',
+                backgroundColor: 'transparent',
+                color: '#007bff',
+                border: '1px solid #007bff',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '14px'
+              }}
+            >
+              🔗 Yeni Sekmede Aç
+            </button>
+          </div>
+          <p style={{ 
+            fontSize: '12px', 
+            color: '#999', 
+            marginTop: '20px',
+            lineHeight: '1.4'
+          }}>
+            {url.split('/').pop()}
+          </p>
+        </div>
+      );
+  }
+};
+
 // Document Viewer Component - supports both PDF and DOCX with enhanced debugging
 const DocumentViewer = ({ url, title, onLoad, onError, loading, error }) => {
   const [viewerType, setViewerType] = useState(null);
@@ -166,7 +396,10 @@ const DocumentViewer = ({ url, title, onLoad, onError, loading, error }) => {
   
   // Detect file type from URL
   const detectFileType = (fileUrl) => {
-    if (!fileUrl) return 'unknown';
+    if (!fileUrl || typeof fileUrl !== 'string') {
+      console.log('⚠️ detectFileType: Invalid URL:', fileUrl, typeof fileUrl);
+      return 'unknown';
+    }
     const cleanUrl = fileUrl.split('?')[0].toLowerCase();
     console.log('🔍 Debug - File URL:', fileUrl);
     console.log('🔍 Debug - Clean URL:', cleanUrl);
@@ -237,15 +470,21 @@ const DocumentViewer = ({ url, title, onLoad, onError, loading, error }) => {
     onError && onError();
   };
 
-  // Immediate loading skip for PDF - since server is working
+  // Debug loading states
   useEffect(() => {
+    console.log('🔍 LOADING STATE DEBUG:');
+    console.log('  URL:', url);
+    console.log('  viewerType:', viewerType);
+    console.log('  internalLoading:', internalLoading);
+    console.log('  loading prop:', loading);
+    console.log('  showLoading will be:', loading || internalLoading);
+    
     if (url && viewerType === 'pdf') {
-      // For PDF, disable loading immediately since we tested server works
-      console.log('🚀 PDF immediate load - disabling loading state completely');
+      console.log('🚀 PDF detected - disabling loading state completely');
       setInternalLoading(false);
       setDebugInfo(prev => prev + ' | No loading');
     }
-  }, [url, viewerType]);
+  }, [url, viewerType, internalLoading, loading]);
 
   const renderViewer = () => {
     // Show loading only if explicitly loading from parent OR internal loading is true
@@ -285,26 +524,12 @@ const DocumentViewer = ({ url, title, onLoad, onError, loading, error }) => {
 
     switch (viewerType) {
       case 'pdf':
-        // DEBUG: Step by step logging
-        console.log('🔍 PDF RENDER DEBUG:');
-        console.log('  Original URL:', url);
-        console.log('  URL encoded:', encodeURIComponent(url));
-        console.log('  showLoading:', showLoading);
-        console.log('  internalLoading:', internalLoading);
-        console.log('  loading prop:', loading);
-        
-        // Basit iframe ile debug
+        // Clean PDF viewer - no headers, just the content
         return (
-          <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ padding: '8px', background: '#f0f0f0', fontSize: '12px', color: '#666' }}>
-              PDF DEBUG | showLoading: {showLoading ? 'YES' : 'NO'} | internalLoading: {internalLoading ? 'YES' : 'NO'}
-            </div>
-            <div style={{ padding: '8px', background: '#fff3cd', fontSize: '11px', color: '#856404' }}>
-              URL Test: <a href={url} target="_blank" rel="noopener noreferrer">Direct Link Test</a>
-            </div>
+          <div style={{ height: '100%', width: '100%' }}>
             {showLoading ? (
               <div style={{ 
-                flex: 1, 
+                height: '100%',
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center',
@@ -312,16 +537,13 @@ const DocumentViewer = ({ url, title, onLoad, onError, loading, error }) => {
                 background: '#f8f9fa'
               }}>
                 <div style={{ fontSize: '24px', marginBottom: '10px' }}>🔄</div>
-                <div>DEBUG: Loading state is TRUE</div>
-                <div style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>
-                  Check console for loading state details
-                </div>
+                <div>Belge yükleniyor...</div>
               </div>
             ) : (
               <iframe
                 src={url}
                 className="document-viewer-frame"
-                style={{ flex: 1, border: 'none' }}
+                style={{ width: '100%', height: '100%', border: 'none' }}
                 title={title}
                 onLoad={() => {
                   console.log('✅ IFRAME LOADED successfully');
@@ -337,25 +559,8 @@ const DocumentViewer = ({ url, title, onLoad, onError, loading, error }) => {
         );
       
       case 'docx':
-        // DOCX dosyaları için yerel dosya desteği - Google Docs Viewer kullan
-        const viewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`;
-        console.log('📊 DOCX Viewer URL:', viewerUrl);
-        
-        return (
-          <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ padding: '8px', background: '#f0f0f0', fontSize: '12px', color: '#666' }}>
-              DOCX Viewer | URL: {url}
-            </div>
-            <iframe
-              src={viewerUrl}
-              className="document-viewer-frame"
-              onLoad={handleLoad}
-              onError={handleError}
-              title={title}
-              style={{ flex: 1, border: 'none' }}
-            />
-          </div>
-        );
+        // DOCX to PDF conversion with cache checking (CLAUDE.md prensibi)
+        return <DocxToPdfViewer url={url} title={title} onLoad={handleLoad} onError={handleError} />;
       
       default:
         return (
@@ -375,35 +580,8 @@ const DocumentViewer = ({ url, title, onLoad, onError, loading, error }) => {
   };
 
   return (
-    <div className="document-viewer-container">
-      <div className="document-viewer-header">
-        <div className="document-title-section">
-          <span className="document-title">{title}</span>
-          <div className="debug-panel" style={{fontSize: '10px', color: '#666', marginTop: '2px'}}>
-            Type: {viewerType || 'detecting...'} | Loading: {internalLoading ? 'yes' : 'no'} | {debugInfo}
-          </div>
-        </div>
-        <div className="document-actions">
-          <button 
-            onClick={() => console.log('🔗 Full URL:', url)} 
-            className="external-link-btn"
-            title="URL'yi konsola yazdır"
-            style={{marginRight: '4px'}}
-          >
-            🔍
-          </button>
-          <button 
-            onClick={() => window.open(url, '_blank')} 
-            className="external-link-btn"
-            title="Yeni sekmede aç"
-          >
-            ↗️
-          </button>
-        </div>
-      </div>
-      <div className={`document-viewer-content ${(loading || internalLoading) ? 'loading' : ''}`}>
-        {renderViewer()}
-      </div>
+    <div className="document-viewer-container" style={{ height: '100%' }}>
+      {renderViewer()}
     </div>
   );
 };
@@ -424,6 +602,7 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
   
   const [alanDalOptions, setAlanDalOptions] = useState({ alanlar: [], dallar: {} });
   const [copUrls, setCopUrls] = useState({});
+  const [dbfUrls, setDbfUrls] = useState({});
   
   // Split pane için state'ler
   const [leftWidth, setLeftWidth] = useState(50); // Percentage
@@ -435,6 +614,24 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
   
   // Split screen mode - PDF açık mı?
   const isSplitMode = Boolean(pdfUrl);
+  
+  // Flexible sidebar width - max 50% of viewport width
+  const calculateFlexibleSidebarStyle = () => {
+    const courseName = editData.ders_adi || 'Ders Adı';
+    const charCount = courseName.length;
+    
+    // Base width calculation
+    const baseWidth = Math.max(400, Math.min(charCount * 8 + 200, 800));
+    
+    console.log(`📏 Flexible sidebar for course "${courseName}" (${charCount} chars), base: ${baseWidth}px`);
+    
+    return {
+      width: `min(${baseWidth}px, 50vw)`, // Never exceed 50% of viewport
+      maxWidth: '50vw'
+    };
+  };
+  
+  const sidebarStyle = calculateFlexibleSidebarStyle();
 
   // Alan-Dal seçeneklerini yükle
   useEffect(() => {
@@ -469,34 +666,48 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
   // COP ve DBF URL'lerini alan_id değiştiğinde güncelle
   useEffect(() => {
     if (editData.alan_id && alanDalOptions.alanlar.length > 0) {
-      console.log('COP ve DBF URL\'leri güncelleniyor, alan_id:', editData.alan_id);
+      console.log('🔄 COP ve DBF URL\'leri güncelleniyor, alan_id:', editData.alan_id);
       
       const selectedAlan = alanDalOptions.alanlar.find(alan => alan.id === parseInt(editData.alan_id));
-      console.log('selectedAlan bulundu:', selectedAlan);
+      console.log('🔍 selectedAlan bulundu:', selectedAlan);
       
       // COP URL'lerini güncelle
       if (selectedAlan && selectedAlan.cop_url) {
         try {
           const copData = JSON.parse(selectedAlan.cop_url);
-          console.log('COP verisi parse edildi:', copData);
+          console.log('✅ COP verisi parse edildi:', copData);
           setCopUrls(copData);
         } catch (e) {
-          console.log('COP verisi JSON değil, string olarak işleniyor:', selectedAlan.cop_url);
+          console.log('⚠️ COP verisi JSON değil, string olarak işleniyor:', selectedAlan.cop_url);
           setCopUrls({ 'cop_url': selectedAlan.cop_url });
         }
       } else {
-        console.log('Seçilen alan için COP verisi bulunamadı');
+        console.log('❌ Seçilen alan için COP verisi bulunamadı');
         setCopUrls({});
       }
       
-      // DBF artık ders bazlı olduğu için alan bazlı DBF URL'leri kaldırıldı
+      // DBF URL'lerini güncelle (Alan bazlı RAR linkleri)
+      if (selectedAlan && selectedAlan.dbf_urls) {
+        try {
+          const dbfData = JSON.parse(selectedAlan.dbf_urls);
+          console.log('✅ DBF verisi parse edildi:', dbfData);
+          setDbfUrls(dbfData);
+        } catch (e) {
+          console.log('⚠️ DBF verisi JSON değil, string olarak işleniyor:', selectedAlan.dbf_urls);
+          setDbfUrls({ 'dbf_urls': selectedAlan.dbf_urls });
+        }
+      } else {
+        console.log('❌ Seçilen alan için DBF verisi bulunamadı');
+        setDbfUrls({});
+      }
     }
   }, [editData.alan_id, alanDalOptions.alanlar]);
 
-  // PDF URL değiştiğinde loading state'ini sıfırla
+  // PDF URL değiştiğinde loading state'ini sıfırla - PDF için loading disable
   useEffect(() => {
     if (pdfUrl) {
-      setPdfLoading(true);
+      console.log('🔧 PDF URL changed, disabling loading for PDF');
+      setPdfLoading(false); // PDF için loading disable
       setPdfError(null);
     }
   }, [pdfUrl]);
@@ -604,113 +815,27 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
 
   if (!isOpen) return null;
 
-  // Normal sidebar mode (no PDF)
+  // Normal sidebar mode (no PDF) - Yeni layout ile uyumlu
   if (!isSplitMode) {
     return (
-      <div className="edit-sidebar-container">
-        {/* Header */}
-        <div className="edit-sidebar-header">
-          <div>
-            <h3>{editData.ders_adi || 'Ders Adı'}</h3>
-            <div className="edit-sidebar-pdf-links">
-              {editData.dm_url && (
-                <button 
-                  onClick={() => handlePdfButtonClick(editData.dm_url, 'DM')}
-                  className="edit-sidebar-pdf-button dm"
-                >
-                  DM
-                </button>
-              )}
-              {editData.dbf_url && (
-                <button 
-                  onClick={() => handlePdfButtonClick(editData.dbf_url, 'DBF')}
-                  className="edit-sidebar-pdf-button dbf"
-                >
-                  DBF
-                </button>
-              )}
-              {editData.bom_url && (
-                <button 
-                  onClick={() => handlePdfButtonClick(editData.bom_url, 'BOM')}
-                  className="edit-sidebar-pdf-button bom"
-                >
-                  BOM
-                </button>
-              )}
-            </div>
-          </div>
-          <button 
-            onClick={onClose}
-            className="edit-sidebar-close-button"
-          >
-            ×
-          </button>
-        </div>
-
-        {/* Form Content - Scrollable */}
-        <div className="edit-sidebar-content">
-          {/* Alan-Dal Seçimi */}
-          <div className="alan-dal-selection-section">
-            <div className="alan-dal-selection-container">
-              <MaterialTextField
-                label="Alan"
-                value={editData.alan_id}
-                onChange={handleAlanChange}
-                select={true}
-                options={alanDalOptions.alanlar.map(alan => ({
-                  value: alan.id,
-                  label: alan.adi
-                }))}
-              />
-              
-              <CopDropdown 
-                copUrls={copUrls} 
-                onSelectCop={handleCopSelect}
-              />
-              
-              <DbfDropdown 
-                courseDbfUrl={editData.dbf_url} 
-                onSelectDbf={handleDbfSelect}
-              />
-            </div>
-            
-            <MaterialTextField
-              label="Dal"
-              value={editData.dal_id}
-              onChange={(value) => handleInputChange('dal_id', value)}
-              select={true}
-              disabled={!editData.alan_id}
-              options={editData.alan_id ? (alanDalOptions.dallar[editData.alan_id] || []).map(dal => ({
-                value: dal.id,
-                label: dal.adi
-              })) : []}
-            />
-          </div>
-
-          {/* Ders Bilgileri */}
-          <div className="form-section ders-bilgileri-section">
-            {/* Form içeriği buraya eklenebilir */}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Split screen mode - PDF açık
-  return (
-    <div className="edit-sidebar-split-screen">
-      {/* Sol Panel - İşlemler */}
       <div 
-        className="split-left-panel" 
-        style={{ width: `${leftWidth}%` }}
+        className="edit-sidebar-container"
+        style={sidebarStyle}
       >
-        {/* Header */}
+        {/* Header - Split screen ile aynı */}
         <div className="edit-sidebar-header">
-          <div>
-            <h3>{editData.ders_adi || 'Ders Adı'}</h3>
-            <div className="current-document-info">
-              <span className="document-title">{pdfTitle}</span>
-            </div>
+          <div className="header-left">
+            <h3 className="course-title">{editData.ders_adi || 'Ders Adı'}</h3>
+            {editData.dbf_url && (
+              <button 
+                onClick={() => handleDbfSelect(editData.dbf_url, 'DBF')}
+                className="header-dbf-button"
+                title="PDF'i aç"
+              >
+                DBF:{editData.dbf_url.toLowerCase().endsWith('.pdf') ? 'PDF' : 
+                     editData.dbf_url.toLowerCase().endsWith('.docx') ? 'DOCX' : 'DBF'}
+              </button>
+            )}
           </div>
           <button 
             onClick={onClose}
@@ -720,47 +845,59 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
           </button>
         </div>
 
-        {/* Form Content - Scrollable */}
+        {/* Form Content - Split screen ile aynı */}
         <div className="edit-sidebar-content">
-          {/* Alan-Dal Seçimi */}
+          {/* Alan-Dal Seçimi - Yeni Layout */}
           <div className="alan-dal-selection-section">
-            <div className="alan-dal-selection-container">
-              <MaterialTextField
-                label="Alan"
-                value={editData.alan_id}
-                onChange={handleAlanChange}
-                select={true}
-                options={alanDalOptions.alanlar.map(alan => ({
-                  value: alan.id,
-                  label: alan.adi
-                }))}
-              />
+            {/* Alan ve Dal aynı satırda */}
+            <div className="alan-dal-row">
+              <div className="alan-field">
+                <MaterialTextField
+                  label="Alan"
+                  value={editData.alan_id}
+                  onChange={handleAlanChange}
+                  select={true}
+                  options={alanDalOptions.alanlar.map(alan => ({
+                    value: alan.id,
+                    label: alan.adi
+                  }))}
+                />
+              </div>
               
-              <CopDropdown 
-                copUrls={copUrls} 
-                onSelectCop={handleCopSelect}
-              />
-              
-              <DbfDropdown 
-                courseDbfUrl={editData.dbf_url} 
-                onSelectDbf={handleDbfSelect}
-              />
+              <div className="dal-field">
+                <MaterialTextField
+                  label="Dal"
+                  value={editData.dal_id}
+                  onChange={(value) => handleInputChange('dal_id', value)}
+                  select={true}
+                  disabled={!editData.alan_id}
+                  options={editData.alan_id ? (alanDalOptions.dallar[editData.alan_id] || []).map(dal => ({
+                    value: dal.id,
+                    label: dal.adi
+                  })) : []}
+                />
+              </div>
             </div>
             
-            <MaterialTextField
-              label="Dal"
-              value={editData.dal_id}
-              onChange={(value) => handleInputChange('dal_id', value)}
-              select={true}
-              disabled={!editData.alan_id}
-              options={editData.alan_id ? (alanDalOptions.dallar[editData.alan_id] || []).map(dal => ({
-                value: dal.id,
-                label: dal.adi
-              })) : []}
-            />
+            {/* COP ve DBF Dropdowns - Simetrik */}
+            <div className="dropdown-buttons-row">
+              <div className="cop-dropdown-wrapper">
+                <CopDropdown 
+                  copUrls={copUrls} 
+                  onSelectCop={handleCopSelect}
+                />
+              </div>
+              
+              <div className="dbf-dropdown-wrapper">
+                <DbfDropdown 
+                  dbfUrls={dbfUrls} 
+                  onSelectDbf={handleDbfSelect}
+                />
+              </div>
+            </div>
           </div>
 
-          {/* Ders Bilgileri */}
+          {/* Ders Bilgileri - Genişletilmiş */}
           <div className="form-section ders-bilgileri-section">
             <MaterialTextField
               label="Ders Adı"
@@ -768,18 +905,40 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
               onChange={(value) => handleInputChange('ders_adi', value)}
             />
             
+            <div className="inline-fields">
+              <MaterialTextField
+                label="Sınıf"
+                value={editData.sinif}
+                onChange={(value) => handleInputChange('sinif', value)}
+                type="number"
+              />
+              
+              <MaterialTextField
+                label="Ders Saati"
+                value={editData.ders_saati}
+                onChange={(value) => handleInputChange('ders_saati', value)}
+                type="number"
+              />
+            </div>
+
             <MaterialTextField
-              label="Sınıf"
-              value={editData.sinif}
-              onChange={(value) => handleInputChange('sinif', value)}
-              type="number"
+              label="Ders Amacı"
+              value={editData.amac}
+              onChange={(value) => handleInputChange('amac', value)}
+              multiline={true}
+              rows={3}
             />
-            
+
             <MaterialTextField
-              label="Ders Saati"
-              value={editData.ders_saati}
-              onChange={(value) => handleInputChange('ders_saati', value)}
-              type="number"
+              label="DM URL"
+              value={editData.dm_url}
+              onChange={(value) => handleInputChange('dm_url', value)}
+            />
+
+            <MaterialTextField
+              label="BOM URL" 
+              value={editData.bom_url}
+              onChange={(value) => handleInputChange('bom_url', value)}
             />
           </div>
 
@@ -794,20 +953,16 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
           </div>
         </div>
       </div>
+    );
+  }
 
-      {/* Resize Handle */}
+  // Split screen mode - PDF açık
+  return (
+    <div className="edit-sidebar-split-screen">
+      {/* Sol Panel - Document Viewer (PDF) */}
       <div 
-        className="resize-handle"
-        onMouseDown={handleMouseDown}
-        style={{ cursor: isResizing ? 'col-resize' : 'col-resize' }}
-      >
-        <div className="resize-line"></div>
-      </div>
-
-      {/* Sağ Panel - Document Viewer */}
-      <div 
-        className="split-right-panel" 
-        style={{ width: `${100 - leftWidth}%` }}
+        className="split-left-panel" 
+        style={{ width: `${leftWidth}%` }}
       >
         {pdfUrl && (
           <DocumentViewer 
@@ -819,6 +974,158 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
             error={pdfError}
           />
         )}
+      </div>
+
+      {/* Resize Handle */}
+      <div 
+        className="resize-handle"
+        onMouseDown={handleMouseDown}
+        style={{ cursor: isResizing ? 'col-resize' : 'col-resize' }}
+      >
+        <div className="resize-line"></div>
+      </div>
+
+      {/* Sağ Panel - İşlemler (Course Editor) */}
+      <div 
+        className="split-right-panel" 
+        style={{ width: `${100 - leftWidth}%` }}
+      >
+        {/* Header */}
+        <div className="edit-sidebar-header">
+          <div className="header-left">
+            <h3 className="course-title">{editData.ders_adi || 'Ders Adı'}</h3>
+            {editData.dbf_url && (
+              <button 
+                onClick={() => {
+                  if (pdfUrl) {
+                    onClose(); // PDF açıksa kapat
+                  } else {
+                    handleDbfSelect(editData.dbf_url, 'DBF'); // PDF kapalıysa aç
+                  }
+                }}
+                className="header-dbf-button"
+                title={pdfUrl ? "PDF'i kapat" : "PDF'i aç"}
+              >
+                DBF:{editData.dbf_url.toLowerCase().endsWith('.pdf') ? 'PDF' : 
+                     editData.dbf_url.toLowerCase().endsWith('.docx') ? 'DOCX' : 'DBF'}
+              </button>
+            )}
+          </div>
+          <button 
+            onClick={onClose}
+            className="edit-sidebar-close-button"
+          >
+            ×
+          </button>
+        </div>
+
+        {/* Form Content - Scrollable */}
+        <div className="edit-sidebar-content">
+          {/* Alan-Dal Seçimi - Yeni Layout */}
+          <div className="alan-dal-selection-section">
+            {/* Alan ve Dal aynı satırda */}
+            <div className="alan-dal-row">
+              <div className="alan-field">
+                <MaterialTextField
+                  label="Alan"
+                  value={editData.alan_id}
+                  onChange={handleAlanChange}
+                  select={true}
+                  options={alanDalOptions.alanlar.map(alan => ({
+                    value: alan.id,
+                    label: alan.adi
+                  }))}
+                />
+              </div>
+              
+              <div className="dal-field">
+                <MaterialTextField
+                  label="Dal"
+                  value={editData.dal_id}
+                  onChange={(value) => handleInputChange('dal_id', value)}
+                  select={true}
+                  disabled={!editData.alan_id}
+                  options={editData.alan_id ? (alanDalOptions.dallar[editData.alan_id] || []).map(dal => ({
+                    value: dal.id,
+                    label: dal.adi
+                  })) : []}
+                />
+              </div>
+            </div>
+            
+            {/* COP ve DBF Dropdowns - Simetrik */}
+            <div className="dropdown-buttons-row">
+              <div className="cop-dropdown-wrapper">
+                <CopDropdown 
+                  copUrls={copUrls} 
+                  onSelectCop={handleCopSelect}
+                />
+              </div>
+              
+              <div className="dbf-dropdown-wrapper">
+                <DbfDropdown 
+                  dbfUrls={dbfUrls} 
+                  onSelectDbf={handleDbfSelect}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Ders Bilgileri - Genişletilmiş */}
+          <div className="form-section ders-bilgileri-section">
+            <MaterialTextField
+              label="Ders Adı"
+              value={editData.ders_adi}
+              onChange={(value) => handleInputChange('ders_adi', value)}
+            />
+            
+            <div className="inline-fields">
+              <MaterialTextField
+                label="Sınıf"
+                value={editData.sinif}
+                onChange={(value) => handleInputChange('sinif', value)}
+                type="number"
+              />
+              
+              <MaterialTextField
+                label="Ders Saati"
+                value={editData.ders_saati}
+                onChange={(value) => handleInputChange('ders_saati', value)}
+                type="number"
+              />
+            </div>
+
+            <MaterialTextField
+              label="Ders Amacı"
+              value={editData.amac}
+              onChange={(value) => handleInputChange('amac', value)}
+              multiline={true}
+              rows={3}
+            />
+
+            <MaterialTextField
+              label="DM URL"
+              value={editData.dm_url}
+              onChange={(value) => handleInputChange('dm_url', value)}
+            />
+
+            <MaterialTextField
+              label="BOM URL" 
+              value={editData.bom_url}
+              onChange={(value) => handleInputChange('bom_url', value)}
+            />
+          </div>
+
+          {/* Action Buttons */}
+          <div className="form-actions">
+            <button onClick={handleSave} className="save-button">
+              Kaydet
+            </button>
+            <button onClick={handleCopy} className="copy-button">
+              Kopyala
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

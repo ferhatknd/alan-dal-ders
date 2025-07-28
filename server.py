@@ -1269,6 +1269,83 @@ def update_ders_saati_from_dbf_data(cursor, parsed_data):
     
     return updated_count
 
+@app.route('/api/convert-docx-to-pdf', methods=['POST'])
+@with_database_json
+def convert_docx_to_pdf_endpoint(cursor):
+    """
+    DOC/DOCX dosyasını PDF'e çevirir ve PDF URL'ini döndürür
+    
+    CLAUDE.md Prensibi: Database decorators + Modular imports
+    
+    POST body:
+    {
+        "file_path": "data/dbf/01_Adalet/document.docx"
+    }
+    
+    Response:
+    {
+        "success": true,
+        "pdf_url": "http://localhost:5001/api/files/data/dbf/01_Adalet/document_converted.pdf",
+        "pdf_path": "data/dbf/01_Adalet/document_converted.pdf",
+        "cached": true
+    }
+    """
+    try:
+        from modules.utils_docx_to_pdf import convert_docx_to_pdf, is_conversion_supported
+        import urllib.parse
+        
+        data = request.get_json()
+        if not data or 'file_path' not in data:
+            return {
+                "success": False,
+                "error": "file_path gerekli"
+            }
+        
+        doc_path = data['file_path']
+        
+        # Format kontrolü
+        if not is_conversion_supported(doc_path):
+            return {
+                "success": False, 
+                "error": f"Desteklenmeyen format: {doc_path}"
+            }
+        
+        # PROJECT_ROOT bazlı tam path
+        from modules.utils_env import get_project_root
+        project_root = get_project_root()
+        full_doc_path = os.path.join(project_root, doc_path)
+        
+        # Conversion işlemi
+        success, pdf_path, error = convert_docx_to_pdf(full_doc_path)
+        
+        if not success:
+            return {
+                "success": False,
+                "error": error
+            }
+        
+        # PDF path'ini relative path'e çevir (project_root'tan sonrası)
+        relative_pdf_path = os.path.relpath(pdf_path, project_root)
+        
+        # File server URL'ini oluştur
+        encoded_path = urllib.parse.quote(relative_pdf_path)
+        pdf_url = f"http://localhost:5001/api/files/{encoded_path}"
+        
+        return {
+            "success": True,
+            "pdf_url": pdf_url,
+            "pdf_path": relative_pdf_path,
+            "cached": os.path.exists(pdf_path),
+            "message": "PDF conversion successful"
+        }
+        
+    except Exception as e:
+        print(f"❌ DOCX to PDF conversion error: {e}")
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
 @app.route('/api/files/<path:file_path>')
 def serve_file(file_path):
     """

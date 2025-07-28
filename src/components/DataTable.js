@@ -295,7 +295,8 @@ const DataTable = ({ tableData, searchTerm, onCourseEdit, onDocumentView }) => {
                     className="dbf-link-btn"
                     title="DBF dosyasını görüntüle"
                   >
-                    📄 DBF
+                    📄 {row.dbf_url.toLowerCase().endsWith('.pdf') ? 'PDF' : 
+                        row.dbf_url.toLowerCase().endsWith('.docx') ? 'DOCX' : 'DBF'}
                   </button>
                 ) : ("-")}
               </td>

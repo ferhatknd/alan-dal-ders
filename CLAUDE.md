@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Bu dosya, Claude Code için MEB Mesleki Eğitim kaynaklarından aldığı belgelerle Ünitelendirilmiş Yıllık Plan Üretme Otomasyonunun kapsamlı kılavuzudur. Proje mantığını koruyarak her seferinde hata yapmaktan kaçınmak için tüm kritik bilgileri içerir.
 
-**Son Güncelleme**: 2025-07-28 (Frontend Reorganizasyonu tamamlandı - modüler bileşen sistemi)
+**Son Güncelleme**: 2025-07-28 (Frontend UI/UX İyileştirmeleri tamamlandı - PDF viewer, sidebar layout ve dropdown standardizasyonu)
 
 ## 🎯 Proje Genel Bakış
 
@@ -97,14 +97,24 @@ Alan (Area) → Dal (Field) → Ders (Course) → Öğrenme Birimi (Learning Uni
 - **`modules/utils_file_management.py`** - Dosya işlemleri modülü, **ortak alan dosya sistemi**, **duplicate dosya yönetimi** ve **arşiv işlemleri**
 - **`modules/utils_stats.py`** -  İstatistik ve monitoring fonksiyonları
 - **`modules/utils_env.py`** - Environment variable yönetimi, PROJECT_ROOT desteği, çoklu bilgisayar uyumluluğu
+- **`modules/utils_docx_to_pdf.py`** - ⭐ **YENİ 2025-07-28**: DOC/DOCX to PDF conversion modülü, same directory caching, PyMuPDF unified processing
 
-### 🌐 Frontend Dosyaları 
+### 🌐 Frontend Dosyaları ⭐ **UI/UX İYİLEŞTİRMELERİ TAMAMLANDI**
 - **`src/App.js`** - Ana layout ve API bağlantıları, workflow yönetimi
 - **`src/App.css`** - Ana layout ve workflow stilleri
-- **`src/components/DataTable.js`** - Tablo yönetimi bileşeni (filtreleme, sıralama, arama)
+- **`src/components/DataTable.js`** - ⭐ **YENİ**: Tablo yönetimi bileşeni (filtreleme, sıralama, arama) + DBF button file type detection (PDF/DOCX/DBF)
 - **`src/components/DataTable.css`** - Tablo ile ilgili tüm stiller
-- **`src/components/CourseEditor.js`** - Sidebar ve document viewer bileşeni (split-screen, PDF görüntüleme)
-- **`src/components/CourseEditor.css`** - Sidebar ve document viewer stilleri
+- **`src/components/CourseEditor.js`** - ⭐ **KAPSAMLI YENİLEME**: Sidebar ve document viewer bileşeni 
+  - **Split-screen PDF viewer** (PDF sol, editor sağ)
+  - **Flexible sidebar width** (course name length bazlı, max 50% viewport)
+  - **Unified dropdown system** (COP ve DBF dropdowns)
+  - **PDF/DOCX document viewer** (PDF native viewer + DOCX→PDF conversion with cache)
+  - **Header layout redesign** (course name + DBF toggle button)
+- **`src/components/CourseEditor.css`** - ⭐ **KAPSAMLI YENİLEME**: Sidebar ve document viewer stilleri
+  - **MaterialUI-style dropdowns** (unified CSS classes)
+  - **Flexible sidebar styling** (dynamic width calculations)
+  - **Split-screen layout** (resize handle, responsive design)
+  - **Document viewer styling** (loading states, error handling)
 - **`package.json`** - Node.js bağımlılıkları ve scriptler
 - **`src/index.js`** - React uygulaması entry point
 - **`src/setupProxy.js`** - CORS proxy ayarları
@@ -342,6 +352,47 @@ temel_plan_ders_dal
 
 ## 🔄 Son Güncelleme Detayları - 2025-07-28
 
+### ✅ Frontend UI/UX İyileştirmeleri Tamamlandı:
+
+1. **PDF Viewer Loading Sorunu Çözüldü**:
+   - **Problem**: PDF viewer "Belge yükleniyor..." durumunda takılı kalıyordu, PDF dosyaları açılmıyordu
+   - **Çözüm**: `DocumentViewer` component'inde loading state yönetimi düzeltildi, PDF için loading disabled
+   - **Sonuç**: PDF dosyaları anında yüklenir ve görüntülenir ✅
+
+2. **Split-Screen Layout Sistemi**:
+   - **Layout Değişikliği**: PDF viewer sol panel, course editor sağ panel konumlandırması
+   - **Resize Handle**: Manuel olarak panel genişliklerini ayarlama özelliği
+   - **Responsive Design**: Mobil cihazlarda dikey layout'a geçiş ✅
+
+3. **Flexible Sidebar Width Sistemi**:
+   - **Dynamic Width**: Course name uzunluğuna göre sidebar genişliği otomatik ayarlanır
+   - **Viewport Constraint**: Maximum %50 viewport genişliği sınırı
+   - **CSS Calculation**: `width: min(${baseWidth}px, 50vw)` formülü ile hesaplama ✅
+
+4. **Unified Dropdown System**:
+   - **COP Dropdown**: ÇÖP PDF'lerini seçme sistemi (JSON URL parsing ile)
+   - **DBF Dropdown**: Alan-level DBF RAR dosyalarını açma sistemi
+   - **MaterialUI Style**: Unified CSS classes (.dropdown-container, .dropdown-toggle, .dropdown-menu, .dropdown-item)
+   - **Height Matching**: 56px MaterialTextField height standardı ✅
+
+5. **Header Layout Redesign**:
+   - **Course Name Display**: Flexible width ile course name tam görünür
+   - **DBF Toggle Button**: "DBF:PDF" veya "DBF:DOCX" formatında dosya tipi gösterimi
+   - **Toggle Functionality**: PDF açık/kapalı duruma göre buton davranışı ✅
+
+6. **Document Viewer Geliştirmeleri**:
+   - **PDF Support**: Native iframe ile PDF görüntüleme
+   - **DOCX Support**: ⭐ **YENİ**: PyMuPDF ile DOCX→PDF conversion + same directory caching
+   - **DOC Support**: ⭐ **YENİ**: .doc dosyaları da desteklenir (unified processing)
+   - **Cache System**: ⭐ **YENİ**: Converted PDF'ler aynı dizinde `_converted.pdf` suffix ile saklanır
+   - **File Type Detection**: URL extension bazlı (.pdf, .docx, .doc) dosya tipi tespiti
+   - **Error Handling**: Loading timeouts, error states, fallback mechanisms ✅
+
+7. **DataTable File Type Integration**:
+   - **Dynamic Button Text**: DBF sütununda "📄 PDF", "📄 DOCX", "📄 DBF" dynamic text
+   - **File Extension Detection**: `row.dbf_url.toLowerCase().endsWith()` ile tespit
+   - **Consistent UI**: Tüm file type butonları aynı styling ✅
+
 ### ✅ Environment Variable Sistemi Eklendi:
 
 1. **Çoklu Bilgisayar Desteği**:
@@ -438,6 +489,9 @@ temel_plan_ders_dal
 
 ### 📈 İstatistik ve Monitoring
 - **`GET /api/get-statistics`** - Gerçek zamanlı sistem istatistikleri
+
+### 🔄 Document Conversion Operations ⭐ **YENİ 2025-07-28**
+- **`POST /api/convert-docx-to-pdf`** - DOC/DOCX dosyalarını PDF'e çevirir (cache-aware, same directory storage)
 
 ### 🔄 PDF ve DBF İşleme Operasyonları
 - **`GET /api/dbf-download-extract`** - ⭐ **ESKİ SİSTEM**: DBF dosyalarını toplu indir ve aç (SSE) - Artık manuel unzip kullanılıyor
@@ -585,6 +639,92 @@ dbf_json = get_output_json_path("get_dbf.json")  # PROJECT_ROOT/data/get_dbf.jso
 - **⭐ KORUNAN**: Pattern Matching - "1. " veya "1 " kullanın, basit find() değil
 - **⭐ YENİ 2025-07-26**: Simple String Matching sistemi - case-insensitive `.upper()` kullanın
 - **⭐ YENİ 2025-07-27**: `komutlar()` → `get_all_dbf_files()` - API sistemi optimize
+- **⭐ YENİ 2025-07-28**: Frontend UI/UX İyileştirmeleri - PDF viewer loading fix, split-screen layout, flexible sidebar, unified dropdowns, header redesign
+
+### 📱 Frontend UI/UX Kuralları ⭐ **YENİ 2025-07-28**
+
+#### **1. PDF Viewer Loading Management**
+- **ASLA** `setPdfLoading(true)` kullanıp false yapmayı unutma
+- **MUTLAKA** PDF dosyaları için loading state'i disable et:
+  ```javascript
+  // ✅ Doğru - PDF için loading disabled
+  useEffect(() => {
+    if (pdfUrl && fileType === 'pdf') {
+      setPdfLoading(false); // PDF için loading disable
+    }
+  }, [pdfUrl]);
+  
+  // ❌ Yanlış - Loading state takılı kalır
+  useEffect(() => {
+    setPdfLoading(true); // Asla false yapılmıyor!
+  }, [pdfUrl]);
+  ```
+
+#### **2. COP URL JSON Parsing**
+- **ASLA** COP URLs'lerinin string olduğunu varsayma
+- **MUTLAKA** object/string type checking yap:
+  ```javascript
+  // ✅ Doğru - Type-safe URL parsing
+  const actualUrl = typeof urlData === 'object' && urlData.url ? urlData.url : urlData;
+  
+  // ❌ Yanlış - "fileUrl.split is not a function" hatası
+  const parts = fileUrl.split('/'); // fileUrl object olabilir!
+  ```
+
+#### **3. Flexible Sidebar Width**
+- **ASLA** fixed width kullanma
+- **MUTLAKA** course name length bazlı dynamic width:
+  ```javascript
+  // ✅ Doğru - Dynamic width calculation
+  const baseWidth = Math.max(400, Math.min(charCount * 8 + 200, 800));
+  return { width: `min(${baseWidth}px, 50vw)` };
+  
+  // ❌ Yanlış - Fixed width
+  return { width: '400px' }; // Course name kesik görünür
+  ```
+
+#### **4. Unified Dropdown CSS Classes**
+- **ASLA** farklı dropdown'lar için farklı CSS classes kullanma
+- **MUTLAKA** unified classes kullan:
+  ```css
+  /* ✅ Doğru - Unified classes */
+  .dropdown-container { /* shared styles */ }
+  .dropdown-toggle { height: 56px; /* MaterialTextField match */ }
+  .dropdown-menu { /* shared styles */ }
+  .dropdown-item { /* shared styles */ }
+  
+  /* ❌ Yanlış - Farklı classes */
+  .cop-dropdown-container { /* COP specific */ }
+  .dbf-dropdown-container { /* DBF specific */ }
+  ```
+
+#### **5. File Type Detection**
+- **ASLA** hardcoded file extensions kontrolü yapma
+- **MUTLAKA** lowercase + endsWith pattern kullan:
+  ```javascript
+  // ✅ Doğru - Safe file type detection
+  const fileType = url.toLowerCase().endsWith('.pdf') ? 'PDF' : 
+                   url.toLowerCase().endsWith('.docx') ? 'DOCX' : 'DBF';
+  
+  // ❌ Yanlış - Case sensitive veya indexOf
+  const fileType = url.includes('.PDF') ? 'PDF' : 'DBF'; // .pdf miss eder
+  ```
+
+#### **6. DOCX Viewer Localhost Limitation**
+- **ASLA** DOCX dosyaları için Google Docs Viewer ile localhost URL kullanma
+- **MUTLAKA** download interface provide et:
+  ```javascript
+  // ✅ Doğru - DOCX için download interface
+  return (
+    <div style={{ textAlign: 'center' }}>
+      <a href={url} download>📥 Dosyayı İndir</a>
+      <button onClick={() => window.open(url, '_blank')}>🔗 Yeni Sekmede Aç</button>
+    </div>
+  );
+  
+  // ❌ Yanlış - Google Docs Viewer localhost'ta çalışmaz
+  <iframe src={`https://docs.google.com/viewer?url=${url}`} />
+  ```
 
 ## 📄 Lisans
 
