@@ -2,9 +2,9 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## 🤖 MEB Mesleki Eğitim Veri İşleme Projesi - Birleşik Kılavuz
+## 🤖 MEB Ünitelendirilmiş Yıllık Plan Üretme Otomasyonu - Birleşik Kılavuz
 
-Bu dosya, Claude Code için MEB Mesleki Eğitim Veri İşleme ve Veritabanı Projesinin kapsamlı birleşik kılavuzudur. README.md, is_akisi.md ve teknik detayların tümünü içerir. Proje mantığını koruyarak her seferinde hata yapmaktan kaçınmak için tüm kritik bilgileri içerir.
+Bu dosya, Claude Code için MEB Mesleki Eğitim kaynaklarından aldığı belgelerle Ünitelendirilmiş Yıllık Plan Üretme Otomasyonunun kapsamlı kılavuzudur. Proje mantığını koruyarak her seferinde hata yapmaktan kaçınmak için tüm kritik bilgileri içerir.
 
 **Son Güncelleme**: 2025-07-28 (Frontend Reorganizasyonu tamamlandı - modüler bileşen sistemi)
 
@@ -38,33 +38,11 @@ npm test
 
 **Environment Setup (Çoklu Bilgisayar Desteği):**
 ```bash
-# 1. .env dosyasını kontrol et ve PROJECT_ROOT'u ayarla
-# İş bilgisayarı (mevcut):
-# PROJECT_ROOT=/Volumes/Dropbox2TB/Estherian Dropbox/Ferhat Kondakcı/github/alan-dal-ders
-
-# Ev bilgisayarı için örnek:
-# PROJECT_ROOT=C:\Users\YourName\Documents\GitHub\alan-dal-ders
-
-# 2. python-dotenv paketini yükle (yeni dependency)
-pip install python-dotenv
-
-# 3. Sunucuyu başlat
-python server.py  # İlk çalıştırmada otomatik setup
-```
-
-**Ortak Geliştirme Komutları:**
-```bash
-# always use single responsibility principle when creating new method
-
-# Test debugging
-python test.py  # DBF PDF analizi için
-
-# Proje yapısını kontrol et
-ls -la data/  # Veri dosyalarını görüntüle
-```
+# 1. .env dosyasını kontrol et ve PROJECT_ROOT'u ayarlama örneği:
+# PROJECT_ROOT=/Users/ferhat/Library/Mobile Documents/com~apple~CloudDocs/Projeler/ProjectDogru/repos/alan-dal-ders
 
 ### Ana Amaç
-Türkiye Cumhuriyeti Millî Eğitim Bakanlığı'na (MEB) bağlı Mesleki ve Teknik Eğitim Genel Müdürlüğü'nün web sitesinden (`meslek.meb.gov.tr`) mesleki eğitim verilerini otomatik olarak çeker, işler ve SQLite veritabanında yapılandırılmış şekilde saklar.
+Türkiye Cumhuriyeti Millî Eğitim Bakanlığı'na (MEB) bağlı Mesleki ve Teknik Eğitim Genel Müdürlüğü'nün web sitesinden (`meslek.meb.gov.tr`) mesleki eğitim verilerini otomatik olarak çeker, işler ve SQLite veritabanında yapılandırılmış şekilde saklar. Bu yapılandırılmış veri tabanı https://github.com/dogrucevap/node-yillikplan adresinde reposu bulunan ve https://plan.dogru.app adresinde online yayında olan projenin yıllık plan arşivini oluşturur. 
 
 ### Sistem Mimarisi
 **3 Katmanlı Sistem:**
@@ -106,26 +84,26 @@ Alan (Area) → Dal (Field) → Ders (Course) → Öğrenme Birimi (Learning Uni
 
 ### 📊 Backend Modülleri (modules/ klasörü)
 - **`modules/oku_dbf.py`** - ⭐ **DBF Koordinatörü**: PDF okuma işlemleri utils_oku_dbf.py'ye taşındı, sadece koordinasyon ve veritabanı entegrasyonu yapar
-- **`modules/utils_oku_dbf.py`** - ⭐ **YENİ MODÜL**: DBF PDF okuma fonksiyonları (extract_olcme.py'den kopyalandı, 48.4% başarı oranı)
-- **`modules/get_dbf.py`** - ⭐ **STANDARDİZE**: `get_dbf()` fonksiyonu ile DBF verilerini çeker, RAR/ZIP indirir (açmaz), `data/get_dbf.json` üretir ve `dbf_urls` sütununa JSON kaydeder
-- **`test_unzip.py`** - ⭐ **YENİ AYIRIM**: DBF RAR/ZIP dosyalarını açan standalone script, `modules.utils_file_management.extract_archive` kullanır
-- **`modules/get_cop.py`** - ⭐ **STANDARDİZE**: `get_cop()` fonksiyonu ile ÇÖP verilerini çeker, PDF indirir (açmaz), `data/get_cop.json` üretir ve `cop_url` sütununa JSON kaydeder
-- **`modules/oku_cop.py`** - ⭐ **YENİ**: COP PDF parsing ve analiz modülü - Tamamen yeniden yazıldı
-- **`modules/get_dm.py`** - Ders Materyalleri (DM) verilerini çeker
-- **`modules/get_bom.py`** - Bireysel Öğrenme Materyalleri (BÖM) verilerini çeker
+- **`modules/utils_oku_dbf.py`** - DBF PDF okuma fonksiyonları (extract_olcme.py'den kopyalandı, 48.4% başarı oranı)
+- **`modules/get_dbf.py`** - `get_dbf()` fonksiyonu ile DBF verilerini çeker, RAR/ZIP indirir (açmaz), `data/get_dbf.json` üretir ve `dbf_urls` sütununa JSON kaydeder
+- **`test_unzip.py`** - ⭐ **GEÇİCİ AYIRIM**: DBF RAR/ZIP dosyalarını açan standalone script, `modules.utils_file_management.extract_archive` kullanır
+- **`modules/get_cop.py`** - `get_cop()` fonksiyonu ile ÇÖP verilerini çeker, PDF indirir (açmaz), `data/get_cop.json` üretir ve `cop_url` sütununa JSON kaydeder
+- **`modules/oku_cop.py`** - COP PDF parsing ve analiz modülü - Tamamen yeniden yazıldı
+- **`modules/get_dm.py`** - Ders Materyalleri (DM) verilerini çeker - Sonra geliştirilecek
+- **`modules/get_bom.py`** - Bireysel Öğrenme Materyalleri (BÖM) verilerini çeker - Sonra geliştirilecek
 - **`modules/get_dal.py`** - Alan-Dal ilişkilerini çeker
-- **`modules/utils_normalize.py`** - ⭐ **YENİ AYIRIM**: String normalizasyon fonksiyonları, Türkçe karakter normalizasyonu (eski utils.py'den ayrıştırıldı)
-- **`modules/utils_database.py`** - ⭐ **YENİ**: Veritabanı işlemleri modülü, **database connection decorators**, **MEB ID yönetimi** ve **CRUD operasyonları**
-- **`modules/utils_file_management.py`** - ⭐ **YENİ**: Dosya işlemleri modülü, **ortak alan dosya sistemi**, **duplicate dosya yönetimi** ve **arşiv işlemleri**
-- **`modules/utils_stats.py`** - ⭐ **YENİ AYIRIM**: İstatistik ve monitoring fonksiyonları (utils_database.py'den ayrıştırıldı)
-- **`modules/utils_env.py`** - ⭐ **YENİ 2025-07-28**: Environment variable yönetimi, PROJECT_ROOT desteği, çoklu bilgisayar uyumluluğu
+- **`modules/utils_normalize.py`** - : String normalizasyon fonksiyonları, Türkçe karakter normalizasyonu
+- **`modules/utils_database.py`** - Veritabanı işlemleri modülü, **database connection decorators**, **MEB ID yönetimi** ve **CRUD operasyonları**
+- **`modules/utils_file_management.py`** - Dosya işlemleri modülü, **ortak alan dosya sistemi**, **duplicate dosya yönetimi** ve **arşiv işlemleri**
+- **`modules/utils_stats.py`** -  İstatistik ve monitoring fonksiyonları
+- **`modules/utils_env.py`** - Environment variable yönetimi, PROJECT_ROOT desteği, çoklu bilgisayar uyumluluğu
 
-### 🌐 Frontend Dosyaları ⭐ **MODÜLER SİSTEM**
-- **`src/App.js`** - ⭐ **REORGANIZE**: Ana layout ve API bağlantıları, workflow yönetimi
+### 🌐 Frontend Dosyaları 
+- **`src/App.js`** - Ana layout ve API bağlantıları, workflow yönetimi
 - **`src/App.css`** - Ana layout ve workflow stilleri
-- **`src/components/DataTable.js`** - ⭐ **YENİ**: Tablo yönetimi bileşeni (filtreleme, sıralama, arama)
+- **`src/components/DataTable.js`** - Tablo yönetimi bileşeni (filtreleme, sıralama, arama)
 - **`src/components/DataTable.css`** - Tablo ile ilgili tüm stiller
-- **`src/components/CourseEditor.js`** - ⭐ **YENİ**: Sidebar ve document viewer bileşeni (split-screen, PDF görüntüleme)
+- **`src/components/CourseEditor.js`** - Sidebar ve document viewer bileşeni (split-screen, PDF görüntüleme)
 - **`src/components/CourseEditor.css`** - Sidebar ve document viewer stilleri
 - **`package.json`** - Node.js bağımlılıkları ve scriptler
 - **`src/index.js`** - React uygulaması entry point
@@ -135,19 +113,17 @@ Alan (Area) → Dal (Field) → Ders (Course) → Öğrenme Birimi (Learning Uni
 ### 🗂️ Veri ve Veritabanı
 - **`data/temel_plan.db`** - SQLite veritabanı dosyası ⭐ **UPDATED**: PROJECT_ROOT env variable bazlı path
 - **`data/schema.sql`** - Veritabanı schema dosyası ⭐ **UPDATED**: PROJECT_ROOT env variable bazlı path
-- **`data/get_cop.json`** - ⭐ **UPDATED**: COP verilerinin JSON çıktısı (env aware path)
-- **`data/get_dbf.json`** - ⭐ **UPDATED**: DBF verilerinin JSON çıktısı (env aware path)
-- **`data/get_dm.json`** - ⭐ **UPDATED**: DM verilerinin JSON çıktısı (env aware path)
-- **`.env`** - ⭐ **YENİ 2025-07-28**: Environment variables (PROJECT_ROOT tanımı)
+- **`data/get_cop.json`** - COP verilerinin JSON çıktısı (env aware path)
+- **`data/get_dbf.json`** - DBF verilerinin JSON çıktısı (env aware path)
+- **`data/get_dm.json`** - DM verilerinin JSON çıktısı (env aware path)
+- **`.env`** - Environment variables (PROJECT_ROOT tanımı)
 - **`data/`** - JSON cache dosyaları, veritabanı ve schema dosyaları ⭐ **UPDATED**: Tüm path'ler PROJECT_ROOT bazlı
   - `dbf/` - İndirilen DBF dosyaları (alan klasörleri halinde)
   - `cop/` - ÇÖP PDF dosyaları
-  - `dm/` - Ders Materyali dosyaları ⭐ **YENİ**: `00_Ortak_Alan_Dersleri` klasörü ile duplicate dosya yönetimi
+  - `dm/` - Ders Materyali dosyaları `00_Ortak_Alan_Dersleri` klasörü ile duplicate dosya yönetimi
   - `bom/` - BÖM dosyaları
 
 ### 🐛 Debug ve Test Araçları
-- **`test.py`** - DBF PDF tablo yapısını detaylı analiz eden debug script
-- **`extract_olcme.py`** - ⭐ **2025-07-26 GÜNCELLEME**: DBF PDF analiz ve başlık eşleştirme test script'i  
   - **Simple String Matching**: BERT/Semantic sistemi kaldırıldı, basit case-insensitive string matching kullanır
   - **Pattern Matching**: Madde numaraları için "1. " veya "1 " pattern'i kullanır
   - **PyMuPDF**: PDF okuma işlemleri PyPDF2'den PyMuPDF'e dönüştürüldü
@@ -613,177 +589,3 @@ dbf_json = get_output_json_path("get_dbf.json")  # PROJECT_ROOT/data/get_dbf.jso
 ## 📄 Lisans
 
 Bu proje MIT Lisansı altında lisanslanmıştır.
-
----
-
-🔗 **MEB Kaynak:** https://meslek.meb.gov.tr/  
-📧 **Destek:** Projeyle ilgili sorular için issue açabilirsiniz
-
-📊 **Bu CLAUDE.md dosyası, projenin tüm kritik bilgilerini içerir ve Claude Code'un tutarlı çalışması için tasarlanmıştır.**
-
-## 🗺️ DBF İşleme Migration Yol Haritası - 2025-07-27
-
-### 🎯 Migration Hedefi
-`extract_olcme.py` dosyasındaki başarılı fonksiyonları `modules/oku_dbf.py` modülüne entegre etmek ve relasyonel veritabanı yapısına uygun hale getirmek.
-
-### 📊 Mevcut Başarı Oranları (dbf_isleme_istatistik.py ile doğrulandı)
-- **585 TAM EŞLEŞME** (48.4% başarı oranı)
-- **1,164 toplam başlık eşleşmesi** olan dosya
-- **2,407 toplam işlenen dosya**
-
-### 🔄 Migration Fazları
-
-#### **Faz 1: Core Function Integration**
-**Target**: `extract_olcme.py` → `modules/oku_dbf.py`
-```python
-# Entegre edilecek fonksiyonlar:
-- ex_kazanim_tablosu() → DBFExtractor.extract_kazanim_tablosu()
-- extract_ob_tablosu() → DBFExtractor.extract_ogrenme_birimleri()
-- ex_temel_bilgiler() → DBFExtractor.extract_course_info()
-- normalize_turkish_text() → utils_normalize.py'den kullan
-```
-
-**✅ Migration Prensipleri:**
-- PyMuPDF unified processing (mevcut)
-- Simple string matching (case-insensitive `.upper()`)
-- Pattern matching: "1. " veya "1 " kullanımı
-- File integrity validation
-
-#### **Faz 1.5: String Parsing & Hierarchy**
-**Target**: String tabanlı verileri relasyonel yapıya dönüştürme
-```python
-# Hedef parsing sistemi:
-"1. Öğrenme Birimi Adı" → temel_plan_ogrenme_birimi table
-"  1.1. Konu Adı" → temel_plan_konu table  
-"    1.1.1. Kazanım açıklaması" → temel_plan_kazanim table
-
-# Parser fonksiyonları:
-- parse_ob_hierarchy() - Öğrenme birimi ayrıştırma
-- parse_konu_items() - Konu maddeleri ayrıştırma
-- parse_kazanim_items() - Kazanım maddeleri ayrıştırma
-```
-
-#### **Faz 2: Database Integration** 
-**Target**: Relasyonel veritabanı kaydetme sistemi
-```python
-# utils_database.py prensipleri ile:
-@with_database
-def save_dbf_data_relational(cursor, course_data):
-    # 1. Course name resolution via COP integration
-    course_name = resolve_course_name_from_cop(course_data['ders_adi'])
-    
-    # 2. INSERT OR IGNORE pattern (ders_adi unique key)
-    cursor.execute("INSERT OR IGNORE INTO temel_plan_ders (ders_adi, ...) VALUES (?, ...)", 
-                   (course_name, ...))
-    
-    # 3. Foreign key hierarchy: Ders → OB → Konu → Kazanım
-    for ob in course_data['ogrenme_birimleri']:
-        ob_id = insert_or_get_ob(cursor, ders_id, ob)
-        for konu in ob['konular']:
-            konu_id = insert_or_get_konu(cursor, ob_id, konu)
-            for kazanim in konu['kazanimlar']:
-                insert_kazanim(cursor, konu_id, kazanim)
-```
-
-#### **Faz 3: COP Integration**
-**Target**: `modules/oku_cop.py` ile ders adı çözümleme
-```python
-from modules.oku_cop import resolve_course_name_from_cop
-
-# Ders adı resolution sistemi:
-def resolve_course_name_from_cop(dbf_course_name):
-    """
-    DBF'teki ders adını COP verilerinden normalize edilmiş 
-    ders adı ile eşleştir
-    """
-    # COP veritabanından eşleşen ders adını bul
-    # INSERT OR IGNORE için unique key olarak kullan
-    return normalized_course_name
-```
-
-#### **Faz 4: API Enhancement**
-**Target**: Mevcut `/api/oku-dbf` endpoint'ini geliştirme (YENİ ENDPOINT YARATMIYORUZ)
-```python
-@app.route('/api/oku-dbf')
-@with_database_json
-def oku_dbf_enhanced(cursor):
-    """
-    Mevcut endpoint'i enhancement:
-    1. extract_olcme.py fonksiyonlarını kullan
-    2. Relasyonel DB kaydetme yap
-    3. COP integration ile ders adı çözümle
-    4. SSE ile progress tracking
-    """
-    # Mevcut API pattern'i koruyarak enhancement
-```
-
-#### **Faz 5: Testing & Validation**
-**Target**: Migration doğrulama sistemi
-```python
-# Test senaryoları:
-1. 585 TAM EŞLEŞME dosyasının doğru parse edilmesi
-2. Relasyonel veri bütünlüğü kontrolü
-3. COP integration doğrulaması
-4. Performance karşılaştırması (eski vs yeni sistem)
-```
-
-### 🔧 Teknik Implementation Detayları
-
-#### **Database Schema Updates**
-```sql
--- Gerekli yeni sütunlar/tablolar:
-ALTER TABLE temel_plan_ders ADD COLUMN dbf_processed_at TIMESTAMP;
-ALTER TABLE temel_plan_ders ADD COLUMN processing_method TEXT; -- 'extract_olcme' vs 'legacy'
-
--- Foreign key integrity:
-temel_plan_ders (ders_adi UNIQUE) ← temel_plan_ogrenme_birimi.ders_id
-temel_plan_ogrenme_birimi.id ← temel_plan_konu.ogrenme_birimi_id  
-temel_plan_konu.id ← temel_plan_kazanim.konu_id
-```
-
-#### **Migration Safety**
-```python
-# Backward compatibility:
-- Mevcut oku_dbf.py fonksiyonları deprecated olarak işaretle
-- extract_olcme.py fonksiyonları side-by-side çalışsın
-- Gradual migration: dosya dosya geçiş yapılabilir
-- Rollback capability: eski sisteme dönüş mümkün olsun
-
-# Error handling:
-- File corruption detection (mevcut)
-- Parse error recovery
-- Database transaction rollback
-- Progress tracking ve resume capability
-```
-
-### 🎯 Success Metrics
-1. **585 perfect match dosyasının %100'ü başarılı işlenmeli**
-2. **Relasyonel data integrity %100 korunmalı** 
-3. **COP integration ile course name resolution %95+ başarı**
-4. **Processing speed: Current system ile aynı veya daha hızlı**
-5. **API backward compatibility: Mevcut frontend çalışmaya devam etmeli**
-
-### 📋 Implementation Order
-```
-✅ Faz 1: Core Function Integration (Priority: HIGH)
-✅ Faz 1.5: String Parsing & Hierarchy (Priority: HIGH)  
-✅ Faz 2: Database Integration (Priority: HIGH)
-✅ Faz 3: COP Integration (Priority: MEDIUM)
-✅ Faz 4: API Enhancement (Priority: MEDIUM)
-✅ Faz 5: Testing & Validation (Priority: MEDIUM)
-```
-
-### 🔗 Dependencies
-- `modules/utils_database.py` - Database decorators ve CRUD
-- `modules/utils_normalize.py` - String normalization
-- `modules/oku_cop.py` - Course name resolution
-- `extract_olcme.py` - Source functions (migration source)
-- `dbf_isleme_istatistik.py` - Success validation tool
-
-**🎯 Bu roadmap, user feedback'i doğrultusunda mevcut `/api/oku-dbf` endpoint'ini enhance etmeyi, COP integration yapmayı ve INSERT OR IGNORE pattern'ini kullanmayı hedefler.**
-
-## Uygulama Mimarisi Notları
-
-### Yeni Standart Kurallar
-
-- **UYGULAMA** kelimesinin tamamı büyük harfle yazılmalıdır, diğer tüm stop words'lerde olduğu gibi.

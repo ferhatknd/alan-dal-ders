@@ -186,7 +186,14 @@ const DocumentViewer = ({ url, title, onLoad, onError, loading, error }) => {
     
     const fileType = detectFileType(url);
     setViewerType(fileType);
-    setInternalLoading(true);
+    
+    // For PDF, never show loading since server is confirmed working
+    if (fileType === 'pdf') {
+      setInternalLoading(false);
+    } else {
+      setInternalLoading(true);
+    }
+    
     setDebugInfo(`Dosya tipi: ${fileType}, URL: ${url}`);
     
     console.log('📄 DocumentViewer - Dosya tipi:', fileType);
@@ -196,15 +203,18 @@ const DocumentViewer = ({ url, title, onLoad, onError, loading, error }) => {
       clearTimeout(loadTimer);
     }
     
-    // Auto-hide loading after timeout based on file type
-    const timeout = fileType === 'docx' ? 8000 : 3000; // DOCX longer timeout
-    const timer = setTimeout(() => {
-      console.log('⏰ Loading timeout reached, showing content anyway');
-      setInternalLoading(false);
-      setDebugInfo(prev => prev + ' | Timeout reached');
-    }, timeout);
-    
-    setLoadTimer(timer);
+    // Only set timeout for non-PDF files
+    let timer = null;
+    if (fileType !== 'pdf') {
+      const timeout = fileType === 'docx' ? 8000 : 3000;
+      timer = setTimeout(() => {
+        console.log('⏰ Loading timeout reached, showing content anyway');
+        setInternalLoading(false);
+        setDebugInfo(prev => prev + ' | Timeout reached');
+      }, timeout);
+      
+      setLoadTimer(timer);
+    }
     
     return () => {
       if (timer) clearTimeout(timer);
@@ -222,10 +232,20 @@ const DocumentViewer = ({ url, title, onLoad, onError, loading, error }) => {
   const handleError = (e) => {
     console.log('❌ Document loading error:', e);
     setInternalLoading(false);
-    setDebugInfo(prev => prev + ' | Error');
+    setDebugInfo(prev => prev + ' | Error: ' + (e?.message || 'Unknown'));
     if (loadTimer) clearTimeout(loadTimer);
     onError && onError();
   };
+
+  // Immediate loading skip for PDF - since server is working
+  useEffect(() => {
+    if (url && viewerType === 'pdf') {
+      // For PDF, disable loading immediately since we tested server works
+      console.log('🚀 PDF immediate load - disabling loading state completely');
+      setInternalLoading(false);
+      setDebugInfo(prev => prev + ' | No loading');
+    }
+  }, [url, viewerType]);
 
   const renderViewer = () => {
     // Show loading only if explicitly loading from parent OR internal loading is true
@@ -265,39 +285,55 @@ const DocumentViewer = ({ url, title, onLoad, onError, loading, error }) => {
 
     switch (viewerType) {
       case 'pdf':
+        // DEBUG: Step by step logging
+        console.log('🔍 PDF RENDER DEBUG:');
+        console.log('  Original URL:', url);
+        console.log('  URL encoded:', encodeURIComponent(url));
+        console.log('  showLoading:', showLoading);
+        console.log('  internalLoading:', internalLoading);
+        console.log('  loading prop:', loading);
+        
+        // Basit iframe ile debug
         return (
-          <object
-            data={url}
-            type="application/pdf"
-            className="document-viewer-frame"
-            onLoad={handleLoad}
-            onError={handleError}
-            title={title}
-            style={{ width: '100%', height: '100%' }}
-          >
-            <div style={{padding: '20px', textAlign: 'center'}}>
-              <p>PDF görüntülenemiyor.</p>
-              <p style={{fontSize: '12px', color: '#666', marginBottom: '16px'}}>
-                URL: {url}
-              </p>
-              <a 
-                href={url} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                style={{
-                  display: 'inline-block',
-                  padding: '10px 20px',
-                  backgroundColor: '#007bff',
-                  color: 'white',
-                  textDecoration: 'none',
-                  borderRadius: '4px',
-                  marginTop: '10px'
-                }}
-              >
-                📄 Dosyayı Yeni Sekmede Aç
-              </a>
+          <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ padding: '8px', background: '#f0f0f0', fontSize: '12px', color: '#666' }}>
+              PDF DEBUG | showLoading: {showLoading ? 'YES' : 'NO'} | internalLoading: {internalLoading ? 'YES' : 'NO'}
             </div>
-          </object>
+            <div style={{ padding: '8px', background: '#fff3cd', fontSize: '11px', color: '#856404' }}>
+              URL Test: <a href={url} target="_blank" rel="noopener noreferrer">Direct Link Test</a>
+            </div>
+            {showLoading ? (
+              <div style={{ 
+                flex: 1, 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                flexDirection: 'column',
+                background: '#f8f9fa'
+              }}>
+                <div style={{ fontSize: '24px', marginBottom: '10px' }}>🔄</div>
+                <div>DEBUG: Loading state is TRUE</div>
+                <div style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>
+                  Check console for loading state details
+                </div>
+              </div>
+            ) : (
+              <iframe
+                src={url}
+                className="document-viewer-frame"
+                style={{ flex: 1, border: 'none' }}
+                title={title}
+                onLoad={() => {
+                  console.log('✅ IFRAME LOADED successfully');
+                  handleLoad();
+                }}
+                onError={(e) => {
+                  console.log('❌ IFRAME ERROR:', e);
+                  handleError(e);
+                }}
+              />
+            )}
+          </div>
         );
       
       case 'docx':
