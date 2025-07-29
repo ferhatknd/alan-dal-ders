@@ -95,8 +95,9 @@ Alan (Area) → Dal (Field) → Ders (Course) → Öğrenme Birimi (Learning Uni
   - ⭐ **YENİ**: Merkezi database connection decorator sistemi kullanıyor
 
 ### 📊 Backend Modülleri (modules/ klasörü)
-- **`modules/oku_dbf.py`** - ⭐ **DBF Koordinatörü**: PDF okuma işlemleri utils_oku_dbf.py'ye taşındı, sadece koordinasyon ve veritabanı entegrasyonu yapar
-- **`modules/utils_oku_dbf.py`** - DBF PDF okuma fonksiyonları (extract_olcme.py'den kopyalandı, 48.4% başarı oranı)
+- **`modules/oku_dbf.py`** - ⭐ **DBF Koordinatörü**: Sadece koordinasyon ve veritabanı entegrasyonu yapar
+- **`modules/utils_dbf1.py`** - ⭐ **YENİ MODÜLERİ**: Sayfa 1 işlemleri (temel bilgiler, kazanım tablosu, dosya okuma - fitz kullanılan tek yer)
+- **`modules/utils_dbf2.py`** - ⭐ **YENİ MODÜLERİ**: Sayfa 2+ işlemleri (öğrenme birimleri, konu analizi - fitz kullanmaz, text pass edilir)
 - **`modules/get_dbf.py`** - `get_dbf()` fonksiyonu ile DBF verilerini çeker, RAR/ZIP indirir (açmaz), `data/get_dbf.json` üretir ve `dbf_urls` sütununa JSON kaydeder
 - **`test_unzip.py`** - ⭐ **GEÇİCİ AYIRIM**: DBF RAR/ZIP dosyalarını açan standalone script, `modules.utils_file_management.extract_archive` kullanır
 - **`modules/get_cop.py`** - `get_cop()` fonksiyonu ile ÇÖP verilerini çeker, PDF indirir (açmaz), `data/get_cop.json` üretir ve `cop_url` sütununa JSON kaydeder
@@ -578,7 +579,7 @@ for message in get_dbf():
 
 ### DBF İşleme Sistemi ⭐ **YENİ**
 ```python
-from modules.utils_oku_dbf import get_all_dbf_files, process_dbf_file
+from modules.utils_dbf1 import get_all_dbf_files, process_dbf_file
 
 # Tüm DBF dosyalarını API sistemi için al
 all_files = get_all_dbf_files(validate_files=True)

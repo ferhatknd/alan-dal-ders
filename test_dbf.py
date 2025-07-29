@@ -23,12 +23,12 @@ project_root = os.path.dirname(os.path.abspath(__file__))
 if project_root not in sys.path:
     sys.path.append(project_root)
 
-from modules.utils_oku_dbf import (
+from modules.utils_dbf1 import (
     read_full_text_from_file,
     ex_temel_bilgiler,
-    ex_kazanim_tablosu,
-    ex_ob_tablosu
+    ex_kazanim_tablosu
 )
+from modules.utils_dbf2 import ex_ob_tablosu
 
 def find_files(search_term=None):
     """

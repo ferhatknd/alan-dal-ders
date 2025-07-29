@@ -123,7 +123,7 @@ def save_ogrenme_birimi_to_database(cursor, ders_id, structured_data):
    from modules.utils_dbf_parser import parse_ob_tablosu_output
    
    # ✅ Doğru - Mevcut fonksiyonu kullan  
-   from modules.utils_oku_dbf import ex_ob_tablosu
+   from modules.utils_dbf2 import ex_ob_tablosu
    ```
 2. `oku_dbf.py`'deki yanlış import'ları düzelt
 3. Database kayıt fonksiyonunu `oku_dbf.py`'ye entegre et

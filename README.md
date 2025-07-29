@@ -502,7 +502,7 @@ for message in get_dbf():
 
 ### DBF İşleme Sistemi ⭐ **YENİ**
 ```python
-from modules.utils_oku_dbf import get_all_dbf_files, process_dbf_file
+from modules.utils_dbf1 import get_all_dbf_files, process_dbf_file
 
 # Tüm DBF dosyalarını API sistemi için al
 all_files = get_all_dbf_files(validate_files=True)

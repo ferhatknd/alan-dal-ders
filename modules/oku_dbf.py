@@ -21,12 +21,12 @@ from typing import Dict, List, Any, Optional
 
 try:
     from .utils_database import with_database
-    from .utils_oku_dbf import get_all_dbf_files, process_dbf_file
+    from .utils_dbf1 import get_all_dbf_files, process_dbf_file
     from .utils_normalize import normalize_to_title_case_tr
 except ImportError:
     # Test ortamları veya bağımsız çalıştırma için
     from modules.utils_database import with_database
-    from modules.utils_oku_dbf import get_all_dbf_files, process_dbf_file
+    from modules.utils_dbf1 import get_all_dbf_files, process_dbf_file
     from modules.utils_normalize import normalize_to_title_case_tr
     
 

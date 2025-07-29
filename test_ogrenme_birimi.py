@@ -25,7 +25,8 @@ project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
 try:
-    from modules.utils_oku_dbf import process_dbf_file, get_all_dbf_files, ex_ob_tablosu
+    from modules.utils_dbf1 import process_dbf_file, get_all_dbf_files
+    from modules.utils_dbf2 import ex_ob_tablosu
     from modules.utils_database import with_database, find_or_create_database
     from modules.utils_normalize import normalize_to_title_case_tr
 except ImportError as e:
