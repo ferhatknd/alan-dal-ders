@@ -31,7 +31,7 @@ except ImportError:
 
 # Konu pattern'lerini doğrulama fonksiyonu - her konu için "1. ", "2. " gibi pattern'lerin varlığını kontrol eder
 # 1500 karakter sınırı ile hızlı arama yapar ve sıralı konu numaralarının bulunup bulunmadığını test eder
-def validate_konu_patterns(text, konu_sayisi, start_pos=0, search_limit=1500):
+def validate_konu_patterns(text, konu_sayisi, start_pos=0, search_limit=4000):
     """
     Belirtilen pozisyondan itibaren sıralı konu numaralarının varlığını kontrol eder
     
@@ -49,11 +49,27 @@ def validate_konu_patterns(text, konu_sayisi, start_pos=0, search_limit=1500):
     
     found_patterns = 0
     for rakam in range(1, konu_sayisi + 1):
-        patterns = [f"{rakam}. ", f"{rakam} "]
+        # Gelişmiş pattern listesi - daha fazla varyasyon
+        patterns = [
+            f"{rakam}. ",     # "1. Konu"
+            f"{rakam} ",      # "1 Konu"  
+            f"{rakam}.",      # "1.Konu" (boşluksuz)
+            f" {rakam}. ",    # " 1. Konu"
+            f" {rakam} ",     # " 1 Konu"
+            f" {rakam}.",     # " 1.Konu"
+            f"\n{rakam}. ",   # Satır başında
+            f"\n{rakam} ",    # Satır başında
+            f"\n{rakam}."     # Satır başında boşluksuz
+        ]
+        
+        found = False
         for pattern in patterns:
             if pattern in search_area:
-                found_patterns += 1
+                found = True
                 break
+        
+        if found:
+            found_patterns += 1
     
     return found_patterns == konu_sayisi
 
@@ -87,12 +103,13 @@ def find_baslik_matches(baslik, content_processor, start_pos=0):
 
 # Tablo sınırlarını çıkarma fonksiyonu - TOPLAM kelimesinden başlayarak öğrenme birimi tablosunun başlangıç/bitiş pozisyonlarını belirler
 # Multiple header pattern'leri destekler ve stop word'lerde durarak tablo alanını sınırlandırır
-def extract_table_boundaries(full_text):
+def extract_table_boundaries(full_text, kazanim_data=None):
     """
     TOPLAM kelimesinden başlayarak öğrenme birimi tablosunun sınırlarını belirler
     
     Args:
         full_text (str): Tam PDF metni
+        kazanim_data (list): Kazanım tablosu verisi (opsiyonel, daha akıllı sınır tespiti için)
         
     Returns:
         dict: {'start': int, 'end': int, 'content': str} tablo sınır bilgileri
@@ -126,13 +143,15 @@ def extract_table_boundaries(full_text):
     if earliest_header_idx < len(full_text_normalized_for_search):
         table_start = earliest_header_idx
     
-    # Tablo sonunu belirle (stop words)
-    stop_words = ["UYGULAMA", "FAALİYET", "TEMRİN", "DERSİN", "DERSĠN"]
+    # Tablo sonunu belirle
     table_end = len(full_text_normalized_for_search)
+    
+    # Stop word'leri ara (sınırsız arama - tablo başlangıcından sonra)
+    stop_words = ["UYGULAMA", "FAALİYET", "TEMRİN", "DERSİN", "DERSĠN"]
     
     for stop_word in stop_words:
         stop_word_normalized = normalize_turkish_text(stop_word)
-        stop_idx = full_text_normalized_for_search.find(stop_word_normalized, table_start + 100)
+        stop_idx = full_text_normalized_for_search.find(stop_word_normalized, table_start)
         if stop_idx != -1 and stop_idx < table_end:
             table_end = stop_idx
     
@@ -287,8 +306,8 @@ def ex_ob_tablosu(full_text):
         if not kazanim_tablosu_data:
             return "Kazanım tablosu bulunamadı - Öğrenme birimi çıkarma yapılamıyor"
         
-        # Tablo sınırlarını belirle
-        boundaries = extract_table_boundaries(full_text)
+        # Tablo sınırlarını belirle (kazanım data ile akıllı sınır tespiti)
+        boundaries = extract_table_boundaries(full_text, kazanim_tablosu_data)
         
         if not boundaries['content'].strip():
             return "Öğrenme birimi alanı bulunamadı"
@@ -396,7 +415,17 @@ def ex_ob_tablosu_konu_sinirli_arama(text, baslik_idx, baslik, konu_sayisi, all_
         
         for konu_no in range(1, konu_sayisi + 1):
             konu_str = str(konu_no)
-            patterns = [f"{konu_str}. ", f"{konu_str} "]
+            patterns = [
+                f"{konu_str}. ",     # "1. Konu"
+                f"{konu_str} ",      # "1 Konu"  
+                f"{konu_str}.",      # "1.Konu" (boşluksuz)
+                f" {konu_str}. ",    # " 1. Konu"
+                f" {konu_str} ",     # " 1 Konu"
+                f" {konu_str}.",     # " 1.Konu"
+                f"\n{konu_str}. ",   # Satır başında
+                f"\n{konu_str} ",    # Satır başında
+                f"\n{konu_str}."     # Satır başında boşluksuz
+            ]
             
             found_pos = -1
             used_pattern = ""
@@ -415,7 +444,17 @@ def ex_ob_tablosu_konu_sinirli_arama(text, baslik_idx, baslik, konu_sayisi, all_
             # Sonraki konu numarasına kadar olan metni al
             if konu_no < konu_sayisi:
                 next_konu_str = str(konu_no + 1)
-                next_patterns = [f"{next_konu_str}. ", f"{next_konu_str} "]
+                next_patterns = [
+                    f"{next_konu_str}. ",     # "2. Konu"
+                    f"{next_konu_str} ",      # "2 Konu"  
+                    f"{next_konu_str}.",      # "2.Konu" (boşluksuz)
+                    f" {next_konu_str}. ",    # " 2. Konu"
+                    f" {next_konu_str} ",     # " 2 Konu"
+                    f" {next_konu_str}.",     # " 2.Konu"
+                    f"\n{next_konu_str}. ",   # Satır başında
+                    f"\n{next_konu_str} ",    # Satır başında
+                    f"\n{next_konu_str}."     # Satır başında boşluksuz
+                ]
                 
                 next_found_pos = len(work_area)
                 for next_pattern in next_patterns:

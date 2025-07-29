@@ -1,35 +1,161 @@
-# DBF PDF İşleme Sistemi - Hiyerarşik Veri Çıkarma ve Database Entegrasyonu
+# DBF1 İlk Sayfa İşleme Sistemi - Temel Bilgiler ve Kazanım Tablosu
 
-Bu dokümantasyon `modules/utils_oku_dbf.py` dosyasındaki DBF PDF parsing sisteminin detaylı çalışma prensiplerini ve hedeflenen hiyerarşik veri çıkarma sistemini açıklar.
+## 📋 Genel Bakış
 
-## 🎯 HEDEF: Hiyerarşik Eğitim Veri Sistemi
+`modules/utils_dbf1.py` modülü, DBF PDF dosyalarının **1. sayfasındaki** temel ders bilgileri ve kazanım tablosunu çıkarmak için tasarlanmıştır. Bu modül **fitz kullanılan tek yerdir** ve diğer modüllere metin verisi sağlar.
 
-### Ana Amaç
-Türkiye MEB'e ait DBF PDF dosyalarından **3 seviyeli hiyerarşik eğitim verisi** çıkararak SQLite veritabanına kaydetmek:
+## 🎯 Ana Amaç
 
+DBF PDF'lerinin ilk sayfasından **2 ana veri türünü** çıkarmak:
+1. **Temel Ders Bilgileri** - Ders adı, sınıf, süre, amaç
+2. **Kazanım Tablosu** - Öğrenme birimi, kazanım sayısı, ders saati, oran
+
+## 🔧 Ana Fonksiyonlar
+
+### 1. `read_full_text_from_file(file_path)`
+**Amaç**: PDF veya DOCX dosyasından tam metni okur
+**PyMuPDF Kullanımı**: Unified processing ile PDF ve DOCX için tek API
+
+```python
+def read_full_text_from_file(file_path):
+    try:
+        doc = fitz.open(file_path)  # PDF ve DOCX için aynı
+        full_text = ""
+        for page_num in range(len(doc)):
+            page = doc.load_page(page_num)
+            full_text += page.get_text() + "\n"
+        doc.close()
+        return re.sub(r'\s+', ' ', full_text)
+    except Exception:
+        return ""
 ```
-📚 DERS
-├── 📖 ÖĞRENME BİRİMİ (Programlama Yapıları, Veri Yapıları, vb.)
-│   ├── 📝 KONU (1. Değişkenler ve Veri Tipleri, 2. Kontrol Yapıları, vb.)
-│   │   ├── 🎯 KAZANIM (1.1. Tam sayı değişkenleri, 1.2. Ondalık değişkenler, vb.)
-│   │   ├── 🎯 KAZANIM (2.1. If-else yapıları, 2.2. Switch-case yapıları, vb.)
-│   │   └── 🎯 KAZANIM (...)
-│   └── 📝 KONU (...)
-└── 📖 ÖĞRENME BİRİMİ (...)
+
+### 2. `ex_temel_bilgiler(text)`
+**Amaç**: PDF'nin üst kısmındaki ders bilgilerini çıkarır
+
+**Çıkarılan Alanlar**:
+- DERSİN ADI
+- DERSİN SINIFI
+- DERSİN SÜRESİ
+- DERSİN AMACI
+- DERSİN KAZANIMLARI
+- DONANIMI
+- DEĞERLENDİRME
+
+**Algoritma**:
+```python
+patterns = [
+    ([\"DERSİN ADI\", \"ADI\"], [\"DERSİN\", \"DERSĠN\"]),
+    ([\"DERSİN SINIFI\", \"SINIFI\"], [\"DERSİN\", \"DERSĠN\"]),
+    # ... diğer pattern'ler
+]
+
+for start_keys, end_keys in patterns:
+    # Start keyword bul
+    start_index = text_normalized.find(start_key_normalized)
+    # End keyword bul
+    end_index = text_normalized.find(end_key_normalized, start_index)
+    # Aralarındaki kısmı çıkar
+    section = text[start_original_idx:end_original_idx].strip()
 ```
 
-### Database Schema Hedefi
-```sql
-temel_plan_ders (id, ders_adi, sinif, ders_saati, dbf_url)
-├── temel_plan_ogrenme_birimi (id, ders_id, birim_adi, sira, sure)
-│   ├── temel_plan_konu (id, ogrenme_birimi_id, konu_adi, sira)
-│   │   └── temel_plan_kazanim (id, konu_id, kazanim_adi, sira)
+### 3. `ex_kazanim_tablosu(full_text)`
+**Amaç**: "KAZANIM SAYISI VE SÜRE TABLOSU"nu çıkarır ve parse eder
+
+**Başlık Pattern'leri**:
+```python
+table_start_patterns = [
+    \"KAZANIM SAYISI VE SÜRE TABLOSU\", 
+    \"DERSİN KAZANIM TABLOSU\", 
+    \"TABLOSU\",
+    \"TABLOS U\",  # OCR hataları için
+    \"TABLO SU\", 
+    \"TABL OSU\"
+]
 ```
 
-### Mevcut Durum (48.4% Başarı Oranı)
-✅ **Çalışan**: Öğrenme Birimi + Konu çıkarma  
-❌ **Eksik**: Kazanım çıkarma + Database kayıt sistemi  
-❌ **Bozuk**: Test scripti yanlış import'lar
+**Tablo Parse Algoritması**:
+```python
+# Header kaldırma
+header_patterns = [
+    r'OGRENME.*?\\(\\s*%\\s*\\)',  # Normalize edilmiş karakterler
+    r'KAZANIM(?:.|\\n)*?ORAN\\s*\\(\\s*%\\s*\\)',
+]
+
+# Satır parse etme - 6 farklı format destekler
+patterns = [
+    r'([^0-9]+?)\\s+(\\d+)\\s+(\\d+)\\s*/\\s*(\\d+)\\s+(\\d+(?:[,\\.]\\d+)?)',  # Kesirli format
+    r'([^0-9]+?)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+(?:[,\\.]\\d+)?)',              # Normal format
+    r'([^0-9]+?)\\s+(\\d+)\\s+(\\d+)(?:\\s|$)',                           # Sadece 2 sütun
+    # ... diğer pattern'ler
+]
+```
+
+**Structured Data Çıktısı**:
+```python
+structured_data = [
+    {
+        'title': 'Programlama Yapıları',
+        'count': 5,
+        'duration': '18',
+        'percentage': '50'
+    }
+]
+```
+
+## 🛠️ Yardımcı Fonksiyonlar
+
+### `normalize_turkish_text(text)`
+**Amaç**: Türkçe karakterleri ASCII'ye dönüştürür
+```python
+char_map = {
+    'İ': 'I', 'ı': 'i', 'Ğ': 'G', 'ğ': 'g',
+    'Ü': 'U', 'ü': 'u', 'Ş': 'S', 'ş': 's', 
+    'Ö': 'O', 'ö': 'o', 'Ç': 'C', 'ç': 'c'
+}
+```
+
+### `TextProcessor` Class
+**Amaç**: Metin işleme performansını artırır
+```python
+class TextProcessor:
+    def __init__(self, text):
+        self.original = text
+        self.normalized = normalize_turkish_text(text)
+        self._cache = {}  # Performans cache'i
+```
+
+## 📊 İş Akışı
+
+1. **Dosya Okuma**: `read_full_text_from_file()` ile PDF/DOCX'ten metin çıkar
+2. **Temel Bilgiler**: `ex_temel_bilgiler()` ile ders bilgilerini parse et
+3. **Kazanım Tablosu**: `ex_kazanim_tablosu()` ile tablo verilerini structured format'a çevir
+4. **Metin Sağlama**: İşlenmiş metni `utils_dbf2.py`'ye geç
+
+## 🎯 utils_dbf2.py ile Entegrasyon
+
+**Veri Akışı**:
+```python
+# utils_dbf1.py - İlk sayfa işleme
+full_text = read_full_text_from_file(file_path)
+temel_bilgiler = ex_temel_bilgiler(full_text)
+kazanim_tablosu_str, kazanim_tablosu_data = ex_kazanim_tablosu(full_text)
+
+# utils_dbf2.py - İkinci sayfa ve sonrası
+from .utils_dbf1 import ex_kazanim_tablosu
+def ex_ob_tablosu(full_text):
+    # utils_dbf1'den kazanım data al
+    kazanim_tablosu_str, kazanim_tablosu_data = ex_kazanim_tablosu(full_text)
+    # Bu veriyi öğrenme birimi eşleştirmesinde kullan
+```
+
+## ✅ Başarı Kriterleri
+
+- **Temel Bilgiler**: Ders adı, sınıf, süre çıkarma %95+ başarı
+- **Kazanım Tablosu**: Tablo parse etme %90+ başarı
+- **Format Desteği**: PDF ve DOCX unified processing
+- **Performance**: Single-pass text extraction
+- **Error Handling**: Bozuk dosyalar için graceful fallback
 
 ## 📋 PLAN: 4 Aşamalı Geliştirme Stratejisi
 

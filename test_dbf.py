@@ -80,9 +80,8 @@ def main():
         return
 
     for file_path in files_to_process:
-        print(f"========================================================================")
-        print(f"📄 İşleniyor: {os.path.relpath(file_path, project_root)}")
-        print(f"========================================================================")
+        print(file_path)
+        print(f"-"*60)
         
         try:
             full_text = read_full_text_from_file(file_path)
@@ -91,15 +90,16 @@ def main():
                 continue
 
             # 2. Kazanım Tablosu
-            print("\n" + "-"*25)
-            print("2. Kazanım Tablosu")
-            print("-"*25)
             kazanim_tablosu_str, kazanim_tablosu_data = ex_kazanim_tablosu(full_text)
-            # Gelen string'deki '\n' karakterlerini gerçek newline karakterlerine çevir
             print(kazanim_tablosu_str)
+            
+            # 3. Öğrenme Birimi Tablosu
+            ob_tablosu_result = ex_ob_tablosu(full_text)
+            print(ob_tablosu_result)
 
-            print(f"\n--- ✅ Tamamlandı: {os.path.basename(file_path)} ---\n")
-
+            # tüm metni bas amk
+            #print(full_text)
+            
         except Exception as e:
             import traceback
             print(f"\n❌ İşlem sırasında bir hata oluştu: {e}")
