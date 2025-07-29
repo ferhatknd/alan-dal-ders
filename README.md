@@ -86,7 +86,7 @@ Alan (Area) → Dal (Field) → Ders (Course) → Öğrenme Birimi (Learning Uni
 - **`modules/oku_dbf.py`** - ⭐ **DBF Koordinatörü**: PDF okuma işlemleri utils_oku_dbf.py'ye taşındı, sadece koordinasyon ve veritabanı entegrasyonu yapar
 - **`modules/utils_oku_dbf.py`** - DBF PDF okuma fonksiyonları (extract_olcme.py'den kopyalandı, 48.4% başarı oranı)
 - **`modules/get_dbf.py`** - `get_dbf()` fonksiyonu ile DBF verilerini çeker, RAR/ZIP indirir (açmaz), `data/get_dbf.json` üretir ve `dbf_urls` sütununa JSON kaydeder
-- **`test_unzip.py`** - ⭐ **GEÇİCİ AYIRIM**: DBF RAR/ZIP dosyalarını açan standalone script, `modules.utils_file_management.extract_archive` kullanır
+- **`test_unzip.py`** - ⭐ **GEÇİCİ AYRIM**: DBF RAR/ZIP dosyalarını açan standalone script, `modules.utils_file_management.extract_archive` kullanır
 - **`modules/get_cop.py`** - `get_cop()` fonksiyonu ile ÇÖP verilerini çeker, PDF indirir (açmaz), `data/get_cop.json` üretir ve `cop_url` sütununa JSON kaydeder
 - **`modules/oku_cop.py`** - COP PDF parsing ve analiz modülü - Tamamen yeniden yazıldı
 - **`modules/get_dm.py`** - Ders Materyalleri (DM) verilerini çeker - Sonra geliştirilecek
