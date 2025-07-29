@@ -11,11 +11,7 @@ import fitz  # PyMuPDF
 import re
 import os
 
-# Modüler import'lar
-try:
-    from .utils_file_management import read_full_text_from_file as _file_reader
-except ImportError:
-    from utils_file_management import read_full_text_from_file as _file_reader
+# Modüler import'lar (read_full_text_from_file locally defined below)
 
 
 # ===========================
