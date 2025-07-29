@@ -1,0 +1,9 @@
+DERSİN ADI: Bilgisayar Donanımı
+DERSİN SINIFI: 10
+DERSİN SÜRESİ: 2 saat
+DERSİN AMACI: Donanım bilgisini artırmak
+KAZANIM SAYISI VE SÜRE TABLOSU
+ÖĞRENME BİRİMİ KAZANIM SAYISI DERS SAATİ ORAN (%)
+Donanım Temelleri 4 16 40
+Çevre Birimleri 6 24 60
+TOPLAM 10 40 100
