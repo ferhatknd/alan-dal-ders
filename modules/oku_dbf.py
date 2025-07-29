@@ -106,6 +106,11 @@ def link_dbf_files_to_database(cursor):
                     relative_path = os.path.relpath(file_path, project_root)
                     updates_to_execute.append((relative_path, ders_id))
                     yield {"type": "success", "message": f"Eşleşti: '{ders_adi_extracted}' -> DB ID: {ders_id} -> {relative_path}"}
+                    
+                    # ⭐ PLACEHOLDER: Öğrenme birimi, konu ve kazanım kayıt sistemi
+                    # Bu özellik Aşama 2'de (Database Kayıt Sistemi) implement edilecek
+                    # Şimdilik sadece dbf_url güncellemesi yapılıyor
+                    pass
                 except Exception as e:
                     # Fallback: tam path'i kullan
                     updates_to_execute.append((file_path, ders_id))

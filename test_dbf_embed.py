@@ -1,25 +1,12 @@
-"""
-modules/utils_oku_dbf.py
-========================
-Bu modül extract_olcme.py'den kopyalanan stabil DBF okuma fonksiyonlarını içerir.
-"""
-
 import fitz  # PyMuPDF
 import re
 import os
+import sys
+import random
 import glob
 import unicodedata
 
 def ex_temel_bilgiler(text):
-    """
-    extract_olcme.py'den kopyalandi - DBF'den temel ders bilgilerini cikarir
-    
-    Args:
-        text (str): PDF/DOCX'den çıkarılan tam metin
-        
-    Returns:
-        dict: Temel ders bilgileri
-    """
     # Varyasyonlarla case-sensitive yapı
     patterns = [
         (["DERSİN ADI", "ADI"], ["DERSİN", "DERSĠN"]),                                  # Dersin Adı
@@ -135,9 +122,9 @@ def ex_kazanim_tablosu(full_text):
             r'OGRENME.*?\(%\)',
             r'OGRENME.*?ORAN.*?\(\s*%\s*\)',
             r'OGRENME.*?ORAN.*?\(%\)',
-            r'KAZANIM(?:.|\\n)*?ORAN\s*\(\s*%\s*\)',  # geniş eşleşme, tüm başlık bloğunu kaldırır
+            r'KAZANIM(?:.|\n)*?ORAN\s*\(\s*%\s*\)',  # geniş eşleşme, tüm başlık bloğunu kaldırır
             r'KAZANIM SAYISI VE\s*SURE TABLOSU\s*OGRENME BIRIMI\s*KAZANIM\s*SAYISI\s*DERS SAATI\s*ORAN\s*\(\s*%\s*\)',  # tam uyumlu eşleşme
-            r'OGRENME(?:.|\\n)*?ORAN(?:.|\\n)*?\(\s*%\s*\)'  # geniş pattern
+            r'OGRENME(?:.|\n)*?ORAN(?:.|\n)*?\(\s*%\s*\)'  # geniş pattern
         ]
         
         for header_pattern in header_patterns:
@@ -222,26 +209,18 @@ def ex_kazanim_tablosu(full_text):
                 })
         
         if lines:
-            result = "KAZANIM SAYISI VE SÜRE TABLOSU:\\n"
+            result = "KAZANIM SAYISI VE SÜRE TABLOSU:\n"
             for idx, line in enumerate(lines, 1):
-                result += f"{idx}-{line}\\n"
+                result += f"{idx}-{line}\n"
             return result.strip(), structured_data
         else:
-            return "KAZANIM SAYISI VE SÜRE TABLOSU - Veri bulunamadı", []
+            return "Tablo verileri parse edilemedi", []
                 
     except Exception as e:
-        return f"KAZANIM SAYISI VE SÜRE TABLOSU - HATA: {str(e)}", []
+        return f"Hata: {str(e)}", []
 
 def extract_ob_tablosu(full_text):
-    """
-    extract_olcme.py'den kopyalandi - PDF'den Öğrenme Birimi Alanını çıkarır - Sadece başlangıç ve bitiş sınırları arasındaki metni
-    
-    Args:
-        full_text (str): PDF/DOCX'den çıkarılan tam metin
-        
-    Returns:
-        tuple: (öğrenme_birimi_analiz_sonucu_string, structured_konu_data)
-    """
+    """PDF'den Öğrenme Birimi Alanını çıkarır - Sadece başlangıç ve bitiş sınırları arasındaki metni"""
     try:
 
         full_text_normalized_for_search = normalize_turkish_text(full_text)
@@ -252,7 +231,7 @@ def extract_ob_tablosu(full_text):
 
         table_headers = [
             "ÖĞRENME BİRİMİ", "KONULAR", "ÖĞRENME BİRİMİ KAZANIMLARI",
-            "KAZANIM AÇIKLAMLARI", "AÇIKLAMALARI", "ÖĞRENME BİRİMİ/ÜNİTE"
+            "KAZANIM AÇIKLAMLARI", "AÇIKLAMALARI"
         ]
         table_start_idx = None
         last_header_end = None
@@ -282,7 +261,7 @@ def extract_ob_tablosu(full_text):
         table_end_idx = len(full_text_normalized_for_search)
         search_area = full_text[table_start_idx:].upper()
         for stop_word in stop_words:
-            word_pattern = r'\\b' + re.escape(stop_word) + r'\\b'
+            word_pattern = r'\b' + re.escape(stop_word) + r'\b'
             match = re.search(word_pattern, full_text[table_start_idx:])  # case-sensitive, olduğu gibi arar
             if match:
                 stop_idx = table_start_idx + match.start()
@@ -294,10 +273,9 @@ def extract_ob_tablosu(full_text):
 
         header_match_info = ""
         formatted_content = ""
-        structured_konu_data = []  # YENİ: Structured data için
 
         if kazanim_tablosu_data:
-            header_match_info = "\\n"
+            header_match_info = "\n"
             formatted_content_parts = []
             all_matched_headers = []
 
@@ -323,12 +301,9 @@ def extract_ob_tablosu(full_text):
                             patterns = [f"{rakam}. ", f"{rakam} "]
                             pattern_found = False
                             for pattern in patterns:
-                                pos = after_baslik[:1500].find(pattern)
-                                if pos != -1:
-                                    # Context-aware validation: gerçek madde başlığı mı?
-                                    if is_valid_madde_baslik(after_baslik[:1500], pos, rakam):
-                                        pattern_found = True
-                                        break
+                                if pattern in after_baslik[:1500]:
+                                    pattern_found = True
+                                    break
                             if pattern_found:
                                 found_numbers += 1
                         
@@ -363,22 +338,13 @@ def extract_ob_tablosu(full_text):
                     if konu_sayisi_int > 0:
                         found_numbers = 0
                         for rakam in range(1, konu_sayisi_int + 1):
-                            patterns = [f"{rakam}. ", f"{rakam} "]
-                            pattern_found = False
-                            for pattern in patterns:
-                                pos = after_baslik[:1500].find(pattern)
-                                if pos != -1:
-                                    # Context-aware validation: gerçek madde başlığı mı?
-                                    if is_valid_madde_baslik(after_baslik[:1500], pos, rakam):
-                                        pattern_found = True
-                                        break
-                            if pattern_found:
+                            if str(rakam) in after_baslik[:1500]:
                                 found_numbers += 1
                         if found_numbers == konu_sayisi_int:
                             gecerli_eslesme += 1
                     start_pos = idx + 1
                 
-                header_match_info += f"{i}-{baslik_for_display} ({konu_sayisi_str}) -> {gecerli_eslesme} eşleşme\\n"
+                header_match_info += f"{i}-{baslik_for_display} ({konu_sayisi_str}) -> {gecerli_eslesme} eşleşme\n"
 
                 if gecerli_eslesme == 0 and konu_sayisi_int > 0:
                     alternative_match = extract_ob_tablosu_konu_bulma_yedek_plan(
@@ -387,8 +353,8 @@ def extract_ob_tablosu(full_text):
                     if alternative_match:
                         gecerli_eslesme = 1
                         header_match_info = header_match_info.replace(
-                            f"{i}-{baslik_for_display} ({konu_sayisi_str}) -> 0 eşleşme\\n",
-                            f"{i}-{baslik_for_display} ({konu_sayisi_str}) -> 1 eşleşme (alternatif)\\n"
+                            f"{i}-{baslik_for_display} ({konu_sayisi_str}) -> 0 eşleşme\n",
+                            f"{i}-{baslik_for_display} ({konu_sayisi_str}) -> 1 eşleşme (alternatif)\n"
                         )
 
                 if gecerli_eslesme > 0:
@@ -412,161 +378,46 @@ def extract_ob_tablosu(full_text):
                                 patterns = [f"{rakam}. ", f"{rakam} "]
                                 pattern_found = False
                                 for pattern in patterns:
-                                    pos = after_baslik[:1500].find(pattern)
-                                    if pos != -1:
-                                        # Context-aware validation: gerçek madde başlığı mı?
-                                        if is_valid_madde_baslik(after_baslik[:1500], pos, rakam):
-                                            pattern_found = True
-                                            break
+                                    if pattern in after_baslik[:1500]:
+                                        pattern_found = True
+                                        break
                                 if pattern_found:
                                     found_numbers += 1
                             is_valid_match = (found_numbers == konu_sayisi_int)
                         
                         if is_valid_match and not first_valid_match_found:
                             first_valid_match_found = True
-                            validation_result, konu_listesi = extract_ob_tablosu_konu_sinirli_arama(
+                            validation_result = extract_ob_tablosu_konu_sinirli_arama(
                                 ogrenme_birimi_alani, idx, baslik_for_matching, konu_sayisi_int, all_matched_headers
                             )
                             formatted_content_parts.append(
-                                f"{i}-{baslik_for_display} ({konu_sayisi_int}) -> 1. Eşleşme\\n"
-                                f"{validation_result}\\n"
+                                f"{i}-{baslik_for_display} ({konu_sayisi_int}) -> 1. Eşleşme\n"
+                                f"{validation_result}\n"
                             )
-                            
-                            # YENİ: Structured data'ya ekle
-                            structured_konu_data.append({
-                                'ogrenme_birimi': baslik_for_display,
-                                'sira': i,
-                                'konu_sayisi': konu_sayisi_int,
-                                'konular': konu_listesi
-                            })
                             break
                         start_pos = idx + 1
             
             if formatted_content_parts:
-                formatted_content = "\\n".join(formatted_content_parts)
+                formatted_content = "\n".join(formatted_content_parts)
             else:
                 if len(ogrenme_birimi_alani) <= 400:
                     formatted_content = ogrenme_birimi_alani
                 else:
-                    formatted_content = f"{ogrenme_birimi_alani[:200]}\\n...\\n{ogrenme_birimi_alani[-200:]}"
+                    formatted_content = f"{ogrenme_birimi_alani[:200]}\n...\n{ogrenme_birimi_alani[-200:]}"
         else:
             if len(ogrenme_birimi_alani) <= 400:
                 formatted_content = ogrenme_birimi_alani
             else:
-                formatted_content = f"{ogrenme_birimi_alani[:200]}\\n...\\n{ogrenme_birimi_alani[-200:]}"
+                formatted_content = f"{ogrenme_birimi_alani[:200]}\n...\n{ogrenme_birimi_alani[-200:]}"
 
-        result = f"{'--'*25}\\nÖğrenme Birimi Alanı:{header_match_info}{'--'*25}\\n{formatted_content}"
-        return result, structured_konu_data
+        result = f"{'--'*25}\nÖğrenme Birimi Alanı:{header_match_info}{'--'*25}\n{formatted_content}"
+        return result
             
     except Exception as e:
-        return f"Hata: {str(e)}", []
-
-def extract_kazanimlar_from_konu_content(konu_content):
-    """
-    Konu içeriğinden kazanımları çıkarır
-    
-    Args:
-        konu_content (str): Tek konu metnin içeriği
-        
-    Returns:
-        list: Kazanım listesi [{'kazanim_adi': str, 'sira': int}, ...]
-    """
-    import re
-    
-    if not konu_content or len(konu_content.strip()) < 10:
-        return []
-    
-    content = konu_content.strip()
-    kazanimlar = []
-    
-    # Kazanım pattern'leri (öncelik sırasında)
-    kazanim_patterns = [
-        # Alt numaralı maddeler: 1.1., 1.2., 2.1., 2.2. vb.
-        r'(\d+\.\d+\.)\s*(.+?)(?=\n\d+\.\d+\.|\n[A-Z]|\n•|\n-|\n[a-z]\)|\n\d+\.|\Z)',
-        # Nokta ile başlayan maddeler: • text, - text
-        r'([•-])\s*(.+?)(?=\n[•-]|\n\d+\.|\n[A-Z]|\n[a-z]\)|\Z)',
-        # Harf ile numaralanmış: a) text, b) text, c) text
-        r'([a-z]\))\s*(.+?)(?=\n[a-z]\)|\n\d+\.|\n[A-Z]|\n[•-]|\Z)',
-        # Parantez içi rakam: (1) text, (2) text
-        r'(\(\d+\))\s*(.+?)(?=\n\(\d+\)|\n\d+\.|\n[A-Z]|\n[•-]|\n[a-z]\)|\Z)',
-    ]
-    
-    # Her pattern'i dene
-    for pattern in kazanim_patterns:
-        matches = re.findall(pattern, content, re.MULTILINE | re.DOTALL)
-        if matches:
-            sira = 1
-            for match in matches:
-                marker = match[0].strip()
-                kazanim_text = match[1].strip()
-                
-                # Çok kısa kazanımları atla
-                if len(kazanim_text) < 5:
-                    continue
-                    
-                # Çok uzun kazanımları kısalt (200 karakter limit)
-                if len(kazanim_text) > 200:
-                    kazanim_text = kazanim_text[:197] + "..."
-                
-                # Temizlik: Yeni satır karakterlerini boşluk yap
-                kazanim_text = re.sub(r'\s+', ' ', kazanim_text).strip()
-                
-                # Validasyon: Gerçek kazanım mı yoksa başka bir şey mi?
-                if is_valid_kazanim_text(kazanim_text):
-                    kazanimlar.append({
-                        'kazanim_adi': kazanim_text,
-                        'sira': sira,
-                        'marker': marker  # Debug için
-                    })
-                    sira += 1
-            
-            # Eğer kazanım bulunduysa bu pattern'i kullan, diğerlerini deneme
-            if kazanimlar:
-                break
-    
-    return kazanimlar
-
-def is_valid_kazanim_text(text):
-    """
-    Bir metnin gerçek kazanım metni olup olmadığını kontrol eder
-    
-    Args:
-        text (str): Kontrol edilecek metin
-        
-    Returns:
-        bool: Geçerli kazanım metni ise True
-    """
-    if not text or len(text.strip()) < 5:
-        return False
-    
-    text_upper = text.upper()
-    
-    # Geçersiz pattern'ler
-    invalid_patterns = [
-        'DERS ', 'HAFTA', 'SAAT', 'TOPLAM', 'UYGULAMA', 'FAALİYET', 
-        'TEMRİN', 'DEĞERLEND', 'SINAMA', 'ÖLÇME', 'TEST', 'ÖRNEK',
-        'AÇIKLAMA', 'NOT:', 'UYARI:', 'DİKKAT:', 'ÖNEMLİ:'
-    ]
-    
-    for invalid in invalid_patterns:
-        if invalid in text_upper:
-            return False
-    
-    # Çok kısa veya sadece rakam/sembol içeren metinler
-    if len(text.strip()) < 10 and not any(c.isalpha() for c in text):
-        return False
-    
-    return True
+        return f"Hata: {str(e)}"
 
 def extract_ob_tablosu_konu_sinirli_arama(text, baslik_idx, baslik, konu_sayisi, all_matched_headers=None):
-    """
-    Başlık eşleşmesinden sonra konu yapısını sıralı rakamlarla doğrular - 2 döngü
-    
-    ⭐ YENİ: Artık her konu için kazanımları da çıkarır
-    
-    Returns:
-        tuple: (formatted_text, structured_konu_data_with_kazanimlar)
-    """
+    """Başlık eşleşmesinden sonra konu yapısını sıralı rakamlarla doğrular - 2 döngü"""
     import re
     
     # Başlık eşleşmesinden sonraki tüm metni al
@@ -589,8 +440,8 @@ def extract_ob_tablosu_konu_sinirli_arama(text, baslik_idx, baslik, konu_sayisi,
     # Eğer sonraki eşleşen başlık yoksa, genel pattern'leri ara
     if next_matched_header_pos == len(after_baslik):
         next_header_patterns = [
-            r'\\n[A-ZÜĞIŞÖÇ][A-ZÜĞIŞÖÇ\\s]{10,}',
-            r'\\n\\d+\\.\\s*[A-ZÜĞIŞÖÇ]', 
+            r'\n[A-ZÜĞIŞÖÇ][A-ZÜĞIŞÖÇ\s]{10,}',
+            r'\n\d+\.\s*[A-ZÜĞIŞÖÇ]', 
             r'DERSİN|DERSĠN',
             r'UYGULAMA|FAALİYET|TEMRİN'
         ]
@@ -601,8 +452,7 @@ def extract_ob_tablosu_konu_sinirli_arama(text, baslik_idx, baslik, konu_sayisi,
                 next_matched_header_pos = match.start()
     
     work_area = after_baslik[:next_matched_header_pos]
-    validation_info = []  # String çıktı için (backward compatibility)
-    structured_konu_data = []  # ⭐ YENİ: Structured data için
+    validation_info = []
     
     # TEK DÖNGÜ ÇALISTIR
     current_pos = 0
@@ -615,10 +465,8 @@ def extract_ob_tablosu_konu_sinirli_arama(text, baslik_idx, baslik, konu_sayisi,
         for pattern in patterns:
             pos = work_area.find(pattern, current_pos)
             if pos != -1:
-                # Context-aware validation: gerçek madde başlığı mı?
-                if is_valid_madde_baslik(work_area, pos, konu_no):
-                    found_pos = pos
-                    break
+                found_pos = pos
+                break
         
         if found_pos != -1:
             # Sonraki rakama kadar olan metni al
@@ -630,10 +478,8 @@ def extract_ob_tablosu_konu_sinirli_arama(text, baslik_idx, baslik, konu_sayisi,
                 for next_pattern in next_patterns:
                     pos = work_area.find(next_pattern, found_pos + 1)
                     if pos != -1:
-                        # Context-aware validation: gerçek madde başlığı mı?
-                        if is_valid_madde_baslik(work_area, pos, konu_no + 1):
-                            next_found_pos = pos
-                            break
+                        next_found_pos = pos
+                        break
                 if next_found_pos != -1:
                     konu_content = work_area[found_pos:next_found_pos].strip()
                 else:
@@ -647,46 +493,22 @@ def extract_ob_tablosu_konu_sinirli_arama(text, baslik_idx, baslik, konu_sayisi,
             # Pattern ile bulduğumuz madde numarasını temizle
             if cleaned_content.startswith(f"{konu_no}. "):
                 cleaned_content = cleaned_content.replace(f"{konu_no}. ", "", 1)
-                konu_title_and_content = cleaned_content.strip()
             elif cleaned_content.startswith(f"{konu_no} "):
                 cleaned_content = cleaned_content.replace(f"{konu_no} ", "", 1)
-                konu_title_and_content = cleaned_content.strip()
-            else:
-                konu_title_and_content = cleaned_content.strip()
             
-            # Konu başlığını content'ten ayır (ilk satır genelde başlık)
-            lines = konu_title_and_content.split('\n')
-            konu_adi = lines[0].strip() if lines else konu_title_and_content[:50].strip()
-            konu_full_content = konu_title_and_content
-            
-            # ⭐ YENİ: Konu içeriğinden kazanımları çıkar
-            kazanimlar = extract_kazanimlar_from_konu_content(konu_full_content)
-            
-            # Structured data'ya ekle
-            structured_konu_data.append({
-                'konu_adi': konu_adi,
-                'sira': konu_no,
-                'content': konu_full_content,  # Debug için tam içerik
-                'kazanimlar': kazanimlar  # ⭐ YENİ: Kazanım listesi
-            })
-            
-            # Backward compatibility: String çıktı
-            kazanim_count = len(kazanimlar)
-            kazanim_preview = f" ({kazanim_count} kazanım)" if kazanim_count > 0 else ""
-            validation_info.append(f"{konu_no}. {konu_adi}{kazanim_preview}")
-            
+            validation_info.append(f"{konu_no}. {cleaned_content.strip()}")
             current_pos = found_pos + 1
         else:
             current_pos += 1
     
-    return "\\n".join(validation_info), structured_konu_data
+    return "\n".join(validation_info)
 
 def extract_ob_tablosu_konu_bulma_yedek_plan(text, original_baslik, konu_sayisi):
     """Son eşleşen başlıktan sonra '1' rakamını bulup alternatif eşleşme arar"""
     import re
     
-    # "1" rakamını ara - daha basit pattern
-    one_pattern = r'1\\.'
+    # "1" rakamını ara (cümle başında veya nokta sonrası)
+    one_pattern = r'(?:^|\.|\\n|\\s)1(?:\.|\\s)'
     matches = list(re.finditer(one_pattern, text))
     
     if not matches:
@@ -713,16 +535,7 @@ def extract_ob_tablosu_konu_bulma_yedek_plan(text, original_baslik, konu_sayisi)
             after_one = text[one_pos:]
             found_numbers = 0
             for rakam in range(1, konu_sayisi + 1):
-                patterns = [f"{rakam}. ", f"{rakam} "]
-                pattern_found = False
-                for pattern in patterns:
-                    pos = after_one[:500].find(pattern)  # İlk 500 karakterde ara
-                    if pos != -1:
-                        # Context-aware validation: gerçek madde başlığı mı?
-                        if is_valid_madde_baslik(after_one[:500], pos, rakam):
-                            pattern_found = True
-                            break
-                if pattern_found:
+                if str(rakam) in after_one[:500]:  # İlk 500 karakterde ara
                     found_numbers += 1
             
             # Tüm rakamlar bulunduysa alternatif eşleşme geçerli
@@ -735,110 +548,56 @@ def extract_ob_tablosu_konu_bulma_yedek_plan(text, original_baslik, konu_sayisi)
     
     return None
 
-def get_all_dbf_files(validate_files=True):
+## Yardımcı fonksiyonlar ##
+def komutlar(param=None):
     """
-    DBF PDF ve DOCX dosyalarını bulma ve yönetme fonksiyonu - API sistemine optimize edildi
+    DBF PDF ve DOCX dosyalarını bulma ve yönetme fonksiyonu
     
     Args:
-        validate_files (bool): Dosya bütünlüğü kontrolü yap (varsayılan: True)
+        param (str/int/None): 
+            - None: Tüm dosyaları listele
+            - int: Rastgele N dosya seç
+            - str: İsme göre dosya ara
     
     Returns:
-        list: PDF ve DOCX dosya yolları listesi (sadece geçerli dosyalar)
+        list: PDF ve DOCX dosya yolları listesi
     """
-    import os
+    # Proje kök dizinine göre dinamik yol
+    project_root = os.path.dirname(os.path.abspath(__file__))
+    base_path = os.path.join(project_root, "data", "dbf")
     
-    # utils_env modülünü kullan
-    try:
-        from .utils_env import get_data_path, get_project_root
-    except ImportError:
-        from modules.utils_env import get_data_path, get_project_root
-    
-    project_root = get_project_root()
-    base_path = get_data_path("dbf")
-    
-    # Debug: base_path'i konsola yazdır
-    print(f"📍 PROJECT_ROOT: {project_root}")
-    print(f"📍 DBF tarama yolu: {base_path}")
-    print(f"📍 Klasör mevcut mu: {os.path.exists(base_path)}")
-    
-    def is_valid_document(file_path):
-        """Dosyanın geçerli bir PDF veya DOCX dosyası olup olmadığını kontrol eder"""
-        if not validate_files:
-            return True
-            
-        try:
-            # PyMuPDF ile dosyayı açmayı dene
-            doc = fitz.open(file_path)
-            
-            # Dosya açılabildi, temel kontroller yap
-            page_count = len(doc)
-            if page_count == 0:
-                doc.close()
-                return False
-            
-            # İlk sayfayı okumayı dene
-            page = doc.load_page(0)
-            text = page.get_text()
-            doc.close()
-            
-            # Eğer hiç metin yoksa ve sayfa sayısı 1'den azsa bozuk olabilir
-            if not text.strip() and page_count <= 1:
-                return False
-                
-            return True
-            
-        except Exception as e:
-            # Dosya açılamıyorsa veya hata varsa geçersiz
-            print(f"⚠️  Bozuk dosya atlandı: {os.path.basename(file_path)} - {str(e)}")
-            return False
-    
-    # Tüm PDF ve DOCX dosyalarını bul ve validate et
+    # Tüm PDF ve DOCX dosyalarını bul
     all_files = []
     supported_extensions = ('.pdf', '.docx')
-    skipped_files = 0
-    
     for root, dirs, files in os.walk(base_path):
         for file in files:
             if file.lower().endswith(supported_extensions):
-                file_path = os.path.join(root, file)
-                
-                # Dosya bütünlüğü kontrolü
-                if is_valid_document(file_path):
-                    all_files.append(file_path)
-                else:
-                    skipped_files += 1
+                all_files.append(os.path.join(root, file))
     
-    # Sonuç bilgilerini yazdır
-    print(f"📊 Toplam {len(all_files)} geçerli dosya bulundu")
-    if validate_files and skipped_files > 0:
-        print(f"📊 Toplam {skipped_files} bozuk dosya işleme alınmadı.")
+    # Parametre yoksa tüm dosyaları döndür
+    if param is None:
+        return all_files
+    
+    # Sayı ise rastgele seçim yap
+    if isinstance(param, int) or (isinstance(param, str) and param.isdigit()):
+        sample_count = int(param)
+        if sample_count <= 0:
+            return []
+        if sample_count >= len(all_files):
+            return all_files
+        import random
+        return random.sample(all_files, sample_count)
+    
+    # String ise isim arama yap
+    if isinstance(param, str):
+        matching_files = []
+        for file_path in all_files:
+            filename = os.path.basename(file_path)
+            if param.lower() in filename.lower():
+                matching_files.append(file_path)
+        return matching_files
     
     return all_files
-
-def read_full_text_from_file(file_path):
-    """
-    PDF veya DOCX dosyasından tam metni okur (PyMuPDF ile unified processing)
-    
-    Args:
-        file_path (str): Dosya yolu
-        
-    Returns:
-        str: Dosyadan çıkarılan tam metin
-    """
-    try:
-        doc = fitz.open(file_path)
-        full_text = ""
-        for page in doc:
-            full_text += page.get_text() + "\\n"
-        doc.close()
-        
-        # Metni normalize et
-        full_text = re.sub(r'\s+', ' ', full_text)
-        return full_text
-        
-    except Exception as e:
-        print(f"Error reading file {file_path}: {str(e)}")
-        return ""
 
 def normalize_turkish_text(text):
     """Türkçe karakterleri normalize eder ve case-insensitive karşılaştırma için hazırlar"""
@@ -872,134 +631,81 @@ def normalize_turkish_text(text):
     
     return normalized
 
-def is_valid_madde_baslik(text, pos, rakam):
-    """
-    Bulunan rakam pattern'inin gerçek madde numarası mı yoksa tarih/yüzyıl mı olduğunu kontrol eder.
+def main():
+    # Komut satırı argümanlarını kontrol et
+    if len(sys.argv) != 2:
+        print("Kullanım:")
+        print("  python extract_olcme.py <sayı>        # Rastgele N dosya")
+        print("  python extract_olcme.py \"dosya_adi\"   # Belirli dosya")
+        sys.exit(1)
     
-    Args:
-        text (str): Aranacak metin
-        pos (int): Bulunan pattern pozisyonu
-        rakam (int): Aranan rakam (1, 2, 3...)
-        
-    Returns:
-        bool: True = gerçek madde başlığı, False = tarih/yüzyıl
-    """
-    import re
+    param = sys.argv[1]
     
-    # Pattern'den sonraki metni al
-    pattern_len = len(f"{rakam}. ")
-    after_pattern = text[pos + pattern_len:] if pos + pattern_len < len(text) else ""
-    
-    if not after_pattern.strip():
-        return False
-    
-    # İlk kelimeyi bul
-    words = after_pattern.strip().split()
-    if not words:
-        return False
-        
-    first_word = words[0].lower()
-    
-    # Zaman belirten kelimeler listesi
-    time_words = [
-        "yüzyıl", "yüzyılda", "yüzyıldan", "yüzyılın", "yüzyıla", 
-        "asır", "asırda", "asırdan", "asırın", "asıra",
-        "dönem", "dönemde", "dönemden", "dönemin", "döneme",
-        "yıl", "yılda", "yıldan", "yılın", "yıla",
-        "sene", "senede", "seneden", "senenin", "seneye"
-    ]
-    
-    # Eğer ilk kelime zaman belirtiyorsa madde başlığı değil
-    if first_word in time_words:
-        return False
-    
-    # Satır başında mı kontrol et (madde başlıkları genelde satır başında olur)
-    if pos > 0:
-        char_before = text[pos - 1]
-        # Öncesinde yeni satır, boşluk veya tab olmalı
-        if char_before not in ['\n', '\r', ' ', '\t']:
-            return False
-    
-    # İlk kelime büyük harfle başlıyor mu? (madde başlıkları büyük harfle başlar)
-    if not (words[0] and words[0][0].isupper()):
-        return False
-        
-    return True
-
-# ===========================
-# MAIN PROCESSING FUNCTIONS  
-# ===========================
-
-def process_dbf_file(file_path):
-    """
-    Tek DBF dosyasını işler ve sonuçları döndürür
-    
-    Args:
-        file_path (str): İşlenecek dosya yolu
-        
-    Returns:
-        dict: İşlem sonucu
-    """
     try:
-        # Dosyadan tam metni oku
-        full_text = read_full_text_from_file(file_path)
+        sample_count = int(param)
+        # Sayı ise rastgele seçim
+        if sample_count <= 0:
+            print("Hata: Sayı parametresi pozitif bir tam sayı olmalıdır.")
+            sys.exit(1)
         
-        if not full_text.strip():
-            return {"success": False, "error": "Dosya içeriği boş", "file_path": file_path}
+        all_files = komutlar()
         
-        # Temel bilgileri çıkar
-        temel_bilgiler = ex_temel_bilgiler(full_text)
-        
-        # Kazanım tablosunu çıkar
-        kazanim_tablosu_str, kazanim_tablosu_data = ex_kazanim_tablosu(full_text)
-        
-        # Öğrenme birimi analizini yap
-        ob_analiz = extract_ob_tablosu(full_text)
-        
-        return {
-            "success": True,
-            "file_path": file_path,
-            "filename": os.path.basename(file_path),
-            "temel_bilgiler": temel_bilgiler,
-            "kazanim_tablosu_data": kazanim_tablosu_data,
-            "ogrenme_birimi_analizi": ob_analiz
-        }
-        
-    except Exception as e:
-        return {
-            "success": False,
-            "error": str(e),
-            "file_path": file_path,
-            "filename": os.path.basename(file_path)
-        }
-
-def process_multiple_dbf_files(file_paths):
-    """
-    Birden fazla DBF dosyasını işler
-    
-    Args:
-        file_paths (list): İşlenecek dosya yolları
-        
-    Returns:
-        dict: Toplu işlem sonucu
-    """
-    results = []
-    success_count = 0
-    error_count = 0
-    
-    for file_path in file_paths:
-        result = process_dbf_file(file_path)
-        results.append(result)
-        
-        if result["success"]:
-            success_count += 1
+        if not all_files:
+            print("data/dbf dizininde hiç PDF/DOCX dosyası bulunamadı.")
+            sys.exit(1)
+           
+        # Rastgele örnekleme yap
+        selected_files = komutlar(sample_count)
+        if len(selected_files) < sample_count:
+            print(f"Uyarı: İstenen sayı ({sample_count}) toplam dosya sayısından ({len(all_files)}) büyük. {len(selected_files)} dosya işlenecek.")
+    except ValueError:
+        # Dosya adı ise
+        selected_files = komutlar(param)
+        if selected_files:
+            all_files = komutlar()  # Toplam sayı için
         else:
-            error_count += 1
+            print(f"'{param}' adında dosya data/dbf dizininde bulunamadı.")
+            sys.exit(1)
     
-    return {
-        "results": results,
-        "total_files": len(file_paths),
-        "success_count": success_count,
-        "error_count": error_count
-    }
+    print(f"Seçilen {len(selected_files)}/{len(all_files)} dosya işleniyor...\n")
+    
+    # Her dosyayı işle
+    for i, file_path in enumerate(selected_files, 1):
+        # 1. Dizin ve dosya adı satırı
+        print(file_path)
+        
+        # 2. Çizgi
+        print("-" * 80)
 
+        # Dosyadan tüm metni alalım (PDF veya DOCX)
+        doc = fitz.open(file_path)
+        full_text = ""
+        for page in doc:
+            full_text += page.get_text() + "\n"
+        doc.close()
+
+        # normalize et
+        full_text = re.sub(r'\s+', ' ', full_text)
+
+        # Tüm sayfa ekrana yaz.
+        #print(full_text)
+        
+        # Ardından tüm metin üzerinden başlıkları çıkart
+        #extracted_fields = ex_temel_bilgiler(full_text)
+        #for key, value in extracted_fields.items():
+        #    title = key.split("_", 1)[-1].capitalize()
+        #    print(f"\n{title}: {value}")
+        #print()
+
+        # KAZANIM SAYISI VE SÜRE TABLOSU
+        kazanim_tablosu_str, kazanim_tablosu_data = ex_kazanim_tablosu(full_text=full_text)
+        print(kazanim_tablosu_str)
+        
+        # ÖĞRENİM BİRİMLERİ TABLOSU
+        result2 = extract_ob_tablosu(full_text=full_text)
+        print(result2)
+        print("-"*80)
+        print(file_path)
+
+if __name__ == "__main__":
+    main()

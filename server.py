@@ -764,10 +764,11 @@ def load_data(cursor):
                     d.dm_url,
                     d.dbf_url,
                     d.bom_url,
-                    dd.alan_id,
+                    dal.alan_id,
                     dd.dal_id
                 FROM temel_plan_ders d
                 LEFT JOIN temel_plan_ders_dal dd ON d.id = dd.ders_id
+                LEFT JOIN temel_plan_dal dal ON dd.dal_id = dal.id
                 WHERE d.id = ?
                 LIMIT 1
             """, (entity_id,))

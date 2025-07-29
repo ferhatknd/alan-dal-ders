@@ -672,6 +672,10 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
         .then(result => {
           if (result.success && result.data) {
             console.log('✅ Fresh ders data loaded:', result.data);
+            console.log('🎯 AMAC DEBUG - Raw amac from DB:', result.data.amac);
+            console.log('🎯 AMAC DEBUG - Type:', typeof result.data.amac);
+            console.log('🎯 AMAC DEBUG - Length:', result.data.amac ? result.data.amac.length : 'null/undefined');
+            
             setEditData({
               ders_id: result.data.ders_id || '',
               ders_adi: result.data.ders_adi || '',
@@ -910,7 +914,11 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
     onShowPDF(pdfUrl, title);
   };
   
-  // Note: DBF dropdown currently disabled (uses RAR files, not direct PDFs)
+  // Handle DBF PDF selection
+  const handleDbfSelect = (pdfUrl, title) => {
+    console.log('🔗 DBF PDF seçildi:', pdfUrl, title);
+    onShowPDF(pdfUrl, title);
+  };
 
   if (!isOpen) return null;
 
