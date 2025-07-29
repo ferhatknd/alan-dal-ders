@@ -203,7 +203,7 @@ temel_plan_ders_dal
   - `get_all_dbf_files()` - Dosya tarama ve validation
   - `ex_kazanim_tablosu()` - Kazanım tablosu çıkarma
   - `ex_temel_bilgiler()` - Temel ders bilgileri çıkarma
-  - `extract_ob_tablosu()` - Öğrenme birimi analizi
+  - `ex_ob_tablosu()` - Öğrenme birimi analizi
 - **`modules/oku_dbf.py`** (Koordinasyon fonksiyonları):
   - `DBFProcessor` sınıfı - Koordinasyon ve istatistik yönetimi
   - `oku_dbf()` - Legacy uyumluluk fonksiyonu

@@ -37,7 +37,7 @@ temel_plan_ders (id, ders_adi, sinif, ders_saati, dbf_url)
 **Hedef**: Her konu içindeki alt maddeleri (kazanımları) çıkarmak
 
 **Yapılacak**:
-1. `extract_ob_tablosu_konu_sinirli_arama()` fonksiyonunu genişlet
+1. `ex_ob_tablosu_konu_sinirli_arama()` fonksiyonunu genişlet
 2. Her konu metnini parse ederek içindeki alt maddeleri bul
 3. Pattern matching: "1.1.", "1.2.", "•", "-", "a)", "b)" gibi formatları destekle
 4. Structured data'ya kazanım bilgilerini ekle
@@ -106,7 +106,7 @@ def save_ogrenme_birimi_to_database(cursor, ders_id, structured_data):
     Args:
         cursor: Database cursor
         ders_id: temel_plan_ders.id
-        structured_data: extract_ob_tablosu() çıktısı
+        structured_data: ex_ob_tablosu() çıktısı
     
     Returns:
         dict: {'success': bool, 'stats': {...}, 'error': str}
@@ -123,7 +123,7 @@ def save_ogrenme_birimi_to_database(cursor, ders_id, structured_data):
    from modules.utils_dbf_parser import parse_ob_tablosu_output
    
    # ✅ Doğru - Mevcut fonksiyonu kullan  
-   from modules.utils_oku_dbf import extract_ob_tablosu
+   from modules.utils_oku_dbf import ex_ob_tablosu
    ```
 2. `oku_dbf.py`'deki yanlış import'ları düzelt
 3. Database kayıt fonksiyonunu `oku_dbf.py`'ye entegre et
@@ -140,11 +140,11 @@ def save_ogrenme_birimi_to_database(cursor, ders_id, structured_data):
 
 DBF PDF'lerinden öğrenme birimi ve konu yapısını çıkarmak için 3 ana fonksiyon kullanılır:
 
-1. **`extract_ob_tablosu`** - Ana fonksiyon: PDF'den öğrenme birimi alanını çıkarır ✅ **Structured data döndürür**
-2. **`extract_ob_tablosu_konu_sinirli_arama`** - Yardımcı fonksiyon: Konu içeriklerini çıkarır ⚠️ **Kazanım çıkarma eklenmeli**
-3. **`extract_ob_tablosu_konu_bulma_yedek_plan`** - Yedek fonksiyon: Alternatif eşleşme arar ✅ **Çalışır durumda**
+1. **`ex_ob_tablosu`** - Ana fonksiyon: PDF'den öğrenme birimi alanını çıkarır ✅ **Structured data döndürür**
+2. **`ex_ob_tablosu_konu_sinirli_arama`** - Yardımcı fonksiyon: Konu içeriklerini çıkarır ⚠️ **Kazanım çıkarma eklenmeli**
+3. **`ex_ob_tablosu_konu_bulma_yedek_plan`** - Yedek fonksiyon: Alternatif eşleşme arar ✅ **Çalışır durumda**
 
-## 🎯 1. extract_ob_tablosu() - Ana Fonksiyon
+## 🎯 1. ex_ob_tablosu() - Ana Fonksiyon
 
 ### İşlev
 PDF'den "Öğrenme Birimi" alanını çıkarır ve yapılandırılmış içerik döndürür.
@@ -212,7 +212,7 @@ for rakam in range(1, konu_sayisi_int + 1):
 
 ```python
 if gecerli_eslesme == 0 and konu_sayisi_int > 0:
-    alternative_match = extract_ob_tablosu_konu_bulma_yedek_plan(
+    alternative_match = ex_ob_tablosu_konu_bulma_yedek_plan(
         ogrenme_birimi_alani, baslik_for_matching, konu_sayisi_int
     )
     if alternative_match:
@@ -249,7 +249,7 @@ if gecerli_eslesme > 0:  # 3 > 0, koşul sağlandı
             first_valid_match_found = True  # Flag'i set et
             
             # İçeriği çıkar ve ekrana yazdır
-            validation_result = extract_ob_tablosu_konu_sinirli_arama(...)
+            validation_result = ex_ob_tablosu_konu_sinirli_arama(...)
             break  # Döngüden çık, diğer eşleşmeleri işleme
 ```
 
@@ -258,7 +258,7 @@ if gecerli_eslesme > 0:  # 3 > 0, koşul sağlandı
 - Çıktıda "1. Eşleşme" yazısı görünür
 - Diğer eşleşmeler ignore edilir
 
-## 🔍 2. extract_ob_tablosu_konu_sinirli_arama() - İçerik Çıkarma Fonksiyonu
+## 🔍 2. ex_ob_tablosu_konu_sinirli_arama() - İçerik Çıkarma Fonksiyonu
 
 ### İşlev
 **ÖNEMLİ**: Bu fonksiyon Adım 4'teki "Pattern Doğrulama" ile **FARKLI** bir işlem yapar:
@@ -321,7 +321,7 @@ elif cleaned_content.startswith(f"{konu_no} "):
 
 **Önemli**: Sadece gerçek konu numaralarını temizler, tarihlerdeki sayıları korur.
 
-## 🔄 3. extract_ob_tablosu_konu_bulma_yedek_plan() - Yedek Arama
+## 🔄 3. ex_ob_tablosu_konu_bulma_yedek_plan() - Yedek Arama
 
 ### İşlev
 **Çağırılma Koşulu**: Ana string matching hiçbir başlık bulamadığında (`gecerli_eslesme == 0` ve `konu_sayisi_int > 0`)
@@ -444,9 +444,9 @@ if found_numbers == konu_sayisi:
 ## 📊 Performans Karakteristikleri
 
 ### Zaman Karmaşıklığı
-- **extract_ob_tablosu**: O(n×m) - n: metin uzunluğu, m: başlık sayısı
-- **extract_ob_tablosu_konu_sinirli_arama**: O(k×n) - k: konu sayısı
-- **extract_ob_tablosu_konu_bulma_yedek_plan**: O(p×n) - p: "1" pattern eşleşme sayısı
+- **ex_ob_tablosu**: O(n×m) - n: metin uzunluğu, m: başlık sayısı
+- **ex_ob_tablosu_konu_sinirli_arama**: O(k×n) - k: konu sayısı
+- **ex_ob_tablosu_konu_bulma_yedek_plan**: O(p×n) - p: "1" pattern eşleşme sayısı
 
 ### Başarı Oranı
 - Normal koşullarda: ~85-90%
@@ -458,7 +458,7 @@ if found_numbers == konu_sayisi:
 ### Basit Kullanım
 ```python
 # PDF metnini okuduktan sonra
-result = extract_ob_tablosu(full_text)
+result = ex_ob_tablosu(full_text)
 print(result)
 ```
 

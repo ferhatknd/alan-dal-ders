@@ -25,7 +25,7 @@ project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
 try:
-    from modules.utils_oku_dbf import process_dbf_file, get_all_dbf_files, extract_ob_tablosu
+    from modules.utils_oku_dbf import process_dbf_file, get_all_dbf_files, ex_ob_tablosu
     from modules.utils_database import with_database, find_or_create_database
     from modules.utils_normalize import normalize_to_title_case_tr
 except ImportError as e:
@@ -164,11 +164,11 @@ def test_ogrenme_birimi_parsing(result: dict):
         
         print(f"\n  🔍 {i}. {birim_adi} ({konu_sayisi} konu bekleniyor)")
         
-        # ⭐ YENİ: Direkt extract_ob_tablosu kullan - tek seferlik parse
+        # ⭐ YENİ: Direkt ex_ob_tablosu kullan - tek seferlik parse
         if i == 1:  # Sadece ilk iteration'da parse et
             try:
                 global PARSED_STRUCTURED_DATA
-                parsing_result, PARSED_STRUCTURED_DATA = extract_ob_tablosu(ogrenme_birimi_analizi)
+                parsing_result, PARSED_STRUCTURED_DATA = ex_ob_tablosu(ogrenme_birimi_analizi)
                 print(f"\\n📋 Parsing tamamlandı:")
                 print(f"   • {len(PARSED_STRUCTURED_DATA)} öğrenme birimi bulundu")
             except Exception as e:

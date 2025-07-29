@@ -219,7 +219,7 @@ def ex_kazanim_tablosu(full_text):
     except Exception as e:
         return f"Hata: {str(e)}", []
 
-def extract_ob_tablosu(full_text):
+def ex_ob_tablosu(full_text):
     """PDF'den Öğrenme Birimi Alanını çıkarır - Sadece başlangıç ve bitiş sınırları arasındaki metni"""
     try:
 
@@ -347,7 +347,7 @@ def extract_ob_tablosu(full_text):
                 header_match_info += f"{i}-{baslik_for_display} ({konu_sayisi_str}) -> {gecerli_eslesme} eşleşme\n"
 
                 if gecerli_eslesme == 0 and konu_sayisi_int > 0:
-                    alternative_match = extract_ob_tablosu_konu_bulma_yedek_plan(
+                    alternative_match = ex_ob_tablosu_konu_bulma_yedek_plan(
                         ogrenme_birimi_alani, baslik_for_matching, konu_sayisi_int
                     )
                     if alternative_match:
@@ -387,7 +387,7 @@ def extract_ob_tablosu(full_text):
                         
                         if is_valid_match and not first_valid_match_found:
                             first_valid_match_found = True
-                            validation_result = extract_ob_tablosu_konu_sinirli_arama(
+                            validation_result = ex_ob_tablosu_konu_sinirli_arama(
                                 ogrenme_birimi_alani, idx, baslik_for_matching, konu_sayisi_int, all_matched_headers
                             )
                             formatted_content_parts.append(
@@ -416,7 +416,7 @@ def extract_ob_tablosu(full_text):
     except Exception as e:
         return f"Hata: {str(e)}"
 
-def extract_ob_tablosu_konu_sinirli_arama(text, baslik_idx, baslik, konu_sayisi, all_matched_headers=None):
+def ex_ob_tablosu_konu_sinirli_arama(text, baslik_idx, baslik, konu_sayisi, all_matched_headers=None):
     """Başlık eşleşmesinden sonra konu yapısını sıralı rakamlarla doğrular - 2 döngü"""
     import re
     
@@ -503,7 +503,7 @@ def extract_ob_tablosu_konu_sinirli_arama(text, baslik_idx, baslik, konu_sayisi,
     
     return "\n".join(validation_info)
 
-def extract_ob_tablosu_konu_bulma_yedek_plan(text, original_baslik, konu_sayisi):
+def ex_ob_tablosu_konu_bulma_yedek_plan(text, original_baslik, konu_sayisi):
     """Son eşleşen başlıktan sonra '1' rakamını bulup alternatif eşleşme arar"""
     import re
     
@@ -702,7 +702,7 @@ def main():
         print(kazanim_tablosu_str)
         
         # ÖĞRENİM BİRİMLERİ TABLOSU
-        result2 = extract_ob_tablosu(full_text=full_text)
+        result2 = ex_ob_tablosu(full_text=full_text)
         print(result2)
         print("-"*80)
         print(file_path)

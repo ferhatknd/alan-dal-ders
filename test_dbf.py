@@ -27,7 +27,7 @@ from modules.utils_oku_dbf import (
     read_full_text_from_file,
     ex_temel_bilgiler,
     ex_kazanim_tablosu,
-    extract_ob_tablosu
+    ex_ob_tablosu
 )
 
 def find_files(search_term=None):
