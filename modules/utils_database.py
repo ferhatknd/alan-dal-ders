@@ -298,7 +298,10 @@ def get_or_create_alan(cursor, alan_adi, meb_alan_id=None, cop_url=None, dbf_url
         
         if dbf_urls is not None:
             update_parts.append("dbf_urls = ?")
-            dbf_urls_json = json.dumps(dbf_urls)
+            if isinstance(dbf_urls, str):
+                dbf_urls_json = dbf_urls
+            else:
+                dbf_urls_json = json.dumps(dbf_urls)
             update_values.append(dbf_urls_json)
         
         if updated_meb_alan_id is not None:
@@ -317,7 +320,13 @@ def get_or_create_alan(cursor, alan_adi, meb_alan_id=None, cop_url=None, dbf_url
         return alan_id
     else:
         # DBF URLs'i JSON string olarak sakla
-        dbf_urls_json = json.dumps(dbf_urls) if dbf_urls else None
+        if dbf_urls:
+            if isinstance(dbf_urls, str):
+                dbf_urls_json = dbf_urls
+            else:
+                dbf_urls_json = json.dumps(dbf_urls)
+        else:
+            dbf_urls_json = None
         
         # ÇÖP URL'ini JSON formatında sakla
         if not cop_url:
