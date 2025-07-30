@@ -92,10 +92,10 @@ def main():
             # 2. Kazanım Tablosu
             kazanim_tablosu_str, kazanim_tablosu_data = ex_kazanim_tablosu(full_text)
             print(kazanim_tablosu_str)
-            
+                       
             # 3. Öğrenme Birimi Tablosu
             ob_tablosu_result = ex_ob_tablosu(full_text)
-            print(ob_tablosu_result)
+            #print(ob_tablosu_result)
 
             # tüm metni bas amk
             #print(full_text)

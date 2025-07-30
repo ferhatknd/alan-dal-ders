@@ -300,8 +300,7 @@ def ex_kazanim_tablosu(full_text):
                 ders_saati = match[4]
                 oran = match[5]
             
-            # Use cached normalization instead of calling twice
-            if ogrenme_birimi.upper().strip() != "TOPLAM":
+            if normalize_turkish_text(ogrenme_birimi) != normalize_turkish_text("TOPLAM"):
                 lines.append(f"{ogrenme_birimi}, {kazanim_sayisi}, {ders_saati}, {oran}")
                 structured_data.append({
                     'title': ogrenme_birimi,
@@ -316,10 +315,10 @@ def ex_kazanim_tablosu(full_text):
                 result += f"{idx}-{line}\n"
             return result.strip(), structured_data
         else:
-            return "KAZANIM SAYISI VE SÜRE TABLOSU - Veri bulunamadı", []
+            return "Tablo verileri parse edilemedi", []
                 
     except Exception as e:
-        return f"KAZANIM SAYISI VE SÜRE TABLOSU - HATA: {str(e)}", []
+        return f"Hata: {str(e)}", []
 
 
 # ===========================

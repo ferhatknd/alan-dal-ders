@@ -702,9 +702,9 @@ def main():
         print(kazanim_tablosu_str)
         
         # ÖĞRENİM BİRİMLERİ TABLOSU
-        result2 = ex_ob_tablosu(full_text=full_text)
-        print(result2)
-        print("-"*80)
+        #result2 = ex_ob_tablosu(full_text=full_text)
+        #print(result2)
+        #print("-"*80)
         print(file_path)
 
 if __name__ == "__main__":
