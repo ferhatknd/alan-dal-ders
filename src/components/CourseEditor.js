@@ -40,7 +40,14 @@ const LearningUnitsManager = ({ dersId, learningUnits, onChange, loading, onImpo
   const removeUnit = (unitIndex) => {
     if (window.confirm('Bu öğrenme birimini silmek istediğinizden emin misiniz?')) {
       const updated = learningUnits.filter((_, index) => index !== unitIndex);
-      onChange(updated);
+      
+      // Sıralamayı yeniden düzenle
+      const reorderedUnits = updated.map((unit, index) => ({
+        ...unit,
+        sira: index + 1
+      }));
+      
+      onChange(reorderedUnits);
     }
   };
 
@@ -74,6 +81,13 @@ const LearningUnitsManager = ({ dersId, learningUnits, onChange, loading, onImpo
     if (window.confirm('Bu konuyu silmek istediğinizden emin misiniz?')) {
       const updated = [...learningUnits];
       updated[unitIndex].konular = updated[unitIndex].konular.filter((_, index) => index !== topicIndex);
+      
+      // Sıralamayı yeniden düzenle
+      updated[unitIndex].konular = updated[unitIndex].konular.map((topic, index) => ({
+        ...topic,
+        sira: index + 1
+      }));
+      
       onChange(updated);
     }
   };
@@ -108,6 +122,14 @@ const LearningUnitsManager = ({ dersId, learningUnits, onChange, loading, onImpo
       const updated = [...learningUnits];
       updated[unitIndex].konular[topicIndex].kazanimlar = 
         updated[unitIndex].konular[topicIndex].kazanimlar.filter((_, index) => index !== achievementIndex);
+      
+      // Sıralamayı yeniden düzenle
+      updated[unitIndex].konular[topicIndex].kazanimlar = 
+        updated[unitIndex].konular[topicIndex].kazanimlar.map((achievement, index) => ({
+          ...achievement,
+          sira: index + 1
+        }));
+      
       onChange(updated);
     }
   };
@@ -157,7 +179,10 @@ const LearningUnitsManager = ({ dersId, learningUnits, onChange, loading, onImpo
                 <MaterialTextField
                   label="Öğrenme Birimi Adı"
                   value={unit.birim_adi}
-                  onChange={(e) => updateUnit(unitIndex, 'birim_adi', e.target.value)}
+                  onChange={(e) => {
+                    const value = e?.target?.value ?? e;
+                    updateUnit(unitIndex, 'birim_adi', value);
+                  }}
                 />
               </div>
               
@@ -166,7 +191,10 @@ const LearningUnitsManager = ({ dersId, learningUnits, onChange, loading, onImpo
                   label="Süre (saat)"
                   type="number"
                   value={unit.sure}
-                  onChange={(e) => updateUnit(unitIndex, 'sure', parseInt(e.target.value) || 0)}
+                  onChange={(e) => {
+                    const value = e?.target?.value ?? e;
+                    updateUnit(unitIndex, 'sure', parseInt(value) || 0);
+                  }}
                 />
               </div>
               
@@ -214,7 +242,10 @@ const LearningUnitsManager = ({ dersId, learningUnits, onChange, loading, onImpo
                           <MaterialTextField
                             label="Konu Adı"
                             value={topic.konu_adi}
-                            onChange={(e) => updateTopic(unitIndex, topicIndex, 'konu_adi', e.target.value)}
+                            onChange={(e) => {
+                              const value = e?.target?.value ?? e;
+                              updateTopic(unitIndex, topicIndex, 'konu_adi', value);
+                            }}
                           />
                         </div>
                         
@@ -247,7 +278,10 @@ const LearningUnitsManager = ({ dersId, learningUnits, onChange, loading, onImpo
                                     <MaterialTextField
                                       label="Kazanım Açıklaması"
                                       value={achievement.kazanim_adi}
-                                      onChange={(e) => updateAchievement(unitIndex, topicIndex, achievementIndex, 'kazanim_adi', e.target.value)}
+                                      onChange={(e) => {
+                                        const value = e?.target?.value ?? e;
+                                        updateAchievement(unitIndex, topicIndex, achievementIndex, 'kazanim_adi', value);
+                                      }}
                                     />
                                   </div>
                                   
@@ -280,9 +314,7 @@ const LearningUnitsManager = ({ dersId, learningUnits, onChange, loading, onImpo
 const CopDropdown = ({ copUrls, onSelectCop }) => {
   const [isOpen, setIsOpen] = useState(false);
   
-  console.log('🔍 CopDropdown render - copUrls:', copUrls);
-  console.log('🔍 CopDropdown - copUrls type:', typeof copUrls);
-  console.log('🔍 CopDropdown - keys:', copUrls ? Object.keys(copUrls) : 'null');
+  // COP Dropdown debug (reduced logging)
   
   if (!copUrls || Object.keys(copUrls).length === 0) {
     console.log('❌ CopDropdown: COP URL\'leri bulunamadı veya boş');
@@ -308,7 +340,7 @@ const CopDropdown = ({ copUrls, onSelectCop }) => {
     };
   });
   
-  console.log('CopDropdown: COP listesi oluşturuldu:', copList);
+  // COP list created successfully
   
   return (
     <div className="dropdown-container">
@@ -324,7 +356,7 @@ const CopDropdown = ({ copUrls, onSelectCop }) => {
             <button
               key={item.key}
               onClick={() => {
-                console.log('🔗 COP seçildi:', item.url);
+                // COP selected
                 onSelectCop(item.url, `ÇÖP - ${item.label}`);
                 setIsOpen(false);
               }}
@@ -343,9 +375,7 @@ const CopDropdown = ({ copUrls, onSelectCop }) => {
 const DbfDropdown = ({ dbfUrls, onSelectDbf }) => {
   const [isOpen, setIsOpen] = useState(false);
   
-  console.log('🔍 DbfDropdown render - dbfUrls:', dbfUrls);
-  console.log('🔍 DbfDropdown - dbfUrls type:', typeof dbfUrls);
-  console.log('🔍 DbfDropdown - keys:', dbfUrls ? Object.keys(dbfUrls) : 'null');
+  // DBF Dropdown debug (reduced logging)
   
   if (!dbfUrls || Object.keys(dbfUrls).length === 0) {
     console.log('❌ DbfDropdown: DBF URL\'leri bulunamadı veya boş');
@@ -364,7 +394,7 @@ const DbfDropdown = ({ dbfUrls, onSelectDbf }) => {
     key: key
   }));
   
-  console.log('DbfDropdown: DBF listesi oluşturuldu:', dbfList);
+  // DBF list created successfully
   
   return (
     <div className="dropdown-container">
@@ -710,7 +740,7 @@ const DocumentViewer = ({ url, title, onLoad, onError, loading, error }) => {
   };
 
   useEffect(() => {
-    console.log('📄 DocumentViewer - URL değişti:', url);
+    // DocumentViewer URL changed
     
     if (!url) {
       setDebugInfo('URL boş');
@@ -757,7 +787,7 @@ const DocumentViewer = ({ url, title, onLoad, onError, loading, error }) => {
   }, [url]);
 
   const handleLoad = () => {
-    console.log('✅ Document loaded successfully');
+    // Document loaded
     setInternalLoading(false);
     setDebugInfo(prev => prev + ' | Loaded');
     if (loadTimer) clearTimeout(loadTimer);
@@ -765,7 +795,7 @@ const DocumentViewer = ({ url, title, onLoad, onError, loading, error }) => {
   };
 
   const handleError = (e) => {
-    console.log('❌ Document loading error:', e);
+    console.log('❌ Document loading error');
     setInternalLoading(false);
     setDebugInfo(prev => prev + ' | Error: ' + (e?.message || 'Unknown'));
     if (loadTimer) clearTimeout(loadTimer);
@@ -774,15 +804,10 @@ const DocumentViewer = ({ url, title, onLoad, onError, loading, error }) => {
 
   // Debug loading states
   useEffect(() => {
-    console.log('🔍 LOADING STATE DEBUG:');
-    console.log('  URL:', url);
-    console.log('  viewerType:', viewerType);
-    console.log('  internalLoading:', internalLoading);
-    console.log('  loading prop:', loading);
-    console.log('  showLoading will be:', loading || internalLoading);
+    // Loading state debug (reduced)
     
     if (url && viewerType === 'pdf') {
-      console.log('🚀 PDF detected - disabling loading state completely');
+      // PDF loading disabled
       setInternalLoading(false);
       setDebugInfo(prev => prev + ' | No loading');
     }
@@ -822,13 +847,13 @@ const DocumentViewer = ({ url, title, onLoad, onError, loading, error }) => {
       );
     }
 
-    console.log('🎯 Rendering viewer for type:', viewerType);
+    // Rendering viewer
 
     switch (viewerType) {
       case 'pdf':
         // Clean PDF viewer - no loading for PDFs, direct display
         const pdfUrl = url.startsWith('http') ? url : `http://localhost:5001/api/files/${encodeURIComponent(url)}`;
-        console.log('🔗 PDF URL for iframe:', pdfUrl);
+        // PDF URL ready
         
         return (
           <div style={{ height: '100%', width: '100%' }}>
@@ -838,11 +863,11 @@ const DocumentViewer = ({ url, title, onLoad, onError, loading, error }) => {
               style={{ width: '100%', height: '100%', border: 'none' }}
               title={title}
               onLoad={() => {
-                console.log('✅ PDF IFRAME LOADED successfully');
+                // PDF loaded
                 handleLoad();
               }}
               onError={(e) => {
-                console.log('❌ PDF IFRAME ERROR:', e);
+                console.log('❌ PDF loading error');
                 handleError(e);
               }}
             />
@@ -907,6 +932,10 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
   const [saveStatus, setSaveStatus] = useState('idle'); // 'idle', 'saving', 'success', 'error'
   const [saveMessage, setSaveMessage] = useState('');
   
+  // Import feedback states
+  const [importStatus, setImportStatus] = useState('idle'); // 'idle', 'importing', 'success', 'error'
+  const [importMessage, setImportMessage] = useState('');
+  
   // Split screen mode - PDF açık mı?
   const isSplitMode = Boolean(pdfUrl);
   
@@ -918,7 +947,7 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
     // Base width calculation
     const baseWidth = Math.max(400, Math.min(charCount * 8 + 200, 800));
     
-    console.log(`📏 Flexible sidebar for course "${courseName}" (${charCount} chars), base: ${baseWidth}px`);
+    // Flexible sidebar width calculated
     
     return {
       width: `min(${baseWidth}px, 50vw)`, // Never exceed 50% of viewport
@@ -937,10 +966,7 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
         .then(response => response.json())
         .then(result => {
           if (result.success && result.data) {
-            console.log('✅ Fresh ders data loaded:', result.data);
-            console.log('🎯 AMAC DEBUG - Raw amac from DB:', result.data.amac);
-            console.log('🎯 AMAC DEBUG - Type:', typeof result.data.amac);
-            console.log('🎯 AMAC DEBUG - Length:', result.data.amac ? result.data.amac.length : 'null/undefined');
+            console.log('✅ Fresh ders data loaded for ID:', result.data.ders_id);
             
             setEditData({
               ders_id: result.data.ders_id || '',
@@ -954,6 +980,8 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
               bom_url: result.data.bom_url || '',
               amac: result.data.amac || ''
             });
+            //  chained call to load learning units after course data is set
+            loadLearningUnits(result.data.ders_id);
           } else {
             console.error('❌ Fresh data loading failed:', result.error);
             // Fallback to passed course data
@@ -996,7 +1024,7 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
       fetch('http://localhost:5001/api/alan-dal-options')
         .then(res => res.json())
         .then(data => {
-          console.log('Alan-Dal seçenekleri yüklendi:', data);
+          console.log('Alan-Dal seçenekleri yüklendi - Alanlar:', data.alanlar?.length || 0);
           setAlanDalOptions(data);
         })
         .catch(err => console.error('Alan-Dal seçenekleri yüklenirken hata:', err));
@@ -1007,23 +1035,22 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
   // COP ve DBF URL'lerini alan_id değiştiğinde güncelle
   useEffect(() => {
     if (editData.alan_id && alanDalOptions.alanlar.length > 0) {
-      console.log('🔄 COP ve DBF URL\'leri güncelleniyor, alan_id:', editData.alan_id);
+      // Updating COP and DBF URLs for alan_id: ${editData.alan_id}
       
       const selectedAlan = alanDalOptions.alanlar.find(alan => alan.id === parseInt(editData.alan_id));
-      console.log('🔍 selectedAlan bulundu:', selectedAlan);
       
       // COP URL'lerini güncelle
       if (selectedAlan && selectedAlan.cop_url) {
         try {
           const copData = JSON.parse(selectedAlan.cop_url);
-          console.log('✅ COP verisi parse edildi:', copData);
+          // COP data parsed successfully
           setCopUrls(copData);
         } catch (e) {
-          console.log('⚠️ COP verisi JSON değil, string olarak işleniyor:', selectedAlan.cop_url);
+          console.log('⚠️ COP data is string, not JSON');
           setCopUrls({ 'cop_url': selectedAlan.cop_url });
         }
       } else {
-        console.log('❌ Seçilen alan için COP verisi bulunamadı');
+        console.log('❌ No COP data found for selected alan');
         setCopUrls({});
       }
       
@@ -1031,14 +1058,14 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
       if (selectedAlan && selectedAlan.dbf_urls) {
         try {
           const dbfData = JSON.parse(selectedAlan.dbf_urls);
-          console.log('✅ DBF verisi parse edildi:', dbfData);
+          // DBF data parsed successfully
           setDbfUrls(dbfData);
         } catch (e) {
-          console.log('⚠️ DBF verisi JSON değil, string olarak işleniyor:', selectedAlan.dbf_urls);
+          console.log('⚠️ DBF data is string, not JSON');
           setDbfUrls({ 'dbf_urls': selectedAlan.dbf_urls });
         }
       } else {
-        console.log('❌ Seçilen alan için DBF verisi bulunamadı');
+        console.log('❌ No DBF data found for selected alan');
         setDbfUrls({});
       }
     }
@@ -1047,7 +1074,7 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
   // PDF URL değiştiğinde loading state'ini sıfırla - PDF için loading disable
   useEffect(() => {
     if (pdfUrl) {
-      console.log('🔧 PDF URL changed, disabling loading for PDF');
+      // PDF URL changed - disabling loading
       setPdfLoading(false); // PDF için loading disable
       setPdfError(null);
     }
@@ -1103,9 +1130,10 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
     setSaveMessage('Kaydediliyor...');
     
     try {
-      // Prepare data with learning units
+      // Prepare data with learning units (no aciklama field in schema)
+      const safeEditData = { ...editData };
       const saveData = {
-        ...editData,
+        ...safeEditData,
         ogrenme_birimleri: learningUnits.map(unit => ({
           ...unit,
           konular: (unit.konular || []).map(topic => ({
@@ -1134,7 +1162,7 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
         
         // Reload learning units to get fresh IDs
         if (editData.ders_id) {
-          loadLearningUnits(editData.ders_id);
+          await loadLearningUnits(editData.ders_id);
         }
         
         // Auto-hide success message after 3 seconds (sidebar stays open)
@@ -1220,7 +1248,7 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
       const result = await response.json();
       
       if (result.success) {
-        console.log('🎯 Learning units loaded:', result.data);
+        console.log('🎯 Learning units loaded count:', result.data?.length || 0);
         setLearningUnits(result.data || []);
       } else {
         console.error('❌ Learning units loading failed:', result.error);
@@ -1299,22 +1327,26 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
     return topics;
   };
 
-  // Toplu konu yapıştır
+  // Toplu konu yapıştır - silent clipboard access (no notification)
   const handleBulkPastTopics = async (unitIndex) => {
+    // Text input ile manuel yapıştırma modalı göster
+    const text = prompt('Konu listesini yapıştırın (1. Konu adı formatında):\n\nÖrnek:\n1. Bilgisayar sistemleri\n2. İşletim sistemleri\n3. Veri yönetimi');
+    
+    if (!text || !text.trim()) {
+      return; // İptal edildi
+    }
+    
     try {
-      // Clipboard'dan metin al
-      const text = await navigator.clipboard.readText();
-      
-      if (!text.trim()) {
-        alert('Panoda metin bulunamadı!');
-        return;
-      }
-      
       // Metni parse et
       const newTopics = parseBulkTopicsText(text);
       
       if (newTopics.length === 0) {
-        alert('Metinde geçerli konu bulunamadı!');
+        setImportStatus('error');
+        setImportMessage('❌ Metinde geçerli konu bulunamadı!');
+        setTimeout(() => {
+          setImportStatus('idle');
+          setImportMessage('');
+        }, 4000);
         return;
       }
       
@@ -1347,18 +1379,33 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
       
       setLearningUnits(updated);
       
-      alert(`✅ ${newTopics.length} konu başarıyla eklendi!`);
+      setImportStatus('success');
+      setImportMessage(`✅ ${newTopics.length} konu başarıyla eklendi!`);
+      setTimeout(() => {
+        setImportStatus('idle');
+        setImportMessage('');
+      }, 4000);
       
     } catch (error) {
-      console.error('Clipboard okuma hatası:', error);
-      alert('Panoya erişim hatası! Ctrl+V kullanarak metni manuel yapıştırın.');
+      console.error('Metin parsing hatası:', error);
+      setImportStatus('error');
+      setImportMessage('❌ Metin işleme hatası! Formatı kontrol edin.');
+      setTimeout(() => {
+        setImportStatus('idle');
+        setImportMessage('');
+      }, 4000);
     }
   };
 
   // DBF'den öğrenme birimlerini import et
   const handleImportDbfUnits = async () => {
     if (!editData.ders_id || !editData.dbf_url) {
-      alert('Ders ID veya DBF dosya yolu bulunamadı. Önce bir DBF dosyası seçin.');
+      setImportStatus('error');
+      setImportMessage('❌ Ders ID veya DBF dosya yolu bulunamadı. Önce bir DBF dosyası seçin.');
+      setTimeout(() => {
+        setImportStatus('idle');
+        setImportMessage('');
+      }, 4000);
       return;
     }
 
@@ -1368,7 +1415,10 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
     }
 
     try {
+      setImportStatus('importing');
+      setImportMessage('🔄 DBF dosyası işleniyor...');
       setLearningUnitsLoading(true);
+      
       const response = await fetch('http://localhost:5001/api/import-dbf-learning-units', {
         method: 'POST',
         headers: {
@@ -1385,14 +1435,35 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
       if (result.success) {
         console.log('✅ DBF import successful:', result.imported_units);
         setLearningUnits(result.imported_units);
-        alert(result.message);
+        setImportStatus('success');
+        setImportMessage(`✅ ${result.message}`);
+        
+        // Auto-hide success message after 4 seconds
+        setTimeout(() => {
+          setImportStatus('idle');
+          setImportMessage('');
+        }, 4000);
       } else {
         console.error('❌ DBF import failed:', result.error);
-        alert(`Import hatası: ${result.error}`);
+        setImportStatus('error');
+        setImportMessage(`❌ Import hatası: ${result.error}`);
+        
+        // Auto-hide error message after 5 seconds
+        setTimeout(() => {
+          setImportStatus('idle');
+          setImportMessage('');
+        }, 5000);
       }
     } catch (error) {
       console.error('❌ DBF import request failed:', error);
-      alert(`Request hatası: ${error.message}`);
+      setImportStatus('error');
+      setImportMessage(`❌ Request hatası: ${error.message}`);
+      
+      // Auto-hide error message after 5 seconds
+      setTimeout(() => {
+        setImportStatus('idle');
+        setImportMessage('');
+      }, 5000);
     } finally {
       setLearningUnitsLoading(false);
     }
@@ -1456,21 +1527,30 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
         <MaterialTextField
           label="Ders Adı"
           value={editData.ders_adi}
-          onChange={(value) => handleInputChange('ders_adi', value)}
+          onChange={(e) => {
+            const value = e?.target?.value ?? e;
+            handleInputChange('ders_adi', value);
+          }}
         />
         
         <div className="inline-fields">
           <MaterialTextField
             label="Sınıf"
             value={editData.sinif}
-            onChange={(value) => handleInputChange('sinif', value)}
+            onChange={(e) => {
+              const value = e?.target?.value ?? e;
+              handleInputChange('sinif', value);
+            }}
             type="number"
           />
           
           <MaterialTextField
             label="Ders Saati"
             value={editData.ders_saati}
-            onChange={(value) => handleInputChange('ders_saati', value)}
+            onChange={(e) => {
+              const value = e?.target?.value ?? e;
+              handleInputChange('ders_saati', value);
+            }}
             type="number"
           />
         </div>
@@ -1478,7 +1558,10 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
         <MaterialTextField
           label="Ders Amacı"
           value={editData.amac}
-          onChange={(value) => handleInputChange('amac', value)}
+          onChange={(e) => {
+            const value = e?.target?.value ?? e;
+            handleInputChange('amac', value);
+          }}
           multiline={true}
           rows={3}
         />
@@ -1486,13 +1569,19 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
         <MaterialTextField
           label="DM URL"
           value={editData.dm_url}
-          onChange={(value) => handleInputChange('dm_url', value)}
+          onChange={(e) => {
+            const value = e?.target?.value ?? e;
+            handleInputChange('dm_url', value);
+          }}
         />
 
         <MaterialTextField
           label="BOM URL" 
           value={editData.bom_url}
-          onChange={(value) => handleInputChange('bom_url', value)}
+          onChange={(e) => {
+            const value = e?.target?.value ?? e;
+            handleInputChange('bom_url', value);
+          }}
         />
       </div>
 
@@ -1512,6 +1601,13 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
       {saveMessage && (
         <div className={`save-feedback ${saveStatus}`}>
           {saveMessage}
+        </div>
+      )}
+      
+      {/* Import Feedback */}
+      {importMessage && (
+        <div className={`import-feedback ${importStatus}`}>
+          {importMessage}
         </div>
       )}
 
@@ -1541,7 +1637,7 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
           <button 
             onClick={() => {
               if (pdfUrl) {
-                onClose(); // PDF açıksa kapat
+                onShowPDF(null, ''); // PDF açıksa sadece PDF'i kapat, sidebar açık bırak
               } else {
                 handleDbfSelect(editData.dbf_url, 'DBF'); // PDF kapalıysa aç
               }

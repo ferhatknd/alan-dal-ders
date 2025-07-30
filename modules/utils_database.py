@@ -874,3 +874,107 @@ def create_ders_dal_relation(cursor, ders_id, dal_id):
     """, (ders_id, dal_id))
     
     return True
+
+def save_learning_units(cursor, ders_id, ogrenme_birimleri):
+    """
+    Bir dersin öğrenme birimlerini, konularını ve kazanımlarını kaydeder.
+    Hiyerarşik veri yapısını handle eder.
+    Duplicate kayıtları engeller (INSERT OR UPDATE), case-insensitive.
+    """
+    saved_count = 0
+    
+    try:
+        for birim_data in ogrenme_birimleri:
+            birim_id = birim_data.get('id')
+            birim_adi = birim_data.get('birim_adi', '').strip()
+
+            if not birim_adi:
+                continue
+
+            # ID yoksa, mevcut bir kayıt var mı diye case-insensitive kontrol et
+            if not birim_id:
+                cursor.execute(
+                    "SELECT id FROM temel_plan_ogrenme_birimi WHERE ders_id = ? AND UPPER(birim_adi) = ?",
+                    (ders_id, birim_adi.upper())
+                )
+                existing_birim = cursor.fetchone()
+                if existing_birim:
+                    birim_id = existing_birim['id']
+
+            if birim_id:
+                # Güncelleme
+                cursor.execute("""
+                    UPDATE temel_plan_ogrenme_birimi 
+                    SET birim_adi=?, sure=?, sira=?, updated_at=CURRENT_TIMESTAMP
+                    WHERE id=?
+                """, (
+                    birim_adi,
+                    birim_data.get('sure', 0),
+                    birim_data.get('sira', 0),
+                    birim_id
+                ))
+            else:
+                # Yeni kayıt
+                cursor.execute("""
+                    INSERT INTO temel_plan_ogrenme_birimi (ders_id, birim_adi, sure, sira)
+                    VALUES (?, ?, ?, ?)
+                """, (
+                    ders_id,
+                    birim_adi,
+                    birim_data.get('sure', 0),
+                    birim_data.get('sira', 0)
+                ))
+                birim_id = cursor.lastrowid
+            
+            saved_count += 1
+            
+            # Konuları kaydet - önceki konuları sil ve yeniden yaz (REPLACE strategy)
+            if 'konular' in birim_data:
+                # Önce bu öğrenme biriminin tüm konularını sil (CASCADE ile kazanımlar da silinecek)
+                cursor.execute("DELETE FROM temel_plan_konu WHERE ogrenme_birimi_id = ?", (birim_id,))
+                
+                # Şimdi yeni konuları ekle
+                for konu_data in birim_data.get('konular', []):
+                    konu_adi = konu_data.get('konu_adi', '').strip()
+
+                    if not konu_adi:
+                        continue
+                    
+                    # Yeni kayıt - DELETE yapıldığı için UPDATE gereksiz
+                    cursor.execute("""
+                        INSERT INTO temel_plan_konu (ogrenme_birimi_id, konu_adi, sira)
+                        VALUES (?, ?, ?)
+                    """, (
+                        birim_id,
+                        konu_adi,
+                        konu_data.get('sira', 0)
+                    ))
+                    konu_id = cursor.lastrowid
+                    
+                    # Kazanımları kaydet - önceki kazanımları sil ve yeniden yaz
+                    if 'kazanimlar' in konu_data:
+                        # Önce bu konunun tüm kazanımlarını sil
+                        cursor.execute("DELETE FROM temel_plan_kazanim WHERE konu_id = ?", (konu_id,))
+                        
+                        # Şimdi yeni kazanımları ekle
+                        for kazanim_data in konu_data.get('kazanimlar', []):
+                            kazanim_adi = kazanim_data.get('kazanim_adi', '').strip()
+
+                            if not kazanim_adi:
+                                continue
+
+                            # Yeni kayıt - DELETE yapıldığı için UPDATE gereksiz
+                            cursor.execute("""
+                                INSERT INTO temel_plan_kazanim (konu_id, kazanim_adi, sira)
+                                VALUES (?, ?, ?)
+                            """, (
+                                konu_id,
+                                kazanim_adi,
+                                kazanim_data.get('sira', 0)
+                            ))
+        
+        return saved_count
+        
+    except Exception as e:
+        print(f"save_learning_units hatası: {e}")
+        raise e

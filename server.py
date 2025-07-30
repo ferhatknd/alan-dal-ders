@@ -25,7 +25,7 @@ from modules.get_bom import get_bom
 from modules.get_dal import get_dal
 
 # Database utilities from utils_database.py
-from modules.utils_database import with_database_json, find_or_create_database, get_or_create_alan
+from modules.utils_database import with_database_json, find_or_create_database, get_or_create_alan, save_learning_units
 from modules.utils_normalize import normalize_to_title_case_tr
 
 # DBF parsing utilities
@@ -509,10 +509,10 @@ def get_table_data():
                    ders.dbf_url,
                    ders.bom_url
                 FROM 
-                   temel_plan_alan a
-                   INNER JOIN temel_plan_dal d ON d.alan_id = a.id
-                   INNER JOIN temel_plan_ders_dal dd ON dd.dal_id = d.id
-                   INNER JOIN temel_plan_ders ders ON ders.id = dd.ders_id
+                   temel_plan_ders ders
+                   LEFT JOIN temel_plan_ders_dal dd ON dd.ders_id = ders.id
+                   LEFT JOIN temel_plan_dal d ON d.id = dd.dal_id
+                   LEFT JOIN temel_plan_alan a ON a.id = d.alan_id
                 ORDER BY 
                    a.alan_adi, 
                    d.dal_adi, 
@@ -618,121 +618,7 @@ def copy_course():
         print(f"Ders kopyalama hatası: {e}")
         return jsonify({"error": str(e)}), 500
 
-def save_learning_units(cursor, ders_id, ogrenme_birimleri):
-    """
-    Bir dersin öğrenme birimlerini, konularını ve kazanımlarını kaydeder.
-    Hiyerarşik veri yapısını handle eder.
-    
-    CLAUDE.md prensibi: Schema ile uyumlu tablo adları kullanır:
-    - temel_plan_ogrenme_birimi
-    - temel_plan_konu  
-    - temel_plan_kazanim
-    """
-    saved_count = 0
-    
-    try:
-        for birim_data in ogrenme_birimleri:
-            # Öğrenme birimi kaydet/güncelle
-            birim_id = birim_data.get('id')
-            
-            if birim_id:
-                # Güncelleme
-                cursor.execute("""
-                    UPDATE temel_plan_ogrenme_birimi 
-                    SET birim_adi=?, sure=?, aciklama=?, sira=?, updated_at=CURRENT_TIMESTAMP
-                    WHERE id=? AND ders_id=?
-                """, (
-                    birim_data.get('birim_adi', ''),
-                    birim_data.get('sure', 0),
-                    birim_data.get('aciklama', ''),
-                    birim_data.get('sira', 0),
-                    birim_id,
-                    ders_id
-                ))
-            else:
-                # Yeni kayıt
-                cursor.execute("""
-                    INSERT INTO temel_plan_ogrenme_birimi (ders_id, birim_adi, sure, aciklama, sira)
-                    VALUES (?, ?, ?, ?, ?)
-                """, (
-                    ders_id,
-                    birim_data.get('birim_adi', ''),
-                    birim_data.get('sure', 0),
-                    birim_data.get('aciklama', ''),
-                    birim_data.get('sira', 0)
-                ))
-                birim_id = cursor.lastrowid
-            
-            saved_count += 1
-            
-            # Konuları kaydet
-            if 'konular' in birim_data:
-                for konu_data in birim_data['konular']:
-                    konu_id = konu_data.get('id')
-                    
-                    if konu_id:
-                        # Güncelleme
-                        cursor.execute("""
-                            UPDATE temel_plan_konu 
-                            SET konu_adi=?, detay=?, sira=?, updated_at=CURRENT_TIMESTAMP
-                            WHERE id=? AND ogrenme_birimi_id=?
-                        """, (
-                            konu_data.get('konu_adi', ''),
-                            konu_data.get('detay', ''),
-                            konu_data.get('sira', 0),
-                            konu_id,
-                            birim_id
-                        ))
-                    else:
-                        # Yeni kayıt
-                        cursor.execute("""
-                            INSERT INTO temel_plan_konu (ogrenme_birimi_id, konu_adi, detay, sira)
-                            VALUES (?, ?, ?, ?)
-                        """, (
-                            birim_id,
-                            konu_data.get('konu_adi', ''),
-                            konu_data.get('detay', ''),
-                            konu_data.get('sira', 0)
-                        ))
-                        konu_id = cursor.lastrowid
-                    
-                    # Kazanımları kaydet
-                    if 'kazanimlar' in konu_data:
-                        for kazanim_data in konu_data['kazanimlar']:
-                            kazanim_id = kazanim_data.get('id')
-                            
-                            if kazanim_id:
-                                # Güncelleme
-                                cursor.execute("""
-                                    UPDATE temel_plan_kazanim 
-                                    SET kazanim_adi=?, seviye=?, kod=?, sira=?, updated_at=CURRENT_TIMESTAMP
-                                    WHERE id=? AND konu_id=?
-                                """, (
-                                    kazanim_data.get('kazanim_adi', ''),
-                                    kazanim_data.get('seviye', ''),
-                                    kazanim_data.get('kod', ''),
-                                    kazanim_data.get('sira', 0),
-                                    kazanim_id,
-                                    konu_id
-                                ))
-                            else:
-                                # Yeni kayıt
-                                cursor.execute("""
-                                    INSERT INTO temel_plan_kazanim (konu_id, kazanim_adi, seviye, kod, sira)
-                                    VALUES (?, ?, ?, ?, ?)
-                                """, (
-                                    konu_id,
-                                    kazanim_data.get('kazanim_adi', ''),
-                                    kazanim_data.get('seviye', ''),
-                                    kazanim_data.get('kod', ''),
-                                    kazanim_data.get('sira', 0)
-                                ))
-        
-        return saved_count
-        
-    except Exception as e:
-        print(f"save_learning_units hatası: {e}")
-        raise e
+
 
 
 @app.route('/api/save', methods=['POST'])
@@ -971,23 +857,42 @@ def load_data(cursor):
             # Öğrenme birimi bilgilerini çek
             if entity_id:
                 # Tek öğrenme birimi
-                cursor.execute("SELECT id, ders_id, birim_adi, sure, aciklama, sira FROM temel_plan_ogrenme_birimi WHERE id = ?", (entity_id,))
+                cursor.execute("SELECT id, ders_id, birim_adi, sure, sira FROM temel_plan_ogrenme_birimi WHERE id = ?", (entity_id,))
                 result = cursor.fetchone()
                 if not result:
                     return {"error": "Öğrenme birimi bulunamadı"}
-                columns = ['id', 'ders_id', 'birim_adi', 'sure', 'aciklama', 'sira']
+                columns = ['id', 'ders_id', 'birim_adi', 'sure', 'sira']
                 birim_data = dict(zip(columns, result))
                 return {"success": True, "data": birim_data}
             elif parent_id:
                 # Belirli dersin öğrenme birimleri
-                cursor.execute("SELECT id, ders_id, birim_adi, sure, aciklama, sira FROM temel_plan_ogrenme_birimi WHERE ders_id = ? ORDER BY sira, birim_adi", (parent_id,))
-                results = cursor.fetchall()
-                birimler = []
-                for result in results:
-                    columns = ['id', 'ders_id', 'birim_adi', 'sure', 'aciklama', 'sira']
-                    birim_data = dict(zip(columns, result))
-                    birimler.append(birim_data)
-                return {"success": True, "data": birimler}
+                cursor.execute("SELECT id, ders_id, birim_adi, sure, sira FROM temel_plan_ogrenme_birimi WHERE ders_id = ? ORDER BY sira, birim_adi", (parent_id,))
+                ogrenme_birimleri = cursor.fetchall()
+                
+                # Hiyerarşik yapıyı oluştur
+                birimler_data = []
+                for birim in ogrenme_birimleri:
+                    birim_dict = dict(birim)
+                    
+                    # Konuları çek
+                    cursor.execute("SELECT id, konu_adi, sira FROM temel_plan_konu WHERE ogrenme_birimi_id = ? ORDER BY sira, konu_adi", (birim_dict['id'],))
+                    konular = cursor.fetchall()
+                    
+                    konular_data = []
+                    for konu in konular:
+                        konu_dict = dict(konu)
+                        
+                        # Kazanımları çek
+                        cursor.execute("SELECT id, kazanim_adi, sira FROM temel_plan_kazanim WHERE konu_id = ? ORDER BY sira, kazanim_adi", (konu_dict['id'],))
+                        kazanimlar = cursor.fetchall()
+                        konu_dict['kazanimlar'] = [dict(k) for k in kazanimlar]
+                        
+                        konular_data.append(konu_dict)
+                    
+                    birim_dict['konular'] = konular_data
+                    birimler_data.append(birim_dict)
+                    
+                return {"success": True, "data": birimler_data}
             else:
                 return {"error": "Öğrenme birimi için ders_id (parent_id) gerekli"}
         
@@ -995,30 +900,30 @@ def load_data(cursor):
             # Konu bilgilerini çek
             if entity_id:
                 # Tek konu
-                cursor.execute("SELECT id, ogrenme_birimi_id, konu_adi, detay, sira FROM temel_plan_konu WHERE id = ?", (entity_id,))
+                cursor.execute("SELECT id, ogrenme_birimi_id, konu_adi, sira FROM temel_plan_konu WHERE id = ?", (entity_id,))
                 result = cursor.fetchone()
                 if not result:
                     return {"error": "Konu bulunamadı"}
-                columns = ['id', 'ogrenme_birimi_id', 'konu_adi', 'detay', 'sira']
+                columns = ['id', 'ogrenme_birimi_id', 'konu_adi', 'sira']
                 konu_data = dict(zip(columns, result))
                 return {"success": True, "data": konu_data}
             elif parent_id:
                 # Belirli öğrenme biriminin konuları
-                cursor.execute("SELECT id, ogrenme_birimi_id, konu_adi, detay, sira FROM temel_plan_konu WHERE ogrenme_birimi_id = ? ORDER BY sira, konu_adi", (parent_id,))
+                cursor.execute("SELECT id, ogrenme_birimi_id, konu_adi, sira FROM temel_plan_konu WHERE ogrenme_birimi_id = ? ORDER BY sira, konu_adi", (parent_id,))
                 results = cursor.fetchall()
                 konular = []
                 for result in results:
-                    columns = ['id', 'ogrenme_birimi_id', 'konu_adi', 'detay', 'sira']
+                    columns = ['id', 'ogrenme_birimi_id', 'konu_adi', 'sira']
                     konu_data = dict(zip(columns, result))
                     konular.append(konu_data)
                 return {"success": True, "data": konular}
             else:
                 # Tüm konular
-                cursor.execute("SELECT id, ogrenme_birimi_id, konu_adi, detay, sira FROM temel_plan_konu ORDER BY konu_adi")
+                cursor.execute("SELECT id, ogrenme_birimi_id, konu_adi, sira FROM temel_plan_konu ORDER BY konu_adi")
                 results = cursor.fetchall()
                 konular = []
                 for result in results:
-                    columns = ['id', 'ogrenme_birimi_id', 'konu_adi', 'detay', 'sira']
+                    columns = ['id', 'ogrenme_birimi_id', 'konu_adi', 'sira']
                     konu_data = dict(zip(columns, result))
                     konular.append(konu_data)
                 return {"success": True, "data": konular}
@@ -1027,30 +932,30 @@ def load_data(cursor):
             # Kazanım bilgilerini çek
             if entity_id:
                 # Tek kazanım
-                cursor.execute("SELECT id, konu_id, kazanim_adi, seviye, kod, sira FROM temel_plan_kazanim WHERE id = ?", (entity_id,))
+                cursor.execute("SELECT id, konu_id, kazanim_adi, sira FROM temel_plan_kazanim WHERE id = ?", (entity_id,))
                 result = cursor.fetchone()
                 if not result:
                     return {"error": "Kazanım bulunamadı"}
-                columns = ['id', 'konu_id', 'kazanim_adi', 'seviye', 'kod', 'sira']
+                columns = ['id', 'konu_id', 'kazanim_adi', 'sira']
                 kazanim_data = dict(zip(columns, result))
                 return {"success": True, "data": kazanim_data}
             elif parent_id:
                 # Belirli konunun kazanımları
-                cursor.execute("SELECT id, konu_id, kazanim_adi, seviye, kod, sira FROM temel_plan_kazanim WHERE konu_id = ? ORDER BY sira, kazanim_adi", (parent_id,))
+                cursor.execute("SELECT id, konu_id, kazanim_adi, sira FROM temel_plan_kazanim WHERE konu_id = ? ORDER BY sira, kazanim_adi", (parent_id,))
                 results = cursor.fetchall()
                 kazanimlar = []
                 for result in results:
-                    columns = ['id', 'konu_id', 'kazanim_adi', 'seviye', 'kod', 'sira']
+                    columns = ['id', 'konu_id', 'kazanim_adi', 'sira']
                     kazanim_data = dict(zip(columns, result))
                     kazanimlar.append(kazanim_data)
                 return {"success": True, "data": kazanimlar}
             else:
                 # Tüm kazanımlar
-                cursor.execute("SELECT id, konu_id, kazanim_adi, seviye, kod, sira FROM temel_plan_kazanim ORDER BY kazanim_adi")
+                cursor.execute("SELECT id, konu_id, kazanim_adi, sira FROM temel_plan_kazanim ORDER BY kazanim_adi")
                 results = cursor.fetchall()
                 kazanimlar = []
                 for result in results:
-                    columns = ['id', 'konu_id', 'kazanim_adi', 'seviye', 'kod', 'sira']
+                    columns = ['id', 'konu_id', 'kazanim_adi', 'sira']
                     kazanim_data = dict(zip(columns, result))
                     kazanimlar.append(kazanim_data)
                 return {"success": True, "data": kazanimlar}

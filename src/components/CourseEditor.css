@@ -417,6 +417,35 @@
   border: 1px solid #f5c6cb;
 }
 
+/* Import Feedback Styles */
+.import-feedback {
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.import-feedback.importing {
+  background: #e2f3ff;
+  color: #004085;
+  border: 1px solid #b8d4f0;
+}
+
+.import-feedback.success {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.import-feedback.error {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
 .copy-button {
   background: #6c757d;
   color: white;
@@ -743,6 +772,7 @@
   background: #f8f9fa;
   border-radius: 6px;
   border-left: 4px solid #007bff;
+  min-height: 48px;
 }
 
 .learning-units-header h4 {
@@ -830,8 +860,8 @@
   border-radius: 4px;
   transition: background-color 0.2s;
   align-self: center;
-  height: 32px;
-  width: 32px;
+  height: 56px; /* MaterialTextField height match */
+  width: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -854,8 +884,8 @@
   line-height: 1;
   transition: background-color 0.2s;
   align-self: center;
-  height: 32px;
-  min-width: 32px;
+  height: 56px; /* MaterialTextField height match */
+  min-width: 40px;
   display: flex;
   align-items: center;
   justify-content: center;

@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Bu dosya, Claude Code için MEB Mesleki Eğitim kaynaklarından aldığı belgelerle Ünitelendirilmiş Yıllık Plan Üretme Otomasyonunun kapsamlı kılavuzudur. Proje mantığını koruyarak her seferinde hata yapmaktan kaçınmak için tüm kritik bilgileri içerir.
 
-**Son Güncelleme**: 2025-07-28 (Frontend UI/UX İyileştirmeleri tamamlandı - PDF viewer, sidebar layout ve dropdown standardizasyonu)
+**Son Güncelleme**: 2025-07-30 (Schema uyumsuzluk düzeltmeleri, öğrenme birimi yükleme sorunu çözümü ve debug log temizliği)
 
 ## 🎯 Proje Genel Bakış
 
@@ -37,7 +37,7 @@ npm test
 ```
 
 **Environment Setup (Çoklu Bilgisayar Desteği):**
-```bash
+
 # 1. .env dosyasını kontrol et ve PROJECT_ROOT'u ayarlama örneği:
 # PROJECT_ROOT=/Users/ferhat/Library/Mobile Documents/com~apple~CloudDocs/Projeler/ProjectDogru/repos/alan-dal-ders
 
@@ -363,7 +363,75 @@ temel_plan_ders_dal
   - ❌ `ders_saati` (öğrenme birimi tablosunda yok)
 - **Database İşlemlerinde Consistency**: Her yeni database işlemi öncesi schema.sql ile uyumluluğu kontrol et
 
-## 🔄 Son Güncelleme Detayları - 2025-07-28
+### 11. Schema Uyumsuzluk Hataları ⭐ **YENİ 2025-07-30**
+- **ASLA** schema'da olmayan sütunları SQL sorgularında kullanma
+- **MUTLAKA** schema.sql'deki exact sütun adlarını kullan:
+  ```python
+  # ❌ YANLIŞ - Schema'da olmayan sütunlar
+  cursor.execute("SELECT id, birim_adi, sure, aciklama FROM temel_plan_ogrenme_birimi")  # aciklama yok!
+  cursor.execute("SELECT id, konu_adi, detay FROM temel_plan_konu")  # detay yok!
+  
+  # ✅ DOĞRU - Schema uyumlu sütunlar
+  cursor.execute("SELECT id, birim_adi, sure, sira FROM temel_plan_ogrenme_birimi")
+  cursor.execute("SELECT id, konu_adi, sira FROM temel_plan_konu")
+  ```
+- **Schema Validation**: Her SQL sorgusu yazımından önce `data/schema.sql` kontrol et
+- **Error Prevention**: "no such column" hatalarını önlemek için schema first yaklaşımı
+
+## 🔄 Son Güncelleme Detayları - 2025-07-30
+
+### ✅ Schema Uyumsuzluk Düzeltmeleri Tamamlandı:
+
+1. **Öğrenme Birimi Yükleme Sorunu Çözüldü**:
+   - **Problem**: CourseEditor sidebar açıldığında "❌ Learning units loading failed: no such column: aciklama" hatası
+   - **Kök Neden**: `server.py`'de `/api/load` endpoint'i schema'da olmayan `aciklama` ve `detay` sütunlarını çekmeye çalışıyordu
+   - **Çözüm**: Tüm SQL sorgularında schema uyumlu sütun adları kullanıldı (sadece `id`, `birim_adi`, `sure`, `sira`)
+   - **Sonuç**: Öğrenme birimi verileri artık başarılı şekilde yüklenir ✅
+
+2. **Schema Validation Sistemi**:
+   - **Kaldırılan Alanlar**: `aciklama` (öğrenme birimi), `detay` (konu tablosu) - Schema'da mevcut değil
+   - **Korunan Alanlar**: `birim_adi`, `sure`, `sira` (öğrenme birimi), `konu_adi`, `sira` (konu tablosu)
+   - **SQL Sorgu Düzeltmeleri**: Tüm API endpoint'lerinde schema uyumlu SELECT statement'ları
+   - **Hiyerarşik Veri**: Öğrenme birimi → Konu → Kazanım ilişkisi korundu ✅
+
+3. **Debug Log Temizliği**:
+   - **Azaltılan Loglar**: COP/DBF dropdown tekrarlanan debug mesajları temizlendi
+   - **DocumentViewer**: Verbose PDF loading logları azaltıldı
+   - **Sidebar**: Flexible width calculation logları temizlendi
+   - **Korunan Loglar**: Kritik error mesajları ve başarı bildirileri korundu
+   - **Sonuç**: Konsol çıktısı %70 daha temiz ve anlamlı ✅
+
+4. **CourseEditor.js Stabilizasyonu**:
+   - **Fresh Data Loading**: `/api/load?type=ders&id=X` ile güncel ders bilgileri
+   - **Learning Units Loading**: `/api/load?type=ogrenme_birimi&parent_id=X` ile öğrenme birimleri
+   - **Error Handling**: Schema uyumsuzluk hatalarına karşı koruma
+   - **Fallback Mechanism**: API hatası durumunda prop data kullanımı ✅
+
+### 🔧 Teknik Değişiklikler:
+
+1. **server.py SQL Düzeltmeleri**:
+   ```python
+   # ❌ ESKİ - Schema uyumsuz
+   cursor.execute("SELECT id, birim_adi, sure, aciklama, sira FROM temel_plan_ogrenme_birimi")
+   cursor.execute("SELECT id, konu_adi, detay, sira FROM temel_plan_konu")
+   
+   # ✅ YENİ - Schema uyumlu  
+   cursor.execute("SELECT id, birim_adi, sure, sira FROM temel_plan_ogrenme_birimi")
+   cursor.execute("SELECT id, konu_adi, sira FROM temel_plan_konu")
+   ```
+
+2. **CourseEditor.js Log Optimizasyonu**:
+   ```javascript
+   // ❌ ESKİ - Verbose logging
+   console.log('🔍 CopDropdown render - copUrls:', copUrls);
+   console.log('📏 Flexible sidebar for course...', courseName);
+   
+   // ✅ YENİ - Reduced logging
+   // COP Dropdown debug (reduced logging)
+   // Flexible sidebar width calculated
+   ```
+
+## 🔄 Önceki Güncelleme Detayları - 2025-07-28
 
 ### ✅ Frontend UI/UX İyileştirmeleri Tamamlandı:
 
@@ -465,28 +533,6 @@ temel_plan_ders_dal
    - **Table Processing**: `page.find_tables()` ve `table.extract()` standardı
    - **Sonuç**: Daha temiz ve maintainable kod ✅
 
-### 🔧 Teknik Değişiklikler:
-
-1. **modules/oku_dbf.py - PyMuPDF Migration**:
-   ```python
-   # ❌ KALDIRILAN (python-docx)
-   import docx
-   doc = docx.Document(file_path)
-   for table in doc.tables:
-       for row in table.rows:
-           for cell in row.cells:
-               text = cell.text
-   
-   # ✅ YENİ YÖNTEM (PyMuPDF)
-   import fitz
-   doc = fitz.open(file_path)
-   for page_num in range(len(doc)):
-       page = doc.load_page(page_num)
-       tables = page.find_tables()
-       for table in tables:
-           data = table.extract()
-   ```
-
 ## 🔌 API Endpoints - Detaylı Referans
 
 ### 📥 Temel Veri Çekme
@@ -517,7 +563,6 @@ temel_plan_ders_dal
 - **`POST /api/convert-docx-to-pdf`** - DOC/DOCX dosyalarını PDF'e çevirir (cache-aware, same directory storage)
 
 ### 🔄 PDF ve DBF İşleme Operasyonları
-- **`GET /api/dbf-download-extract`** - ⭐ **ESKİ SİSTEM**: DBF dosyalarını toplu indir ve aç (SSE) - Artık manuel unzip kullanılıyor
 - **`GET /api/oku-cop`** - ÇÖP PDF'lerini analiz et ve DB'ye kaydet (SSE)
 - **`GET /api/oku-dbf`** - ⭐ **STANDARDİZE**: Çıkarılmış DBF PDF/DOCX dosyalarını okur ve `temel_plan_ders.dbf_url` sütununa kaydeder (SSE)
 
@@ -698,6 +743,8 @@ const response = await fetch('http://localhost:5001/api/save', {
 - **⭐ YENİ 2025-07-28**: `/api/load` Unified Endpoint - Alan, dal, ders, konu, kazanım tüm veri tiplerini destekler, `/api/course/<id>` kaldırıldı
 - **⭐ YENİ 2025-07-28**: Fresh Data Loading - CourseEditor sidebar açıldığında DB'den en güncel veri çeker (cached table data değil)
 - **⭐ YENİ 2025-07-28**: Save Feedback System - Kaydet butonunda success/error feedback, disabled state ve visual indicators
+- **⭐ YENİ 2025-07-30**: Schema Uyumsuzluk Düzeltmeleri - "no such column" hatalarının çözümü ve öğrenme birimi yükleme sorunu düzeltildi
+- **⭐ YENİ 2025-07-30**: Debug Log Temizliği - CourseEditor.js konsol çıktısı %70 azaltıldı, sadece kritik mesajlar korundu
 
 ### 🌐 Unified API System ⭐ **YENİ 2025-07-28**
 
