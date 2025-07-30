@@ -728,3 +728,302 @@
     padding: 16px;
   }
 }
+
+/* Learning Units Manager Styles */
+.learning-units-manager {
+  margin-top: 20px;
+}
+
+.learning-units-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border-left: 4px solid #007bff;
+}
+
+.learning-units-header h4 {
+  margin: 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.add-unit-btn, .add-first-unit-btn {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.add-unit-btn:hover, .add-first-unit-btn:hover {
+  background: #218838;
+}
+
+.import-dbf-btn {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.import-dbf-btn:hover {
+  background: #0056b3;
+}
+
+.no-learning-units {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 2px dashed #dee2e6;
+}
+
+.no-learning-units p {
+  margin-bottom: 15px;
+}
+
+.learning-units-loading {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+}
+
+/* Learning Unit Styles */
+.learning-unit {
+  margin-bottom: 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.unit-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 15px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e0e0e0;
+  border-radius: 8px 8px 0 0;
+  min-height: 72px; /* MaterialTextField height + padding */
+}
+
+.expand-btn {
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  margin-right: 10px;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  align-self: center;
+  height: 32px;
+  width: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.expand-btn:hover {
+  background: #e9ecef;
+}
+
+/* Unit input styles are now handled by MaterialTextField */
+
+.remove-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  transition: background-color 0.2s;
+  align-self: center;
+  height: 32px;
+  min-width: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.remove-btn:hover {
+  background: #c82333;
+}
+
+.unit-content {
+  padding: 15px;
+}
+
+.unit-description {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+/* Topics Section */
+.topics-section {
+  margin-top: 15px;
+}
+
+.topics-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 8px 0;
+}
+
+.topics-header h5 {
+  margin: 0;
+  font-size: 14px;
+  color: #555;
+}
+
+.add-topic-btn {
+  background: #17a2b8;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.2s;
+}
+
+.add-topic-btn:hover {
+  background: #138496;
+}
+
+.bulk-paste-btn {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.2s;
+}
+
+.bulk-paste-btn:hover {
+  background: #218838;
+}
+
+.topic {
+  margin-bottom: 10px;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  background: #fdfdfe;
+}
+
+.topic-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #f1f3f4;
+  border-bottom: 1px solid #e9ecef;
+  border-radius: 6px 6px 0 0;
+  min-height: 72px; /* MaterialTextField height + padding */
+}
+
+/* Topic input styles are now handled by MaterialTextField */
+
+.topic-content {
+  padding: 12px;
+}
+
+.topic-detail {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  resize: vertical;
+  font-family: inherit;
+  font-size: 13px;
+}
+
+/* Achievements Section */
+.achievements-section {
+  margin-top: 12px;
+}
+
+.achievements-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 6px 0;
+}
+
+.achievements-header h6 {
+  margin: 0;
+  font-size: 13px;
+  color: #666;
+}
+
+.add-achievement-btn {
+  background: #6f42c1;
+  color: white;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  transition: background-color 0.2s;
+}
+
+.add-achievement-btn:hover {
+  background: #5a32a3;
+}
+
+.achievement {
+  margin-bottom: 8px;
+  padding: 8px;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 4px;
+}
+
+.achievement-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 56px; /* MaterialTextField height */
+}
+
+/* Achievement input styles are now handled by MaterialTextField */
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .unit-header, .topic-header, .achievement-row {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .unit-header > div,
+  .topic-header > div,
+  .achievement-row > div {
+    min-width: 200px;
+  }
+}

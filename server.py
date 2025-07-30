@@ -28,6 +28,9 @@ from modules.get_dal import get_dal
 from modules.utils_database import with_database_json, find_or_create_database, get_or_create_alan
 from modules.utils_normalize import normalize_to_title_case_tr
 
+# DBF parsing utilities
+from modules.utils_dbf1 import ex_kazanim_tablosu, read_full_text_from_file
+
 
 app = Flask(__name__)
 CORS(app)
@@ -615,6 +618,123 @@ def copy_course():
         print(f"Ders kopyalama hatası: {e}")
         return jsonify({"error": str(e)}), 500
 
+def save_learning_units(cursor, ders_id, ogrenme_birimleri):
+    """
+    Bir dersin öğrenme birimlerini, konularını ve kazanımlarını kaydeder.
+    Hiyerarşik veri yapısını handle eder.
+    
+    CLAUDE.md prensibi: Schema ile uyumlu tablo adları kullanır:
+    - temel_plan_ogrenme_birimi
+    - temel_plan_konu  
+    - temel_plan_kazanim
+    """
+    saved_count = 0
+    
+    try:
+        for birim_data in ogrenme_birimleri:
+            # Öğrenme birimi kaydet/güncelle
+            birim_id = birim_data.get('id')
+            
+            if birim_id:
+                # Güncelleme
+                cursor.execute("""
+                    UPDATE temel_plan_ogrenme_birimi 
+                    SET birim_adi=?, sure=?, aciklama=?, sira=?, updated_at=CURRENT_TIMESTAMP
+                    WHERE id=? AND ders_id=?
+                """, (
+                    birim_data.get('birim_adi', ''),
+                    birim_data.get('sure', 0),
+                    birim_data.get('aciklama', ''),
+                    birim_data.get('sira', 0),
+                    birim_id,
+                    ders_id
+                ))
+            else:
+                # Yeni kayıt
+                cursor.execute("""
+                    INSERT INTO temel_plan_ogrenme_birimi (ders_id, birim_adi, sure, aciklama, sira)
+                    VALUES (?, ?, ?, ?, ?)
+                """, (
+                    ders_id,
+                    birim_data.get('birim_adi', ''),
+                    birim_data.get('sure', 0),
+                    birim_data.get('aciklama', ''),
+                    birim_data.get('sira', 0)
+                ))
+                birim_id = cursor.lastrowid
+            
+            saved_count += 1
+            
+            # Konuları kaydet
+            if 'konular' in birim_data:
+                for konu_data in birim_data['konular']:
+                    konu_id = konu_data.get('id')
+                    
+                    if konu_id:
+                        # Güncelleme
+                        cursor.execute("""
+                            UPDATE temel_plan_konu 
+                            SET konu_adi=?, detay=?, sira=?, updated_at=CURRENT_TIMESTAMP
+                            WHERE id=? AND ogrenme_birimi_id=?
+                        """, (
+                            konu_data.get('konu_adi', ''),
+                            konu_data.get('detay', ''),
+                            konu_data.get('sira', 0),
+                            konu_id,
+                            birim_id
+                        ))
+                    else:
+                        # Yeni kayıt
+                        cursor.execute("""
+                            INSERT INTO temel_plan_konu (ogrenme_birimi_id, konu_adi, detay, sira)
+                            VALUES (?, ?, ?, ?)
+                        """, (
+                            birim_id,
+                            konu_data.get('konu_adi', ''),
+                            konu_data.get('detay', ''),
+                            konu_data.get('sira', 0)
+                        ))
+                        konu_id = cursor.lastrowid
+                    
+                    # Kazanımları kaydet
+                    if 'kazanimlar' in konu_data:
+                        for kazanim_data in konu_data['kazanimlar']:
+                            kazanim_id = kazanim_data.get('id')
+                            
+                            if kazanim_id:
+                                # Güncelleme
+                                cursor.execute("""
+                                    UPDATE temel_plan_kazanim 
+                                    SET kazanim_adi=?, seviye=?, kod=?, sira=?, updated_at=CURRENT_TIMESTAMP
+                                    WHERE id=? AND konu_id=?
+                                """, (
+                                    kazanim_data.get('kazanim_adi', ''),
+                                    kazanim_data.get('seviye', ''),
+                                    kazanim_data.get('kod', ''),
+                                    kazanim_data.get('sira', 0),
+                                    kazanim_id,
+                                    konu_id
+                                ))
+                            else:
+                                # Yeni kayıt
+                                cursor.execute("""
+                                    INSERT INTO temel_plan_kazanim (konu_id, kazanim_adi, seviye, kod, sira)
+                                    VALUES (?, ?, ?, ?, ?)
+                                """, (
+                                    konu_id,
+                                    kazanim_data.get('kazanim_adi', ''),
+                                    kazanim_data.get('seviye', ''),
+                                    kazanim_data.get('kod', ''),
+                                    kazanim_data.get('sira', 0)
+                                ))
+        
+        return saved_count
+        
+    except Exception as e:
+        print(f"save_learning_units hatası: {e}")
+        raise e
+
+
 @app.route('/api/save', methods=['POST'])
 @with_database_json
 def save(cursor):
@@ -677,10 +797,16 @@ def save(cursor):
             if cursor.rowcount == 0:
                 return {"error": "Ders bulunamadı"}
             
+            # Öğrenme birimlerini kaydet (varsa)
+            learning_units_saved = 0
+            if 'ogrenme_birimleri' in data:
+                learning_units_saved = save_learning_units(cursor, ders_id, data['ogrenme_birimleri'])
+            
             return {
                 "success": True,
-                "message": "Ders başarıyla güncellendi",
-                "updated_count": cursor.rowcount
+                "message": f"Ders başarıyla güncellendi. {learning_units_saved} öğrenme birimi kaydedildi.",
+                "updated_count": cursor.rowcount,
+                "learning_units_saved": learning_units_saved
             }
         
         # Batch mode - çoklu course kaydetme
@@ -841,6 +967,30 @@ def load_data(cursor):
                     dallar.append(dal_data)
                 return {"success": True, "data": dallar}
                 
+        elif data_type == 'ogrenme_birimi':
+            # Öğrenme birimi bilgilerini çek
+            if entity_id:
+                # Tek öğrenme birimi
+                cursor.execute("SELECT id, ders_id, birim_adi, sure, aciklama, sira FROM temel_plan_ogrenme_birimi WHERE id = ?", (entity_id,))
+                result = cursor.fetchone()
+                if not result:
+                    return {"error": "Öğrenme birimi bulunamadı"}
+                columns = ['id', 'ders_id', 'birim_adi', 'sure', 'aciklama', 'sira']
+                birim_data = dict(zip(columns, result))
+                return {"success": True, "data": birim_data}
+            elif parent_id:
+                # Belirli dersin öğrenme birimleri
+                cursor.execute("SELECT id, ders_id, birim_adi, sure, aciklama, sira FROM temel_plan_ogrenme_birimi WHERE ders_id = ? ORDER BY sira, birim_adi", (parent_id,))
+                results = cursor.fetchall()
+                birimler = []
+                for result in results:
+                    columns = ['id', 'ders_id', 'birim_adi', 'sure', 'aciklama', 'sira']
+                    birim_data = dict(zip(columns, result))
+                    birimler.append(birim_data)
+                return {"success": True, "data": birimler}
+            else:
+                return {"error": "Öğrenme birimi için ders_id (parent_id) gerekli"}
+        
         elif data_type == 'konu':
             # Konu bilgilerini çek
             if entity_id:
@@ -905,7 +1055,7 @@ def load_data(cursor):
                     kazanimlar.append(kazanim_data)
                 return {"success": True, "data": kazanimlar}
         else:
-            return {"error": f"Desteklenmeyen veri tipi: {data_type}. Desteklenen tipler: alan, dal, ders, konu, kazanim"}
+            return {"error": f"Desteklenmeyen veri tipi: {data_type}. Desteklenen tipler: alan, dal, ders, ogrenme_birimi, konu, kazanim"}
         
     except Exception as e:
         print(f"Load data hatası: {e}")
@@ -1576,6 +1726,128 @@ def serve_file(file_path):
     except Exception as e:
         print(f"File serving error: {e}")
         abort(500)
+
+@app.route('/api/import-dbf-learning-units', methods=['POST'])
+@with_database_json
+def import_dbf_learning_units(cursor):
+    """
+    DBF dosyasından öğrenme birimi başlıklarını import eder
+    
+    Request body: { "ders_id": 123, "dbf_file_path": "data/dbf/..." }
+    """
+    try:
+        data = request.get_json()
+        if not data:
+            return {"success": False, "error": "JSON data gerekli"}
+        
+        ders_id = data.get('ders_id')
+        dbf_file_path = data.get('dbf_file_path')
+        
+        if not ders_id or not dbf_file_path:
+            return {"success": False, "error": "ders_id ve dbf_file_path gerekli"}
+        
+        # Dosya var mı kontrol et
+        if not os.path.exists(dbf_file_path):
+            return {"success": False, "error": f"DBF dosyası bulunamadı: {dbf_file_path}"}
+        
+        # PDF/DOCX dosyasından text çıkar
+        full_text = read_full_text_from_file(dbf_file_path)
+        if not full_text.strip():
+            return {"success": False, "error": "Dosyadan metin çıkarılamadı"}
+        
+        # Kazanım tablosunu parse et
+        kazanim_tablosu_str, kazanim_tablosu_data = ex_kazanim_tablosu(full_text)
+        
+        if not kazanim_tablosu_data:
+            return {"success": False, "error": "Kazanım tablosu bulunamadı"}
+        
+        # Öğrenme birimlerini veritabanına ekle
+        imported_units = []
+        for i, unit_data in enumerate(kazanim_tablosu_data):
+            unit_title = unit_data.get('title', f'Öğrenme Birimi {i+1}')
+            duration = unit_data.get('duration', 0)
+            konu_sayisi = unit_data.get('count', 0)
+            
+            # String duration'ı integer'a çevir
+            try:
+                if isinstance(duration, str):
+                    # "18/36" gibi kesir formatını kontrol et
+                    if '/' in duration:
+                        duration = int(duration.split('/')[0])
+                    else:
+                        duration = int(duration)
+                elif not isinstance(duration, int):
+                    duration = 0
+            except:
+                duration = 0
+            
+            # Konu sayısını integer'a çevir
+            try:
+                konu_sayisi = int(konu_sayisi) if konu_sayisi else 0
+            except:
+                konu_sayisi = 0
+            
+            # Öğrenme birimini veritabanına ekle
+            cursor.execute("""
+                INSERT INTO temel_plan_ogrenme_birimi 
+                (ders_id, birim_adi, sure, sira) 
+                VALUES (?, ?, ?, ?)
+            """, (ders_id, unit_title, duration, i + 1))
+            
+            unit_id = cursor.lastrowid
+            
+            # Otomatik konular ve kazanımlar oluştur
+            konular = []
+            for j in range(konu_sayisi):
+                konu_adi = f"Konu {j + 1}"
+                
+                # Konu ekle
+                cursor.execute("""
+                    INSERT INTO temel_plan_konu 
+                    (ogrenme_birimi_id, konu_adi, sira) 
+                    VALUES (?, ?, ?)
+                """, (unit_id, konu_adi, j + 1))
+                
+                konu_id = cursor.lastrowid
+                
+                # Her konu için 1 kazanım ekle
+                kazanim_adi = f"Kazanım {j + 1}"
+                cursor.execute("""
+                    INSERT INTO temel_plan_kazanim 
+                    (konu_id, kazanim_adi, sira) 
+                    VALUES (?, ?, ?)
+                """, (konu_id, kazanim_adi, 1))
+                
+                kazanim_id = cursor.lastrowid
+                
+                konular.append({
+                    'id': konu_id,
+                    'konu_adi': konu_adi,
+                    'sira': j + 1,
+                    'kazanimlar': [{
+                        'id': kazanim_id,
+                        'kazanim_adi': kazanim_adi,
+                        'sira': 1
+                    }]
+                })
+            
+            imported_units.append({
+                'id': unit_id,
+                'birim_adi': unit_title,
+                'sure': duration,
+                'sira': i + 1,
+                'konular': konular
+            })
+        
+        return {
+            "success": True, 
+            "message": f"{len(imported_units)} öğrenme birimi başarıyla import edildi",
+            "imported_units": imported_units
+        }
+        
+    except Exception as e:
+        print(f"DBF import error: {str(e)}")
+        return {"success": False, "error": f"Import hatası: {str(e)}"}
 
 if __name__ == '__main__':
     # Database'i başlat

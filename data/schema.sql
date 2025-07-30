@@ -65,7 +65,6 @@ CREATE TABLE IF NOT EXISTS temel_plan_ogrenme_birimi (
     ders_id INTEGER NOT NULL,
     birim_adi TEXT NOT NULL,
     sure INTEGER, -- Süre (saat)
-    aciklama TEXT, -- Birim açıklaması
     sira INTEGER, -- Sıralama
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -79,7 +78,6 @@ CREATE TABLE IF NOT EXISTS temel_plan_konu (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     ogrenme_birimi_id INTEGER NOT NULL,
     konu_adi TEXT NOT NULL,
-    detay TEXT, -- Konu detayları
     sira INTEGER, -- Sıralama
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -93,8 +91,6 @@ CREATE TABLE IF NOT EXISTS temel_plan_kazanim (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     konu_id INTEGER NOT NULL,
     kazanim_adi TEXT NOT NULL,
-    seviye TEXT, -- Kazanım seviyesi (Temel, Orta, İleri)
-    kod TEXT, -- Kazanım kodu
     sira INTEGER, -- Sıralama
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
