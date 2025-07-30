@@ -146,8 +146,11 @@ const LearningUnitsManager = ({ dersId, learningUnits, onChange, loading, onImpo
   return (
     <div className="learning-units-manager">
       <div className="learning-units-header">
-        <h4>📚 Öğrenme Birimleri</h4>
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div className="learning-units-title">
+          <span className="unit-icon">📚</span>
+          <h4>Öğrenme Birimleri</h4>
+        </div>
+        <div className="learning-units-actions">
           <button onClick={addNewUnit} className="add-unit-btn">
             + Yeni Öğrenme Birimi
           </button>
@@ -166,45 +169,52 @@ const LearningUnitsManager = ({ dersId, learningUnits, onChange, loading, onImpo
         </div>
       ) : (
         learningUnits.map((unit, unitIndex) => (
-          <div key={unit.id || `new-${unitIndex}`} className="learning-unit">
-            <div className="unit-header">
-              <button 
-                onClick={() => toggleUnit(unit.id || `new-${unitIndex}`)}
-                className="expand-btn"
-              >
-                {expandedUnits[unit.id || `new-${unitIndex}`] ? '📂' : '📁'}
-              </button>
-              
-              <div style={{ flex: 1, marginRight: '10px' }}>
-                <MaterialTextField
-                  label="Öğrenme Birimi Adı"
-                  value={unit.birim_adi}
-                  onChange={(e) => {
-                    const value = e?.target?.value ?? e;
-                    updateUnit(unitIndex, 'birim_adi', value);
-                  }}
-                />
+          <div key={unit.id || `new-${unitIndex}`} className="learning-unit-card">
+            <div className="unit-card-content">
+              <div className="unit-icon-section">
+                <button 
+                  onClick={() => toggleUnit(unit.id || `new-${unitIndex}`)}
+                  className="collapse-btn"
+                  title={expandedUnits[unit.id || `new-${unitIndex}`] ? "Konuları gizle" : "Konuları göster"}
+                >
+                  {expandedUnits[unit.id || `new-${unitIndex}`] ? '▼' : '▶'}
+                </button>
               </div>
               
-              <div style={{ minWidth: '120px' }}>
-                <MaterialTextField
-                  label="Süre (saat)"
-                  type="number"
-                  value={unit.sure}
-                  onChange={(e) => {
-                    const value = e?.target?.value ?? e;
-                    updateUnit(unitIndex, 'sure', parseInt(value) || 0);
-                  }}
-                />
+              <div className="unit-inputs-section">
+                <div className="unit-input-group">
+                  <MaterialTextField
+                    label="Öğrenme Birimi Adı"
+                    value={unit.birim_adi}
+                    onChange={(e) => {
+                      const value = e?.target?.value ?? e;
+                      updateUnit(unitIndex, 'birim_adi', value);
+                    }}
+                  />
+                </div>
+                
+                <div className="unit-input-group">
+                  <MaterialTextField
+                    label="Süre (saat)"
+                    type="number"
+                    value={unit.sure}
+                    onChange={(e) => {
+                      const value = e?.target?.value ?? e;
+                      updateUnit(unitIndex, 'sure', parseInt(value) || 0);
+                    }}
+                  />
+                </div>
               </div>
               
-              <button 
-                onClick={() => removeUnit(unitIndex)}
-                className="remove-btn"
-                title="Öğrenme birimini sil"
-              >
-                ×
-              </button>
+              <div className="unit-actions-section">
+                <button 
+                  onClick={() => removeUnit(unitIndex)}
+                  className="unit-remove-btn"
+                  title="Öğrenme birimini sil"
+                >
+                  ×
+                </button>
+              </div>
             </div>
 
             {expandedUnits[unit.id || `new-${unitIndex}`] && (
