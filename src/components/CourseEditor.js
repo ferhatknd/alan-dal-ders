@@ -2,21 +2,29 @@ import React, { useState, useEffect } from 'react';
 import './CourseEditor.css';
 
 // Learning Units Manager Component
-const LearningUnitsManager = ({ dersId, learningUnits, onChange, loading, onImportDbf, onBulkPastTopics }) => {
+const LearningUnitsManager = ({ 
+  dersId, 
+  learningUnits, 
+  onChange, 
+  loading, 
+  onImportDbf, 
+  divideText,
+  onDivideTextChange,
+  onDivide,
+  divideAchievementText,
+  onDivideAchievementTextChange,
+  onDivideAchievements,
+  selectedTopic,
+  selectionMode,
+  onTopicSelect,
+  onAchievementLink,
+  getGroupedTopicsAndAchievements
+}) => {
   const [expandedUnits, setExpandedUnits] = useState({});
-  const [expandedTopics, setExpandedTopics] = useState({});
-
   const toggleUnit = (unitId) => {
     setExpandedUnits(prev => ({
       ...prev,
       [unitId]: !prev[unitId]
-    }));
-  };
-
-  const toggleTopic = (topicId) => {
-    setExpandedTopics(prev => ({
-      ...prev,
-      [topicId]: !prev[topicId]
     }));
   };
 
@@ -117,22 +125,6 @@ const LearningUnitsManager = ({ dersId, learningUnits, onChange, loading, onImpo
     onChange(updated);
   };
 
-  const removeAchievement = (unitIndex, topicIndex, achievementIndex) => {
-    if (window.confirm('Bu kazanımı silmek istediğinizden emin misiniz?')) {
-      const updated = [...learningUnits];
-      updated[unitIndex].konular[topicIndex].kazanimlar = 
-        updated[unitIndex].konular[topicIndex].kazanimlar.filter((_, index) => index !== achievementIndex);
-      
-      // Sıralamayı yeniden düzenle
-      updated[unitIndex].konular[topicIndex].kazanimlar = 
-        updated[unitIndex].konular[topicIndex].kazanimlar.map((achievement, index) => ({
-          ...achievement,
-          sira: index + 1
-        }));
-      
-      onChange(updated);
-    }
-  };
 
   if (loading) {
     return (
@@ -170,46 +162,38 @@ const LearningUnitsManager = ({ dersId, learningUnits, onChange, loading, onImpo
       ) : (
         learningUnits.map((unit, unitIndex) => (
           <div key={unit.id || `new-${unitIndex}`} className="learning-unit-card">
-            <div className="unit-card-content">
-              <div className="unit-icon-section">
+            <div className="unit-row">
+              <button 
+                onClick={() => toggleUnit(unit.id || `new-${unitIndex}`)}
+                className="collapse-btn"
+                title={expandedUnits[unit.id || `new-${unitIndex}`] ? "Konuları gizle" : "Konuları göster"}
+              >
+                {expandedUnits[unit.id || `new-${unitIndex}`] ? '▼' : '▶'}
+              </button>
+              
+              <div className="unit-input">
+                <MaterialTextField
+                  label="Öğrenme Birimi"
+                  value={unit.birim_adi}
+                  onChange={(e) => {
+                    const value = e?.target?.value ?? e;
+                    updateUnit(unitIndex, 'birim_adi', value);
+                  }}
+                  suffix={`${unit.sure} Saat`}
+                />
+              </div>
+              
+              <div className="action-buttons">
                 <button 
-                  onClick={() => toggleUnit(unit.id || `new-${unitIndex}`)}
-                  className="collapse-btn"
-                  title={expandedUnits[unit.id || `new-${unitIndex}`] ? "Konuları gizle" : "Konuları göster"}
+                  onClick={() => addNewUnit()}
+                  className="add-btn"
+                  title="Yeni öğrenme birimi ekle"
                 >
-                  {expandedUnits[unit.id || `new-${unitIndex}`] ? '▼' : '▶'}
+                  +
                 </button>
-              </div>
-              
-              <div className="unit-inputs-section">
-                <div className="unit-input-group">
-                  <MaterialTextField
-                    label="Öğrenme Birimi Adı"
-                    value={unit.birim_adi}
-                    onChange={(e) => {
-                      const value = e?.target?.value ?? e;
-                      updateUnit(unitIndex, 'birim_adi', value);
-                    }}
-                  />
-                </div>
-                
-                <div className="unit-input-group">
-                  <MaterialTextField
-                    label="Süre (saat)"
-                    type="number"
-                    value={unit.sure}
-                    onChange={(e) => {
-                      const value = e?.target?.value ?? e;
-                      updateUnit(unitIndex, 'sure', parseInt(value) || 0);
-                    }}
-                  />
-                </div>
-              </div>
-              
-              <div className="unit-actions-section">
                 <button 
                   onClick={() => removeUnit(unitIndex)}
-                  className="unit-remove-btn"
+                  className="remove-btn"
                   title="Öğrenme birimini sil"
                 >
                   ×
@@ -220,96 +204,194 @@ const LearningUnitsManager = ({ dersId, learningUnits, onChange, loading, onImpo
             {expandedUnits[unit.id || `new-${unitIndex}`] && (
               <div className="unit-content">
                 <div className="topics-section">
-                  <div className="topics-header">
-                    <h5>📝 Konular</h5>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <button 
-                        onClick={() => addNewTopic(unitIndex)}
-                        className="add-topic-btn"
-                      >
-                        + Yeni Konu
-                      </button>
-                      <button 
-                        onClick={() => onBulkPastTopics(unitIndex)}
-                        className="bulk-paste-btn"
-                      >
-                        📋 Toplu Yapıştır
-                      </button>
+                  <div className="divide-sections-container">
+                    {/* Konu Divide Bölümü */}
+                    <div className="divide-section">
+                      <h6 className="divide-section-title">Konular</h6>
+                      <div className="divide-input-container">
+                        <MaterialTextField
+                          label="Her satıra bir konu yazın"
+                          value={divideText[unitIndex] || ''}
+                          onChange={(e) => {
+                            const value = e?.target?.value ?? e;
+                            onDivideTextChange(unitIndex, value);
+                          }}
+                          multiline={true}
+                          rows={4}
+                          autoBullets={true}
+                        />
+                        <button 
+                          onClick={() => onDivide(unitIndex)}
+                          className="divide-btn"
+                        >
+                          /
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Kazanım Divide Bölümü */}
+                    <div className="divide-section">
+                      <h6 className="divide-section-title">Kazanımlar</h6>
+                      <div className="divide-input-container">
+                        <MaterialTextField
+                          label="Her satıra bir kazanım yazın"
+                          value={divideAchievementText[unitIndex] || ''}
+                          onChange={(e) => {
+                            const value = e?.target?.value ?? e;
+                            onDivideAchievementTextChange(unitIndex, value);
+                          }}
+                          multiline={true}
+                          rows={4}
+                          autoBullets={true}
+                        />
+                        <button 
+                          onClick={() => onDivideAchievements(unitIndex)}
+                          className="divide-btn"
+                        >
+                          /
+                        </button>
+                      </div>
                     </div>
                   </div>
 
-                  {(unit.konular || []).map((topic, topicIndex) => (
-                    <div key={topic.id || `new-topic-${topicIndex}`} className="topic">
-                      <div className="topic-header">
-                        <button 
-                          onClick={() => toggleTopic(topic.id || `new-topic-${topicIndex}`)}
-                          className="expand-btn"
-                        >
-                          {expandedTopics[topic.id || `new-topic-${topicIndex}`] ? '📄' : '📃'}
-                        </button>
-                        
-                        <div style={{ flex: 1, marginRight: '10px' }}>
-                          <MaterialTextField
-                            label="Konu Adı"
-                            value={topic.konu_adi}
-                            onChange={(e) => {
-                              const value = e?.target?.value ?? e;
-                              updateTopic(unitIndex, topicIndex, 'konu_adi', value);
-                            }}
-                          />
-                        </div>
-                        
-                        <button 
-                          onClick={() => removeTopic(unitIndex, topicIndex)}
-                          className="remove-btn"
-                          title="Konuyu sil"
-                        >
-                          ×
-                        </button>
-                      </div>
+                  {/* Selection Mode Hint */}
+                  {selectionMode && (
+                    <div className="selection-mode-hint">
+                      <strong>Kazanım Seçim Modu Aktif!</strong> Seçili konuya bağlamak istediğiniz kazanımların yanındaki <strong>+</strong> butonlarına tıklayın. 
+                      Bitirmek için seçili konunun yanındaki yeşil <strong>→</strong> butonuna tekrar tıklayın.
+                    </div>
+                  )}
 
-                      {expandedTopics[topic.id || `new-topic-${topicIndex}`] && (
-                        <div className="topic-content">
-                          <div className="achievements-section">
-                            <div className="achievements-header">
-                              <h6>✅ Kazanımlar</h6>
+                  {/* Grouped Konu ve Kazanım Tablosu */}
+                  {getGroupedTopicsAndAchievements(unit, unitIndex).map((item, index) => {
+                    const isSelected = selectedTopic === item.topicKey;
+                    const isLinked = item.type === 'achievement' || 
+                      (item.data.linkedAchievements && item.data.linkedAchievements.length > 0);
+                    
+                    return (
+                      <div key={`grouped-${index}`}>
+                        {/* Ana Konu Satırı */}
+                        {(item.type === 'topic' || item.type === 'unlinked') && (
+                          <div 
+                            className={`topic-achievement-row ${isSelected ? 'selected-topic' : ''} ${isLinked ? 'linked-topic' : ''}`}
+                          >
+                            <div className="topic-column">
+                              <div className="topic-input-with-button">
+                                <MaterialTextField
+                                  label="Konu"
+                                  value={item.data.konu_adi}
+                                  onChange={(e) => {
+                                    const value = e?.target?.value ?? e;
+                                    updateTopic(item.unitIndex, item.topicIndex, 'konu_adi', value);
+                                  }}
+                                  multiline={true}
+                                  rows={2}
+                                  autoBullets={true}
+                                />
+                                <button 
+                                  onClick={() => onTopicSelect(item.unitIndex, item.topicIndex, item.topicKey)}
+                                  className={`select-topic-btn inline-btn ${isSelected ? 'selected' : ''}`}
+                                  title={isSelected ? "Seçim modunu bitir" : "Konu seçim moduna geç"}
+                                >
+                                  {isSelected ? '✓' : '→'}
+                                </button>
+                              </div>
+                            </div>
+                            
+                            <div className="achievement-column">
+                              <MaterialTextField
+                                label="Kazanım"
+                                value={item.data.kazanimlar?.[0]?.kazanim_adi || ''}
+                                onChange={(e) => {
+                                  const value = e?.target?.value ?? e;
+                                  // Eğer kazanım yoksa yeni bir tane oluştur
+                                  if (!item.data.kazanimlar || item.data.kazanimlar.length === 0) {
+                                    const updated = [...learningUnits];
+                                    updated[item.unitIndex].konular[item.topicIndex].kazanimlar = [{
+                                      id: null,
+                                      kazanim_adi: value,
+                                      sira: 1
+                                    }];
+                                    onChange(updated);
+                                  } else {
+                                    updateAchievement(item.unitIndex, item.topicIndex, 0, 'kazanim_adi', value);
+                                  }
+                                }}
+                                multiline={true}
+                                rows={2}
+                                autoBullets={true}
+                              />
+                            </div>
+                            
+                            <div className="action-buttons">
+                              {selectionMode ? (
+                                // Selection mode - achievement linking
+                                <button 
+                                  onClick={() => onAchievementLink(item.unitIndex, item.topicIndex, item.topicKey)}
+                                  className={`link-btn ${isLinked ? 'linked' : ''}`}
+                                  title={isLinked ? "Bağlantıyı kaldır" : "Bu kazanımı seçili konuya bağla"}
+                                >
+                                  {isLinked ? '−' : '+'}
+                                </button>
+                              ) : (
+                                // Normal mode - regular actions
+                                <button 
+                                  onClick={() => addNewTopic(item.unitIndex)}
+                                  className="add-btn"
+                                  title="Yeni konu satırı ekle"
+                                >
+                                  +
+                                </button>
+                              )}
                               <button 
-                                onClick={() => addNewAchievement(unitIndex, topicIndex)}
-                                className="add-achievement-btn"
+                                onClick={() => removeTopic(item.unitIndex, item.topicIndex)}
+                                className="remove-btn"
+                                title="Bu satırı sil"
                               >
-                                + Yeni Kazanım
+                                ×
                               </button>
                             </div>
-
-                            {(topic.kazanimlar || []).map((achievement, achievementIndex) => (
-                              <div key={achievement.id || `new-achievement-${achievementIndex}`} className="achievement">
-                                <div className="achievement-row">
-                                  <div style={{ flex: 1, marginRight: '10px' }}>
-                                    <MaterialTextField
-                                      label="Kazanım Açıklaması"
-                                      value={achievement.kazanim_adi}
-                                      onChange={(e) => {
-                                        const value = e?.target?.value ?? e;
-                                        updateAchievement(unitIndex, topicIndex, achievementIndex, 'kazanim_adi', value);
-                                      }}
-                                    />
-                                  </div>
-                                  
-                                  <button 
-                                    onClick={() => removeAchievement(unitIndex, topicIndex, achievementIndex)}
-                                    className="remove-btn"
-                                    title="Kazanımı sil"
-                                  >
-                                    ×
-                                  </button>
-                                </div>
-                              </div>
-                            ))}
                           </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                        )}
+                        
+                        {/* Bağlı Kazanımlar */}
+                        {item.type === 'topic' && item.linkedAchievements && item.linkedAchievements.map((linkedAch, achIndex) => (
+                          <div 
+                            key={`linked-${achIndex}`} 
+                            className="topic-achievement-row linked-achievement-row"
+                          >
+                            <div className="topic-column">
+                              <div className="linked-achievement-label">└ Bağlı Kazanım:</div>
+                            </div>
+                            
+                            <div className="achievement-column">
+                              <MaterialTextField
+                                label="Kazanım"
+                                value={linkedAch.data.kazanimlar?.[0]?.kazanim_adi || linkedAch.data.konu_adi}
+                                onChange={(e) => {
+                                  const value = e?.target?.value ?? e;
+                                  updateAchievement(linkedAch.unitIndex, linkedAch.topicIndex, 0, 'kazanim_adi', value);
+                                }}
+                                multiline={true}
+                                rows={1}
+                                autoBullets={true}
+                              />
+                            </div>
+                            
+                            <div className="action-buttons">
+                              <button 
+                                onClick={() => onAchievementLink(item.unitIndex, item.topicIndex, linkedAch.topicKey)}
+                                className="link-btn linked"
+                                title="Bağlantıyı kaldır"
+                              >
+                                −
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -445,7 +527,9 @@ const MaterialTextField = ({
   error = false,
   disabled = false,
   select = false,
-  options = []
+  options = [],
+  suffix = null,
+  autoBullets = false // Yeni prop - otomatik madde işaretleri
 }) => {
   const [focused, setFocused] = useState(false);
   // Material UI'da label her zaman üstte olmalı - sadece focus durumuna göre stil değişir
@@ -453,6 +537,74 @@ const MaterialTextField = ({
   
   const handleFocus = () => setFocused(true);
   const handleBlur = () => setFocused(false);
+
+  // Enter tuşu ile otomatik madde işareti ekleme
+  const handleKeyDown = (e) => {
+    if (autoBullets && multiline && e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      
+      const textarea = e.target;
+      const currentValue = textarea.value;
+      const cursorPosition = textarea.selectionStart;
+      
+      // Mevcut satırı al
+      const beforeCursor = currentValue.substring(0, cursorPosition);
+      const afterCursor = currentValue.substring(cursorPosition);
+      const lines = beforeCursor.split('\n');
+      const currentLine = lines[lines.length - 1];
+      
+      // Madde numarası pattern'ini kontrol et
+      const bulletPattern = /^(\d+)\.\s*/;
+      const match = currentLine.match(bulletPattern);
+      
+      let newText;
+      if (match) {
+        // Mevcut satırda madde numarası var - bir sonrakini ekle
+        const currentNumber = parseInt(match[1]);
+        const nextNumber = currentNumber + 1;
+        newText = currentValue.substring(0, cursorPosition) + '\n' + nextNumber + '. ' + afterCursor;
+        
+        // Yeni değeri güncelle
+        onChange(newText);
+        
+        // Cursor pozisyonunu ayarla
+        setTimeout(() => {
+          const newCursorPos = cursorPosition + ('\n' + nextNumber + '. ').length;
+          textarea.setSelectionRange(newCursorPos, newCursorPos);
+        }, 0);
+      } else {
+        // İlk madde için 1. ekle
+        if (currentLine.trim() === '' || currentValue.trim() === '') {
+          newText = currentValue.substring(0, cursorPosition) + '\n1. ' + afterCursor;
+        } else {
+          // Mevcut satırı 1. ile başlat
+          const lineStart = beforeCursor.lastIndexOf('\n') + 1;
+          const lineContent = currentLine.trim();
+          if (lineContent) {
+            // Mevcut satırı 1. ile başlat ve yeni satır ekle
+            newText = currentValue.substring(0, lineStart) + '1. ' + lineContent + '\n2. ' + afterCursor;
+          } else {
+            newText = currentValue.substring(0, cursorPosition) + '1. ' + afterCursor;
+          }
+        }
+        
+        onChange(newText);
+        
+        // Cursor pozisyonunu ayarla
+        setTimeout(() => {
+          const newLines = newText.split('\n');
+          let newCursorPos = 0;
+          for (let i = 0; i < newLines.length; i++) {
+            if (newLines[i].match(/^\d+\.\s*$/)) {
+              newCursorPos = newText.indexOf(newLines[i]) + newLines[i].length;
+              break;
+            }
+          }
+          textarea.setSelectionRange(newCursorPos, newCursorPos);
+        }, 0);
+      }
+    }
+  };
   
   const classes = [
     'material-textfield',
@@ -461,45 +613,52 @@ const MaterialTextField = ({
     focused ? 'focused' : '',
     error ? 'error' : '',
     disabled ? 'disabled' : '',
-    select ? 'select' : ''
+    select ? 'select' : '',
+    suffix ? 'has-suffix' : ''
   ].filter(Boolean).join(' ');
 
   return (
     <div className={classes}>
-      {select ? (
-        <select
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
-          disabled={disabled}
-        >
-          <option value="" disabled hidden></option>
-          {options.map(option => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      ) : multiline ? (
-        <textarea
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
-          rows={rows}
-          disabled={disabled}
-        />
-      ) : (
-        <input
-          type={type}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
-          disabled={disabled}
-        />
-      )}
+      <div className="input-wrapper">
+        {select ? (
+          <select
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            disabled={disabled}
+          >
+            <option value="" disabled hidden></option>
+            {options.map(option => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        ) : multiline ? (
+          <textarea
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            rows={rows}
+            disabled={disabled}
+          />
+        ) : (
+          <input
+            type={type}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            disabled={disabled}
+          />
+        )}
+        {suffix && (
+          <span className="input-suffix">{suffix}</span>
+        )}
+      </div>
       <label>{label}</label>
     </div>
   );
@@ -949,20 +1108,30 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
   // Split screen mode - PDF açık mı?
   const isSplitMode = Boolean(pdfUrl);
   
-  // Flexible sidebar width - max 50% of viewport width
+  // Flexible sidebar width - responsive based on screen size
   const calculateFlexibleSidebarStyle = () => {
     const courseName = editData.ders_adi || 'Ders Adı';
     const charCount = courseName.length;
     
-    // Base width calculation
-    const baseWidth = Math.max(400, Math.min(charCount * 8 + 200, 800));
+    // Base width calculation - increased minimum width for wider initial sidebar
+    const baseWidth = Math.max(600, Math.min(charCount * 8 + 300, 1000));
     
-    // Flexible sidebar width calculated
+    // Responsive width logic:
+    // - If screen > 2000px: 50% of viewport (max 1000px)
+    // - If screen <= 2000px: calculated width (max 1000px)
+    const screenWidth = window.innerWidth;
     
-    return {
-      width: `min(${baseWidth}px, 50vw)`, // Never exceed 50% of viewport
-      maxWidth: '50vw'
-    };
+    if (screenWidth > 2000) {
+      return {
+        width: `min(50vw, 1000px)`,
+        maxWidth: '1000px'
+      };
+    } else {
+      return {
+        width: `min(${baseWidth}px, 1000px)`,
+        maxWidth: '1000px'
+      };
+    }
   };
   
   const sidebarStyle = calculateFlexibleSidebarStyle();
@@ -1247,6 +1416,12 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
   // Learning Units Management
   const [learningUnits, setLearningUnits] = useState([]);
   const [learningUnitsLoading, setLearningUnitsLoading] = useState(false);
+  
+  // Divide functionality states
+  const [divideText, setDivideText] = useState({}); // Konu divide için
+  const [divideAchievementText, setDivideAchievementText] = useState({}); // Kazanım divide için
+  const [selectedTopic, setSelectedTopic] = useState(null);
+  const [selectionMode, setSelectionMode] = useState(false);
 
   // Öğrenme birimlerini yükle
   const loadLearningUnits = async (dersId) => {
@@ -1282,6 +1457,279 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
   // Öğrenme birimlerini kaydet
   const handleLearningUnitsChange = (updatedUnits) => {
     setLearningUnits(updatedUnits);
+  };
+
+  // Divide text değişikliği
+  const handleDivideTextChange = (unitIndex, text) => {
+    setDivideText(prev => ({
+      ...prev,
+      [unitIndex]: text
+    }));
+  };
+
+  // Achievement divide text değişikliği
+  const handleDivideAchievementTextChange = (unitIndex, text) => {
+    setDivideAchievementText(prev => ({
+      ...prev,
+      [unitIndex]: text
+    }));
+  };
+
+  // Divide işlemi - metni parse et ve satırlara böl
+  const handleDivide = (unitIndex) => {
+    const text = divideText[unitIndex];
+    if (!text || !text.trim()) {
+      setImportStatus('error');
+      setImportMessage('❌ Lütfen önce metin girin!');
+      setTimeout(() => {
+        setImportStatus('idle');
+        setImportMessage('');
+      }, 3000);
+      return;
+    }
+
+    try {
+      // Metni parse et - aynı parsing fonksiyonunu kullan
+      const parsedItems = parseBulkTopicsText(text);
+      
+      if (parsedItems.length === 0) {
+        setImportStatus('error');
+        setImportMessage('❌ Metinde geçerli madde bulunamadı!');
+        setTimeout(() => {
+          setImportStatus('idle');
+          setImportMessage('');
+        }, 3000);
+        return;
+      }
+
+      // Yeni konu-kazanım satırları oluştur
+      const updated = [...learningUnits];
+      const unit = updated[unitIndex];
+      
+      const newTopics = parsedItems.map((item, index) => ({
+        id: null,
+        konu_adi: item.konu_adi,
+        sira: (unit.konular || []).length + index + 1,
+        kazanimlar: [{
+          id: null,
+          kazanim_adi: '', // Boş bırak - sadece konu divide ediyor
+          sira: 1
+        }],
+        linkedAchievements: [] // Yeni alan - bağlı kazanımlar için
+      }));
+
+      updated[unitIndex] = {
+        ...unit,
+        konular: [...(unit.konular || []), ...newTopics]
+      };
+
+      setLearningUnits(updated);
+      
+      // Divide text'i temizle
+      setDivideText(prev => ({
+        ...prev,
+        [unitIndex]: ''
+      }));
+
+      setImportStatus('success');
+      setImportMessage(`✅ ${parsedItems.length} madde başarıyla eklendi!`);
+      setTimeout(() => {
+        setImportStatus('idle');
+        setImportMessage('');
+      }, 3000);
+
+    } catch (error) {
+      console.error('Divide parsing hatası:', error);
+      setImportStatus('error');
+      setImportMessage('❌ Metin işleme hatası! Formatı kontrol edin.');
+      setTimeout(() => {
+        setImportStatus('idle');
+        setImportMessage('');
+      }, 3000);
+    }
+  };
+
+  // Achievement Divide işlemi - metni parse et ve kazanım olarak ekle
+  const handleDivideAchievements = (unitIndex) => {
+    const text = divideAchievementText[unitIndex];
+    if (!text || !text.trim()) {
+      setImportStatus('error');
+      setImportMessage('❌ Lütfen önce kazanım metni girin!');
+      setTimeout(() => {
+        setImportStatus('idle');
+        setImportMessage('');
+      }, 3000);
+      return;
+    }
+
+    try {
+      // Metni parse et - aynı parsing fonksiyonunu kullan
+      const parsedAchievements = parseBulkTopicsText(text);
+      
+      if (parsedAchievements.length === 0) {
+        setImportStatus('error');
+        setImportMessage('❌ Metinde geçerli kazanım bulunamadı!');
+        setTimeout(() => {
+          setImportStatus('idle');
+          setImportMessage('');
+        }, 3000);
+        return;
+      }
+
+      // Yeni kazanım satırları oluştur (sadece kazanım kısmı dolu)
+      const updated = [...learningUnits];
+      const unit = updated[unitIndex];
+      
+      const newAchievementTopics = parsedAchievements.map((item, index) => ({
+        id: null,
+        konu_adi: '', // Konu kısmı boş
+        sira: (unit.konular || []).length + index + 1,
+        kazanimlar: [{
+          id: null,
+          kazanim_adi: item.konu_adi, // Parse edilen text kazanım olarak
+          sira: 1
+        }],
+        linkedAchievements: [] // Yeni alan - bağlı kazanımlar için
+      }));
+
+      updated[unitIndex] = {
+        ...unit,
+        konular: [...(unit.konular || []), ...newAchievementTopics]
+      };
+
+      setLearningUnits(updated);
+      
+      // Achievement divide text'i temizle
+      setDivideAchievementText(prev => ({
+        ...prev,
+        [unitIndex]: ''
+      }));
+
+      setImportStatus('success');
+      setImportMessage(`✅ ${parsedAchievements.length} kazanım başarıyla eklendi!`);
+      setTimeout(() => {
+        setImportStatus('idle');
+        setImportMessage('');
+      }, 3000);
+
+    } catch (error) {
+      console.error('Achievement divide parsing hatası:', error);
+      setImportStatus('error');
+      setImportMessage('❌ Metin işleme hatası! Formatı kontrol edin.');
+      setTimeout(() => {
+        setImportStatus('idle');
+        setImportMessage('');
+      }, 3000);
+    }
+  };
+
+  // Topic seçim modu
+  const handleTopicSelect = (unitIndex, topicIndex, topicKey) => {
+    if (selectedTopic === topicKey) {
+      // Aynı topic'e tekrar basıldı - seçim modunu kapat
+      setSelectedTopic(null);
+      setSelectionMode(false);
+    } else {
+      // Yeni topic seçildi - seçim modunu aç
+      setSelectedTopic(topicKey);
+      setSelectionMode(true);
+    }
+  };
+
+  // Achievement linking
+  const handleAchievementLink = (unitIndex, topicIndex, achievementKey) => {
+    if (!selectedTopic) return;
+
+    const updated = [...learningUnits];
+    const [selectedUnitIndex, selectedTopicIndex] = selectedTopic.split('-').map(Number);
+    
+    // Seçili topic'i al
+    const selectedTopicObj = updated[selectedUnitIndex].konular[selectedTopicIndex];
+    
+    // Bağlantı var mı kontrol et
+    if (!selectedTopicObj.linkedAchievements) {
+      selectedTopicObj.linkedAchievements = [];
+    }
+    
+    const linkIndex = selectedTopicObj.linkedAchievements.indexOf(achievementKey);
+    
+    if (linkIndex > -1) {
+      // Bağlantı var, kaldır
+      selectedTopicObj.linkedAchievements.splice(linkIndex, 1);
+    } else {
+      // Bağlantı yok, ekle
+      selectedTopicObj.linkedAchievements.push(achievementKey);
+    }
+    
+    setLearningUnits(updated);
+  };
+
+  // Konuları ve bağlı kazanımları grupla
+  const getGroupedTopicsAndAchievements = (unit, unitIndex) => {
+    if (!unit.konular) return [];
+    
+    const grouped = [];
+    const processedItems = new Set();
+    
+    // 1. Önce bağlantısı OLAN konuları işle (linkedAchievements'ı olan)
+    unit.konular.forEach((topic, topicIndex) => {
+      const topicKey = `${unitIndex}-${topicIndex}`;
+      
+      // Bu konu başka bir konuya bağlı kazanım olarak kullanılıyor mu kontrol et
+      const isUsedAsAchievement = unit.konular.some(otherTopic => 
+        otherTopic.linkedAchievements && otherTopic.linkedAchievements.includes(topicKey)
+      );
+      
+      // Eğer bu konu başka bir konuya bağlı değilse ve kendisinin bağlı kazanımları varsa
+      if (!isUsedAsAchievement && topic.linkedAchievements && topic.linkedAchievements.length > 0) {
+        const topicData = {
+          type: 'topic',
+          data: topic,
+          unitIndex,
+          topicIndex,
+          topicKey,
+          linkedAchievements: []
+        };
+        
+        // Bu konuya bağlı kazanımları ekle
+        topic.linkedAchievements.forEach(achievementKey => {
+          const [achUnitIndex, achTopicIndex] = achievementKey.split('-').map(Number);
+          const achTopic = unit.konular[achTopicIndex];
+          
+          if (achTopic && !processedItems.has(achievementKey)) {
+            topicData.linkedAchievements.push({
+              type: 'achievement',
+              data: achTopic,
+              unitIndex: achUnitIndex,
+              topicIndex: achTopicIndex,
+              topicKey: achievementKey
+            });
+            processedItems.add(achievementKey); // Bağlı kazanımı işaretla
+          }
+        });
+        
+        grouped.push(topicData);
+        processedItems.add(topicKey); // Ana konuyu da işaretla
+      }
+    });
+    
+    // 2. Sonra bağlanmamış öğeleri normal konu-kazanım çifti olarak ekle
+    unit.konular.forEach((topic, topicIndex) => {
+      const topicKey = `${unitIndex}-${topicIndex}`;
+      
+      // Eğer bu konu henüz işlenmemişse (ne ana konu ne de bağlı kazanım)
+      if (!processedItems.has(topicKey)) {
+        grouped.push({
+          type: 'unlinked',
+          data: topic,
+          unitIndex,
+          topicIndex,
+          topicKey
+        });
+      }
+    });
+    
+    return grouped;
   };
 
   // PDF'den kopyalanan metni parse et - akıllı satır birleştirme
@@ -1337,75 +1785,6 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
     return topics;
   };
 
-  // Toplu konu yapıştır - silent clipboard access (no notification)
-  const handleBulkPastTopics = async (unitIndex) => {
-    // Text input ile manuel yapıştırma modalı göster
-    const text = prompt('Konu listesini yapıştırın (1. Konu adı formatında):\n\nÖrnek:\n1. Bilgisayar sistemleri\n2. İşletim sistemleri\n3. Veri yönetimi');
-    
-    if (!text || !text.trim()) {
-      return; // İptal edildi
-    }
-    
-    try {
-      // Metni parse et
-      const newTopics = parseBulkTopicsText(text);
-      
-      if (newTopics.length === 0) {
-        setImportStatus('error');
-        setImportMessage('❌ Metinde geçerli konu bulunamadı!');
-        setTimeout(() => {
-          setImportStatus('idle');
-          setImportMessage('');
-        }, 4000);
-        return;
-      }
-      
-      // Confirmation
-      const confirmed = window.confirm(
-        `${newTopics.length} konu bulundu:\n\n${newTopics.slice(0, 3).map(t => '• ' + t.konu_adi).join('\n')}${newTopics.length > 3 ? '\n...' : ''}\n\nEklemek istiyor musunuz?`
-      );
-      
-      if (!confirmed) return;
-      
-      // Mevcut öğrenme birimine konuları ekle
-      const updated = [...learningUnits];
-      const unit = updated[unitIndex];
-      
-      // Her konuya default kazanım ekle
-      const topicsWithAchievements = newTopics.map((topic, index) => ({
-        ...topic,
-        sira: (unit.konular || []).length + index + 1,
-        kazanimlar: [{
-          id: null,
-          kazanim_adi: `${topic.konu_adi} kazanımı`,
-          sira: 1
-        }]
-      }));
-      
-      updated[unitIndex] = {
-        ...unit,
-        konular: [...(unit.konular || []), ...topicsWithAchievements]
-      };
-      
-      setLearningUnits(updated);
-      
-      setImportStatus('success');
-      setImportMessage(`✅ ${newTopics.length} konu başarıyla eklendi!`);
-      setTimeout(() => {
-        setImportStatus('idle');
-        setImportMessage('');
-      }, 4000);
-      
-    } catch (error) {
-      console.error('Metin parsing hatası:', error);
-      setImportStatus('error');
-      setImportMessage('❌ Metin işleme hatası! Formatı kontrol edin.');
-      setTimeout(() => {
-        setImportStatus('idle');
-        setImportMessage('');
-      }, 4000);
-    }
-  };
 
   // DBF'den öğrenme birimlerini import et
   const handleImportDbfUnits = async () => {
@@ -1603,7 +1982,17 @@ const CourseEditor = ({ course, isOpen, onClose, onSave, onShowPDF, pdfUrl, pdfT
           onChange={handleLearningUnitsChange}
           loading={learningUnitsLoading}
           onImportDbf={handleImportDbfUnits}
-          onBulkPastTopics={handleBulkPastTopics}
+          divideText={divideText}
+          onDivideTextChange={handleDivideTextChange}
+          onDivide={handleDivide}
+          divideAchievementText={divideAchievementText}
+          onDivideAchievementTextChange={handleDivideAchievementTextChange}
+          onDivideAchievements={handleDivideAchievements}
+          selectedTopic={selectedTopic}
+          selectionMode={selectionMode}
+          onTopicSelect={handleTopicSelect}
+          onAchievementLink={handleAchievementLink}
+          getGroupedTopicsAndAchievements={getGroupedTopicsAndAchievements}
         />
       </div>
 
