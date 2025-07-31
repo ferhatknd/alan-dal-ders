@@ -74,6 +74,8 @@ def with_database(func: Callable) -> Callable:
             with sqlite3.connect(db_path, timeout=30.0) as conn:
                 # Row factory ile dict-style access
                 conn.row_factory = sqlite3.Row
+                # Foreign key constraints'leri aktif et
+                conn.execute("PRAGMA foreign_keys = ON")
                 cursor = conn.cursor()
                 
                 # İlk parametre olarak cursor'ı geç
@@ -111,6 +113,8 @@ def with_database_json(func: Callable) -> Callable:
         try:
             with sqlite3.connect(db_path, timeout=30.0) as conn:
                 conn.row_factory = sqlite3.Row
+                # Foreign key constraints'leri aktif et
+                conn.execute("PRAGMA foreign_keys = ON")
                 cursor = conn.cursor()
                 
                 result = func(cursor, *args, **kwargs)
@@ -880,6 +884,7 @@ def save_learning_units(cursor, ders_id, ogrenme_birimleri):
     Bir dersin öğrenme birimlerini, konularını ve kazanımlarını kaydeder.
     Hiyerarşik veri yapısını handle eder.
     Duplicate kayıtları engeller (INSERT OR UPDATE), case-insensitive.
+    Foreign key constraints aktif olduğu için ilişkisel bütünlük garanti edilir.
     """
     saved_count = 0
     
@@ -976,5 +981,5 @@ def save_learning_units(cursor, ders_id, ogrenme_birimleri):
         return saved_count
         
     except Exception as e:
-        print(f"save_learning_units hatası: {e}")
+        print(f"❌ save_learning_units hatası: {e}")
         raise e
